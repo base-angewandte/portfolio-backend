@@ -1,0 +1,34 @@
+version: '2'
+services:
+
+  portfolio-redis:
+    ports:
+      - 127.0.0.1:6379:6379
+
+#  portfolio-elasticsearch:
+#    environment:
+#      - cluster.routing.allocation.disk.threshold_enabled=false
+#    ports:
+#      - 127.0.0.1:9200:9200
+#
+#  portfolio-elasticsearch-2:
+#    environment:
+#      - cluster.routing.allocation.disk.threshold_enabled=false
+#
+#  portfolio-logstash:
+#    ports:
+#      - 127.0.0.1:5229:5229
+#
+#  portfolio-kibana:
+#    environment:
+#      - SERVER_BASEPATH=
+#    ports:
+#      - 127.0.0.1:5601:5601
+
+  portfolio-postgres:
+    ports:
+      - 127.0.0.1:5432:5432
+
+  portfolio-django:
+    ports:
+      - 127.0.0.1:8200:8200

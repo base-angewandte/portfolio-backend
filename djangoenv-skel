@@ -1,0 +1,8 @@
+# DEBUG=False
+# DOCKER=True
+SITE_URL=https://base.uni-ak.ac.at
+# FORCE_SCRIPT_NAME=/portfolio
+# ALLOWED_HOSTS=
+# BEHIND_PROXY=True
+# DJANGO_ADMINS=Philipp Mayer <philipp.mayer@uni-ak.ac.at>
+# EMAIL_SUBJECT_PREFIX=[Portfolio]

@@ -1,0 +1,23 @@
+from drf_yasg import openapi
+from drf_yasg.app_settings import swagger_settings
+from drf_yasg.inspectors import FieldInspector, NotHandled, SwaggerAutoSchema
+from rest_framework import serializers
+
+
+class JSONFieldInspector(FieldInspector):
+    def field_to_swagger_object(
+            self, field, swagger_object_type, use_references, **kwargs
+    ):
+        SwaggerType, ChildSwaggerType = self._get_partial_types(field, swagger_object_type, use_references, **kwargs)
+
+        if isinstance(field, serializers.JSONField):
+            return SwaggerType(
+                type=openapi.TYPE_OBJECT,
+            )
+
+        return NotHandled
+
+
+class JSONAutoSchema(SwaggerAutoSchema):
+    field_inspectors = [JSONFieldInspector] + swagger_settings.DEFAULT_FIELD_INSPECTORS
+

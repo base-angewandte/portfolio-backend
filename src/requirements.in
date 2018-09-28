@@ -1,0 +1,23 @@
+# compile this file with 'pip-compile requirements.in'
+# sync environment with 'pip-sync'
+# to update all packages run 'pip-compile --upgrade'
+
+apispec==0.39.0
+django==1.11.15
+django-environ==0.4.5
+django-extensions==2.1.2
+django-filter==2.0.0
+django-redis==4.9.0
+djangorestframework==3.8.2
+drf-yasg[validation]==1.10.2
+jsonschema==2.6.0
+markdown==2.6.11
+marshmallow==2.15.5
+pip-tools==2.0.2
+psycopg2-binary==2.7.5
+shortuuid==0.5.0
+werkzeug==0.14.1
+
+# Server
+gunicorn==19.9.0
+rainbow-saddle==0.4.0
