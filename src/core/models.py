@@ -18,7 +18,7 @@ class Entity(AbstractBaseModel):
     TYPE_CHOICES = lazy(get_type_choices.__func__, tuple)()
 
     id = ShortUUIDField(primary_key=True)
-    title = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255)
     subtitle = models.CharField(max_length=255, blank=True, null=True)
     type = models.CharField(max_length=255, choices=TYPE_CHOICES, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
