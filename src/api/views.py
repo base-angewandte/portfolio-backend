@@ -75,13 +75,16 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     Returns the number of documents of type entity.
     """
 
-    queryset = Entity.objects.all().order_by('-date_changed')
     serializer_class = EntitySerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_fields = ('type',)  # TODO
     ordering_fields = ('title',)  # TODO
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
+
+    def get_queryset(self):
+        user = self.request.user
+        return Entity.objects.filter(owner=user).order_by('-date_changed')
 
 
 class RelationViewSet(viewsets.ModelViewSet, CountModelMixin):
@@ -108,8 +111,11 @@ class RelationViewSet(viewsets.ModelViewSet, CountModelMixin):
     Returns the number of documents of type relation.
     """
 
-    queryset = Relation.objects.select_related().all()
     serializer_class = RelationSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Relation.objects.filter(from_entity__owner=user, to_entity__owner=user)
 
 
 class JsonSchemaViewSet(viewsets.ViewSet):

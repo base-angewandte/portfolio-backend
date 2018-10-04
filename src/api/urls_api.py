@@ -5,8 +5,8 @@ from . import views
 
 
 router = routers.DefaultRouter()
-router.register(r'entity', views.EntityViewSet)
-router.register(r'relation', views.RelationViewSet)
+router.register(r'entity', views.EntityViewSet, base_name='entity')
+router.register(r'relation', views.RelationViewSet, base_name='relation')
 router.register(r'jsonschema', views.JsonSchemaViewSet, base_name='jsonschema')
 
 

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -19,6 +20,7 @@ class Entity(AbstractBaseModel):
     TYPE_CHOICES = lazy(get_type_choices.__func__, tuple)()
 
     id = ShortUUIDField(primary_key=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     subtitle = models.CharField(max_length=255, blank=True, null=True)
     type = models.CharField(max_length=255, choices=TYPE_CHOICES, blank=True, null=True)
@@ -29,7 +31,6 @@ class Entity(AbstractBaseModel):
     )
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
-    # TODO add owner
 
     def clean(self):
         if self.type:
@@ -70,6 +71,10 @@ class Relation(AbstractBaseModel):
 
     class Meta:
         unique_together = ('from_entity', 'to_entity',)
+
+    def clean(self):
+        if self.from_entity.owner != self.to_entity.owner:
+            raise ValidationError(_('Both entities must belong to the same user'))
 
 
 @receiver(pre_save, sender=Relation)
