@@ -4,6 +4,7 @@
 
 apispec==0.39.0
 django==1.11.15
+django-cas-ng==3.5.9
 django-environ==0.4.5
 django-extensions==2.1.2
 django-filter==2.0.0
