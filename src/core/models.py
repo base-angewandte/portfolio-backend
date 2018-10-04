@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.functional import lazy
+from django.utils.translation import ugettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
 from general.models import AbstractBaseModel, ShortUUIDField
@@ -37,9 +38,9 @@ class Entity(AbstractBaseModel):
                 try:
                     validate(self.data, schema)
                 except SchemaValidationError as e:
-                    raise ValidationError('Invalid data: {}'.format(e.message))
+                    raise ValidationError(_('Invalid data: {}'.format(e.message)))
         elif self.data:
-            raise ValidationError('Data without type.')
+            raise ValidationError(_('Data without type'))
 
     def add_relation(self, entity):
         relation, created = Relation.objects.get_or_create(
