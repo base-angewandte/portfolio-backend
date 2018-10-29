@@ -334,3 +334,26 @@ REST_FRAMEWORK = {
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {}
 }
+
+OPEN_API_VERSION = env.str('OPEN_API_VERSION', default='2.0')
+ACTIVE_SCHEMAS = env.list(
+    'ACTIVE_SCHEMAS',
+    default=[
+        'architecture',
+        'audio',
+        'award',
+        'concert',
+        'conference',
+        'document',
+        'exhibition',
+        'festival',
+        'image',
+        'installation',
+        'performance',
+        'research_project',
+        'sculpture',
+        'teaching',
+        'video',
+        'workshop',
+    ]
+)
