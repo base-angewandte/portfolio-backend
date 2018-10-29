@@ -137,9 +137,13 @@ venv.bak/
 dmypy.json
 
 ## PyCharm
-.idea/*
+.idea/
 
 ## Project
+logs/
+src/assets/
+tmp/
+
 dockerdata/
 docker-compose.override.yml
 secret_key.py
