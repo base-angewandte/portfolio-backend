@@ -221,10 +221,10 @@ LANGUAGES_DICT = dict(LANGUAGES)
 STATICFILES_DIRS = (
     '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'static')), os.sep),
 )
-STATIC_URL = '{}/static/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
+STATIC_URL = '{}/s/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 STATIC_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'static')), os.sep)
 
-MEDIA_URL = '{}/media/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
+MEDIA_URL = '{}/m/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'media')), os.sep)
 
 PROTECTED_MEDIA_URL = '{}/protected/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
