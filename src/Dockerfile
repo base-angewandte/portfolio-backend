@@ -9,8 +9,8 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /logs
 VOLUME /logs
 
-RUN mkdir -p /django/assets
-VOLUME /django/assets
+# RUN mkdir -p /django/assets
+# VOLUME /django/assets
 
 WORKDIR /django
 
