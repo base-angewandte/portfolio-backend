@@ -7,3 +7,5 @@ SITE_URL=https://base.uni-ak.ac.at/
 # DJANGO_ADMINS=Philipp Mayer <philipp.mayer@uni-ak.ac.at>
 # EMAIL_SUBJECT_PREFIX=[Portfolio]
 # CAS_SERVER=
+# OPEN_API_VERSION=2.0
+# ACTIVE_SCHEMAS=
