@@ -102,6 +102,7 @@ CAS_LOGOUT_COMPLETELY = True
 CAS_RETRY_LOGIN = True
 CAS_VERSION = '3'
 CAS_APPLY_ATTRIBUTES_TO_USER = True
+CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
 CAS_RENAME_ATTRIBUTES = {
     'firstName': 'first_name',
     'lastName': 'last_name',
