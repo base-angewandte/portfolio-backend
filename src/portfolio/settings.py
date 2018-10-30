@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_extensions',
     'django_cas_ng',
+    'corsheaders',
 
     # Project apps
     'general',
@@ -130,6 +131,7 @@ X_FRAME_OPTIONS = 'DENY'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -313,6 +315,10 @@ SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_NAME = 'sessionid_{}'.format(PROJECT_NAME)
 
 CSRF_COOKIE_NAME = 'csrftoken_{}'.format(PROJECT_NAME)
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+
+CORS_ORIGIN_ALLOW_ALL = env.bool('CORS_ORIGIN_ALLOW_ALL', default=False)
+CORS_URLS_REGEX = r'^{}/api/.*$'.format(FORCE_SCRIPT_NAME)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
