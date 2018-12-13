@@ -9,10 +9,10 @@ TYPES = [
 
 
 class ConcertSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    musician = fields.Nested(PersonSchema)
-    conductor = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    musician = fields.Nested(PersonSchema, additionalProperties=False)
+    conductor = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
     date = fields.DateTime()
     url = fields.Str()
-    location = fields.Nested(GEOReferenceSchema)
+    location = fields.Nested(GEOReferenceSchema, additionalProperties=False)

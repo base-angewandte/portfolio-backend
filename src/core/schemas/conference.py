@@ -15,13 +15,13 @@ TYPES = [
 
 
 class ConferenceSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    organiser = fields.Nested(PersonSchema)
-    lecturer = fields.Nested(PersonSchema)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    organiser = fields.Nested(PersonSchema, additionalProperties=False)
+    lecturer = fields.Nested(PersonSchema, additionalProperties=False)
     title_of_paper = fields.Str()
-    participants = fields.Nested(PersonSchema, many=True)
-    participating_institutions = fields.Nested(InstitutionSchema, many=True)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
+    participating_institutions = fields.List(fields.Nested(InstitutionSchema, additionalProperties=False))
     date_from = fields.DateTime()
     date_to = fields.DateTime()
     url = fields.Str()
-    location = fields.Nested(GEOReferenceSchema)
+    location = fields.Nested(GEOReferenceSchema, additionalProperties=False)

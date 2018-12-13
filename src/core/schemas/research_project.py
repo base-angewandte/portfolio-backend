@@ -9,11 +9,11 @@ TYPES = [
 
 
 class ResearchProjectSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    project_lead = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
-    participating_institutions = fields.Nested(InstitutionSchema, many=True)
-    funding_institutions = fields.Nested(InstitutionSchema)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    project_lead = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
+    participating_institutions = fields.List(fields.Nested(InstitutionSchema, additionalProperties=False))
+    funding_institutions = fields.Nested(InstitutionSchema, additionalProperties=False)
     funding_category = fields.Str()
     date_from = fields.Date()
     date_to = fields.Date()

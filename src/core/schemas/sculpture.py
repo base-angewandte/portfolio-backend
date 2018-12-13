@@ -9,10 +9,10 @@ TYPES = [
 
 
 class SculptureSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    artist = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
-    participating_institutions = fields.Nested(InstitutionSchema, many=True)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    artist = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
+    participating_institutions = fields.List(fields.Nested(InstitutionSchema, additionalProperties=False))
     date_from = fields.Date()
     date_to = fields.Date()
     material = fields.Str()

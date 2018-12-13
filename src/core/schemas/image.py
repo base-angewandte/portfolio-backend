@@ -12,10 +12,10 @@ TYPES = [
 
 
 class ImageSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    photographer = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
-    city = fields.Nested(GEOReferenceSchema)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    photographer = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
+    city = fields.Nested(GEOReferenceSchema, additionalProperties=False)
     date = fields.Date()
     url = fields.Str()
     language = fields.Str()

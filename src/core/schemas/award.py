@@ -10,11 +10,11 @@ TYPES = [
 
 
 class AwardSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
     category = fields.Str()
-    winner = fields.Nested(PersonSchema)
-    granted_by = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
+    winner = fields.Nested(PersonSchema, additionalProperties=False)
+    granted_by = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
     date_from = fields.Date()
     date_to = fields.Date()
     url = fields.Str()

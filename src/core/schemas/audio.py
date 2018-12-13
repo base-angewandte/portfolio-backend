@@ -17,9 +17,9 @@ TYPES = [
 
 
 class AudioSchema(Schema):
-    text = fields.Nested(TextSchema, many=True, required=False)
-    artist = fields.Nested(PersonSchema)
-    participants = fields.Nested(PersonSchema, many=True)
+    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
+    artist = fields.Nested(PersonSchema, additionalProperties=False)
+    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
     radio_station = fields.Str()
     section = fields.Str()
     date = fields.Date()
@@ -28,4 +28,4 @@ class AudioSchema(Schema):
     duration = fields.Str()
     material = fields.Str()
     format = fields.Str()
-    city = fields.Nested(GEOReferenceSchema)
+    city = fields.Nested(GEOReferenceSchema, additionalProperties=False)

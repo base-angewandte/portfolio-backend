@@ -33,4 +33,6 @@ converter = OpenAPIConverter(settings.OPEN_API_VERSION)
 def get_jsonschema(entity_type):
     for t, s in ACTIVE_TUPLES:
         if entity_type in t:
-            return converter.schema2jsonschema(s)
+            jsonschema = converter.schema2jsonschema(s)
+            jsonschema['additionalProperties'] = False
+            return jsonschema
