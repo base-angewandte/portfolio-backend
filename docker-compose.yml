@@ -102,7 +102,7 @@ services:
 #    restart: always
 
   portfolio-postgres:
-    image: postgres:10.5-alpine
+    image: postgres:11.1-alpine
     container_name: portfolio-postgres
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -110,7 +110,7 @@ services:
       - POSTGRES_DB=$PORTFOLIO_DB_NAME
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - ./dockerdata/postgres/pgdata:/var/lib/postgresql/data/pgdata
+      - ./dockerdata/postgres/11/data:/var/lib/postgresql/data/pgdata
     networks:
       - portfolionet
     restart: always
