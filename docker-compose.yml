@@ -2,7 +2,7 @@ version: '2'
 services:
 
   portfolio-redis:
-    image: redis:4.0.11-alpine
+    image: redis:5.0-alpine
     container_name: portfolio-redis
     volumes:
       - ./dockerdata/redis/data:/data
