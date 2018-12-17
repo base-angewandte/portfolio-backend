@@ -131,6 +131,7 @@ X_FRAME_OPTIONS = 'DENY'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -204,7 +205,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'de-at'
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'Europe/Vienna'
 USE_I18N = True
 USE_L10N = True
@@ -217,6 +218,9 @@ LANGUAGES = (
 
 LANGUAGES_DICT = dict(LANGUAGES)
 
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -365,3 +369,7 @@ ACTIVE_SCHEMAS = env.list(
         'workshop',
     ]
 )
+
+SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
+PORTFOLIO_VOCID = 'portfolio'
+PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'

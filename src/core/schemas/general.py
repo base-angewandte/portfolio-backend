@@ -1,6 +1,8 @@
 from django.conf import settings
 from marshmallow import Schema, fields, validate
 
+from ..skosmos import get_preflabel_lazy
+
 
 # contains shared schema definitions
 class GEOReferenceSchema(Schema):
@@ -32,6 +34,7 @@ class TextSchema(Schema):
         #     #labels=settings.LANAGES_DICT.values(),
         # ),
         required=True,
+        title=get_preflabel_lazy('c_language'),
     )
-    text = fields.Str(required=True)
-    type = fields.Str()
+    text = fields.Str(required=True, title=get_preflabel_lazy('c_text'))
+    type = fields.Str(title=get_preflabel_lazy('c_type'))

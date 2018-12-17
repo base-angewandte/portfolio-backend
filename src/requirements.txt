@@ -24,6 +24,7 @@ flex==6.13.2              # via drf-yasg
 gunicorn==19.9.0
 idna==2.7                 # via requests
 inflection==0.3.1         # via drf-yasg
+isodate==0.6.0            # via rdflib
 itypes==1.1.0             # via coreapi
 jinja2==2.10              # via coreschema
 jsonpointer==1.14         # via flex
@@ -35,16 +36,19 @@ marshmallow==2.15.5
 pip-tools==2.0.2
 psutil==5.4.7             # via rainbow-saddle
 psycopg2-binary==2.7.5
+pyparsing==2.3.0          # via rdflib
 python-cas==1.3.0         # via django-cas-ng
 pytz==2018.5              # via django
 pyyaml==3.13              # via apispec, flex, swagger-spec-validator
 rainbow-saddle==0.4.0
 redis==2.10.6             # via django-redis
 requests==2.19.1          # via coreapi, flex, python-cas
+rdflib==4.2.2             # via skosmos-client
 rfc3987==1.3.8            # via flex
 ruamel.yaml==0.15.66      # via drf-yasg
 shortuuid==0.5.0
-six==1.11.0               # via django-extensions, drf-yasg, flex, pip-tools, python-cas, swagger-spec-validator
+six==1.11.0               # via django-extensions, drf-yasg, flex, isodate, pip-tools, python-cas, swagger-spec-validator
+skosmos-client==0.2.0
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.4.0  # via drf-yasg
 uritemplate==3.0.0        # via coreapi, drf-yasg

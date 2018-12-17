@@ -18,6 +18,7 @@ marshmallow==2.15.5
 pip-tools==2.0.2
 psycopg2-binary==2.7.5
 shortuuid==0.5.0
+skosmos-client==0.2.0
 werkzeug==0.14.1
 
 # Server
