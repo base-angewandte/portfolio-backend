@@ -1,6 +1,7 @@
 from django.conf.urls import include, url
 from rest_framework import routers
 
+from media_server.views import MediaViewSet
 from . import views
 
 
@@ -8,6 +9,7 @@ router = routers.DefaultRouter()
 router.register(r'entity', views.EntityViewSet, base_name='entity')
 router.register(r'relation', views.RelationViewSet, base_name='relation')
 router.register(r'jsonschema', views.JsonSchemaViewSet, base_name='jsonschema')
+router.register(r'media', MediaViewSet, base_name='media')
 
 
 urlpatterns = [

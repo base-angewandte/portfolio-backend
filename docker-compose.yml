@@ -127,9 +127,24 @@ services:
     volumes:
       - ./src:/django
       - ./logs:/logs
+      - ./dockerdata/dms/assets:/django/assets
     networks:
       - portfolionet
     restart: always
+
+  portfolio-rq:
+    build: ./src
+    container_name: portfolio-rq
+    volumes_from:
+      - portfolio-django
+    command: python manage.py rqworker high default
+
+  portfolio-rq-scheduler:
+    build: ./src
+    container_name: portfolio-rq-scheduler
+    volumes_from:
+      - portfolio-django
+    command: python manage.py rqscheduler
 
 networks:
   portfolionet:

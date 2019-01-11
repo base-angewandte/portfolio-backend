@@ -21,6 +21,7 @@ from urllib.parse import urlparse
 import environ
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+from hashids import Hashids
 
 env = environ.Env()
 env.read_env()
@@ -34,10 +35,19 @@ try:
     from .secret_key import SECRET_KEY
 except ImportError:
     from django.core.management.utils import get_random_secret_key
-    f = open(os.path.join(BASE_DIR, PROJECT_NAME, 'secret_key.py'), 'w+')
-    SECRET_KEY = get_random_secret_key()
-    f.write("SECRET_KEY = '%s'\n" % SECRET_KEY)
-    f.close()
+    with open(os.path.join(BASE_DIR, PROJECT_NAME, 'secret_key.py'), 'w+') as f:
+        SECRET_KEY = get_random_secret_key()
+        f.write("SECRET_KEY = '%s'\n" % SECRET_KEY)
+
+try:
+    from .hashids_salt import HASHIDS_SALT
+except ImportError:
+    from django.core.management.utils import get_random_secret_key
+    with open(os.path.join(BASE_DIR, PROJECT_NAME, 'hashids_salt.py'), 'w+') as f:
+        HASHIDS_SALT = get_random_secret_key()
+        f.write("HASHIDS_SALT = '%s'\n" % HASHIDS_SALT)
+
+HASHIDS = Hashids(salt=HASHIDS_SALT, min_length=16)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
@@ -79,12 +89,15 @@ INSTALLED_APPS = [
     'django_filters',
     'django_extensions',
     'django_cas_ng',
+    'django_rq',
+    'django_cleanup.apps.CleanupConfig',
     'corsheaders',
 
     # Project apps
     'general',
     'core',
     'api',
+    'media_server',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -234,8 +247,8 @@ STATIC_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 's
 MEDIA_URL = '{}/m/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'media')), os.sep)
 
-PROTECTED_MEDIA_URL = '{}/protected/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
-PROTECTED_MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'proteced')), os.sep)
+PROTECTED_MEDIA_URL = '{}/p/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
+PROTECTED_MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'protected')), os.sep)
 PROTECTED_MEDIA_LOCATION = '{}/internal/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 PROTECTED_MEDIA_SERVER = 'nginx' if not DEBUG else 'django'
 
@@ -313,6 +326,16 @@ CACHES = {
     }
 }
 
+RQ_QUEUES = {
+    'default': {
+        'USE_REDIS_CACHE': 'default',
+    },
+    'high': {
+        'USE_REDIS_CACHE': 'default',
+    },
+}
+
+
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
@@ -369,6 +392,14 @@ ACTIVE_SCHEMAS = env.list(
         'workshop',
     ]
 )
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
+        'debug_toolbar.middleware.DebugToolbarMiddleware'
+    )
+    INTERNAL_IPS = ('127.0.0.1', )
 
 SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
 PORTFOLIO_VOCID = 'portfolio'

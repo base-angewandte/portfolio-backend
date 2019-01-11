@@ -2,9 +2,10 @@ FROM python:3.6
 
 ENV PYTHONUNBUFFERED 1
 
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-#        ffmpeg \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libmagic-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /logs
 VOLUME /logs
@@ -14,7 +15,7 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==18.0
+RUN pip install --upgrade pip==18.1
 ADD requirements.txt .
 RUN pip install -r requirements.txt
 ADD . .
