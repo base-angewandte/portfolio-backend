@@ -46,7 +46,7 @@ class CountModelMixin(object):
     Count a queryset.
     """
     @swagger_auto_schema(manual_parameters=[], responses={200: openapi.Response('')})
-    @action(detail=False, filter_backends=None, pagination_class=None)
+    @action(detail=False, filter_backends=[], pagination_class=None)
     def count(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         content = {'count': queryset.count()}
