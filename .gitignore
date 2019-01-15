@@ -147,3 +147,12 @@ tmp/
 dockerdata/
 docker-compose.override.yml
 secret_key.py
+
+# editor artefacts
+*~
+\#*
+*\#
+
+# system files
+systemctl
+enable
