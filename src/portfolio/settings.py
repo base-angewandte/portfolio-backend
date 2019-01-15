@@ -373,3 +373,17 @@ ACTIVE_SCHEMAS = env.list(
 SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
 PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
+
+
+PERSON_URLS = {'GND': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
+               'VIAF': 'http://www.viaf.org/viaf/AutoSuggest?query='}
+
+MAPPING = {'GND': {'_id': 'id',
+                   'label': 'label'},
+           'VIAF': {'_id': 'viafid',
+                    'label': 'displayForm'}}
+
+RESULT = {'VIAF': 'result'}
+
+PERSONS_PRIMARY = ('GND')
+PERSONS_SECONDARY = ('VIAF')
