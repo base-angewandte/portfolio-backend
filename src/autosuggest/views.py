@@ -12,7 +12,8 @@ from rest_framework import status
 @api_view(['GET'])
 def lookup_person_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    data = fetch_responses(settings.PERSON_URLS, searchstr)
+    print(kwargs)
+    data = fetch_responses(settings.LOOKUP.get('PERSON'), searchstr)
 
     return Response(data)
 
@@ -20,33 +21,36 @@ def lookup_person_view(request, *args, **kwargs):
 @api_view(['GET'])
 def lookup_place_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    return Response([{"id": '1',
-                      "label": searchstr,
-                      'source': 'GND'},
-                     {"id": '1',
-                      "label": searchstr,
-                      'source': 'GND'}    ])
+    data = fetch_responses(settings.LOOKUP.get('PLACE'), searchstr)
+
+    return Response(data)
 
 
-def fetch_responses(url_dict, querystring):
+def fetch_responses(lookup_dict, querystring):
     responses = []
     with FuturesSession() as session:
-        fetch_requests = {domain: session.get(url+querystring) for domain, url in url_dict.items()}
+        fetch_requests = {domain: session.get(val.get('url')+querystring) for domain, val in lookup_dict.items()}
         for domain, req in fetch_requests.items():
             if status.is_success(req.result().status_code):
-                result_field = settings.RESULT.get(domain)
+                result_field = lookup_dict.get(domain).get('result')
                 result_json = json.loads(req.result().content).get(result_field) if result_field else json.loads(req.result().content)
-                responses.extend(map_to_common_schema(result_json, domain))
+                if result_json and len(result_json):
+                    responses.extend(map_to_common_schema(result_json, lookup_dict.get(domain)))
                 
         
     return responses
 
 
-def map_to_common_schema(response_content, domain):
+def map_to_common_schema(response_content, domain_dict):
     data = []
-    mapping = settings.MAPPING.get(domain)
+    
+    mapping = domain_dict.get('mapping')
     for suggestion in response_content:
-        mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
-        data.append(mapped_schema)
+        if ((not domain_dict.get('filter')) or
+            (domain_dict.get('filter') and all(suggestion.get(filter_field)==filter_value for filter_field, filter_value in domain_dict.get('filter').items()))):            
+            mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
+            data.append(mapped_schema)
+
+        
         
     return data

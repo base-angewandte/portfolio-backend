@@ -375,15 +375,34 @@ PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
 
 
-PERSON_URLS = {'GND': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
-               'VIAF': 'http://www.viaf.org/viaf/AutoSuggest?query='}
+LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
+                             'mapping': {'_id': 'id',
+                                         'label': 'label'},
+                             'filter': None,
+                             'result': None},
+                     'VIAF': {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+                              'mapping': {'_id': 'viafid',
+                                          'label': 'displayForm'},
+                              'filter': {'nametype': 'personal'},
+                              'result': 'result'},
+                     },
+          'PLACE': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:PlaceOrGeographicName&q=',
+                            'mapping': {'_id': 'id',
+                                        'label': 'label'},
+                             'filter': None,
+                             'result': None},
+                    'VIAF':  {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+                              'mapping': {'_id': 'viafid',
+                                          'label': 'displayForm'},
+                              'filter': {'nametype': 'geographic'},
+                              'result': 'result'}
+                    }
+          }
+          
+                     
 
-MAPPING = {'GND': {'_id': 'id',
-                   'label': 'label'},
-           'VIAF': {'_id': 'viafid',
-                    'label': 'displayForm'}}
-
-RESULT = {'VIAF': 'result'}
 
 PERSONS_PRIMARY = ('GND')
 PERSONS_SECONDARY = ('VIAF')
+
+

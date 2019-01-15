@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^accounts/callback/$', django_cas_ng.views.callback, name='cas_ng_proxy_callback'),
 
     url(r'^api/', include('api.urls')),
-    url(r'^autosuggest/', include('autosuggest.urls')),   
+    url(r'^autosuggest/(?P<version>(v1))/', include('autosuggest.urls')),   
 ]
