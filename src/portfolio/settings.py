@@ -63,9 +63,14 @@ DOCKER = env.bool('DOCKER', default=True)
 
 SITE_URL = env.str('SITE_URL')
 
+PROTECTED_MEDIA_SITE_URL = env.str('PROTECTED_MEDIA_SITE_URL', default=SITE_URL)
+
 FORCE_SCRIPT_NAME = env.str('FORCE_SCRIPT_NAME', default='/portfolio')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[urlparse(SITE_URL).hostname])
+allowed_hosts_default = [urlparse(SITE_URL).hostname]
+if PROTECTED_MEDIA_SITE_URL != SITE_URL:
+    allowed_hosts_default += [urlparse(PROTECTED_MEDIA_SITE_URL).hostname]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=allowed_hosts_default)
 
 BEHIND_PROXY = env.bool('BEHIND_PROXY', default=True)
 
@@ -247,7 +252,7 @@ STATIC_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 's
 MEDIA_URL = '{}/m/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'media')), os.sep)
 
-PROTECTED_MEDIA_URL = '{}/p/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
+PROTECTED_MEDIA_URL = '{}{}/p/'.format(PROTECTED_MEDIA_SITE_URL, FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 PROTECTED_MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'protected')), os.sep)
 PROTECTED_MEDIA_LOCATION = '{}/internal/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 PROTECTED_MEDIA_SERVER = 'nginx' if not DEBUG else 'django'

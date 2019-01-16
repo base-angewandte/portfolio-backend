@@ -1,6 +1,7 @@
 # DEBUG=False
 # DOCKER=True
 SITE_URL=https://base.uni-ak.ac.at/
+PROTECTED_MEDIA_SITE_URL=https://portfolio.uni-ak.ac.at/
 # FORCE_SCRIPT_NAME=/portfolio
 # ALLOWED_HOSTS=
 # BEHIND_PROXY=True
