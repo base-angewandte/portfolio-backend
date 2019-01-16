@@ -6,6 +6,7 @@ import magic
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
+from django.utils.translation import ugettext_lazy as _
 from django.views.static import serve
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
