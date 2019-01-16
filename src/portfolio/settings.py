@@ -375,34 +375,39 @@ PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
 
 
+GND_MAPPING = {'_id': 'id', # common_schema: GND schema
+               'label': 'label'}
+
+VIAF_MAPPING = {'_id': 'viafid', # common_schema: VIAF schema
+                'label': 'displayForm'}
+
 LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
-                             'mapping': {'_id': 'id',
-                                         'label': 'label'},
-                             'filter': None,
-                             'result': None},
+                             'mapping': GND_MAPPING,
+                             'filter': None, # if the results should be filtered by a field's value within the result
+                             'result': None,
+                             'resourceid_prefix': ''},
                      'VIAF': {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
-                              'mapping': {'_id': 'viafid',
-                                          'label': 'displayForm'},
-                              'filter': {'nametype': 'personal'},
-                              'result': 'result'},
+                              'mapping': VIAF_MAPPING,
+                              'filter': {'nametype': 'personal'}, # only resources having the nametype "personal" will be returned
+                              'result': 'result',
+                              'resourceid_prefix': 'http://www.viaf.org/viaf/'},
                      },
           'PLACE': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:PlaceOrGeographicName&q=',
-                            'mapping': {'_id': 'id',
-                                        'label': 'label'},
+                            'mapping': GND_MAPPING,
                              'filter': None,
-                             'result': None},
+                             'result': None,
+                            'resourceid_prefix': ''},
                     'VIAF':  {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
-                              'mapping': {'_id': 'viafid',
-                                          'label': 'displayForm'},
+                              'mapping': VIAF_MAPPING,
                               'filter': {'nametype': 'geographic'},
-                              'result': 'result'}
+                              'result': 'result',
+                              'resourceid_prefix': 'http://www.viaf.org/viaf/'}
                     }
           }
           
                      
 
 
-PERSONS_PRIMARY = ('GND')
-PERSONS_SECONDARY = ('VIAF')
+ACTIVE_SOURCES = ('VIAF', 'GND') # Add 
 
 
