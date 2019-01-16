@@ -16,25 +16,29 @@ class GEOReferenceSchema(Schema):
 class InstitutionSchema(Schema):
     source_id = fields.Str()
     commonname = fields.Str()
-    source = fields.Str()
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
     role = fields.Str()
 
 
 class PersonSchema(Schema):
     source_id = fields.Str()
     commonname = fields.Str()
-    source = fields.Str()
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
     role = fields.Str()
 
 
-class TextSchema(Schema):
+class TextDataSchema(Schema):
     language = fields.Str(
-        # validate=validate.OneOf(
-        #     #settings.LANGUAGES_DICT.keys(),
-        #     #labels=settings.LANAGES_DICT.values(),
-        # ),
+        validate=validate.OneOf(
+            settings.LANGUAGES_DICT.keys(),
+            labels=settings.LANGUAGES_DICT.values(),
+        ),
         required=True,
         title=get_preflabel_lazy('c_language'),
     )
     text = fields.Str(required=True, title=get_preflabel_lazy('c_text'))
+
+
+class TextSchema(Schema):
     type = fields.Str(title=get_preflabel_lazy('c_type'))
+    data = fields.Nested(TextDataSchema, additionalProperties=False)
