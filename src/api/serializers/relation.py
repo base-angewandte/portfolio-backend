@@ -1,28 +1,40 @@
+from collections import OrderedDict
+
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from core.models import Entity, Relation
+from core.models import Relation
+from . import CleanModelSerializer
+from .fields import SwaggerSerializerField
 
 
-class CleanModelSerializer(serializers.ModelSerializer):
-    def validate(self, attrs):
-        instance = self.Meta.model(**attrs)
-        instance.clean()
-        return attrs
-
-
-class EntitySerializer(CleanModelSerializer):
-    owner = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
-
+class RelationModelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Entity
+        model = Relation
         fields = '__all__'
 
 
+rms = RelationModelSerializer()
+
+
 class RelationSerializer(CleanModelSerializer):
+    id = SwaggerSerializerField(
+        rms.fields.get('id').__class__,
+        attrs=OrderedDict([('hidden', True)]),
+        **rms.fields.get('id')._kwargs,
+    )
+    date_created = SwaggerSerializerField(
+        rms.fields.get('date_created').__class__,
+        attrs=OrderedDict([('hidden', True)]),
+        **rms.fields.get('date_created')._kwargs,
+    )
+    date_changed = SwaggerSerializerField(
+        rms.fields.get('date_changed').__class__,
+        attrs=OrderedDict([('hidden', True)]),
+        **rms.fields.get('date_changed')._kwargs,
+    )
+
     class Meta:
         model = Relation
         fields = '__all__'
