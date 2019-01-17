@@ -40,7 +40,7 @@ class Entity(AbstractBaseModel):
     def clean(self):
         if self.type:
             if self.data:
-                schema = get_jsonschema(self.type)
+                schema = get_jsonschema(self.type, force_text=True)
                 try:
                     validate(self.data, schema)
                 except SchemaValidationError as e:
