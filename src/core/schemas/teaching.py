@@ -2,7 +2,7 @@ from marshmallow import Schema, fields
 
 from .general import TextSchema, PersonSchema, GEOReferenceSchema
 
-# TODO use english translation as keys instead of german
+# TODO use concept ids as keys
 TYPES = [
     'Teaching',
 ]
