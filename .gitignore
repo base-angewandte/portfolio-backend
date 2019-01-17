@@ -148,3 +148,12 @@ dockerdata/
 docker-compose.override.yml
 hashids_salt.py
 secret_key.py
+
+# editor artefacts
+*~
+\#*
+*\#
+
+# system files
+systemctl
+enable

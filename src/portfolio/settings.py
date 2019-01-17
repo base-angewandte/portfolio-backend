@@ -413,3 +413,41 @@ if DEBUG:
 SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
 PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
+
+
+GND_MAPPING = {'_id': 'id', # common_schema: GND schema
+               'label': 'label'}
+
+VIAF_MAPPING = {'_id': 'viafid', # common_schema: VIAF schema
+                'label': 'displayForm'}
+
+LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
+                             'mapping': GND_MAPPING,
+                             'filter': None, # if the results should be filtered by a field's value within the result
+                             'result': None,
+                             'resourceid_prefix': ''},
+                     'VIAF': {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+                              'mapping': VIAF_MAPPING,
+                              'filter': {'nametype': 'personal'}, # only resources having the nametype "personal" will be returned
+                              'result': 'result',
+                              'resourceid_prefix': 'http://www.viaf.org/viaf/'},
+                     },
+          'PLACE': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:PlaceOrGeographicName&q=',
+                            'mapping': GND_MAPPING,
+                             'filter': None,
+                             'result': None,
+                            'resourceid_prefix': ''},
+                    'VIAF':  {'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+                              'mapping': VIAF_MAPPING,
+                              'filter': {'nametype': 'geographic'},
+                              'result': 'result',
+                              'resourceid_prefix': 'http://www.viaf.org/viaf/'}
+                    }
+          }
+          
+                     
+
+
+ACTIVE_SOURCES = ('VIAF', 'GND') # Add 
+
+

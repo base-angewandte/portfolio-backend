@@ -20,7 +20,7 @@ for schema in settings.ACTIVE_SCHEMAS:
 
 
 ACTIVE_TYPES_CHOICES = [
-    [i, _(i)] for i in ACTIVE_TYPES
+    [i, _(i)] for i in ACTIVE_TYPES  # TODO change _ to get_preflabel_lazy as soon as TYPES are concept ids
 ]
 
 if len(set(ACTIVE_TYPES)) < len(ACTIVE_TYPES):

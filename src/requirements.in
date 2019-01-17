@@ -27,6 +27,7 @@ rq-scheduler==0.9
 shortuuid==0.5.0
 skosmos-client==0.2.0
 werkzeug==0.14.1
+requests-futures==0.9.9
 
 # Server
 gunicorn==19.9.0
