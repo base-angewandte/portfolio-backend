@@ -11,7 +11,8 @@ from rest_framework.response import Response
 
 from core.models import Entity, Relation
 from core.schemas import ACTIVE_TYPES, get_jsonschema
-from .serializers import EntitySerializer, RelationSerializer
+from .serializers.entity import EntitySerializer
+from .serializers.relation import RelationSerializer
 from .yasg import JSONAutoSchema
 
 schema_view = get_schema_view(
