@@ -384,6 +384,8 @@ GND_MAPPING = {'_id': 'id', # common_schema: GND schema
 
 VIAF_MAPPING = {'_id': 'viafid', # common_schema: VIAF schema
                 'label': 'displayForm'}
+GEONAMES_MAPPING = {'_id': 'geonameId', # common_schema: GEONAMES schema
+                    'label': 'toponymName' }
 
 LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
                              'mapping': GND_MAPPING,
@@ -405,13 +407,19 @@ LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:su
                               'mapping': VIAF_MAPPING,
                               'filter': {'nametype': 'geographic'},
                               'result': 'result',
-                              'resourceid_prefix': 'http://www.viaf.org/viaf/'}
+                              'resourceid_prefix': 'http://www.viaf.org/viaf/'},
+                    'GEONAMES': {'url':'http://api.geonames.org/search?maxRows=10&username=***REMOVED***&type=json&q=',
+                                 'mapping': GEONAMES_MAPPING,
+                                 'filter': None,
+                                 'result': 'geonames',
+                                 'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId='}
                     }
           }
           
                      
 
 
-ACTIVE_SOURCES = ('VIAF', 'GND') # Add 
+ACTIVE_SOURCES = {'PERSON': ('VIAF', 'GND'),
+                  'PLACE': ('GEONAMES')}
 
 
