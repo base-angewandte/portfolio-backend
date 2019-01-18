@@ -47,6 +47,9 @@ services:
     container_name: portfolio-rq
     volumes_from:
       - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
     command: python manage.py rqworker high default
 
   portfolio-rq-scheduler:
@@ -54,6 +57,9 @@ services:
     container_name: portfolio-rq-scheduler
     volumes_from:
       - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
     command: python manage.py rqscheduler
 
 networks:
