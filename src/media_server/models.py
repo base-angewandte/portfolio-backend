@@ -89,7 +89,7 @@ logger = logging.getLogger('rq.worker')
 
 
 def user_directory_path(instance, filename):
-    return '{}/{}/{}'.format(instance.__class__.__name__.lower(), settings.HASHIDS.encode(instance.owner.id), filename)
+    return '{}/{}/{}'.format(settings.HASHIDS.encode(instance.owner.id), instance.__class__.__name__.lower(), filename)
 
 
 class CommonInfo(models.Model):
