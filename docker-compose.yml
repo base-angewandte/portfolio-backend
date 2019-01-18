@@ -37,7 +37,7 @@ services:
     volumes:
       - ./src:/django
       - ./logs:/logs
-      - ./dockerdata/dms/assets:/django/assets
+      - $PORTFOLIO_ASSETS:/django/assets
     networks:
       - portfolionet
     restart: always
