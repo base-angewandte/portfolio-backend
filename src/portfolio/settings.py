@@ -451,3 +451,4 @@ LOOKUP = {'PERSON': {'GND': {'url': 'https://lobid.org/gnd/search?format=json:su
 ACTIVE_SOURCES = ('VIAF', 'GND') # Add 
 
 
+USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)
