@@ -39,6 +39,7 @@ AUDIO_MIME_TYPES = [
     'audio/mp4',
     'audio/ogg',
     'audio/wav',
+    'audio/x-wav',
     'audio/x-ms-wma',
     'audio/flac',
     'audio/x-matroska',
