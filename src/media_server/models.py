@@ -93,7 +93,7 @@ def user_directory_path(instance, filename):
 
 
 class CommonInfo(models.Model):
-    id = ShortUUIDField(prefix=AUDIO_PREFIX, primary_key=True)
+    id = ShortUUIDField(primary_key=True)
     file = models.FileField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
