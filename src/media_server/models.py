@@ -85,7 +85,7 @@ VIDEO_MIME_TYPES = [
     'video/webm',
 ]
 
-logger = logging.getLogger('rq.worker')
+logger = logging.getLogger(__name__)
 
 
 def user_directory_path(instance, filename):
