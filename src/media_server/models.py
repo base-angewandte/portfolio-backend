@@ -139,6 +139,17 @@ class CommonInfo(models.Model):
     def get_data(self):
         pass
 
+    def check_file(self, filename):
+        path = os.path.join(self.get_protected_assets_path(), filename)
+        return os.path.isfile(path)
+
+    def get_url(self, filename):
+        if self.check_file(filename):
+            return '{}/{}'.format(self.get_protected_assets_url(), filename)
+        else:
+            logger.error('File {} does not exist for {}'.format(filename, self.id))
+            return None
+
     def media_info_and_convert(self):
         pass
 
@@ -162,7 +173,7 @@ class Audio(CommonInfo):
         }
 
     def get_mp3(self):
-        return '{}/listen.mp3'.format(self.get_protected_assets_url())
+        return self.get_url('listen.mp3')
 
     def media_info_and_convert(self):
         # media info
@@ -225,7 +236,7 @@ class Image(CommonInfo):
         }
 
     def get_thumbnail(self):
-        return '{}/tn.jpg'.format(self.get_protected_assets_url())
+        return self.get_url('tn.jpg')
 
     def media_info_and_convert(self):
         # media info
@@ -240,10 +251,10 @@ class Video(CommonInfo):
     # TODO add metadata fields
 
     def get_cover_gif(self):
-        return '{}/cover.gif'.format(self.get_protected_assets_url())
+        return self.get_url('cover.gif')
 
     def get_cover_jpg(self):
-        return '{}/cover.jpg'.format(self.get_protected_assets_url())
+        return self.get_url('cover.jpg')
 
     def get_data(self):
         return {
@@ -257,7 +268,7 @@ class Video(CommonInfo):
         }
 
     def get_playlist(self):
-        return '{}/playlist.m3u8'.format(self.get_protected_assets_url())
+        return self.get_url('playlist.m3u8')
 
     def media_info_and_convert(self):
         # media info
