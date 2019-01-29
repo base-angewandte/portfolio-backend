@@ -195,8 +195,16 @@ class Document(CommonInfo):
     def get_data(self):
         return {
             'id': self.pk,
+            'tn': self.get_preview_image(),
+            'pdf': self.get_preview_pdf(),
             'original': self.file.url,
         }
+
+    def get_preview_image(self):
+        return self.get_url('preview.jpg')
+
+    def get_preview_pdf(self):
+        return self.get_url('preview.pdf')
 
     def media_info_and_convert(self):
         # media info
