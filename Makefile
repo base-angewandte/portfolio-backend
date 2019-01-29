@@ -37,4 +37,5 @@ update: git-update init init-static restart-gunicorn restart-rq
 start-dev:
 	docker-compose up -d --build \
 		portfolio-redis \
-		portfolio-postgres
+		portfolio-postgres \
+		portfolio-lool
