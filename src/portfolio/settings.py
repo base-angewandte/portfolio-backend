@@ -460,3 +460,5 @@ ACTIVE_SOURCES = {'PERSON': ('VIAF', 'GND'),
 
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)
+
+LOOL_HOST = 'http://{}:9980'.format('{}-lool'.format(PROJECT_NAME) if DOCKER else 'localhost'),

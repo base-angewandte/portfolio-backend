@@ -203,7 +203,12 @@ class Document(CommonInfo):
         self.set_mime_type()
 
         # convert
-        # TODO try to create screenshot, until then, just set status
+        script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-preview.sh')
+        path = self.file.path
+        destination = self.get_protected_assets_path()
+
+        self.convert(['/bin/bash', script_path, settings.LOOL_HOST, path, destination])
+
         self.status = STATUS_CONVERTED
         self.save()
 
