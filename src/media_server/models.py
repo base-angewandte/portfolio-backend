@@ -155,7 +155,7 @@ class CommonInfo(models.Model):
         pass
 
     def set_mime_type(self):
-        mime_type = magic.from_buffer(self.file.read(128), mime=True)
+        mime_type = magic.from_buffer(self.file.read(102400), mime=True)
         self.mime_type = mime_type
         self.save()
 
