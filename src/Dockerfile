@@ -16,7 +16,7 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==18.1
+RUN pip install --upgrade pip==19.0
 ADD requirements.txt .
 RUN pip install -r requirements.txt
 ADD . .
