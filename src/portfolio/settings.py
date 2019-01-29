@@ -320,6 +320,7 @@ SESSION_COOKIE_NAME = 'sessionid_{}'.format(PROJECT_NAME)
 SESSION_COOKIE_DOMAIN = env.str('SESSION_COOKIE_DOMAIN', default=None)
 
 CSRF_COOKIE_NAME = 'csrftoken_{}'.format(PROJECT_NAME)
+CSRF_COOKIE_DOMAIN = env.str('CSRF_COOKIE_DOMAIN', default=None)
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
