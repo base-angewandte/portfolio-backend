@@ -13,20 +13,64 @@ class GEOReferenceSchema(Schema):
     longitude = fields.Str()
 
 
-class InstitutionSchema(Schema):
+class DateSchema(Schema):
+    date = fields.Date()
+
+
+class DateRangeSchema(Schema):
+    date_from = fields.Date()
+    date_to = fields.Date()
+
+
+class DateTimeSchema(Schema):
+    date = fields.Date()
+    time = fields.Time()
+
+
+class LocationSchema(Schema):
+    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+        'order': 1,
+        'field_type': 'autocomplete',
+        'source': 'http://localhost:8200/autosuggest/v1/place/'
+    }})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+
+
+# TODO: currently only used for architecture (and not sure it is needed there) - check if this is necessary
+class DateLocationSchema(Schema):
+    date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
+        'order': 1,
+        'field_type': 'date',
+    }})
+    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+        'order': 2,
+        'field_type': 'autocomplete',
+        'source': 'http://localhost:8200/autosuggest/v1/place/'
+    }})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+
+
+class DateRangeLocationSchema(Schema):
+    date = fields.Nested(DateRangeSchema, additionalProperties=False, **{'x-attrs': {
+        'order': 1,
+        'field_type': 'date',
+    }})
+    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+        'order': 2,
+        'field_type': 'autocomplete',
+        'source': 'http://localhost:8200/autosuggest/v1/place/'
+    }})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+
+
+class ContributorSchema(Schema):
     source_id = fields.Str()
     commonname = fields.Str()
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     role = fields.Str()
 
 
-class PersonSchema(Schema):
-    source_id = fields.Str()
-    commonname = fields.Str()
-    source = fields.Str(**{'x-attrs': {'hidden': True}})
-    role = fields.Str()
-
-
+# TODO: is this still needed?
 class TextDataSchema(Schema):
     language = fields.Str(
         validate=validate.OneOf(

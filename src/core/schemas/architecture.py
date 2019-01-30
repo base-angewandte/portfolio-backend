@@ -1,28 +1,49 @@
 from marshmallow import Schema, fields
 
-from .general import TextSchema, PersonSchema, InstitutionSchema, GEOReferenceSchema
+from .general import ContributorSchema, DateLocationSchema
 
 # TODO use concept ids as keys
 TYPES = [
     'Gebäude',
     'Bau',
     'Struktur',
-    'Gebäudeentwurf',
-    'Entwurf',
-    'Design',
+    'Architekturdesign',
     'Statik',
+    'Architekturmodell',
+    'Architekturentwurf',
+    'Architekturprojekt',
 ]
 
 
 class ArchitectureSchema(Schema):
-    text = fields.List(fields.Nested(TextSchema, required=False, additionalProperties=False))
-    architect = fields.Nested(PersonSchema, additionalProperties=False)
-    participants = fields.List(fields.Nested(PersonSchema, additionalProperties=False))
-    participating_institutions = fields.List(fields.Nested(InstitutionSchema, additionalProperties=False))
-    keywords = fields.Str()
-    date_from = fields.Date()
-    date_to = fields.Date()
-    material = fields.Str()
-    format = fields.Str()
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False)
-    url = fields.Str()
+    architect = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
+        'order': 1,
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/person/',
+        'equivalent': 'contributors',
+        'default_role': 'architect'  # TODO: replace with id!
+    }})
+    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
+        'order': 2,
+        'field_type': 'chips-below',
+        'source': 'http://localhost:8200/autosuggest/v1/person/',
+    }})
+    date = fields.List(fields.Nested(DateLocationSchema, additionalProperties=False), **{'x-attrs': {
+        'order': 3,
+        'field_type': 'group',
+        'show_label': False,
+    }})
+    material = fields.Str(**{'x-attrs': {
+        'order': 4,
+        'field_type': 'autocomplete',
+        'source': 'vocbench',
+    }})
+    format = fields.Str(**{'x-attrs': {
+        'order': 5,
+        'field_type': 'autocomplete',
+        'source': 'vocbench',
+    }})
+    url = fields.Str(**{'x-attrs': {
+        'order': 6,
+        'field_type': 'text',
+    }})
