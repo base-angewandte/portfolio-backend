@@ -23,6 +23,7 @@ django-rq==1.2.0
 django==1.11.18
 djangorestframework==3.8.2
 drf-yasg[validation]==1.10.2
+exifread==2.1.2
 first==2.0.1              # via pip-tools
 flex==6.13.2              # via drf-yasg
 gunicorn==19.9.0

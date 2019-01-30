@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 
+import exifread
 import django_rq
 import magic
 from django.conf import settings
@@ -14,6 +15,7 @@ from PIL import Image as PIL_Image, ImageOps
 
 from general.models import ShortUUIDField
 from .storages import ProtectedFileSystemStorage
+from .utils import convert_to_degress
 
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
@@ -252,6 +254,7 @@ class Image(CommonInfo):
             'id': self.pk,
             'thumbnail': self.get_thumbnail(),
             'original': self.file.url,
+            'metadata': self.metadata,
         }
 
     def get_thumbnail(self):
@@ -260,6 +263,39 @@ class Image(CommonInfo):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+
+        self.file.open()
+        exif = exifread.process_file(self.file)
+        self.file.close()
+
+        exif_dict = {
+            k: v.printable for k, v in exif.items() if isinstance(v, exifread.classes.IfdTag)
+        } if exif else None
+
+        lat = None
+        lon = None
+
+        gps_latitude = exif.get('GPS GPSLatitude')
+        gps_latitude_ref = exif.get('GPS GPSLatitudeRef')
+        gps_longitude = exif.get('GPS GPSLongitude')
+        gps_longitude_ref = exif.get('GPS GPSLongitudeRef')
+
+        if gps_latitude and gps_latitude_ref and gps_longitude and gps_longitude_ref:
+            lat = convert_to_degress(gps_latitude)
+            if gps_latitude_ref.values[0] != 'N':
+                lat = -lat
+
+            lon = convert_to_degress(gps_longitude)
+            if gps_longitude_ref.values[0] != 'E':
+                lon = - lon
+
+        self.metadata = {
+            'width': self.file.width,
+            'height': self.file.height,
+            'gps': {'lat': lat, 'lon': lon} if lat and lon else None,
+            'exif': exif_dict,
+        }
+        self.save()
 
         # convert
         self.convert()
