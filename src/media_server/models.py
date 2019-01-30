@@ -6,6 +6,7 @@ import subprocess
 import django_rq
 import magic
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -102,6 +103,7 @@ class CommonInfo(models.Model):
     parent_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
+    metadata = JSONField(blank=True, null=True)
 
     class Meta:
         abstract = True
