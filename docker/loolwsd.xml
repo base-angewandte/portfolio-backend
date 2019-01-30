@@ -3,7 +3,7 @@
     <!-- Note: 'default' attributes are used to document a setting's default value as well as to use as fallback. -->
     <!-- Note: When adding a new entry, a default must be set in WSD in case the entry is missing upon deployment. -->
 
-    <allowed_languages desc="List of supported languages on this instance." default="de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru">de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru</allowed_languages>
+    <allowed_languages desc="List of supported languages on this instance." default="de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru">de_DE en_US</allowed_languages>
 
     <tile_cache_path desc="Path to a directory where to keep the tile cache." type="path" relative="false" default="/var/cache/loolwsd"></tile_cache_path>
     <sys_template_path desc="Path to a template tree with shared libraries etc to be used as source for chroot jails for child processes." type="path" relative="true" default="systemplate"></sys_template_path>
@@ -17,7 +17,7 @@
     <num_prespawn_children desc="Number of child processes to keep started in advance and waiting for new clients." type="uint" default="1">1</num_prespawn_children>
     <per_document desc="Document-specific settings, including LO Core settings.">
         <max_concurrency desc="The maximum number of threads to use while processing a document." type="uint" default="4">4</max_concurrency>
-        <document_signing_url desc="The endpoint URL of signing server, if empty the document signing is disabled" type="string" default="https://app.vereign.com">https://app.vereign.com</document_signing_url>
+        <document_signing_url desc="The endpoint URL of signing server, if empty the document signing is disabled" type="string" default="https://app.vereign.com"></document_signing_url>
         <redlining_as_comments desc="If true show red-lines as comments" type="bool" default="true">true</redlining_as_comments>
         <idle_timeout_secs desc="The maximum number of seconds before unloading an idle document. Defaults to 1 hour." type="uint" default="3600">3600</idle_timeout_secs>
         <!-- Idle save and auto save are checked every 30 seconds -->
@@ -74,12 +74,7 @@
       <listen type="string" default="any" desc="Listen address that loolwsd binds to. Can be 'any' or 'loopback'.">any</listen>
       <service_root type="path" default="" desc="Prefix all the pages, websockets, etc. with this path."></service_root>
       <post_allow desc="Allow/deny client IP address for POST(REST)." allow="true">
-        <host desc="The IPv4 private 192.168 block as plain IPv4 dotted decimal addresses.">192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
-        <host desc="Ditto, but as IPv4-mapped IPv6 addresses">::ffff:192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
-        <host desc="The IPv4 loopback (localhost) address.">127\.0\.0\.1</host>
-        <host desc="Ditto, but as IPv4-mapped IPv6 address">::ffff:127\.0\.0\.1</host>
-        <host desc="The IPv6 loopback (localhost) address.">::1</host>
-        <host desc="The IPv6 loopback (localhost) address.">.*</host>
+        <host desc="Allow any IP address.">.*</host>
       </post_allow>
       <frame_ancestors desc="Specify who is allowed to embed the LO Online iframe (loolwsd and WOPI host are always allowed). Separate multiple hosts by space."></frame_ancestors>
     </net>
