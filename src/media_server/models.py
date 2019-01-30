@@ -157,7 +157,9 @@ class CommonInfo(models.Model):
         pass
 
     def set_mime_type(self):
+        self.file.open()
         mime_type = magic.from_buffer(self.file.read(102400), mime=True)
+        self.file.close()
         self.mime_type = mime_type
         self.save()
 
@@ -237,9 +239,10 @@ class Image(CommonInfo):
             if not os.path.exists(path):
                 os.makedirs(path)
 
-            im = PIL_Image.open(self.file)
+            im = PIL_Image.open(self.file.path)
             im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
             im.save(os.path.join(path, 'tn.jpg'))
+            im.close()
 
             self.status = STATUS_CONVERTED
             self.save()
