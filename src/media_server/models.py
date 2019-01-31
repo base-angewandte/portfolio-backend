@@ -394,17 +394,22 @@ class Video(CommonInfo):
 
 class Other(CommonInfo):
     id = ShortUUIDField(prefix=OTHER_PREFIX, primary_key=True)
-    # TODO add metadata fields
 
     def get_data(self):
         return {
             'id': self.pk,
             'original': self.file.url,
+            'metadata': self.metadata,
         }
 
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+
+        self.metadata = {
+            'mime_type': self.mime_type,
+            'size': os.path.getsize(self.file.path),
+        }
 
         # convert
         # since we don't know what it is,  we just set the status
