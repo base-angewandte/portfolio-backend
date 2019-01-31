@@ -262,7 +262,6 @@ class Document(CommonInfo):
 class Image(CommonInfo):
     id = ShortUUIDField(prefix=IMAGE_PREFIX, primary_key=True)
     file = models.ImageField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
-    # TODO add metadata fields
 
     def convert(self, command=None):
         if self.status == STATUS_NOT_CONVERTED:
