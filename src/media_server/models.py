@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -334,7 +335,6 @@ class Image(CommonInfo):
 
 class Video(CommonInfo):
     id = ShortUUIDField(prefix=VIDEO_PREFIX, primary_key=True)
-    # TODO add metadata fields
 
     def get_cover_gif(self):
         return self.get_url('cover.gif')
@@ -351,6 +351,7 @@ class Video(CommonInfo):
             },
             'playlist': self.get_playlist(),
             'original': self.file.url,
+            'metadata': self.metadata,
         }
 
     def get_playlist(self):
@@ -360,70 +361,35 @@ class Video(CommonInfo):
         # media info
         self.set_mime_type()
 
+        try:
+            command = [
+                "ffprobe",
+                "-loglevel", "quiet",
+                "-print_format", "json",
+                "-show_format",
+                "-show_streams",
+                self.file.path,
+             ]
+
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            out, err = process.communicate()
+
+            if process.returncode == 0:
+                metadata = json.loads(out)
+                metadata['format'].pop('filename')
+                self.metadata = metadata
+                self.save()
+
+        except OSError:
+            pass
+
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-vod-hls.sh')
         path = self.file.path
         destination = self.get_protected_assets_path()
 
         self.convert(['/bin/bash', script_path, path, destination])
-
-        # result = subprocess.Popen(
-        #     ["ffprobe", path],
-        #     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        #     encoding='utf-8'
-        # )
-        #
-        # for x in result.stdout.readlines():
-        #     pass
-
-        # if self.status == STATUS_NOT_CONVERTED:
-        #     self.status = STATUS_IN_PROGRESS
-        #     self.save()
-        #
-        #     script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-vod-hls.sh')
-        #     path = self.file.path
-        #     destination = self.get_protected_assets_path()
-        #
-        #     try:
-        #         process = subprocess.Popen(
-        #             ['/bin/bash', script_path, path, destination],
-        #             stdout=subprocess.PIPE,
-        #             stderr=subprocess.PIPE,
-        #         )
-        #
-        #         out, err = process.communicate()
-        #
-        #         if process.returncode == 0:
-        #             # p = subprocess.Popen(
-        #             #     ['mediainfo', "'--Inform=Video;%Width%'", path],
-        #             #     stdout=subprocess.PIPE,
-        #             #     stderr=subprocess.PIPE,
-        #             # )
-        #             #
-        #             # stdout, stderr = p.communicate()
-        #             # if p.wait() == 0:
-        #             #     print(int(stdout.decode('utf8').strip(' \t\n\r')))
-        #             #     self.width = int(stdout.decode('utf8').strip(' \t\n\r'))
-        #             #
-        #             # p = subprocess.Popen(
-        #             #     ['mediainfo', "'--Inform=Video;%Height%'", path],
-        #             #     stdout=subprocess.PIPE,
-        #             #     stderr=subprocess.PIPE,
-        #             # )
-        #             #
-        #             # stdout, stderr = p.communicate()
-        #             # if p.wait() == 0:
-        #             #     self.height = int(stdout.decode('utf8').strip(' \t\n\r'))
-        #
-        #             self.status = STATUS_CONVERTED
-        #             self.save()
-        #         else:
-        #             self.status = STATUS_ERROR
-        #             self.save()
-        #
-        #     except OSError:
-        #         self.status = STATUS_ERROR
-        #         self.save()
 
 
 class Other(CommonInfo):
