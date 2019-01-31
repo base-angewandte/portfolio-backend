@@ -5,6 +5,11 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 apispec==0.39.0
+attrs==18.2.0             # via audio-metadata
+audio-metadata==0.3.4
+audioread==2.1.6
+bidict==0.17.5            # via audio-metadata
+bitstruct==6.0.0          # via audio-metadata
 certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
 click==6.7                # via flex, pip-tools, rq
@@ -39,8 +44,10 @@ lxml==4.2.6               # via python-cas
 markdown==2.6.11
 markupsafe==1.1.0         # via jinja2
 marshmallow==2.15.5
+more-itertools==4.3.0     # via audio-metadata
 pillow==5.3.0
 pip-tools==2.0.2
+pprintpp==0.4.0           # via audio-metadata
 psutil==5.4.8             # via rainbow-saddle
 psycopg2-binary==2.7.5
 pyparsing==2.3.0          # via rdflib
@@ -59,7 +66,7 @@ rq-scheduler==0.9
 rq==0.13.0                # via django-rq, rq-scheduler
 ruamel.yaml==0.15.83      # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via django-extensions, drf-yasg, flex, isodate, pip-tools, python-cas, python-dateutil, swagger-spec-validator
+six==1.12.0               # via django-extensions, drf-yasg, flex, isodate, more-itertools, pip-tools, python-cas, python-dateutil, swagger-spec-validator
 skosmos-client==0.2.0
 sqlparse==0.2.4           # via django-debug-toolbar
 strict-rfc3339==0.7       # via flex

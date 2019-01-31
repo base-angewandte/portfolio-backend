@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 
+import audio_metadata
+import audioread
 import exifread
 import django_rq
 import magic
@@ -170,13 +172,13 @@ class CommonInfo(models.Model):
 
 class Audio(CommonInfo):
     id = ShortUUIDField(prefix=AUDIO_PREFIX, primary_key=True)
-    # TODO add metadata fields
 
     def get_data(self):
         return {
             'id': self.pk,
             'mp3': self.get_mp3(),
             'original': self.file.url,
+            'metadata': self.metadata,
         }
 
     def get_mp3(self):
@@ -185,6 +187,36 @@ class Audio(CommonInfo):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+
+        streaminfo = {}
+        tags = None
+
+        try:
+            metadata = audio_metadata.load(self.file.path)
+            streaminfo = {k: v for k, v in sorted(metadata.streaminfo.items()) if not k.startswith('_')}
+            tags = {
+                metadata.tags.FIELD_MAP.inv.get(k, k): v[0] if len(v) == 1 else v
+                for k, v in metadata.tags.__dict__.items()
+                if not k.startswith('_')
+            }
+        except audio_metadata.UnsupportedFormat:
+            try:
+                with audioread.audio_open(self.file.path) as f:
+                    streaminfo = {
+                        'channels': f.channels,
+                        'sample_rate': f.samplerate,
+                        'duration': f.duration,
+                    }
+            except audioread.DecodeError:
+                pass
+
+        if streaminfo or tags:
+            tags = {'tags': tags} if tags else {}
+            self.metadata = {
+                **streaminfo,
+                **tags,
+            }
+            self.save()
 
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-mp3.sh')

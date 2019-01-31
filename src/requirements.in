@@ -3,6 +3,8 @@
 # to update all packages run 'pip-compile --upgrade'
 
 apispec==0.39.0
+audio-metadata==0.3.4
+audioread==2.1.6
 django==1.11.18
 django-cas-ng==3.5.10
 django-cleanup==3.0.1
