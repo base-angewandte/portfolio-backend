@@ -108,7 +108,7 @@ class CommonInfo(models.Model):
     parent_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
-    metadata = JSONField(blank=True, null=True)
+    metadata = JSONField(blank=True, encoder=DjangoJSONEncoder, null=True)
 
     class Meta:
         abstract = True
