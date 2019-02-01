@@ -5,13 +5,9 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 apispec==0.39.0
-attrs==18.2.0             # via audio-metadata
-audio-metadata==0.3.4
-audioread==2.1.6
-bidict==0.17.5            # via audio-metadata
-bitstruct==6.0.0          # via audio-metadata
 certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
+choicesenum==0.5.2        # via django-exiffield
 click==6.7                # via flex, pip-tools, rq
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
@@ -21,6 +17,7 @@ django-cleanup==3.0.1
 django-cors-headers==2.4.0
 django-debug-toolbar==1.10.1
 django-environ==0.4.5
+django-exiffield==2.0.0
 django-extensions==2.1.2
 django-filter==2.0.0
 django-redis==4.10.0
@@ -28,7 +25,6 @@ django-rq==1.2.0
 django==1.11.18
 djangorestframework==3.8.2
 drf-yasg[validation]==1.10.2
-exifread==2.1.2
 first==2.0.1              # via pip-tools
 flex==6.13.2              # via drf-yasg
 gunicorn==19.9.0
@@ -38,20 +34,18 @@ inflection==0.3.1         # via drf-yasg
 isodate==0.6.0            # via rdflib
 itypes==1.1.0             # via coreapi
 jinja2==2.10              # via coreschema
+jsonfield2==3.0.2         # via django-exiffield
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0
 lxml==4.2.6               # via python-cas
 markdown==2.6.11
 markupsafe==1.1.0         # via jinja2
 marshmallow==2.15.5
-more-itertools==4.3.0     # via audio-metadata
 pillow==5.3.0
 pip-tools==2.0.2
-pprintpp==0.4.0           # via audio-metadata
 psutil==5.4.8             # via rainbow-saddle
 psycopg2-binary==2.7.5
 pyparsing==2.3.0          # via rdflib
-pypdf2==1.26.0
 python-cas==1.4.0         # via django-cas-ng
 python-dateutil==2.7.5    # via croniter
 python-magic==0.4.15
@@ -67,7 +61,7 @@ rq-scheduler==0.9
 rq==0.13.0                # via django-rq, rq-scheduler
 ruamel.yaml==0.15.83      # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via django-extensions, drf-yasg, flex, isodate, more-itertools, pip-tools, python-cas, python-dateutil, swagger-spec-validator
+six==1.12.0               # via django-extensions, drf-yasg, flex, isodate, pip-tools, python-cas, python-dateutil, swagger-spec-validator
 skosmos-client==0.2.0
 sqlparse==0.2.4           # via django-debug-toolbar
 strict-rfc3339==0.7       # via flex

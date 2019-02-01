@@ -3,21 +3,19 @@
 # to update all packages run 'pip-compile --upgrade'
 
 apispec==0.39.0
-audio-metadata==0.3.4
-audioread==2.1.6
 django==1.11.18
 django-cas-ng==3.5.10
 django-cleanup==3.0.1
 django-cors-headers==2.4.0
 django-debug-toolbar==1.10.1
 django-environ==0.4.5
+django-exiffield==2.0.0
 django-extensions==2.1.2
 django-filter==2.0.0
 django-redis==4.10.0
 django-rq==1.2.0
 djangorestframework==3.8.2
 drf-yasg[validation]==1.10.2
-exifread==2.1.2
 hashids==1.2.0
 jsonschema==2.6.0
 markdown==2.6.11
@@ -25,7 +23,6 @@ marshmallow==2.15.5
 pillow==5.3.0
 pip-tools==2.0.2
 psycopg2-binary==2.7.5
-pypdf2==1.26.0
 python-magic==0.4.15
 rq-scheduler==0.9
 shortuuid==0.5.0

@@ -4,23 +4,17 @@ import os
 import shutil
 import subprocess
 
-import audio_metadata
-import audioread
-import exifread
 import django_rq
 import magic
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from exiffield.fields import ExifField
 from PIL import Image as PIL_Image, ImageOps
-from PyPDF2.pdf import PdfFileReader
 
 from general.models import ShortUUIDField
 from .storages import ProtectedFileSystemStorage
-from .utils import convert_to_degress
 
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
@@ -110,10 +104,27 @@ class CommonInfo(models.Model):
     parent_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
-    metadata = JSONField(blank=True, encoder=DjangoJSONEncoder, null=True)
+    exif = ExifField(source='file')
 
     class Meta:
         abstract = True
+
+    @property
+    def metadata(self):
+        remove = (
+            'SourceFile',
+            'ExifToolVersion',
+            'FileName',
+            'Directory',
+            'FileModifyDate',
+            'FileAccessDate',
+            'FileInodeChangeDate',
+            'FilePermissions',
+        )
+        ret = self.exif
+        for k in remove:
+            ret.pop(k, None)
+        return ret
 
     @property
     def save_id(self):
@@ -191,36 +202,6 @@ class Audio(CommonInfo):
         # media info
         self.set_mime_type()
 
-        streaminfo = {}
-        tags = None
-
-        try:
-            metadata = audio_metadata.load(self.file.path)
-            streaminfo = {k: v for k, v in sorted(metadata.streaminfo.items()) if not k.startswith('_')}
-            tags = {
-                metadata.tags.FIELD_MAP.inv.get(k, k): v[0] if len(v) == 1 else v
-                for k, v in metadata.tags.__dict__.items()
-                if not k.startswith('_')
-            }
-        except audio_metadata.UnsupportedFormat:
-            try:
-                with audioread.audio_open(self.file.path) as f:
-                    streaminfo = {
-                        'channels': f.channels,
-                        'sample_rate': f.samplerate,
-                        'duration': f.duration,
-                    }
-            except audioread.DecodeError:
-                pass
-
-        if streaminfo or tags:
-            tags = {'tags': tags} if tags else {}
-            self.metadata = {
-                **streaminfo,
-                **tags,
-            }
-            self.save()
-
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-mp3.sh')
         path = self.file.path
@@ -250,32 +231,6 @@ class Document(CommonInfo):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
-
-        if self.mime_type == 'application/pdf':
-            self.file.open()
-            reader = PdfFileReader(self.file)
-
-            info = reader.getDocumentInfo()
-            xmp_info = reader.getXmpMetadata()
-            xmp_properties = [
-                p for p in dir(xmp_info) if p.startswith(('dc_', 'pdf_', 'xmp_', 'xmpmm__', 'custom_properties'))
-            ]
-            xmp = {
-                p: getattr(xmp_info, p) for p in xmp_properties if getattr(xmp_info, p)
-            }
-
-            self.file.close()
-
-            metadata = {}
-
-            if info:
-                metadata['info'] = info
-            if xmp:
-                metadata['xmp'] = xmp
-
-            if metadata:
-                self.metadata = metadata
-                self.save()
 
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-preview.sh')
@@ -324,39 +279,6 @@ class Image(CommonInfo):
         # media info
         self.set_mime_type()
 
-        self.file.open()
-        exif = exifread.process_file(self.file)
-        self.file.close()
-
-        exif_dict = {
-            k: v.printable for k, v in exif.items() if isinstance(v, exifread.classes.IfdTag)
-        } if exif else None
-
-        lat = None
-        lon = None
-
-        gps_latitude = exif.get('GPS GPSLatitude')
-        gps_latitude_ref = exif.get('GPS GPSLatitudeRef')
-        gps_longitude = exif.get('GPS GPSLongitude')
-        gps_longitude_ref = exif.get('GPS GPSLongitudeRef')
-
-        if gps_latitude and gps_latitude_ref and gps_longitude and gps_longitude_ref:
-            lat = convert_to_degress(gps_latitude)
-            if gps_latitude_ref.values[0] != 'N':
-                lat = -lat
-
-            lon = convert_to_degress(gps_longitude)
-            if gps_longitude_ref.values[0] != 'E':
-                lon = - lon
-
-        self.metadata = {
-            'width': self.file.width,
-            'height': self.file.height,
-            'gps': {'lat': lat, 'lon': lon} if lat and lon else None,
-            'exif': exif_dict,
-        }
-        self.save()
-
         # convert
         self.convert()
 
@@ -385,10 +307,7 @@ class Video(CommonInfo):
     def get_playlist(self):
         return self.get_url('playlist.m3u8')
 
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
+    def ffprobe(self):
         try:
             command = [
                 "ffprobe",
@@ -406,11 +325,14 @@ class Video(CommonInfo):
             if process.returncode == 0:
                 metadata = json.loads(out)
                 metadata['format'].pop('filename')
-                self.metadata = metadata
-                self.save()
+                return metadata
 
         except OSError:
             pass
+
+    def media_info_and_convert(self):
+        # media info
+        self.set_mime_type()
 
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-vod-hls.sh')
@@ -433,11 +355,6 @@ class Other(CommonInfo):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
-
-        self.metadata = {
-            'mime_type': self.mime_type,
-            'size': os.path.getsize(self.file.path),
-        }
 
         # convert
         # since we don't know what it is,  we just set the status
