@@ -16,6 +16,7 @@ from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from PIL import Image as PIL_Image, ImageOps
+from PyPDF2.pdf import PdfFileReader
 
 from general.models import ShortUUIDField
 from .storages import ProtectedFileSystemStorage
@@ -230,7 +231,6 @@ class Audio(CommonInfo):
 
 class Document(CommonInfo):
     id = ShortUUIDField(prefix=DOCUMENT_PREFIX, primary_key=True)
-    # TODO add metadata fields
 
     def get_data(self):
         return {
@@ -238,6 +238,7 @@ class Document(CommonInfo):
             'tn': self.get_preview_image(),
             'pdf': self.get_preview_pdf(),
             'original': self.file.url,
+            'metadata': self.metadata,
         }
 
     def get_preview_image(self):
@@ -249,6 +250,32 @@ class Document(CommonInfo):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+
+        if self.mime_type == 'application/pdf':
+            self.file.open()
+            reader = PdfFileReader(self.file)
+
+            info = reader.getDocumentInfo()
+            xmp_info = reader.getXmpMetadata()
+            xmp_properties = [
+                p for p in dir(xmp_info) if p.startswith(('dc_', 'pdf_', 'xmp_', 'xmpmm__', 'custom_properties'))
+            ]
+            xmp = {
+                p: getattr(xmp_info, p) for p in xmp_properties if getattr(xmp_info, p)
+            }
+
+            self.file.close()
+
+            metadata = {}
+
+            if info:
+                metadata['info'] = info
+            if xmp:
+                metadata['xmp'] = xmp
+
+            if metadata:
+                self.metadata = metadata
+                self.save()
 
         # convert
         script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-preview.sh')
@@ -370,7 +397,7 @@ class Video(CommonInfo):
                 "-show_format",
                 "-show_streams",
                 self.file.path,
-             ]
+            ]
 
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

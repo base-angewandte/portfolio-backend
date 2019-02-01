@@ -25,6 +25,7 @@ marshmallow==2.15.5
 pillow==5.3.0
 pip-tools==2.0.2
 psycopg2-binary==2.7.5
+pypdf2==1.26.0
 python-magic==0.4.15
 rq-scheduler==0.9
 shortuuid==0.5.0

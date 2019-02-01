@@ -51,6 +51,7 @@ pprintpp==0.4.0           # via audio-metadata
 psutil==5.4.8             # via rainbow-saddle
 psycopg2-binary==2.7.5
 pyparsing==2.3.0          # via rdflib
+pypdf2==1.26.0
 python-cas==1.4.0         # via django-cas-ng
 python-dateutil==2.7.5    # via croniter
 python-magic==0.4.15
