@@ -45,6 +45,10 @@ services:
   portfolio-rq:
     build: ./src
     container_name: portfolio-rq
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
     volumes_from:
       - portfolio-django
     networks:
@@ -55,6 +59,10 @@ services:
   portfolio-rq-scheduler:
     build: ./src
     container_name: portfolio-rq-scheduler
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
     volumes_from:
       - portfolio-django
     networks:
