@@ -1,3 +1,4 @@
+PORTFOLIO_ASSETS=./dockerdata/django/assets
 PORTFOLIO_DB_NAME=django_portfolio
 PORTFOLIO_DB_USER=django_portfolio
 PORTFOLIO_DB_PASSWORD=password

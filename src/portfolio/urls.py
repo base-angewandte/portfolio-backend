@@ -14,15 +14,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 import django_cas_ng.views
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^***REMOVED***', admin.site.urls),
 
     url(r'^accounts/login/$', django_cas_ng.views.login, name='cas_ng_login'),
     url(r'^accounts/logout/$', django_cas_ng.views.logout, name='cas_ng_logout'),
     url(r'^accounts/callback/$', django_cas_ng.views.callback, name='cas_ng_proxy_callback'),
 
     url(r'^api/', include('api.urls')),
-    url(r'^autosuggest/(?P<version>(v1))/', include('autosuggest.urls')),   
+    url(r'^autosuggest/(?P<version>(v1))/', include('autosuggest.urls')),
+
+    url(r'^p/', include('media_server.urls')),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

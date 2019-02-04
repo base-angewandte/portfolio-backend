@@ -37,9 +37,40 @@ services:
     volumes:
       - ./src:/django
       - ./logs:/logs
+      - $PORTFOLIO_ASSETS:/django/assets
     networks:
       - portfolionet
     restart: always
+
+  portfolio-rq:
+    build: ./src
+    container_name: portfolio-rq
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker high default
+
+  portfolio-rq-scheduler:
+    build: ./src
+    container_name: portfolio-rq-scheduler
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqscheduler
+
+  portfolio-lool:
+    image: collabora/code:4.0.0.2
+    container_name: portfolio-lool
+    volumes:
+      - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
+    networks:
+      - portfolionet
+    restart: always
+
 
 networks:
   portfolionet:

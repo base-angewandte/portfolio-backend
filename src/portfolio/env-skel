@@ -1,6 +1,7 @@
 # DEBUG=False
 # DOCKER=True
 SITE_URL=https://base.uni-ak.ac.at/
+PROTECTED_MEDIA_SITE_URL=https://portfolio.uni-ak.ac.at/
 # FORCE_SCRIPT_NAME=/portfolio
 # ALLOWED_HOSTS=
 # BEHIND_PROXY=True
@@ -13,3 +14,4 @@ SITE_URL=https://base.uni-ak.ac.at/
 # CORS_ALLOW_CREDENTIALS=False
 # CORS_ORIGIN_ALLOW_ALL=False
 # CSRF_TRUSTED_ORIGINS=
+# USER_QUOTA=1073741824

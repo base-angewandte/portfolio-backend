@@ -29,9 +29,13 @@ build-portfolio:
 restart-gunicorn:
 	docker-compose exec portfolio-django bash -c 'kill -HUP `cat /var/run/django.pid`'
 
-update: git-update init init-static restart-gunicorn
+restart-rq:
+	docker-compose restart portfolio-rq portfolio-rq-scheduler
+
+update: git-update init init-static restart-gunicorn restart-rq
 
 start-dev:
 	docker-compose up -d --build \
 		portfolio-redis \
-		portfolio-postgres
+		portfolio-postgres \
+		portfolio-lool

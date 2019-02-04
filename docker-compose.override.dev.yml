@@ -12,3 +12,7 @@ services:
   portfolio-django:
     ports:
       - 127.0.0.1:8200:8200
+
+  portfolio-lool:
+    ports:
+      - 127.0.0.1:9980:9980

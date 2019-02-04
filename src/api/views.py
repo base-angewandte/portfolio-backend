@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.http import Http404
+from django.utils.translation import ugettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 
 from core.models import Entity, Relation
 from core.schemas import ACTIVE_TYPES, get_jsonschema
+from media_server.models import get_media_for_parent
 from .serializers.entity import EntitySerializer
 from .serializers.relation import RelationSerializer
 from .yasg import JSONAutoSchema
@@ -74,6 +76,9 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     count:
     Returns the number of documents of type entity.
+
+    media:
+    Return list of media objects.
     """
 
     serializer_class = EntitySerializer
@@ -82,6 +87,11 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     ordering_fields = ('title',)  # TODO
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
+
+    @action(detail=True)
+    def media(self, request, pk=None, *args, **kwargs):
+        ret = get_media_for_parent(request, pk)
+        return Response(ret)
 
     def get_queryset(self):
         user = self.request.user
@@ -134,5 +144,5 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)
         if not schema:
-            raise Http404('Schema not found for the given query.')
+            raise Http404(_('Schema not found for the given query.'))
         return Response(schema)
