@@ -3,6 +3,10 @@ import os
 from django.conf import settings
 
 
+def get_free_space_for_user(user):
+    return settings.USER_QUOTA - get_used_space_for_user(user)
+
+
 def get_used_space_for_user(user):
     path = os.path.join(settings.PROTECTED_MEDIA_ROOT, settings.HASHIDS.encode(user.id))
     size = 0
