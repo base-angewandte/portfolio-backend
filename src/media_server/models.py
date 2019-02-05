@@ -131,25 +131,30 @@ class CommonInfo(models.Model):
         return self.id.replace(':', '')
 
     def convert(self, command):
-        if self.status == STATUS_NOT_CONVERTED:
-            self.status = STATUS_IN_PROGRESS
-            self.save()
+        try:
+            if self.status == STATUS_NOT_CONVERTED:
+                self.status = STATUS_IN_PROGRESS
+                self.save()
 
-            try:
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                out, err = process.communicate()
+                    out, err = process.communicate()
 
-                if process.returncode == 0:
-                    self.status = STATUS_CONVERTED
-                    self.save()
-                else:
+                    if process.returncode == 0:
+                        self.status = STATUS_CONVERTED
+                        self.save()
+                    else:
+                        self.status = STATUS_ERROR
+                        self.save()
+
+                except OSError:
                     self.status = STATUS_ERROR
                     self.save()
-
-            except OSError:
-                self.status = STATUS_ERROR
-                self.save()
+        except Exception:
+            logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+            self.status = STATUS_ERROR
+            self.save()
 
     def get_protected_assets_path(self):
         return os.path.join(os.path.dirname(self.file.path), self.save_id)
@@ -239,34 +244,36 @@ class Document(CommonInfo):
 
         self.convert(['/bin/bash', script_path, settings.LOOL_HOST, path, destination])
 
-        self.status = STATUS_CONVERTED
-        self.save()
-
 
 class Image(CommonInfo):
     id = ShortUUIDField(prefix=IMAGE_PREFIX, primary_key=True)
     file = models.ImageField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
 
     def convert(self, command=None):
-        if self.status == STATUS_NOT_CONVERTED:
-            self.status = STATUS_IN_PROGRESS
-            self.save()
+        try:
+            if self.status == STATUS_NOT_CONVERTED:
+                self.status = STATUS_IN_PROGRESS
+                self.save()
 
-            path = self.get_protected_assets_path()
-            if not os.path.exists(path):
-                os.makedirs(path)
+                path = self.get_protected_assets_path()
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
-            im = PIL_Image.open(self.file.path)
-            if im.mode in ('RGBA', 'LA'):
-                fill_color = (255, 255, 255)
-                background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
-                background.paste(im, im.split()[-1])
-                im = background
-            im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
-            im.save(os.path.join(path, 'tn.jpg'))
-            im.close()
+                im = PIL_Image.open(self.file.path)
+                if im.mode in ('RGBA', 'LA'):
+                    fill_color = (255, 255, 255)
+                    background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
+                    background.paste(im, im.split()[-1])
+                    im = background
+                im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
+                im.save(os.path.join(path, 'tn.jpg'))
+                im.close()
 
-            self.status = STATUS_CONVERTED
+                self.status = STATUS_CONVERTED
+                self.save()
+        except Exception:
+            logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+            self.status = STATUS_ERROR
             self.save()
 
     def get_data(self):
@@ -362,7 +369,7 @@ class Other(CommonInfo):
         self.set_mime_type()
 
         # convert
-        # since we don't know what it is,  we just set the status
+        # since we don't know what it is, we just set the status
         self.status = STATUS_CONVERTED
         self.save()
 
