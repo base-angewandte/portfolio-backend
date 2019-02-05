@@ -156,7 +156,7 @@ def user_information(request, *args, **kwargs):
     data = {
         'name': attributes.get('displayName'),
         'email': attributes.get('email'),
-        'permissions': attributes.get('permissions', '').split(','),
+        'permissions': attributes.get('permissions').split(',') if attributes.get('permissions') else [],
         'space': get_free_space_for_user(request.user) if request.user else None,
     }
 
