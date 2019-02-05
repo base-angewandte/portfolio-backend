@@ -268,6 +268,9 @@ LOGGING = {
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
+        'simple_with_time': {
+            'format': '%(levelname)s %(asctime)s %(message)s',
+        },
     },
     'handlers': {
         'null': {
@@ -289,11 +292,16 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler'
+            'class': 'django.utils.log.AdminEmailHandler',
         },
         'stream_to_console': {
             'level': 'DEBUG',
-            'class': 'logging.StreamHandler'
+            'class': 'logging.StreamHandler',
+        },
+        'rq_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple_with_time',
         },
     },
     'loggers': {
@@ -312,6 +320,10 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'rq.worker': {
+            'handlers': ['rq_console', 'mail_admins'],
+            'level': 'DEBUG',
+        }
     }
 }
 
