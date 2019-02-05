@@ -110,7 +110,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 
             m = model(
                 owner=request.user,
-                parent_id=serializer.validated_data['parent'],
+                entity_id=serializer.validated_data['entity'],
                 mime_type=mime_type,
                 file=serializer.validated_data['file'],
             )

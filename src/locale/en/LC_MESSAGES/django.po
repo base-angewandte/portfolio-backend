@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-17 11:17+0100\n"
+"POT-Creation-Date: 2019-02-05 10:34+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,38 +17,62 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: api/serializers.py:34
+#: api/serializers/relation.py:46
 msgid "Relation already exists"
 msgstr ""
 
-#: api/serializers.py:41
+#: api/serializers/relation.py:53
 msgid "Current user is not the owner of this entity"
 msgstr ""
 
-#: core/models.py:47
+#: api/views.py:147
+msgid "Schema not found for the given query."
+msgstr ""
+
+#: core/models.py:50
 msgid "Invalid data: {}"
 msgstr ""
 
-#: core/models.py:49
+#: core/models.py:52
 msgid "Data without type"
 msgstr ""
 
-#: core/models.py:82
+#: core/models.py:85
 msgid "Both entities must belong to the same user"
 msgstr ""
 
-#: core/schemas/__init__.py:9
+#: core/schemas/__init__.py:11
 msgid "Schemas improperly configured"
 msgstr ""
 
-#: core/schemas/__init__.py:27
+#: core/schemas/__init__.py:29
 msgid "Active schemas contain duplicate types"
 msgstr ""
 
-#: portfolio/settings.py:217
+#: media_server/serializers.py:14
+msgid "Entity does not exist"
+msgstr ""
+
+#: media_server/serializers.py:17
+msgid "Current user is not the owner of entity"
+msgstr ""
+
+#: media_server/views.py:76
+msgid "Current user is not the owner of this media object"
+msgstr ""
+
+#: media_server/views.py:89
+msgid "Media object does not exist"
+msgstr ""
+
+#: media_server/views.py:103
+msgid "No space left for user"
+msgstr ""
+
+#: portfolio/settings.py:228
 msgid "German"
 msgstr ""
 
-#: portfolio/settings.py:218
+#: portfolio/settings.py:229
 msgid "English"
 msgstr ""

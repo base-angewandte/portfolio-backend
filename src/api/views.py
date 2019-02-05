@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from core.models import Entity, Relation
 from core.schemas import ACTIVE_TYPES, get_jsonschema
-from media_server.models import get_media_for_parent
+from media_server.models import get_media_for_entity
 from .serializers.entity import EntitySerializer
 from .serializers.relation import RelationSerializer
 from .yasg import JSONAutoSchema
@@ -90,7 +90,7 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     @action(detail=True)
     def media(self, request, pk=None, *args, **kwargs):
-        ret = get_media_for_parent(request, pk)
+        ret = get_media_for_entity(request, pk)
         return Response(ret)
 
     def get_queryset(self):

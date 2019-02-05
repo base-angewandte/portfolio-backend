@@ -101,7 +101,7 @@ class CommonInfo(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, on_delete=models.CASCADE)
-    parent_id = models.CharField(max_length=22)
+    entity_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
@@ -405,10 +405,10 @@ MIME_TYPE_TO_MODEL = {
 }
 
 
-def get_media_for_parent(request, parent_id):
+def get_media_for_entity(request, entity_id):
     ret = []
     for model in iter(PREFIX_TO_MODEL.values()):
-        ret += model.objects.filter(owner=request.user, parent_id=parent_id).values_list('pk', flat=True)
+        ret += model.objects.filter(owner=request.user, entity_id=entity_id).values_list('pk', flat=True)
     return ret
 
 

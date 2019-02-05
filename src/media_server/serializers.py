@@ -5,14 +5,14 @@ from core.models import Entity
 
 class MediaSerializer(serializers.Serializer):
     file = serializers.FileField()
-    parent = serializers.CharField()
+    entity = serializers.CharField()
 
-    def validate_parent(self, value):
+    def validate_entity(self, value):
         try:
-            parent = Entity.objects.get(id=value)
+            entity = Entity.objects.get(id=value)
         except Entity.DoesNotExist:
-            raise serializers.ValidationError(_('Parent does not exist'))
+            raise serializers.ValidationError(_('Entity does not exist'))
         user = self.context['request'].user
-        if user != parent.owner:
-            raise serializers.ValidationError(_('Current user is not the owner of parent'))
+        if user != entity.owner:
+            raise serializers.ValidationError(_('Current user is not the owner of entity'))
         return value

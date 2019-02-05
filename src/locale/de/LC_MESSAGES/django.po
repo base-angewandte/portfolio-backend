@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-17 11:17+0100\n"
+"POT-Creation-Date: 2019-02-05 10:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,38 +18,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/serializers.py:34
+#: api/serializers/relation.py:46
 msgid "Relation already exists"
 msgstr "Verknüpfung existiert bereits"
 
-#: api/serializers.py:41
+#: api/serializers/relation.py:53
 msgid "Current user is not the owner of this entity"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: core/models.py:47
+#: api/views.py:147
+msgid "Schema not found for the given query."
+msgstr "Kein Schemata gefunden"
+
+#: core/models.py:50
 msgid "Invalid data: {}"
 msgstr "Ungültige Daten: {}"
 
-#: core/models.py:49
+#: core/models.py:52
 msgid "Data without type"
 msgstr "Daten ohne Typ"
 
-#: core/models.py:82
+#: core/models.py:85
 msgid "Both entities must belong to the same user"
 msgstr "Beide Einträge müssen demselben Benutzer gehören"
 
-#: core/schemas/__init__.py:9
+#: core/schemas/__init__.py:11
 msgid "Schemas improperly configured"
 msgstr "Schemata ungenügend konfiguriert"
 
-#: core/schemas/__init__.py:27
+#: core/schemas/__init__.py:29
 msgid "Active schemas contain duplicate types"
 msgstr "Aktive Schemata enthalten Duplikate"
 
-#: portfolio/settings.py:217
+#: media_server/serializers.py:14
+msgid "Entity does not exist"
+msgstr "Eintrag existiert nicht"
+
+#: media_server/serializers.py:17
+msgid "Current user is not the owner of entity"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
+
+#: media_server/views.py:76
+msgid "Current user is not the owner of this media object"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
+
+#: media_server/views.py:89
+msgid "Media object does not exist"
+msgstr "Medienobjekt existiert nicht"
+
+#: media_server/views.py:103
+msgid "No space left for user"
+msgstr "Kein Speicherplatz mehr für diesen Benutzer"
+
+#: portfolio/settings.py:228
 msgid "German"
 msgstr "Deutsch"
 
-#: portfolio/settings.py:218
+#: portfolio/settings.py:229
 msgid "English"
 msgstr "Englisch"
