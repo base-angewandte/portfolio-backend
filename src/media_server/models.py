@@ -429,3 +429,12 @@ def get_model_for_mime_type(mime_type):
         return MIME_TYPE_TO_MODEL[mime_type]
     except KeyError:
         return Other
+
+
+def repair():
+    for model in iter(PREFIX_TO_MODEL.values()):
+        m = model.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR])
+        for i in m:
+            i.status = STATUS_NOT_CONVERTED
+            i.save()
+            django_rq.enqueue(i.media_info_and_convert)
