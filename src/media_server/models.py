@@ -216,7 +216,7 @@ class Document(CommonInfo):
     def get_data(self):
         return {
             'id': self.pk,
-            'tn': self.get_preview_image(),
+            'thumbnail': self.get_preview_image(),
             'pdf': self.get_preview_pdf(),
             'original': self.file.url,
             'metadata': self.metadata,
@@ -257,6 +257,11 @@ class Image(CommonInfo):
                 os.makedirs(path)
 
             im = PIL_Image.open(self.file.path)
+            if im.mode in ('RGBA', 'LA'):
+                fill_color = (255, 255, 255)
+                background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
+                background.paste(im, im.split()[-1])
+                im = background
             im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
             im.save(os.path.join(path, 'tn.jpg'))
             im.close()
