@@ -6,16 +6,17 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import filters, viewsets, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from core.models import Entity, Relation
 from core.schemas import ACTIVE_TYPES, get_jsonschema
 from media_server.models import get_media_for_entity
+from media_server.utils import get_free_space_for_user
 from .serializers.entity import EntitySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema
+from .yasg import JSONAutoSchema, UserOperationIDAutoSchema
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -146,3 +147,17 @@ class JsonSchemaViewSet(viewsets.ViewSet):
         if not schema:
             raise Http404(_('Schema not found for the given query.'))
         return Response(schema)
+
+
+@swagger_auto_schema(methods=['get'], auto_schema=UserOperationIDAutoSchema)
+@api_view(['GET'])
+def user_information(request, *args, **kwargs):
+    attributes = request.session.get('attributes', {})
+    data = {
+        'name': attributes.get('displayName'),
+        'email': attributes.get('email'),
+        'permissions': attributes.get('permissions', '').split(','),
+        'space': get_free_space_for_user(request.user) if request.user else None,
+    }
+
+    return Response(data)

@@ -14,6 +14,7 @@ router.register(r'media', MediaViewSet, base_name='media')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'user/$', views.user_information, name='user'),
 
     url(r'^swagger(?P<format>\.json|\.yaml)$', views.no_ui_view, name='schema-json'),
     url(r'^swagger/$', views.swagger_view, name='schema-swagger-ui'),

@@ -21,3 +21,8 @@ class JSONFieldInspector(FieldInspector):
 class JSONAutoSchema(SwaggerAutoSchema):
     field_inspectors = [JSONFieldInspector] + swagger_settings.DEFAULT_FIELD_INSPECTORS
 
+
+class UserOperationIDAutoSchema(SwaggerAutoSchema):
+    def get_operation_id(self, operation_keys):
+        operation_id = super(UserOperationIDAutoSchema, self).get_operation_id(operation_keys)
+        return operation_id.replace('list', 'read')
