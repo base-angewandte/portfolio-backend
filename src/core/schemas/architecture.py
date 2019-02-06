@@ -28,20 +28,22 @@ class ArchitectureSchema(Schema):
         'field_type': 'chips-below',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
     }})
-    date = fields.List(fields.Nested(DateLocationSchema, additionalProperties=False), **{'x-attrs': {
+    date_location = fields.List(fields.Nested(DateLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
         'field_type': 'group',
         'show_label': False,
     }})
-    material = fields.Str(**{'x-attrs': {
+    material = fields.List(fields.Str(), **{'x-attrs': {
         'order': 4,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})
-    format = fields.Str(**{'x-attrs': {
+    format = fields.List(fields.Str(), **{'x-attrs': {
         'order': 5,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})
     url = fields.Str(**{'x-attrs': {
         'order': 6,

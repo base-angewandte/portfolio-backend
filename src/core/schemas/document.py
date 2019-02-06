@@ -51,8 +51,8 @@ TYPES = [
 
 
 class PublishedInSchema(Schema):
-    title = fields.Str(**{'x-attrs': {'order': 1}})
-    subtitle = fields.Str(**{'x-attrs': {'order': 2}})
+    title = fields.Str(**{'x-attrs': {'order': 1, 'field_format': 'half'}})
+    subtitle = fields.Str(**{'x-attrs': {'order': 2, 'field_format': 'half'}})
     author = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
         'field_type': 'chips',
@@ -102,35 +102,39 @@ class DocumentSchema(Schema):
         'order': 4,
         'source': 'http://localhost:8200/autosuggest/v1/place/',
         'field_type': 'chips',
+        'field_format': 'half',
     }})
-    date = fields.Nested(DateSchema, **{'x-attrs': {'order': 5, 'field_type': 'date'}})
-    isbn = fields.Str(**{'x-attrs': {'order': 6}})
-    doi = fields.Str(**{'x-attrs': {'order': 7}})
-    url = fields.Str(**{'x-attrs': {'order': 8}})
+    date = fields.Nested(DateSchema, **{'x-attrs': {'order': 5, 'field_type': 'date', 'field_format': 'half'}})
+    isbn = fields.Str(**{'x-attrs': {'order': 6, 'field_format': 'half'}})
+    doi = fields.Str(**{'x-attrs': {'order': 7, 'field_format': 'half'}})
+    url = fields.Str(**{'x-attrs': {'order': 8, 'field_format': 'half'}})
     published_in = fields.List(fields.Nested(PublishedInSchema, additionalProperties=False), **{'x-attrs': {
         'order': 9,
         'field_type': 'group',
+        'show_label': True,
     }})
-    volume = fields.Str(**{'x-attrs': {'order': 10}})
-    pages = fields.Str(**{'x-attrs': {'order': 11}})
+    volume = fields.Str(**{'x-attrs': {'order': 10, 'field_format': 'half'}})
+    pages = fields.Str(**{'x-attrs': {'order': 11, 'field_format': 'half'}})
     contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 12,
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'field_type': 'chips-below',
     }})
-    language = fields.Str(**{'x-attrs': {
-        'order': 13,
-        'field_type': 'autocomplete',
+    language = fields.List(fields.Str(), **{'x-attrs': {
+        'order': 8,
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})
-    material = fields.Str(**{'x-attrs': {
+    material = fields.List(fields.Str(), **{'x-attrs': {
         'order': 14,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
     }})
-    format = fields.Str(**{'x-attrs': {
+    format = fields.List(fields.Str(), **{'x-attrs': {
         'order': 15,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})
-    edition = fields.Str(**{'x-attrs': {'order': 16}})
+    edition = fields.Str(**{'x-attrs': {'order': 16, 'field_format': 'half'}})

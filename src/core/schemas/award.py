@@ -43,14 +43,16 @@ class AwardSchema(Schema):
     date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
         'order': 6,
         'field_type': 'date',
+        'field_format': 'half',
     }})
     award_ceremony = fields.Nested(DateTimeSchema, additionalProperties=False, **{'x-attrs': {
         'order': 7,
         'field_type': 'date',
+        'field_format': 'half',
     }})
     location = fields.Nested(LocationSchema, additionalProperties=False, **{'x-attrs': {
-        'order': 7,
+        'order': 8,
         'field_type': 'group',
         'show_label': False,
     }})
-    url = fields.Str(**{'x-attrs': {'order': 8}})
+    url = fields.Str(**{'x-attrs': {'order': 9}})

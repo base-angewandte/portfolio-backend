@@ -39,16 +39,18 @@ class ImageSchema(Schema):
         'order': 4,
         'field_type': 'date',
         'show_label': False,
+        'field_format': 'half',
     }})
-    url = fields.Str(**{'x-attrs': {'order': 5}})
-    material = fields.Str(**{'x-attrs': {
-        'order': 5,
-        'field_type': 'autocomplete',
-        'source': 'vocbench',
-    }})
-    format = fields.Str(**{'x-attrs': {
+    url = fields.Str(**{'x-attrs': {'order': 5, 'field_format': 'half'}})
+    material = fields.List(fields.Str(), **{'x-attrs': {
         'order': 6,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
     }})
-    dimensions = fields.Str(**{'x-attrs': {'order': 7}})
+    format = fields.List(fields.Str(), **{'x-attrs': {
+        'order': 7,
+        'field_type': 'chips',
+        'source': 'vocbench',
+        'field_format': 'half',
+    }})
+    dimensions = fields.Str(**{'x-attrs': {'order': 8, 'field_format': 'half'}})

@@ -15,12 +15,13 @@ class DateTimeLocationSchema(Schema):
         'order': 1,
         'field_type': 'date',
     }})
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 2,
-        'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/place/'
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'field_format': 'half',
     }})
-    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ConcertSchema(Schema):

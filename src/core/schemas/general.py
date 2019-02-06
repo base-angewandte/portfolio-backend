@@ -28,12 +28,13 @@ class DateTimeSchema(Schema):
 
 
 class LocationSchema(Schema):
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 1,
-        'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/place/'
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'field_format': 'half',
     }})
-    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
 
 
 # TODO: currently only used for architecture (and not sure it is needed there) - check if this is necessary
@@ -41,11 +42,14 @@ class DateLocationSchema(Schema):
     date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
         'order': 1,
         'field_type': 'date',
+        'field_format': 'half',
     }})
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 2,
-        'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/place/'
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'field_format': 'half',
+
     }})
     location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
 
@@ -55,12 +59,14 @@ class DateRangeLocationSchema(Schema):
         'order': 1,
         'field_type': 'date',
     }})
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 2,
-        'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/place/'
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'field_format': 'half',
+
     }})
-    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text'}})
+    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ContributorSchema(Schema):
