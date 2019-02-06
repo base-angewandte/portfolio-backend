@@ -44,7 +44,7 @@ class ConferenceSchema(Schema):
         'source': 'http://localhost:8200/autosuggest/v1/person/',
     }})
     # TODO: this should actually also include time!! check again after discussion
-    date = fields.List(fields.Nested(DateRangeLocationSchema, additionalProperties=False), **{'x-attrs': {
+    date_location = fields.List(fields.Nested(DateRangeLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 5,
         'field_type': 'group',
         'show_label': False,

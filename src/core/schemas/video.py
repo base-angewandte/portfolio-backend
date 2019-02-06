@@ -45,30 +45,34 @@ class VideoSchema(Schema):
         'order': 3,
         'field_type': 'autocomplete',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
+        'field_format': 'half',
     }})
     date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
         'order': 4,
         'field_type': 'date',
+        'field_format': 'half',
     }})
-    url = fields.Str(**{'x-attrs': {'order': 5}})
-    language = fields.Str(**{'x-attrs': {
+    url = fields.Str(**{'x-attrs': {'order': 5, 'field_format': 'half'}})
+    language = fields.List(fields.Str(), **{'x-attrs': {
         'order': 6,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})
     location = fields.List(fields.Nested(LocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 7,
         'field_type': 'group',
         'show_label': False,
     }})
-    duration = fields.Str(**{'x-attrs': {'order': 8}})
-    material = fields.Str(**{'x-attrs': {
-        'order': 9,
-        'field_type': 'autocomplete',
+    material = fields.List(fields.Str(), **{'x-attrs': {
+        'order': 8,
+        'field_type': 'chips',
         'source': 'vocbench',
     }})
-    format = fields.Str(**{'x-attrs': {
+    duration = fields.Str(**{'x-attrs': {'order': 9, 'field_format': 'half'}})
+    format = fields.List(fields.Str(), **{'x-attrs': {
         'order': 10,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half',
     }})

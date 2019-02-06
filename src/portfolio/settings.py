@@ -410,6 +410,7 @@ ACTIVE_SCHEMAS = env.list(
         'document',
         'event',
         'exhibition',
+        'performance',
         'festival',
         'image',
         'research_project',

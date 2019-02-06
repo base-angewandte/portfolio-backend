@@ -33,19 +33,21 @@ class SculptureSchema(Schema):
         'field_type': 'group',
         'show_label': False,
     }})
-    material = fields.Str(**{'x-attrs': {
+    material = fields.List(fields.Str(), **{'x-attrs': {
         'order': 4,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
     }})
-    format = fields.Str(**{'x-attrs': {
+    format = fields.List(fields.Str(), **{'x-attrs': {
         'order': 5,
-        'field_type': 'autocomplete',
+        'field_type': 'chips',
         'source': 'vocbench',
+        'field_format': 'half'
     }})
     dimensions = fields.Str(**{'x-attrs': {
         'order': 6,
         'field_type': 'text',
+        'field_format': 'half'
     }})
     url = fields.Str(**{'x-attrs': {
         'order': 7,

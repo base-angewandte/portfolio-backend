@@ -19,17 +19,20 @@ class DateOpeningLocationSchema(Schema):
     date = fields.Nested(DateRangeSchema, additionalProperties=False, **{'x-attrs': {
         'order': 1,
         'field_type': 'date',
+        'field_format': 'half',
     }})
     opening = fields.Nested(DateTimeSchema, additionalProperties=False, **{'x-attrs': {
         'order': 2,
         'field_type': 'date',
+        'field_format': 'half',
     }})
-    location = fields.Nested(GEOReferenceSchema, additionalProperties=False, **{'x-attrs': {
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
-        'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/place/'
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'field_format': 'half',
     }})
-    location_description = fields.String(**{'x-attrs': {'order': 4, 'field_type': 'text'}})
+    location_description = fields.String(**{'x-attrs': {'order': 4, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ExhibitionSchema(Schema):
@@ -52,9 +55,9 @@ class ExhibitionSchema(Schema):
         'field_type': 'chips-below',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
     }})
-    date = fields.List(fields.Nested(DateOpeningLocationSchema, additionalProperties=False, **{'x-attrs': {
+    date = fields.List(fields.Nested(DateOpeningLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 4,
         'field_type': 'group',
         'show_label': False,
-    }}))
-    url = fields.Str(**{'x-attrs': { 'order': 5}})
+    }})
+    url = fields.Str(**{'x-attrs': {'order': 5}})
