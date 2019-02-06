@@ -38,6 +38,11 @@ class EntitySerializer(CleanModelSerializer):
         attrs=OrderedDict([('hidden', True)]),
         **ems.fields.get('reference')._kwargs,
     )
+    published = SwaggerSerializerField(
+        ems.fields.get('published').__class__,
+        attrs=OrderedDict([('hidden', True)]),
+        **ems.fields.get('published')._kwargs,
+    )
 
     class Meta:
         model = Entity

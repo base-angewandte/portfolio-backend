@@ -34,6 +34,7 @@ class Entity(AbstractBaseModel):
         default=list,
         blank=True,
     )
+    published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
