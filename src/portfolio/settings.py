@@ -493,6 +493,6 @@ ACTIVE_SOURCES = {
     'PLACE': ('GEONAMES', ),
 }
 
-USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)
+USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
 
 LOOL_HOST = 'http://{}:9980'.format('{}-lool'.format(PROJECT_NAME) if DOCKER else 'localhost')
