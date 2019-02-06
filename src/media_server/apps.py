@@ -8,9 +8,7 @@ class MediaServerConfig(AppConfig):
     def ready(self):
         scheduler = django_rq.get_scheduler('high')
 
-        # delete any existing jobs in the scheduler when the app starts up
-        for job in scheduler.get_jobs():
-            job.delete()
+        job_id = '1c80dc0d-b81d-46b0-9c59-d3c2f4da679b'
 
-        # tasks
-        scheduler.cron('5 2 * * *', 'media_server.models.repair')
+        if job_id not in scheduler:
+            scheduler.cron('5 2 * * *', 'media_server.models.repair', id=job_id)
