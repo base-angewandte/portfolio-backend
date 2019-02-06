@@ -352,6 +352,10 @@ RQ_QUEUES = {
     },
 }
 
+if DEBUG or TESTING:
+    for queueConfig in iter(RQ_QUEUES.values()):
+        queueConfig['ASYNC'] = False
+
 
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
