@@ -3,7 +3,7 @@ from drf_yasg.app_settings import swagger_settings
 from drf_yasg.inspectors import FieldInspector, NotHandled, SwaggerAutoSchema
 from rest_framework import serializers
 
-from core.schemas import get_text_jsonschema
+from core.schemas import get_texts_jsonschema
 
 
 class JSONFieldInspector(FieldInspector):
@@ -13,10 +13,10 @@ class JSONFieldInspector(FieldInspector):
         SwaggerType, ChildSwaggerType = self._get_partial_types(field, swagger_object_type, use_references, **kwargs)
 
         if isinstance(field, serializers.JSONField):
-            if field.field_name == 'text':
+            if field.field_name == 'texts':
                 return SwaggerType(
                     type=openapi.TYPE_ARRAY,
-                    items=get_text_jsonschema()['items'],
+                    items=get_texts_jsonschema()['items'],
                 )
             return SwaggerType(
                 type=openapi.TYPE_OBJECT,

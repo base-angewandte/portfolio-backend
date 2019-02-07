@@ -76,7 +76,11 @@ class ContributorSchema(Schema):
     role = fields.Str()
 
 
-# Text
+# schema definitions for entity model
+
+# Keywords
+
+# Texts
 class TextDataSchema(Schema):
     language = fields.Str(
         validate=validate.OneOf(
@@ -94,5 +98,5 @@ class TextSchema(Schema):
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 
-class TextModelSchema(Schema):
-    text = fields.List(fields.Nested(TextSchema, additionalProperties=False))
+class TextsModelSchema(Schema):
+    texts = fields.List(fields.Nested(TextSchema, additionalProperties=False))

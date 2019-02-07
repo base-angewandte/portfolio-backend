@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='entity',
             name='text',
-            field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True, validators=[core.validators.validate_text]),
+            field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True, validators=[core.validators.validate_texts]),
         ),
         migrations.AlterField(
             model_name='entity',

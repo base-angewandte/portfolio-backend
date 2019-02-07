@@ -2,12 +2,12 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
-from .schemas import get_text_jsonschema
+from .schemas import get_texts_jsonschema
 
 
-def validate_text(value):
+def validate_texts(value):
     try:
-        validate(value, get_text_jsonschema())
+        validate(value, get_texts_jsonschema())
         for i in value:
             data = i.get('data')
             if data:
@@ -17,4 +17,4 @@ def validate_text(value):
                 if len(languages) > len(set(languages)):
                     raise ValidationError(_('Same language is defined multiple times'))
     except SchemaValidationError as e:
-        raise ValidationError(_('Invalid text: {}'.format(e.message)))
+        raise ValidationError(_('Invalid texts: {}'.format(e.message)))

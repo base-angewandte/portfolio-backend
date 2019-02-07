@@ -7,7 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.utils.encoders import JSONEncoder
 
-from .general import TextModelSchema
+from .general import TextsModelSchema
 
 if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
     raise ImproperlyConfigured(_('Schemas improperly configured'))
@@ -50,5 +50,5 @@ def get_jsonschema(entity_type, force_text=False):
             return schema2jsonschema(s, force_text)
 
 
-def get_text_jsonschema():
-    return schema2jsonschema(TextModelSchema, force_text=True)['properties']['text']
+def get_texts_jsonschema():
+    return schema2jsonschema(TextsModelSchema, force_text=True)['properties']['texts']
