@@ -78,9 +78,17 @@ class ContributorSchema(Schema):
 
 # schema definitions for entity model
 
-# Keywords
+# keywords
+class KeywordSchema(Schema):
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
+    keyword = fields.Str()
 
-# Texts
+
+class KeywordsModelSchema(Schema):
+    keywords = fields.List(fields.Nested(KeywordSchema, additionalProperties=False))
+
+
+# texts
 class TextDataSchema(Schema):
     language = fields.Str(
         validate=validate.OneOf(
