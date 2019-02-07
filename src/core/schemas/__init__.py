@@ -7,6 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.utils.encoders import JSONEncoder
 
+from .general import TextModelSchema
+
 if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
     raise ImproperlyConfigured(_('Schemas improperly configured'))
 
@@ -32,13 +34,21 @@ if len(set(ACTIVE_TYPES)) < len(ACTIVE_TYPES):
 converter = OpenAPIConverter(settings.OPEN_API_VERSION)
 
 
+def schema2jsonschema(schema, force_text=False):
+    jsonschema = converter.schema2jsonschema(schema)
+    jsonschema['additionalProperties'] = False
+    if force_text:
+        # this is kinda hacky - change it if there's a better solution to force evaluation of lazy objects
+        # inside a dict
+        jsonschema = json.loads(json.dumps(jsonschema, cls=JSONEncoder))
+    return jsonschema
+
+
 def get_jsonschema(entity_type, force_text=False):
     for t, s in ACTIVE_TUPLES:
         if entity_type in t:
-            jsonschema = converter.schema2jsonschema(s)
-            jsonschema['additionalProperties'] = False
-            if force_text:
-                # this is kinda hacky - change it if there's a better solution to force evaluation of lazy objects
-                # inside a dict
-                jsonschema = json.loads(json.dumps(jsonschema, cls=JSONEncoder))
-            return jsonschema
+            return schema2jsonschema(s, force_text)
+
+
+def get_text_jsonschema():
+    return schema2jsonschema(TextModelSchema, force_text=True)['properties']['text']

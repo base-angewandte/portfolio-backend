@@ -11,6 +11,7 @@ from jsonschema import validate, ValidationError as SchemaValidationError
 from general.models import AbstractBaseModel, ShortUUIDField
 from .schemas import ACTIVE_TYPES_CHOICES, get_jsonschema
 from .skosmos import get_preflabel_lazy
+from .validators import validate_text
 
 
 class Entity(AbstractBaseModel):
@@ -34,6 +35,7 @@ class Entity(AbstractBaseModel):
         default=list,
         blank=True,
     )
+    text = JSONField(verbose_name=get_preflabel_lazy('c_text'), validators=[validate_text], blank=True, null=True)
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')

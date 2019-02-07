@@ -76,7 +76,7 @@ class ContributorSchema(Schema):
     role = fields.Str()
 
 
-# TODO: is this still needed?
+# Text
 class TextDataSchema(Schema):
     language = fields.Str(
         validate=validate.OneOf(
@@ -91,4 +91,8 @@ class TextDataSchema(Schema):
 
 class TextSchema(Schema):
     type = fields.Str(title=get_preflabel_lazy('c_type'))
-    data = fields.Nested(TextDataSchema, additionalProperties=False)
+    data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
+
+
+class TextModelSchema(Schema):
+    text = fields.List(fields.Nested(TextSchema, additionalProperties=False))
