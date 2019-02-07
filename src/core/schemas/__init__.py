@@ -40,5 +40,5 @@ def get_jsonschema(entity_type, force_text=False):
             if force_text:
                 # this is kinda hacky - change it if there's a better solution to force evaluation of lazy objects
                 # inside a dict
-                jsonschema = json.loads(json.dumps(schema, cls=JSONEncoder))
+                jsonschema = json.loads(json.dumps(jsonschema, cls=JSONEncoder))
             return jsonschema
