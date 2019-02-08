@@ -1,11 +1,10 @@
 from django.conf import settings
-from django.http import Http404
 from django.utils.translation import ugettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import filters, viewsets, permissions
+from rest_framework import exceptions, filters, viewsets, permissions
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
@@ -145,7 +144,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)
         if not schema:
-            raise Http404(_('Schema not found for the given query.'))
+            raise exceptions.NotFound(_('Schema not found for the given query.'))
         return Response(schema)
 
 
