@@ -8,7 +8,7 @@ from .schemas import get_texts_jsonschema, get_keywords_jsonschema
 def validate_keywords(value):
     try:
         validate(value, get_keywords_jsonschema())
-        if len(value) > len(set(value)):
+        if len(value) > len(set(map(tuple, map(dict.items, value)))):
             raise ValidationError(_('Keywords contains duplicate entries'))
     except SchemaValidationError as e:
         raise ValidationError(_('Invalid keywords: {}'.format(e.message)))
