@@ -13,6 +13,7 @@ from django.dispatch import receiver
 from exiffield.fields import ExifField
 from PIL import Image as PIL_Image, ImageOps
 
+from core.models import Entity
 from general.models import ShortUUIDField
 from .storages import ProtectedFileSystemStorage
 
