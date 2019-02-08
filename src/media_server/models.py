@@ -374,33 +374,6 @@ class Other(CommonInfo):
         self.save()
 
 
-# Signal handling
-
-@receiver(post_save, sender=Audio)
-@receiver(post_save, sender=Document)
-@receiver(post_save, sender=Image)
-@receiver(post_save, sender=Video)
-@receiver(post_save, sender=Other)
-def media_post_save(sender, instance, created, *args, **kwargs):
-    if created:
-        with transaction.atomic():
-            # ensure status is STATUS_NOT_CONVERTED
-            sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-            transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
-
-
-@receiver(post_delete, sender=Audio)
-@receiver(post_delete, sender=Document)
-@receiver(post_delete, sender=Image)
-@receiver(post_delete, sender=Video)
-@receiver(post_delete, sender=Other)
-def media_post_delete(sender, instance, *args, **kwargs):
-    try:
-        shutil.rmtree(instance.get_protected_assets_path())
-    except FileNotFoundError:
-        pass
-
-
 PREFIX_TO_MODEL = {
     AUDIO_PREFIX: Audio,
     DOCUMENT_PREFIX: Document,
@@ -438,3 +411,31 @@ def repair():
             i.status = STATUS_NOT_CONVERTED
             i.save()
             django_rq.enqueue(i.media_info_and_convert)
+
+
+# Signal handling
+
+@receiver(post_save, sender=Audio)
+@receiver(post_save, sender=Document)
+@receiver(post_save, sender=Image)
+@receiver(post_save, sender=Video)
+@receiver(post_save, sender=Other)
+def media_post_save(sender, instance, created, *args, **kwargs):
+    if created:
+        with transaction.atomic():
+            # ensure status is STATUS_NOT_CONVERTED
+            sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+            transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+
+
+@receiver(post_delete, sender=Audio)
+@receiver(post_delete, sender=Document)
+@receiver(post_delete, sender=Image)
+@receiver(post_delete, sender=Video)
+@receiver(post_delete, sender=Other)
+def media_post_delete(sender, instance, *args, **kwargs):
+    try:
+        shutil.rmtree(instance.get_protected_assets_path())
+    except FileNotFoundError:
+        pass
+
