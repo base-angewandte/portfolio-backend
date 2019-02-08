@@ -58,6 +58,14 @@ class MediaViewSet(viewsets.GenericViewSet):
     serializer_class = MediaSerializer
     parser_classes = (FormParser, MultiPartParser)
 
+    def _get_media_object(self, pk):
+        model = PREFIX_TO_MODEL.get(pk[0])
+        if model:
+            try:
+                return model.objects.get(id=pk)
+            except model.DoesNotExist:
+                pass
+
     @swagger_auto_schema(responses={
         200: openapi.Response(''),
         202: openapi.Response('Media object is still converting'),
@@ -66,25 +74,21 @@ class MediaViewSet(viewsets.GenericViewSet):
     })
     def retrieve(self, request, pk=None, *args, **kwargs):
         if pk:
-            model = PREFIX_TO_MODEL.get(pk[0])
-            if model:
-                try:
-                    m = model.objects.get(id=pk)
+            m = self._get_media_object(pk)
 
-                    if m.owner != request.user:
-                        return Response(
-                            _('Current user is not the owner of this media object'),
-                            status=status.HTTP_403_FORBIDDEN,
-                        )
-                    elif m.status != 2:
-                        return Response(
-                            {'id': pk},
-                            status=status.HTTP_202_ACCEPTED
-                        )
+            if m:
+                if m.owner != request.user:
+                    return Response(
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                elif m.status != 2:
+                    return Response(
+                        {'id': pk},
+                        status=status.HTTP_202_ACCEPTED
+                    )
 
-                    return Response(m.get_data())
-                except model.DoesNotExist:
-                    pass
+                return Response(m.get_data())
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
 
@@ -119,3 +123,25 @@ class MediaViewSet(viewsets.GenericViewSet):
             return Response(m.pk)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(responses={
+        200: openapi.Response(''),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Media object not found'),
+    })
+    def destroy(self, request, pk=None, *args, **kwargs):
+        if pk:
+            m = self._get_media_object(pk)
+
+            if m:
+                if m.owner != request.user:
+                    return Response(
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                m.delete()
+
+                return Response()
+
+        return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
