@@ -439,3 +439,8 @@ def media_post_delete(sender, instance, *args, **kwargs):
     except FileNotFoundError:
         pass
 
+
+@receiver(post_delete, sender=Entity)
+def entity_post_delete(sender, instance, *args, **kwargs):
+    for model in iter(PREFIX_TO_MODEL.values()):
+        model.objects.filter(entity_id=instance.pk).delete()
