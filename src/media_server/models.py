@@ -391,10 +391,10 @@ MIME_TYPE_TO_MODEL = {
 }
 
 
-def get_media_for_entity(request, entity_id):
+def get_media_for_entity(entity_id):
     ret = []
     for model in iter(PREFIX_TO_MODEL.values()):
-        ret += model.objects.filter(owner=request.user, entity_id=entity_id).values_list('pk', flat=True)
+        ret += model.objects.filter(entity_id=entity_id).values_list('pk', flat=True)
     return ret
 
 

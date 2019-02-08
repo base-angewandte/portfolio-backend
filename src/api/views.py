@@ -88,10 +88,21 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 
+    @swagger_auto_schema(responses={
+        200: openapi.Response(''),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Entity not found'),
+    })
     @action(detail=True)
     def media(self, request, pk=None, *args, **kwargs):
-        ret = get_media_for_entity(request, pk)
-        return Response(ret)
+        try:
+            entity = Entity.objects.get(pk=pk)
+            if entity.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this entity'))
+            ret = get_media_for_entity(entity.pk)
+            return Response(ret)
+        except Entity.DoesNotExist:
+            raise exceptions.NotFound(_('Entity does not exist'))
 
     def get_queryset(self):
         user = self.request.user
