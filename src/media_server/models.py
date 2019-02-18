@@ -106,6 +106,7 @@ class CommonInfo(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
+    published = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -199,6 +200,7 @@ class Audio(CommonInfo):
             'mp3': self.get_mp3(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_mp3(self):
@@ -226,6 +228,7 @@ class Document(CommonInfo):
             'pdf': self.get_preview_pdf(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_preview_image(self):
@@ -283,6 +286,7 @@ class Image(CommonInfo):
             'thumbnail': self.get_thumbnail(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_thumbnail(self):
@@ -315,6 +319,7 @@ class Video(CommonInfo):
             'playlist': self.get_playlist(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_playlist(self):
@@ -363,6 +368,7 @@ class Other(CommonInfo):
             'id': self.pk,
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def media_info_and_convert(self):
