@@ -96,7 +96,7 @@ class MediaViewSet(viewsets.GenericViewSet):
                     if serializer.validated_data:
                         model = PREFIX_TO_MODEL[pk[0]]
                         model.objects.filter(pk=m.pk).update(**serializer.validated_data)
-                    return Response()
+                    return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -162,7 +162,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(responses={
-        200: openapi.Response(''),
+        204: openapi.Response(''),
         400: openapi.Response('Bad request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
@@ -171,7 +171,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
     @swagger_auto_schema(responses={
-        200: openapi.Response(''),
+        204: openapi.Response(''),
         400: openapi.Response('Bad request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
@@ -180,7 +180,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         return self._update(request, pk=pk, partial=True, *args, **kwargs)
 
     @swagger_auto_schema(responses={
-        200: openapi.Response(''),
+        204: openapi.Response(''),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
     })
@@ -197,6 +197,6 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 m.delete()
 
-                return Response()
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
