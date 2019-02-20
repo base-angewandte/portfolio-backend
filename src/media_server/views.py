@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from .decorators import is_allowed
 from .models import PREFIX_TO_MODEL, get_model_for_mime_type
-from .serializers import MediaSerializer
+from .serializers import MediaCreateSerializer, MediaUpdateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
 logger = logging.getLogger(__name__)
@@ -55,8 +55,21 @@ def protected_view(request, path, server, as_download=False):
 # DRF views
 
 class MediaViewSet(viewsets.GenericViewSet):
-    serializer_class = MediaSerializer
     parser_classes = (FormParser, MultiPartParser)
+    serializer_class = MediaCreateSerializer
+
+    action_serializers = {
+        'create': MediaCreateSerializer,
+        'update': MediaUpdateSerializer,
+        'partial_update': MediaPartialUpdateSerializer,
+    }
+
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(MediaViewSet, self).get_serializer_class()
 
     def _get_media_object(self, pk):
         model = PREFIX_TO_MODEL.get(pk[0])
@@ -65,6 +78,62 @@ class MediaViewSet(viewsets.GenericViewSet):
                 return model.objects.get(id=pk)
             except model.DoesNotExist:
                 pass
+
+    def _update(self, request, pk=None, partial=False, *args, **kwargs):
+        if pk:
+            m = self._get_media_object(pk)
+
+            if m:
+                if m.owner != request.user:
+                    return Response(
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                serializer = self.get_serializer(data=request.data, partial=partial)
+
+                if serializer.is_valid():
+                    if serializer.validated_data:
+                        model = PREFIX_TO_MODEL[pk[0]]
+                        model.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={
+        200: openapi.Response(''),
+        400: openapi.Response('Bad request'),
+        422: openapi.Response('User quota exceeded'),
+    })
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+
+            if not check_quota(request.user, serializer.validated_data['file'].size):
+                return Response(
+                    _('No space left for user'),
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
+
+            model = get_model_for_mime_type(mime_type)
+
+            m = model(
+                owner=request.user,
+                entity_id=serializer.validated_data['entity'],
+                mime_type=mime_type,
+                file=serializer.validated_data['file'],
+                published=serializer.validated_data['published'],
+            )
+            m.save()
+
+            return Response(m.pk)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(responses={
         200: openapi.Response(''),
@@ -93,39 +162,25 @@ class MediaViewSet(viewsets.GenericViewSet):
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(responses={
-        200: openapi.Response(''),
+        204: openapi.Response(''),
         400: openapi.Response('Bad request'),
-        422: openapi.Response('User quota exceeded'),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Media object not found'),
     })
-    def create(self, request, *args, **kwargs):
-        serializer = MediaSerializer(data=request.data, context={'request': request})
-
-        if serializer.is_valid():
-
-            if not check_quota(request.user, serializer.validated_data['file'].size):
-                return Response(
-                    _('No space left for user'),
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
-
-            model = get_model_for_mime_type(mime_type)
-
-            m = model(
-                owner=request.user,
-                entity_id=serializer.validated_data['entity'],
-                mime_type=mime_type,
-                file=serializer.validated_data['file'],
-            )
-            m.save()
-
-            return Response(m.pk)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, request, pk=None, *args, **kwargs):
+        return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
     @swagger_auto_schema(responses={
-        200: openapi.Response(''),
+        204: openapi.Response(''),
+        400: openapi.Response('Bad request'),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Media object not found'),
+    })
+    def partial_update(self, request, pk=None, *args, **kwargs):
+        return self._update(request, pk=pk, partial=True, *args, **kwargs)
+
+    @swagger_auto_schema(responses={
+        204: openapi.Response(''),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
     })
@@ -142,6 +197,6 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 m.delete()
 
-                return Response()
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)

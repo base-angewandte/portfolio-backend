@@ -106,6 +106,7 @@ class CommonInfo(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
+    published = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -163,6 +164,9 @@ class CommonInfo(models.Model):
     def get_protected_assets_url(self):
         return self.file.storage.url(user_directory_path(self, self.save_id))
 
+    def get_image(self):
+        return None
+
     def get_data(self):
         pass
 
@@ -199,6 +203,7 @@ class Audio(CommonInfo):
             'mp3': self.get_mp3(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_mp3(self):
@@ -219,6 +224,9 @@ class Audio(CommonInfo):
 class Document(CommonInfo):
     id = ShortUUIDField(prefix=DOCUMENT_PREFIX, primary_key=True)
 
+    def get_image(self):
+        return self.get_preview_image()
+
     def get_data(self):
         return {
             'id': self.pk,
@@ -226,6 +234,7 @@ class Document(CommonInfo):
             'pdf': self.get_preview_pdf(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_preview_image(self):
@@ -277,12 +286,16 @@ class Image(CommonInfo):
             self.status = STATUS_ERROR
             self.save()
 
+    def get_image(self):
+        return self.get_thumbnail()
+
     def get_data(self):
         return {
             'id': self.pk,
             'thumbnail': self.get_thumbnail(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_thumbnail(self):
@@ -305,6 +318,9 @@ class Video(CommonInfo):
     def get_cover_jpg(self):
         return self.get_url('cover.jpg')
 
+    def get_image(self):
+        return self.get_cover_jpg()
+
     def get_data(self):
         return {
             'id': self.pk,
@@ -315,6 +331,7 @@ class Video(CommonInfo):
             'playlist': self.get_playlist(),
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def get_playlist(self):
@@ -363,6 +380,7 @@ class Other(CommonInfo):
             'id': self.pk,
             'original': self.file.url,
             'metadata': self.metadata,
+            'published': self.published,
         }
 
     def media_info_and_convert(self):
@@ -396,6 +414,18 @@ def get_media_for_entity(entity_id):
     for model in iter(PREFIX_TO_MODEL.values()):
         ret += model.objects.filter(entity_id=entity_id).values_list('pk', flat=True)
     return ret
+
+
+def get_image_for_entity(entity_id):
+    selected = None
+    for model in iter(PREFIX_TO_MODEL.values()):
+        m = model.objects.filter(entity_id=entity_id).order_by('created').first()
+        if m and (not selected or selected.created > m.created):
+            selected = m
+    if selected:
+        return selected.get_image()
+
+    return None
 
 
 def get_model_for_mime_type(mime_type):
