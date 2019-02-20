@@ -150,9 +150,10 @@ class JsonSchemaViewSet(viewsets.ViewSet):
 def user_information(request, *args, **kwargs):
     attributes = request.session.get('attributes', {})
     data = {
-        'name': attributes.get('displayName'),
+        'name': attributes.get('display_name'),
         'email': attributes.get('email'),
         'permissions': attributes.get('permissions').split(',') if attributes.get('permissions') else [],
+        'groups': attributes.get('groups').split(',') if attributes.get('groups') else [],
         'space': get_free_space_for_user(request.user) if request.user else None,
     }
 
