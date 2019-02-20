@@ -6,6 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, filters, viewsets, permissions
 from rest_framework.decorators import action, api_view
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
@@ -109,28 +110,13 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
         return Entity.objects.filter(owner=user).order_by('-date_changed')
 
 
-class RelationViewSet(viewsets.ModelViewSet, CountModelMixin):
+class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMixin):
     """
-    retrieve:
-    Returns a certain relation.
-
-    list:
-    Returns a list of all relations for current user.
-
     create:
     Create a new relation between entities.
 
-    update:
-    Update a certain relation.
-
-    partial_update:
-    Partially update a certain relation.
-
     destroy:
     Delete a certain relation.
-
-    count:
-    Returns the number of documents of type relation.
     """
 
     serializer_class = RelationSerializer
