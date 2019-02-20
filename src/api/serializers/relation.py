@@ -6,38 +6,12 @@ from rest_framework.validators import UniqueTogetherValidator
 
 from core.models import Relation
 from . import CleanModelSerializer
-from .fields import SwaggerSerializerField
-
-
-class RelationModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Relation
-        fields = '__all__'
-
-
-rms = RelationModelSerializer()
 
 
 class RelationSerializer(CleanModelSerializer):
-    id = SwaggerSerializerField(
-        rms.fields.get('id').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **rms.fields.get('id')._kwargs,
-    )
-    date_created = SwaggerSerializerField(
-        rms.fields.get('date_created').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **rms.fields.get('date_created')._kwargs,
-    )
-    date_changed = SwaggerSerializerField(
-        rms.fields.get('date_changed').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **rms.fields.get('date_changed')._kwargs,
-    )
-
     class Meta:
         model = Relation
-        fields = '__all__'
+        fields = ('from_entity', 'to_entity', )
 
         validators = [
             UniqueTogetherValidator(
