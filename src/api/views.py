@@ -84,7 +84,7 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     serializer_class = EntitySerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_fields = ('type',)  # TODO
-    ordering_fields = ('title',)  # TODO
+    ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type')  # TODO
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 

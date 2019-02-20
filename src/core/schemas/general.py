@@ -73,7 +73,7 @@ class ContributorSchema(Schema):
     source_id = fields.Str()
     commonname = fields.Str()
     source = fields.Str(**{'x-attrs': {'hidden': True}})
-    role = fields.Str()
+    roles = fields.List(fields.Str())
 
 
 # schema definitions for entity model
