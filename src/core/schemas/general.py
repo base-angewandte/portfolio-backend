@@ -96,13 +96,13 @@ class TextDataSchema(Schema):
             labels=settings.LANGUAGES_DICT.values(),
         ),
         required=True,
-        title=get_preflabel_lazy('c_language'),
+        title=get_preflabel_lazy('collection_language'),
     )
-    text = fields.Str(required=True, title=get_preflabel_lazy('c_text'))
+    text = fields.Str(required=True, title=get_preflabel_lazy('collection_text'))
 
 
 class TextSchema(Schema):
-    type = fields.Str(title=get_preflabel_lazy('c_type'))
+    type = fields.Str(title=get_preflabel_lazy('collection_type'))
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 

@@ -23,17 +23,17 @@ class Entity(AbstractBaseModel):
 
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(verbose_name=get_preflabel_lazy('c_title'), max_length=255)
-    subtitle = models.CharField(verbose_name=get_preflabel_lazy('c_subtitle'), max_length=255, blank=True, null=True)
+    title = models.CharField(verbose_name=get_preflabel_lazy('collection_title'), max_length=255)
+    subtitle = models.CharField(verbose_name=get_preflabel_lazy('collection_subtitle'), max_length=255, blank=True, null=True)
     type = models.CharField(
-        verbose_name=get_preflabel_lazy('c_type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
+        verbose_name=get_preflabel_lazy('collection_type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
     )
-    notes = models.TextField(verbose_name=get_preflabel_lazy('c_notes'), blank=True, null=True)
-    reference = models.CharField(verbose_name=get_preflabel_lazy('c_reference'), max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(
-        verbose_name=get_preflabel_lazy('c_keywords'), validators=[validate_keywords], blank=True, null=True,
+        verbose_name=get_preflabel_lazy('collection_keywords'), validators=[validate_keywords], blank=True, null=True,
     )
-    texts = JSONField(verbose_name=get_preflabel_lazy('c_text'), validators=[validate_texts], blank=True, null=True)
+    texts = JSONField(verbose_name=get_preflabel_lazy('collection_text'), validators=[validate_texts], blank=True, null=True)
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
