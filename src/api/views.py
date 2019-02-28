@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -55,6 +56,9 @@ class CountModelMixin(object):
         return Response(content)
 
 
+@method_decorator(name='list', decorator=swagger_auto_schema(
+    manual_parameters=[openapi.Parameter('q', openapi.IN_QUERY, description="Search query", type=openapi.TYPE_STRING)]
+))
 class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     """
     retrieve:
@@ -107,6 +111,12 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     def get_queryset(self):
         user = self.request.user
+
+        if self.action == 'list':
+            q = self.request.query_params.get('q', None)
+            if q:
+                return Entity.objects.search(q).filter(owner=user)
+
         return Entity.objects.filter(owner=user).order_by('-date_changed')
 
 

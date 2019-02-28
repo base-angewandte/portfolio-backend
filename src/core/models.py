@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
 from general.models import AbstractBaseModel, ShortUUIDField
+from .managers import EntityManager
 from .schemas import ACTIVE_TYPES_CHOICES, get_jsonschema
 from .skosmos import get_preflabel_lazy
 from .validators import validate_texts, validate_keywords
@@ -41,6 +42,8 @@ class Entity(AbstractBaseModel):
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
+
+    objects = EntityManager()
 
     def clean(self):
         if self.type:
