@@ -15,5 +15,7 @@ search_vectors = (
 class EntityManager(models.Manager):
     def search(self, text):
         search_query = SearchQuery(text)
-        search_rank = SearchRank(search_vectors, search_query) + TrigramSimilarity('title', text)
-        return self.get_queryset().annotate(rank=search_rank).filter(rank__gte=0.3).order_by('-rank')
+        search_rank = SearchRank(search_vectors, search_query)
+        trigram_similarity_title = TrigramSimilarity('title', text)
+        rank = search_rank + trigram_similarity_title
+        return self.get_queryset().annotate(rank=rank).filter(rank__gte=0.3).order_by('-rank')
