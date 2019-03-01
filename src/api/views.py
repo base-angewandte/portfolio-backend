@@ -117,6 +117,13 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
         except Entity.DoesNotExist:
             raise exceptions.NotFound(_('Entity does not exist'))
 
+    @swagger_auto_schema(responses={200: openapi.Response('')})
+    @action(detail=False, filter_backends=[], pagination_class=None)
+    def types(self, request, *args, **kwargs):
+        content = self.get_queryset().exclude(
+            type__isnull=True).exclude(type__exact='').values_list('type', flat=True).distinct().order_by()
+        return Response(content)
+
     def get_queryset(self):
         user = self.request.user
         qs = Entity.objects.filter(owner=user).order_by('-date_changed')
