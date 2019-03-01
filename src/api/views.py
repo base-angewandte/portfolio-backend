@@ -106,7 +106,7 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Entity not found'),
     })
-    @action(detail=True)
+    @action(detail=True, filter_backends=[], pagination_class=None)
     def media(self, request, pk=None, *args, **kwargs):
         try:
             entity = Entity.objects.get(pk=pk)
