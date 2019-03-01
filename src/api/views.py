@@ -57,7 +57,15 @@ class CountModelMixin(object):
 
 
 @method_decorator(name='list', decorator=swagger_auto_schema(
-    manual_parameters=[openapi.Parameter('q', openapi.IN_QUERY, description="Search query", type=openapi.TYPE_STRING)]
+    manual_parameters=[
+        openapi.Parameter('q', openapi.IN_QUERY, description="Search query", type=openapi.TYPE_STRING),
+        openapi.Parameter(
+            'link_selection_for',
+            openapi.IN_QUERY,
+            description="Get link selection for a certain entity",
+            type=openapi.TYPE_STRING
+        ),
+    ]
 ))
 class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     """
@@ -111,13 +119,22 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Entity.objects.filter(owner=user).order_by('-date_changed')
 
         if self.action == 'list':
             q = self.request.query_params.get('q', None)
             if q:
-                return Entity.objects.search(q).filter(owner=user)
+                qs = Entity.objects.search(q).filter(owner=user)
 
-        return Entity.objects.filter(owner=user).order_by('-date_changed')
+            entity_pk = self.request.query_params.get('link_selection_for', None)
+            if entity_pk:
+                try:
+                    entity = Entity.objects.get(pk=entity_pk, owner=user)
+                    qs = qs.exclude(pk=entity_pk).exclude(to_entities__from_entity=entity)
+                except Entity.DoesNotExist:
+                    return Entity.objects.none()
+
+        return qs
 
 
 class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMixin):
