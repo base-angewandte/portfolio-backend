@@ -23,6 +23,7 @@ class ImageSchema(Schema):
         'field_type': 'chips',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'equivalent': 'contributors',
+        'sortable': True,
         'default_role': 'artist'  # TODO: replace with id!
     }})
     contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {

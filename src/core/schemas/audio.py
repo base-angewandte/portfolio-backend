@@ -27,11 +27,21 @@ TYPES = [
 
 
 class AudioSchema(Schema):
+    author = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
+        'order': 1,
+        'field_type': 'chips',
+        'source': 'http://localhost:8200/autosuggest/v1/person/',
+        'equivalent': 'contributors',
+        'sortable': True,
+        'default_role': 'author',  # TODO: replace with id!
+        'placeholder': 'Wähle Autor*innen',
+    }})
     artist = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 1,
         'field_type': 'chips',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'equivalent': 'contributors',
+        'sortable': True,
         'default_role': 'artist',  # TODO: replace with id!
         'placeholder': 'Wähle Künstler*innen',
     }})
@@ -63,6 +73,7 @@ class AudioSchema(Schema):
         'order': 8,
         'field_type': 'chips',
         'source': 'vocbench',
+        'sortable': True,
     }})
     duration = fields.Str(**{'x-attrs': {'order': 9, 'field_format': 'half'}})
     format = fields.List(fields.Str(), **{'x-attrs': {
@@ -70,4 +81,6 @@ class AudioSchema(Schema):
         'field_type': 'chips',
         'source': 'vocbench',
         'field_format': 'half',
+        'sortable': True,
+
     }})

@@ -53,19 +53,13 @@ TYPES = [
 class PublishedInSchema(Schema):
     title = fields.Str(**{'x-attrs': {'order': 1, 'field_format': 'half'}})
     subtitle = fields.Str(**{'x-attrs': {'order': 2, 'field_format': 'half'}})
-    author = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 3,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'author'  # TODO: replace with id!
-    }})
     editor = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 4,
         'field_type': 'chips',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'equivalent': 'contributors',
-        'default_role': 'editor'  # TODO: replace with id!
+        'default_role': 'editor',  # TODO: replace with id!
+        'sortable': True
     }})
     publisher = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 5,
@@ -82,14 +76,16 @@ class DocumentSchema(Schema):
         'field_type': 'chips',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'equivalent': 'contributors',
-        'default_role': 'author'  # TODO: replace with id!
+        'default_role': 'author',  # TODO: replace with id!
+        'sortable': True
     }})
     editor = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 2,
         'field_type': 'chips',
         'source': 'http://localhost:8200/autosuggest/v1/person/',
         'equivalent': 'contributors',
-        'default_role': 'editor'  # TODO: replace with id!
+        'default_role': 'editor',  # TODO: replace with id!
+        'sortable': True
     }})
     publisher = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
