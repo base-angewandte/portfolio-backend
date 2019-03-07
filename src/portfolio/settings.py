@@ -297,10 +297,11 @@ LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'general.logging.TimedCompressedRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'application.log'),
-            'maxBytes': 1024*1024*5,  # 5 MB
-            'backupCount': 100,
+            'when': 'midnight',
+            'interval': 1,
+            'backupCount': 100,  # days to keep
             'formatter': 'verbose',
         },
         'mail_admins': {
