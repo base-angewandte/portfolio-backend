@@ -55,23 +55,27 @@ class DateLocationSchema(Schema):
 
 
 class DateRangeLocationSchema(Schema):
-    date = fields.Nested(DateRangeSchema, additionalProperties=False, **{'x-attrs': {
-        'order': 1,
-        'field_type': 'date',
-    }})
-    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/place/',
-        'field_format': 'half',
-
-    }})
-    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
+    date = fields.Nested(DateRangeSchema, additionalProperties=False,
+                         title=get_preflabel_lazy('collection_date'),
+                         **{'x-attrs': {
+                            'order': 1,
+                            'field_type': 'date',
+                            }})
+    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False),
+                           title=get_preflabel_lazy('collection_location'),
+                           **{'x-attrs': {
+                            'order': 2,
+                            'field_type': 'chips',
+                            'source': 'http://localhost:8200/autosuggest/v1/place/',
+                            'field_format': 'half',
+                            }})
+    location_description = fields.String(
+        title=get_preflabel_lazy('collection_location_description'),
+        **{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ContributorSchema(Schema):
-    source_id = fields.Str()
-    commonname = fields.Str()
+    label = fields.Str()
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     roles = fields.List(fields.Str())
 

@@ -62,6 +62,51 @@ class EntitySerializer(CleanModelSerializer):
         attrs=OrderedDict([('hidden', True)]),
         **ems.fields.get('published')._kwargs,
     )
+    data = SwaggerSerializerField(
+        ems.fields.get('data').__class__,
+        attrs=OrderedDict([('hidden', True)]),
+        **ems.fields.get('data')._kwargs,
+    )
+    title = SwaggerSerializerField(
+        ems.fields.get('title').__class__,
+        attrs=OrderedDict([
+            ('field_type', 'autocomplete'),
+            ('field_format', 'half'),
+            ('order', 1),
+            ('source', 'http://localhost:8200/autosuggest/v1/person/')
+        ]),
+        **ems.fields.get('title')._kwargs,
+    )
+    subtitle = SwaggerSerializerField(
+        ems.fields.get('subtitle').__class__,
+        attrs=OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 2)]),
+        **ems.fields.get('subtitle')._kwargs,
+    )
+    type = SwaggerSerializerField(
+        ems.fields.get('type').__class__,
+        attrs=OrderedDict([
+            ('field_type', 'chips'),
+            ('source', 'http://localhost:8200/api/v1/jsonschema/'),
+            ('order', 3)
+        ]),
+        **ems.fields.get('type')._kwargs,
+    )
+    texts = SwaggerSerializerField(
+        ems.fields.get('texts').__class__,
+        attrs=OrderedDict([('field_type', 'multiline'), ('source', ''), ('order', 4)]),
+        **ems.fields.get('texts')._kwargs,
+    )
+    keywords = SwaggerSerializerField(
+        ems.fields.get('keywords').__class__,
+        attrs=OrderedDict([('field_type', 'chips'), ('source', ''), ('order', 5)]),
+        **ems.fields.get('keywords')._kwargs,
+    )
+    notes = SwaggerSerializerField(
+        ems.fields.get('notes').__class__,
+        attrs=OrderedDict([('field_type', 'multiline'), ('order', 6)]),
+        **ems.fields.get('notes')._kwargs,
+    )
+
     relations = serializers.SerializerMethodField(read_only=True)
 
     class Meta:

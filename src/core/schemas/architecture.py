@@ -10,7 +10,6 @@ TYPES = [
     'Architekturdesign',
     'Statik',
     'Architekturmodell',
-    'Architekturentwurf',
     'Architekturprojekt',
 ]
 
