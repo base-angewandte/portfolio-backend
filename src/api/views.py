@@ -17,7 +17,7 @@ from media_server.models import get_media_for_entity
 from media_server.utils import get_free_space_for_user
 from .serializers.entity import EntitySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema, UserOperationIDAutoSchema
+from .yasg import JSONAutoSchema, UserOperationIDAutoSchema, language_header_decorator
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -160,6 +160,7 @@ class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMix
         return Relation.objects.filter(from_entity__owner=user, to_entity__owner=user)
 
 
+@method_decorator(language_header_decorator, name='retrieve')
 class JsonSchemaViewSet(viewsets.ViewSet):
     """
     list:
