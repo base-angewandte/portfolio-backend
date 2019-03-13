@@ -3,6 +3,7 @@
 # to update all packages run 'pip-compile --upgrade'
 
 apispec==0.39.0
+concurrent-log-handler==0.9.12
 django==1.11.18
 django-cas-ng==3.5.10
 django-cleanup==3.0.1

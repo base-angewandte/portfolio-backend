@@ -9,6 +9,7 @@ certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
 choicesenum==0.5.2        # via django-exiffield
 click==6.7                # via flex, pip-tools, rq
+concurrent-log-handler==0.9.12
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 croniter==0.3.26          # via rq-scheduler
