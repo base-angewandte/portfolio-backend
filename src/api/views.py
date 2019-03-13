@@ -56,17 +56,18 @@ class CountModelMixin(object):
         return Response(content)
 
 
-@method_decorator(name='list', decorator=swagger_auto_schema(
+@method_decorator(swagger_auto_schema(
     manual_parameters=[
-        openapi.Parameter('q', openapi.IN_QUERY, description="Search query", type=openapi.TYPE_STRING),
+        openapi.Parameter('q', openapi.IN_QUERY, required=False, description="Search query", type=openapi.TYPE_STRING),
         openapi.Parameter(
             'link_selection_for',
             openapi.IN_QUERY,
+            required=False,
             description="Get link selection for a certain entity",
             type=openapi.TYPE_STRING
         ),
     ]
-))
+), name='list')
 class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     """
     retrieve:
