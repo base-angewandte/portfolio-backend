@@ -44,9 +44,9 @@ def schema2jsonschema(schema, force_text=False):
     return jsonschema
 
 
-def get_jsonschema(entity_type, force_text=False):
+def get_jsonschema(entry_type, force_text=False):
     for t, s in ACTIVE_TUPLES:
-        if entity_type in t:
+        if entry_type in t:
             return schema2jsonschema(s, force_text)
 
 

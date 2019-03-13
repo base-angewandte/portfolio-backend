@@ -9,13 +9,13 @@ from django.utils.translation import ugettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
 from general.models import AbstractBaseModel, ShortUUIDField
-from .managers import EntityManager
+from .managers import EntryManager
 from .schemas import ACTIVE_TYPES_CHOICES, get_jsonschema
 from .skosmos import get_preflabel_lazy
 from .validators import validate_texts, validate_keywords
 
 
-class Entity(AbstractBaseModel):
+class Entry(AbstractBaseModel):
     @staticmethod
     def get_type_choices(lang=None):
         return ACTIVE_TYPES_CHOICES
@@ -43,7 +43,7 @@ class Entity(AbstractBaseModel):
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
-    objects = EntityManager()
+    objects = EntryManager()
 
     def clean(self):
         if self.type:
@@ -56,17 +56,17 @@ class Entity(AbstractBaseModel):
         elif self.data:
             raise ValidationError(_('Data without type'))
 
-    def add_relation(self, entity):
+    def add_relation(self, entry):
         relation, created = Relation.objects.get_or_create(
-            from_entity=self,
-            to_entity=entity,
+            from_entry=self,
+            to_entry=entry,
         )
         return relation
 
-    def remove_relation(self, entity):
+    def remove_relation(self, entry):
         Relation.objects.filter(
-            from_entity=self,
-            to_entity=entity,
+            from_entry=self,
+            to_entry=entry,
         ).delete()
         return True
 
@@ -79,18 +79,18 @@ class Entity(AbstractBaseModel):
 
 class Relation(AbstractBaseModel):
     id = ShortUUIDField(primary_key=True)
-    from_entity = models.ForeignKey(Entity, related_name='from_entities', on_delete=models.CASCADE)
-    to_entity = models.ForeignKey(Entity, related_name='to_entities', on_delete=models.CASCADE)
+    from_entry = models.ForeignKey(Entry, related_name='from_entries', on_delete=models.CASCADE)
+    to_entry = models.ForeignKey(Entry, related_name='to_entries', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('from_entity', 'to_entity',)
+        unique_together = ('from_entry', 'to_entry',)
 
     def clean(self):
-        if self.from_entity.owner != self.to_entity.owner:
-            raise ValidationError(_('Both entities must belong to the same user'))
+        if self.from_entry.owner != self.to_entry.owner:
+            raise ValidationError(_('Both entries must belong to the same user'))
 
 
 @receiver(pre_save, sender=Relation)
 def relation_pre_save(sender, instance, *args, **kwargs):
-    # ensure that there's only one relation between two entities
-    instance.to_entity.remove_relation(instance.from_entity)
+    # ensure that there's only one relation between two entries
+    instance.to_entry.remove_relation(instance.from_entry)

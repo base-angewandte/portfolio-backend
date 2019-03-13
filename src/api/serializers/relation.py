@@ -11,7 +11,7 @@ from . import CleanModelSerializer
 class RelationSerializer(CleanModelSerializer):
     class Meta:
         model = Relation
-        fields = ('from_entity', 'to_entity', )
+        fields = ('from_entry', 'to_entry', )
 
         validators = [
             UniqueTogetherValidator(
@@ -24,11 +24,11 @@ class RelationSerializer(CleanModelSerializer):
     def __validate_owner(self, value):
         user = self.context['request'].user
         if user != value.owner:
-            raise serializers.ValidationError(_('Current user is not the owner of this entity'))
+            raise serializers.ValidationError(_('Current user is not the owner of this entry'))
         return value
 
-    def validate_from_entity(self, value):
+    def validate_from_entry(self, value):
         return self.__validate_owner(value)
 
-    def validate_to_entity(self, value):
+    def validate_to_entry(self, value):
         return self.__validate_owner(value)

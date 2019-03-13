@@ -80,7 +80,7 @@ class ContributorSchema(Schema):
     roles = fields.List(fields.Str())
 
 
-# schema definitions for entity model
+# schema definitions for entry model
 
 # keywords
 class KeywordSchema(Schema):

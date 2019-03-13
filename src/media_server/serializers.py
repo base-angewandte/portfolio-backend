@@ -1,21 +1,21 @@
 from rest_framework import serializers
 
-from core.models import Entity
+from core.models import Entry
 
 
 class MediaCreateSerializer(serializers.Serializer):
     file = serializers.FileField()
-    entity = serializers.CharField()
+    entry = serializers.CharField()
     published = serializers.BooleanField()
 
-    def validate_entity(self, value):
+    def validate_entry(self, value):
         try:
-            entity = Entity.objects.get(id=value)
-        except Entity.DoesNotExist:
-            raise serializers.ValidationError(_('Entity does not exist'))
+            entry = Entry.objects.get(id=value)
+        except Entry.DoesNotExist:
+            raise serializers.ValidationError(_('Entry does not exist'))
         user = self.context['request'].user
-        if user != entity.owner:
-            raise serializers.ValidationError(_('Current user is not the owner of entity'))
+        if user != entry.owner:
+            raise serializers.ValidationError(_('Current user is not the owner of entry'))
         return value
 
 

@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-05 10:34+0100\n"
+"POT-Creation-Date: 2019-03-13 15:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,62 +16,79 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: api/serializers/relation.py:46
+#: api/serializers/relation.py:20
 msgid "Relation already exists"
 msgstr ""
 
-#: api/serializers/relation.py:53
-msgid "Current user is not the owner of this entity"
+#: api/serializers/relation.py:27 api/views.py:115
+msgid "Current user is not the owner of this entry"
 msgstr ""
 
-#: api/views.py:147
+#: api/views.py:119 media_server/serializers.py:15
+msgid "Entry does not exist"
+msgstr ""
+
+#: api/views.py:180
 msgid "Schema not found for the given query."
 msgstr ""
 
-#: core/models.py:50
+#: core/models.py:55
 msgid "Invalid data: {}"
 msgstr ""
 
-#: core/models.py:52
+#: core/models.py:57
 msgid "Data without type"
 msgstr ""
 
-#: core/models.py:85
-msgid "Both entities must belong to the same user"
+#: core/models.py:90
+msgid "Both entries must belong to the same user"
 msgstr ""
 
-#: core/schemas/__init__.py:11
+#: core/schemas/__init__.py:13
 msgid "Schemas improperly configured"
 msgstr ""
 
-#: core/schemas/__init__.py:29
+#: core/schemas/__init__.py:31
 msgid "Active schemas contain duplicate types"
 msgstr ""
 
-#: media_server/serializers.py:14
-msgid "Entity does not exist"
+#: core/validators.py:12
+msgid "Keywords contains duplicate entries"
 msgstr ""
 
-#: media_server/serializers.py:17
-msgid "Current user is not the owner of entity"
+#: core/validators.py:14
+msgid "Invalid keywords: {}"
 msgstr ""
 
-#: media_server/views.py:76
+#: core/validators.py:27
+msgid "Same language is defined multiple times"
+msgstr ""
+
+#: core/validators.py:29
+msgid "Invalid texts: {}"
+msgstr ""
+
+#: media_server/serializers.py:18
+msgid "Current user is not the owner of entry"
+msgstr ""
+
+#: media_server/views.py:89 media_server/views.py:151 media_server/views.py:194
 msgid "Current user is not the owner of this media object"
 msgstr ""
 
-#: media_server/views.py:89
+#: media_server/views.py:103 media_server/views.py:162
+#: media_server/views.py:202
 msgid "Media object does not exist"
 msgstr ""
 
-#: media_server/views.py:103
+#: media_server/views.py:117
 msgid "No space left for user"
 msgstr ""
 
-#: portfolio/settings.py:228
+#: portfolio/settings.py:241
 msgid "German"
 msgstr ""
 
-#: portfolio/settings.py:229
+#: portfolio/settings.py:242
 msgid "English"
 msgstr ""

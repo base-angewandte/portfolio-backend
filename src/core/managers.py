@@ -12,7 +12,7 @@ search_vectors = (
 )
 
 
-class EntityManager(models.Manager):
+class EntryManager(models.Manager):
     def search(self, text):
         search_query = SearchQuery(text)
         search_rank = SearchRank(search_vectors, search_query)

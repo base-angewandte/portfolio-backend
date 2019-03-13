@@ -3,39 +3,39 @@ from collections import OrderedDict
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from core.models import Entity, Relation
-from media_server.models import get_image_for_entity
+from core.models import Entry, Relation
+from media_server.models import get_image_for_entry
 from . import CleanModelSerializer
 from .fields import SwaggerSerializerField
 
 
-class RelatedEntitySerializer(serializers.ModelSerializer):
+class RelatedEntrySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     class Meta:
-        model = Entity
+        model = Entry
         fields = ('id', 'title', 'type', 'image', )
         read_only_fields = fields
 
     def get_image(self, obj) -> str:
-        return get_image_for_entity(obj.pk)
+        return get_image_for_entry(obj.pk)
 
 
 class RelationsSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    to = RelatedEntitySerializer(read_only=True)
+    to = RelatedEntrySerializer(read_only=True)
 
 
-class EntityModelSerializer(serializers.ModelSerializer):
+class EntryModelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Entity
+        model = Entry
         fields = '__all__'
 
 
-ems = EntityModelSerializer()
+ems = EntryModelSerializer()
 
 
-class EntitySerializer(CleanModelSerializer):
+class EntrySerializer(CleanModelSerializer):
     id = SwaggerSerializerField(
         ems.fields.get('id').__class__,
         attrs=OrderedDict([('hidden', True)]),
@@ -110,20 +110,20 @@ class EntitySerializer(CleanModelSerializer):
     relations = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = Entity
+        model = Entry
         fields = '__all__'
 
     @swagger_serializer_method(serializer_or_field=RelationsSerializer)
     def get_relations(self, obj):
         ret = []
-        for relation in Relation.objects.select_related('to_entity').filter(from_entity=obj):
+        for relation in Relation.objects.select_related('to_entry').filter(from_entry=obj):
             ret.append({
                 'id': relation.pk,
                 'to': {
-                    'id': relation.to_entity.pk,
-                    'title': relation.to_entity.title,
-                    'type': relation.to_entity.type,
-                    'image': get_image_for_entity(relation.to_entity.pk),
+                    'id': relation.to_entry.pk,
+                    'title': relation.to_entry.title,
+                    'type': relation.to_entry.type,
+                    'image': get_image_for_entry(relation.to_entry.pk),
                 }
             })
         return ret

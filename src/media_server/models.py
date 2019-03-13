@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from exiffield.fields import ExifField
 from PIL import Image as PIL_Image, ImageOps
 
-from core.models import Entity
+from core.models import Entry
 from general.models import ShortUUIDField
 from .storages import ProtectedFileSystemStorage
 
@@ -102,7 +102,7 @@ class CommonInfo(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, on_delete=models.CASCADE)
-    entity_id = models.CharField(max_length=22)
+    entry_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
@@ -409,17 +409,17 @@ MIME_TYPE_TO_MODEL = {
 }
 
 
-def get_media_for_entity(entity_id):
+def get_media_for_entry(entry_id):
     ret = []
     for model in iter(PREFIX_TO_MODEL.values()):
-        ret += model.objects.filter(entity_id=entity_id).values_list('pk', flat=True)
+        ret += model.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
     return ret
 
 
-def get_image_for_entity(entity_id):
+def get_image_for_entry(entry_id):
     selected = None
     for model in iter(PREFIX_TO_MODEL.values()):
-        m = model.objects.filter(entity_id=entity_id).order_by('created').first()
+        m = model.objects.filter(entry_id=entry_id).order_by('created').first()
         if m and (not selected or selected.created > m.created):
             selected = m
     if selected:
@@ -471,7 +471,7 @@ def media_post_delete(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_delete, sender=Entity)
-def entity_post_delete(sender, instance, *args, **kwargs):
+@receiver(post_delete, sender=Entry)
+def entry_post_delete(sender, instance, *args, **kwargs):
     for model in iter(PREFIX_TO_MODEL.values()):
-        model.objects.filter(entity_id=instance.pk).delete()
+        model.objects.filter(entry_id=instance.pk).delete()

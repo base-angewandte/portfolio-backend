@@ -11,11 +11,11 @@ from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
-from core.models import Entity, Relation
+from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, get_jsonschema
-from media_server.models import get_media_for_entity
+from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
-from .serializers.entity import EntitySerializer
+from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
 from .yasg import JSONAutoSchema, UserOperationIDAutoSchema, language_header_decorator
 
@@ -63,39 +63,39 @@ class CountModelMixin(object):
             'link_selection_for',
             openapi.IN_QUERY,
             required=False,
-            description="Get link selection for a certain entity",
+            description="Get link selection for a certain entry",
             type=openapi.TYPE_STRING
         ),
     ]
 ), name='list')
-class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
+class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     """
     retrieve:
-    Returns a certain entity.
+    Returns a certain entry.
 
     list:
-    Returns a list of all entities for current user.
+    Returns a list of all entries for current user.
 
     create:
-    Create a new instance of entity for current user.
+    Create a new entry for current user.
 
     update:
-    Update a certain entity.
+    Update a certain entry.
 
     partial_update:
-    Partially update a certain entity.
+    Partially update a certain entry.
 
     destroy:
-    Delete a certain entity.
+    Delete a certain entry.
 
     count:
-    Returns the number of documents of type entity.
+    Returns the number of entries.
 
     media:
-    Return list of media objects.
+    Return list of media objects for a certain entry.
     """
 
-    serializer_class = EntitySerializer
+    serializer_class = EntrySerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_fields = ('type',)  # TODO
     ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type')  # TODO
@@ -105,18 +105,18 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
     @swagger_auto_schema(responses={
         200: openapi.Response(''),
         403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Entity not found'),
+        404: openapi.Response('Entry not found'),
     })
     @action(detail=True, filter_backends=[], pagination_class=None)
     def media(self, request, pk=None, *args, **kwargs):
         try:
-            entity = Entity.objects.get(pk=pk)
-            if entity.owner != request.user:
-                raise exceptions.PermissionDenied(_('Current user is not the owner of this entity'))
-            ret = get_media_for_entity(entity.pk)
+            entry = Entry.objects.get(pk=pk)
+            if entry.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+            ret = get_media_for_entry(entry.pk)
             return Response(ret)
-        except Entity.DoesNotExist:
-            raise exceptions.NotFound(_('Entity does not exist'))
+        except Entry.DoesNotExist:
+            raise exceptions.NotFound(_('Entry does not exist'))
 
     @swagger_auto_schema(responses={200: openapi.Response('')})
     @action(detail=False, filter_backends=[], pagination_class=None)
@@ -127,20 +127,20 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Entity.objects.filter(owner=user).order_by('-date_changed')
+        qs = Entry.objects.filter(owner=user).order_by('-date_changed')
 
         if self.action == 'list':
             q = self.request.query_params.get('q', None)
             if q:
-                qs = Entity.objects.search(q).filter(owner=user)
+                qs = Entry.objects.search(q).filter(owner=user)
 
-            entity_pk = self.request.query_params.get('link_selection_for', None)
-            if entity_pk:
+            entry_pk = self.request.query_params.get('link_selection_for', None)
+            if entry_pk:
                 try:
-                    entity = Entity.objects.get(pk=entity_pk, owner=user)
-                    qs = qs.exclude(pk=entity_pk).exclude(to_entities__from_entity=entity)
-                except Entity.DoesNotExist:
-                    return Entity.objects.none()
+                    entry = Entry.objects.get(pk=entry_pk, owner=user)
+                    qs = qs.exclude(pk=entry_pk).exclude(to_entries__from_entry=entry)
+                except Entry.DoesNotExist:
+                    return Entry.objects.none()
 
         return qs
 
@@ -148,7 +148,7 @@ class EntityViewSet(viewsets.ModelViewSet, CountModelMixin):
 class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMixin):
     """
     create:
-    Create a new relation between entities.
+    Create a new relation between entries.
 
     destroy:
     Delete a certain relation.
@@ -158,7 +158,7 @@ class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMix
 
     def get_queryset(self):
         user = self.request.user
-        return Relation.objects.filter(from_entity__owner=user, to_entity__owner=user)
+        return Relation.objects.filter(from_entry__owner=user, to_entry__owner=user)
 
 
 @method_decorator(language_header_decorator, name='retrieve')
