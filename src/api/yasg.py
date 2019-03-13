@@ -1,9 +1,22 @@
+from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.app_settings import swagger_settings
 from drf_yasg.inspectors import FieldInspector, NotHandled, SwaggerAutoSchema
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
 
 from core.schemas import get_texts_jsonschema, get_keywords_jsonschema
+
+
+language_header_parameter = openapi.Parameter(
+    'Accept-Language',
+    openapi.IN_HEADER,
+    required=False,
+    type=openapi.TYPE_STRING,
+    enum=list(settings.LANGUAGES_DICT.keys()),
+)
+
+language_header_decorator = swagger_auto_schema(manual_parameters=[language_header_parameter])
 
 
 class JSONFieldInspector(FieldInspector):
