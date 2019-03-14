@@ -12,7 +12,8 @@ from rest_framework import status
 @api_view(['GET'])
 def lookup_person_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    data = fetch_responses(settings.LOOKUP, searchstr, settings.ACTIVE_SOURCES.get('PERSON'))
+    data = fetch_responses(searchstr,
+                           settings.ACTIVE_SOURCES.get('PERSON'))
 
     return Response(data)
 
@@ -20,12 +21,14 @@ def lookup_person_view(request, *args, **kwargs):
 @api_view(['GET'])
 def lookup_place_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    data = fetch_responses(settings.LOOKUP, searchstr, settings.ACTIVE_SOURCES.get('PLACE'))
+    data = fetch_responses(searchstr,
+                           settings.ACTIVE_SOURCES.get('PLACE'))
 
     return Response(data)
 
 
-def fetch_responses(lookup_dict, querystring, active_sources):
+def fetch_responses(querystring, active_sources):
+    lookup_dict = settings.LOOKUP
     responses = []
     with FuturesSession() as session:
         fetch_requests = {domain: session.get(val.get('url')+querystring) for domain, val in lookup_dict.items() if domain in active_sources}
