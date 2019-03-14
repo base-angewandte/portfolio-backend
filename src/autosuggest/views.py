@@ -55,8 +55,12 @@ def fetch_responses(querystring, active_sources):
             domain_dict = settings.LOOKUP.get(domain)
             if status.is_success(req.result().status_code):
                 result_field = domain_dict.get('result')
-                try:
-                    result_json = json.loads(req.result().content).get(result_field) if result_field else json.loads(req.result().content)
+                try:        
+                    if result_field:
+                        result_json = json.loads(req.result().content).get(result_field)
+                    else:
+                        result_json = json.loads(req.result().content)
+                        
                 except json.JSONDecodeError as e:
                     # probably 500 - result content is not in a json decodable format
                     # TODO: Use the correct logging handler and log
