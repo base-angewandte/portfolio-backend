@@ -2,11 +2,10 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.app_settings import swagger_settings
 from drf_yasg.inspectors import FieldInspector, NotHandled, SwaggerAutoSchema
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import force_real_str, swagger_auto_schema
 from rest_framework import serializers
 
 from core.schemas import get_texts_jsonschema, get_keywords_jsonschema
-
 
 language_header_parameter = openapi.Parameter(
     'Accept-Language',
@@ -28,11 +27,13 @@ class JSONFieldInspector(FieldInspector):
         if isinstance(field, serializers.JSONField):
             if field.field_name == 'keywords':
                 return SwaggerType(
+                    title=force_real_str(field.label) if field.label else None,
                     type=openapi.TYPE_ARRAY,
                     items=get_keywords_jsonschema()['items'],
                 )
             elif field.field_name == 'texts':
                 return SwaggerType(
+                    title=force_real_str(field.label) if field.label else None,
                     type=openapi.TYPE_ARRAY,
                     items=get_texts_jsonschema()['items'],
                 )
