@@ -459,58 +459,57 @@ GEONAMES_MAPPING = {
 }
 
 LOOKUP = {
-    'PERSON': {
-        'GND': {
-            'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
-            'mapping': GND_MAPPING,
-            'filter': None,  # if the results should be filtered by a field's value within the result
-            'result': None,
-            'resourceid_prefix': '',
-        },
-        'VIAF': {
-            'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
-            'mapping': VIAF_MAPPING,
-            'filter': {'nametype': 'personal'},  # only resources having the nametype "personal" will be returned
-            'result': 'result',
-            'resourceid_prefix': 'http://www.viaf.org/viaf/',
-        },
-        'FAIL': {
-            'url': 'http://httpstat.us/500',
-            'mapping': {},
-            'filter': None,
-            'result': None, 
-            'resourceid_prefix': '',
-        },
-
+    'GND_PERSON': {
+        'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:Person&q=',
+        'mapping': GND_MAPPING,
+        'filter': None,
+        # if the results should be filtered by a field's value within the result
+        'result': None,
+        'resourceid_prefix': '',
     },
-    'PLACE': {
-        'GND': {
+    'VIAF_PERSON': {
+        'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+        'mapping': VIAF_MAPPING,
+        'filter': {'nametype': 'personal'},  
+        'result': 'result',
+        'resourceid_prefix': 'http://www.viaf.org/viaf/',
+    },
+    'FAIL': {
+        'url': 'http://httpstat.us/500',
+        'mapping': {},
+        'filter': None,
+        'result': None, 
+        'resourceid_prefix': '',
+    },
+
+
+    'GND_PLACE': {
             'url': 'https://lobid.org/gnd/search?format=json:suggest&filter=type:PlaceOrGeographicName&q=',
             'mapping': GND_MAPPING,
             'filter': None,
             'result': None,
             'resourceid_prefix': '',
         },
-        'VIAF':  {
-            'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
-            'mapping': VIAF_MAPPING,
-            'filter': {'nametype': 'geographic'},
-            'result': 'result',
-            'resourceid_prefix': 'http://www.viaf.org/viaf/',
-        },
-        'GEONAMES': {
-            'url': 'http://api.geonames.org/search?maxRows=10&username=***REMOVED***&type=json&q=',
-            'mapping': GEONAMES_MAPPING,
-            'filter': None,
-            'result': 'geonames',
-            'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
-        }
+    'VIAF_PLACE':  {
+        'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
+        'mapping': VIAF_MAPPING,
+        'filter': {'nametype': 'geographic'},
+        'result': 'result',
+        'resourceid_prefix': 'http://www.viaf.org/viaf/',
+    },
+    'GEONAMES_PLACE': {
+        'url': 'http://api.geonames.org/search?maxRows=10&username=***REMOVED***&type=json&q=',
+        'mapping': GEONAMES_MAPPING,
+        'filter': None,
+        'result': 'geonames',
+        'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
     }
+
 }
 
 ACTIVE_SOURCES = {
-    'PERSON': ('VIAF', 'GND'),
-    'PLACE': ('GEONAMES', ),
+    'PERSON': ('VIAF_PERSON', 'GND_PERSON'),
+    'PLACE': ('GEONAMES_PLACE' ),
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year

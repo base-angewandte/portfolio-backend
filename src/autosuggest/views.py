@@ -12,7 +12,7 @@ from rest_framework import status
 @api_view(['GET'])
 def lookup_person_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    data = fetch_responses(settings.LOOKUP.get('PERSON'), searchstr, settings.ACTIVE_SOURCES.get('PERSON'))
+    data = fetch_responses(settings.LOOKUP, searchstr, settings.ACTIVE_SOURCES.get('PERSON'))
 
     return Response(data)
 
@@ -20,7 +20,7 @@ def lookup_person_view(request, *args, **kwargs):
 @api_view(['GET'])
 def lookup_place_view(request, *args, **kwargs):
     searchstr = kwargs.get('searchstr')
-    data = fetch_responses(settings.LOOKUP.get('PLACE'), searchstr, settings.ACTIVE_SOURCES.get('PLACE'))
+    data = fetch_responses(settings.LOOKUP, searchstr, settings.ACTIVE_SOURCES.get('PLACE'))
 
     return Response(data)
 
