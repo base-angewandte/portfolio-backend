@@ -466,6 +466,7 @@ LOOKUP = {
         # if the results should be filtered by a field's value within the result
         'result': None,
         'resourceid_prefix': '',
+        'source_name': 'GND'
     },
     'VIAF_PERSON': {
         'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
@@ -473,6 +474,7 @@ LOOKUP = {
         'filter': {'nametype': 'personal'},  
         'result': 'result',
         'resourceid_prefix': 'http://www.viaf.org/viaf/',
+        'source_name': 'VIAF'
     },
     'FAIL': {
         'url': 'http://httpstat.us/500',
@@ -480,6 +482,7 @@ LOOKUP = {
         'filter': None,
         'result': None, 
         'resourceid_prefix': '',
+        'source_name': 'FAIL'
     },
 
 
@@ -489,6 +492,7 @@ LOOKUP = {
             'filter': None,
             'result': None,
             'resourceid_prefix': '',
+        'source_name': 'GND'
         },
     'VIAF_PLACE':  {
         'url': 'http://www.viaf.org/viaf/AutoSuggest?query=',
@@ -496,6 +500,7 @@ LOOKUP = {
         'filter': {'nametype': 'geographic'},
         'result': 'result',
         'resourceid_prefix': 'http://www.viaf.org/viaf/',
+        'source_name': 'VIAF'
     },
     'GEONAMES_PLACE': {
         'url': 'http://api.geonames.org/search?maxRows=10&username=***REMOVED***&type=json&q=',
@@ -503,6 +508,7 @@ LOOKUP = {
         'filter': None,
         'result': 'geonames',
         'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
+        'source_name': 'GEONAMES'
     }
 
 }
