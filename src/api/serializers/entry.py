@@ -28,7 +28,7 @@ class RelationsSerializer(serializers.Serializer):
 
 class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    relations = serializers.SerializerMethodField(read_only=True)
+    relations = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
