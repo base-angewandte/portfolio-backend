@@ -32,12 +32,23 @@ def fetch_responses(lookup_dict, querystring, active_sources):
         for domain, req in fetch_requests.items():
             if status.is_success(req.result().status_code):
                 result_field = lookup_dict.get(domain).get('result')
-                result_json = json.loads(req.result().content).get(result_field) if result_field else json.loads(req.result().content)
+                try:
+                    result_json = json.loads(req.result().content).get(result_field) if result_field else json.loads(req.result().content)
+                except json.JSONDecodeError as e:
+                    # probably 500 - result content is not in a json decodable format
+                    # TODO: Use the correct logging handler and log
+                    print(repr(e), req.result().content)
+                    continue
+                
                 if result_json and len(result_json):
                     mapped_data = map_to_common_schema(result_json, lookup_dict.get(domain))
                     responses.extend(mapped_data)
-                
-        
+                else:
+                    pass
+            else:
+                # TODO: log don't print
+                print('---------------Not a sucess', req.result().status_code)
+                print(req.result().content)
     return responses
 
 

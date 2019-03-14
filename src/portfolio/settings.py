@@ -474,6 +474,14 @@ LOOKUP = {
             'result': 'result',
             'resourceid_prefix': 'http://www.viaf.org/viaf/',
         },
+        'FAIL': {
+            'url': 'http://httpstat.us/500',
+            'mapping': {},
+            'filter': None,
+            'result': None, 
+            'resourceid_prefix': '',
+        },
+
     },
     'PLACE': {
         'GND': {
