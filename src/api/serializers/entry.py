@@ -29,6 +29,7 @@ class RelationsSerializer(serializers.Serializer):
 class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
     relations = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -71,3 +72,6 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 }
             })
         return ret
+
+    def get_icon(self, obj) -> str:
+        return obj.icon

@@ -1,7 +1,10 @@
 from marshmallow import Schema, fields
 
 from .general import ContributorSchema, DateRangeLocationSchema
+from ..schemas import ICON_EVENT
 from ..skosmos import get_preflabel_lazy
+
+ICON = ICON_EVENT
 
 # TODO use concept ids as keys
 TYPES = [
