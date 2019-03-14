@@ -37,6 +37,8 @@ def fetch_responses(querystring, active_sources):
                  all(suggestion.get(filter_field)==filter_value for filter_field, filter_value in domain_dict.get('filter').items()))):            
                 mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
                 mapped_schema['resource_id'] = '{}{}'.format(domain_dict.get('resourceid_prefix', ''), mapped_schema.get('_id'))
+                # not mapped from response but from config
+                mapped_schema['source_name'] =domain_dict.get('source_name')
                 data.append(mapped_schema)
         
             else:
