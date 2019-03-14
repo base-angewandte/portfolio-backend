@@ -28,13 +28,33 @@ def lookup_place_view(request, *args, **kwargs):
 
 
 def fetch_responses(querystring, active_sources):
-    lookup_dict = settings.LOOKUP
+    def map_to_common_schema(response_content, domain_dict):
+        data = []    
+        mapping = domain_dict.get('mapping')
+        for suggestion in response_content:
+            if ((not domain_dict.get('filter')) or
+                (domain_dict.get('filter') and
+                 all(suggestion.get(filter_field)==filter_value for filter_field, filter_value in domain_dict.get('filter').items()))):            
+                mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
+                mapped_schema['resource_id'] = '{}{}'.format(domain_dict.get('resourceid_prefix', ''), mapped_schema.get('_id'))
+                data.append(mapped_schema)
+        
+            else:
+                pass
+            
+        return data
+
     responses = []
     with FuturesSession() as session:
-        fetch_requests = {domain: session.get(val.get('url')+querystring) for domain, val in lookup_dict.items() if domain in active_sources}
+        fetch_requests = {}
+        for domain, val in settings.LOOKUP.items():
+            if domain in active_sources:
+                fetch_requests[domain] = session.get(val.get('url')+querystring)
+                
         for domain, req in fetch_requests.items():
+            domain_dict = settings.LOOKUP.get(domain)
             if status.is_success(req.result().status_code):
-                result_field = lookup_dict.get(domain).get('result')
+                result_field = domain_dict.get('result')
                 try:
                     result_json = json.loads(req.result().content).get(result_field) if result_field else json.loads(req.result().content)
                 except json.JSONDecodeError as e:
@@ -44,7 +64,7 @@ def fetch_responses(querystring, active_sources):
                     continue
                 
                 if result_json and len(result_json):
-                    mapped_data = map_to_common_schema(result_json, lookup_dict.get(domain))
+                    mapped_data = map_to_common_schema(result_json, domain_dict)
                     responses.extend(mapped_data)
                 else:
                     pass
@@ -55,17 +75,3 @@ def fetch_responses(querystring, active_sources):
     return responses
 
 
-def map_to_common_schema(response_content, domain_dict):
-    data = []
-    
-    mapping = domain_dict.get('mapping')
-    for suggestion in response_content:
-        if ((not domain_dict.get('filter')) or
-            (domain_dict.get('filter') and all(suggestion.get(filter_field)==filter_value for filter_field, filter_value in domain_dict.get('filter').items()))):            
-            mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
-            mapped_schema['resource_id'] = '{}{}'.format(domain_dict.get('resourceid_prefix', ''), mapped_schema.get('_id'))
-            data.append(mapped_schema)
-
-        
-        
-    return data
