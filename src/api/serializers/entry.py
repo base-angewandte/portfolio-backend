@@ -1,12 +1,12 @@
 from collections import OrderedDict
 
+from django.conf import settings
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
 from core.models import Entry, Relation
 from media_server.models import get_image_for_entry
-from . import CleanModelSerializer
-from .fields import SwaggerSerializerField
+from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
 class RelatedEntrySerializer(serializers.ModelSerializer):
@@ -26,92 +26,37 @@ class RelationsSerializer(serializers.Serializer):
     to = RelatedEntrySerializer(read_only=True)
 
 
-class EntryModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entry
-        fields = '__all__'
-
-
-ems = EntryModelSerializer()
-
-
-class EntrySerializer(CleanModelSerializer):
-    id = SwaggerSerializerField(
-        ems.fields.get('id').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('id')._kwargs,
-    )
+class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    date_created = SwaggerSerializerField(
-        ems.fields.get('date_created').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('date_created')._kwargs,
-    )
-    date_changed = SwaggerSerializerField(
-        ems.fields.get('date_changed').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('date_changed')._kwargs,
-    )
-    reference = SwaggerSerializerField(
-        ems.fields.get('reference').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('reference')._kwargs,
-    )
-    published = SwaggerSerializerField(
-        ems.fields.get('published').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('published')._kwargs,
-    )
-    data = SwaggerSerializerField(
-        ems.fields.get('data').__class__,
-        attrs=OrderedDict([('hidden', True)]),
-        **ems.fields.get('data')._kwargs,
-    )
-    title = SwaggerSerializerField(
-        ems.fields.get('title').__class__,
-        attrs=OrderedDict([
-            ('field_type', 'autocomplete'),
-            ('field_format', 'half'),
-            ('order', 1),
-            ('source', 'http://localhost:8200/autosuggest/v1/person/')
-        ]),
-        **ems.fields.get('title')._kwargs,
-    )
-    subtitle = SwaggerSerializerField(
-        ems.fields.get('subtitle').__class__,
-        attrs=OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 2)]),
-        **ems.fields.get('subtitle')._kwargs,
-    )
-    type = SwaggerSerializerField(
-        ems.fields.get('type').__class__,
-        attrs=OrderedDict([
-            ('field_type', 'chips'),
-            ('source', 'http://localhost:8200/api/v1/jsonschema/'),
-            ('order', 3)
-        ]),
-        **ems.fields.get('type')._kwargs,
-    )
-    texts = SwaggerSerializerField(
-        ems.fields.get('texts').__class__,
-        attrs=OrderedDict([('field_type', 'multiline'), ('source', ''), ('order', 4)]),
-        **ems.fields.get('texts')._kwargs,
-    )
-    keywords = SwaggerSerializerField(
-        ems.fields.get('keywords').__class__,
-        attrs=OrderedDict([('field_type', 'chips'), ('source', ''), ('order', 5)]),
-        **ems.fields.get('keywords')._kwargs,
-    )
-    notes = SwaggerSerializerField(
-        ems.fields.get('notes').__class__,
-        attrs=OrderedDict([('field_type', 'multiline'), ('order', 6)]),
-        **ems.fields.get('notes')._kwargs,
-    )
-
-    relations = serializers.SerializerMethodField(read_only=True)
+    relations = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = '__all__'
+        swagger_meta_attrs = {
+            'id': OrderedDict([('hidden', True)]),
+            'date_created': OrderedDict([('hidden', True)]),
+            'date_changed': OrderedDict([('hidden', True)]),
+            'reference': OrderedDict([('hidden', True)]),
+            'published': OrderedDict([('hidden', True)]),
+            'data': OrderedDict([('hidden', True)]),
+            'title': OrderedDict([
+                ('field_type', 'autocomplete'),
+                ('field_format', 'half'),
+                ('source', '{}/autosuggest/v1/person/'.format(settings.FORCE_SCRIPT_NAME)),
+                ('order', 1),
+            ]),
+            'subtitle': OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 2)]),
+            'type': OrderedDict([
+                ('field_type', 'chips'),
+                ('source', '{}/api/v1/jsonschema/'.format(settings.FORCE_SCRIPT_NAME)),
+                ('order', 3),
+            ]),
+            'texts': OrderedDict([('field_type', 'multiline'), ('source', ''), ('order', 4)]),
+            'keywords': OrderedDict([('field_type', 'chips'), ('source', ''), ('order', 5)]),
+            'notes': OrderedDict([('field_type', 'multiline'), ('order', 6)]),
+        }
 
     @swagger_serializer_method(serializer_or_field=RelationsSerializer)
     def get_relations(self, obj):
@@ -127,3 +72,6 @@ class EntrySerializer(CleanModelSerializer):
                 }
             })
         return ret
+
+    def get_icon(self, obj) -> str:
+        return obj.icon

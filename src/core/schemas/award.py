@@ -1,6 +1,9 @@
 from marshmallow import Schema, fields
 
 from .general import ContributorSchema, DateSchema, DateTimeSchema, LocationSchema
+from ..schemas import ICON_EVENT
+
+ICON = ICON_EVENT
 
 # TODO use concept ids as keys
 TYPES = [

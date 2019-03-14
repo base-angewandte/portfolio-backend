@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
@@ -10,7 +10,7 @@ from jsonschema import validate, ValidationError as SchemaValidationError
 
 from general.models import AbstractBaseModel, ShortUUIDField
 from .managers import EntryManager
-from .schemas import ACTIVE_TYPES_CHOICES, get_jsonschema
+from .schemas import ACTIVE_TYPES_CHOICES, ICON_DEFAULT, get_jsonschema, get_icon
 from .skosmos import get_preflabel_lazy
 from .validators import validate_texts, validate_keywords
 
@@ -44,6 +44,12 @@ class Entry(AbstractBaseModel):
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     objects = EntryManager()
+
+    @property
+    def icon(self):
+        if self.type:
+            return get_icon(self.type)
+        return ICON_DEFAULT
 
     def clean(self):
         if self.type:
