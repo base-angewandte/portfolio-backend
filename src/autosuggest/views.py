@@ -17,7 +17,7 @@ def lookup_view(request, *args, **kwargs):
     fieldname = kwargs.get('fieldname', '')
     searchstr = kwargs.get('searchstr', '')
     data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get(fieldname.upper()))
+                           settings.ACTIVE_SOURCES.get(fieldname, ()))
 
     return Response(data)
 
@@ -47,7 +47,10 @@ def fetch_responses(querystring, active_sources):
         fetch_requests = {}
         for domain, val in settings.LOOKUP.items():
             if domain in active_sources:
-                fetch_requests[domain] = session.get(val.get('url')+querystring)
+                payload = val.get('payload')
+                if val.get('payload_query_field'):
+                    payload[val.get('payload_query_field')] = querystring
+                fetch_requests[domain] = session.get(val.get('url'), params=payload)
                 
         for domain, req in fetch_requests.items():
             domain_dict = settings.LOOKUP.get(domain)
