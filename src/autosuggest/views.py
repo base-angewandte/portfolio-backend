@@ -1,13 +1,12 @@
-from django.conf import settings
-from django.shortcuts import render
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import viewsets
 import json
 import logging
 
+from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
 from requests_futures.sessions import FuturesSession
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,6 @@ def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
                            settings.ACTIVE_SOURCES.get(fieldname, ()))
 
     return Response(data)
-
 
 
 def fetch_responses(querystring, active_sources):

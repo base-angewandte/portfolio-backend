@@ -1,8 +1,6 @@
-from . import views
 from django.conf.urls import url
 
-from rest_framework import routers
-# from django.urls import path
+from . import views
 
 # NOTE: fieldname must be present in ACTIVE_SOURCES in portfolio/settings for this to work
 urlpatterns = [
