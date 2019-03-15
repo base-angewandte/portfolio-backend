@@ -6,9 +6,8 @@ from ..skosmos import get_preflabel_lazy
 
 # contains shared schema definitions
 class GEOReferenceSchema(Schema):
-    geoname_id = fields.Str()
-    geoname_name = fields.Str()
-    country_name = fields.Str()
+    source = fields.Str()
+    label = fields.Str()
     latitude = fields.Str()
     longitude = fields.Str()
 
