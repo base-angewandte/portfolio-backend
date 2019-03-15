@@ -3,6 +3,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
+from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, filters, viewsets, permissions
@@ -17,9 +18,9 @@ from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema, UserOperationIDAutoSchema, language_header_decorator
+from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator
 
-schema_view = get_schema_view(
+SchemaView = get_schema_view(
     openapi.Info(
         title="Portfolio API",
         default_version=settings.REST_FRAMEWORK.get('DEFAULT_VERSION'),
@@ -33,9 +34,18 @@ schema_view = get_schema_view(
     # permission_classes=(permissions.IsAuthenticated,),
 )
 
-no_ui_view = schema_view.without_ui(cache_timeout=0)
-swagger_view = schema_view.with_ui('swagger', cache_timeout=0)
-redoc_view = schema_view.with_ui('redoc', cache_timeout=0)
+
+class PortfolioSchemaView(SchemaView):
+    def __init__(self, **kwargs):
+        super(PortfolioSchemaView, self).__init__(**kwargs)
+        for r in self.renderer_classes:
+            if r.codec_class is OpenAPICodecJson:
+                r.codec_class = OpenAPICodecDRFJson
+
+
+no_ui_view = PortfolioSchemaView.without_ui(cache_timeout=0)
+swagger_view = PortfolioSchemaView.with_ui('swagger', cache_timeout=0)
+redoc_view = PortfolioSchemaView.with_ui('redoc', cache_timeout=0)
 
 
 class StandardLimitOffsetPagination(LimitOffsetPagination):
@@ -181,7 +191,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
         return Response(schema)
 
 
-@swagger_auto_schema(methods=['get'], auto_schema=UserOperationIDAutoSchema)
+@swagger_auto_schema(methods=['get'], operation_id='api_v1_user_read')
 @api_view(['GET'])
 def user_information(request, *args, **kwargs):
     attributes = request.session.get('attributes', {})
