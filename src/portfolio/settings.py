@@ -531,7 +531,7 @@ LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
                                        'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role'}}}
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
-ACTIVE_SOURCES = {'person': ('VIAF_PERSON', 'GND_PERSON'),
+ACTIVE_SOURCES = {'contributor': ('VIAF_PERSON', 'GND_PERSON'),
                   'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE' ),
                   'keyword': ('SKOSMOS_KEYWORDS', 'VOC_KEYWORDS'),
                   'role': ('VOC_ROLES')}
