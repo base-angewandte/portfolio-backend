@@ -10,21 +10,14 @@ from rest_framework import status
 
 # Create your views here.
 @api_view(['GET'])
-def lookup_person_view(request, *args, **kwargs):
+def lookup_view(request, *args, **kwargs):
+    fieldname = kwargs.get('fieldname')
     searchstr = kwargs.get('searchstr')
     data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get('PERSON'))
+                           settings.ACTIVE_SOURCES.get(fieldname.upper()))
 
     return Response(data)
 
-
-@api_view(['GET'])
-def lookup_place_view(request, *args, **kwargs):
-    searchstr = kwargs.get('searchstr')
-    data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get('PLACE'))
-
-    return Response(data)
 
 
 def fetch_responses(querystring, active_sources):
