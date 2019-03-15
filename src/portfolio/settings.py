@@ -453,6 +453,8 @@ GEONAMES_MAPPING = {'_id': 'geonameId',  # common_schema: GEONAMES schema
                     'label': 'toponymName'}
 SKOSMOS_KEYWORDS_MAPPING = {'_id': 'uri',
                            'label': 'label'}
+VOC_KEYWORDS_MAPPING = {'_id': 'uri',
+                        'label': 'prefLabel'}
 
 LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
                          'mapping': GND_MAPPING,
@@ -510,12 +512,20 @@ LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
                                'resourceid_prefix': '',
                                'source_name': 'SKOSMOS',
                                'payload_query_field': '',
-                               'payload': {}}}
+                               'payload': {}},
+          'VOC_KEYWORDS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
+                           'mapping': VOC_KEYWORDS_MAPPING,
+                           'source_name': 'VOC',
+                           'filter': None,
+                           'result': 'results',
+                           'payload_query_field': None,
+                           'payload': {'lang': 'de',
+                                       'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline'}}}
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {'person': ('VIAF_PERSON', 'GND_PERSON'),
                   'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE' ),
-                  'keyword': ('SKOSMOS_KEYWORDS')}
+                  'keyword': ('SKOSMOS_KEYWORDS', 'VOC_KEYWORDS')}
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
 
