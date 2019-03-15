@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 @api_view(['GET'])
 def lookup_view(request, *args, **kwargs):
-    fieldname = kwargs.get('fieldname')
-    searchstr = kwargs.get('searchstr')
+    fieldname = kwargs.get('fieldname', '')
+    searchstr = kwargs.get('searchstr', '')
     data = fetch_responses(searchstr,
                            settings.ACTIVE_SOURCES.get(fieldname.upper()))
 
