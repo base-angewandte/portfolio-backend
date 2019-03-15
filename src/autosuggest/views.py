@@ -4,27 +4,23 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets
 import json
+import logging
 
 from requests_futures.sessions import FuturesSession
 from rest_framework import status
 
+logger = logging.getLogger(__name__)
+
 # Create your views here.
 @api_view(['GET'])
-def lookup_person_view(request, *args, **kwargs):
-    searchstr = kwargs.get('searchstr')
+def lookup_view(request, *args, **kwargs):
+    fieldname = kwargs.get('fieldname', '')
+    searchstr = kwargs.get('searchstr', '')
     data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get('PERSON'))
+                           settings.ACTIVE_SOURCES.get(fieldname, ()))
 
     return Response(data)
 
-
-@api_view(['GET'])
-def lookup_place_view(request, *args, **kwargs):
-    searchstr = kwargs.get('searchstr')
-    data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get('PLACE'))
-
-    return Response(data)
 
 
 def fetch_responses(querystring, active_sources):
@@ -51,7 +47,10 @@ def fetch_responses(querystring, active_sources):
         fetch_requests = {}
         for domain, val in settings.LOOKUP.items():
             if domain in active_sources:
-                fetch_requests[domain] = session.get(val.get('url')+querystring)
+                payload = val.get('payload')
+                if val.get('payload_query_field'):
+                    payload[val.get('payload_query_field')] = querystring
+                fetch_requests[domain] = session.get(val.get('url'), params=payload)
                 
         for domain, req in fetch_requests.items():
             domain_dict = settings.LOOKUP.get(domain)
@@ -65,8 +64,7 @@ def fetch_responses(querystring, active_sources):
                         
                 except json.JSONDecodeError as e:
                     # probably 500 - result content is not in a json decodable format
-                    # TODO: Use the correct logging handler and log
-                    print(repr(e), req.result().content)
+                    logger.error('Exception %s occured while decoding response: %s', repr(e), req.result().content)
                     continue
                 
                 if result_json and len(result_json):
@@ -75,9 +73,8 @@ def fetch_responses(querystring, active_sources):
                 else:
                     pass
             else:
-                # TODO: log don't print
-                print('---------------Not a sucess', req.result().status_code)
-                print(req.result().content)
+                logger.error('Request to %s failed with error code %s', domain, req.result().status_code)
+                logger.error('Response  content: %s', req.result().content)
     return responses
 
 
