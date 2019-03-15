@@ -11,11 +11,16 @@ from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
+
+@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup_all")
 @api_view(['GET'])
-def lookup_view(request, *args, **kwargs):
-    fieldname = kwargs.get('fieldname', '')
-    searchstr = kwargs.get('searchstr', '')
+def lookup_view(request, fieldname, *args, **kwargs):
+    return lookup_view_search(request, fieldname, *args, **kwargs)
+
+
+@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup")
+@api_view(['GET'])
+def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
     data = fetch_responses(searchstr,
                            settings.ACTIVE_SOURCES.get(fieldname, ()))
 
