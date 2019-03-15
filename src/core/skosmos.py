@@ -7,6 +7,10 @@ from skosmos_client import SkosmosClient
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
 
 
+def get_uri(concept):
+    return '{}{}'.format(settings.PORTFOLIO_GRAPH, concept)
+
+
 def get_preflabel(concept):
     language = get_language() or 'en'
     cache_key = 'get_preflabel_{}_{}'.format(language, concept)
