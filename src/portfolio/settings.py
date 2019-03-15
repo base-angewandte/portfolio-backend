@@ -452,9 +452,9 @@ VIAF_MAPPING = {'_id': 'viafid',  # common_schema: VIAF schema
 GEONAMES_MAPPING = {'_id': 'geonameId',  # common_schema: GEONAMES schema
                     'label': 'toponymName'}
 SKOSMOS_KEYWORDS_MAPPING = {'_id': 'uri',
-                           'label': 'label'}
+                            'label': 'label'}
 VOC_MAPPING = {'_id': 'uri',
-                        'label': 'prefLabel'}
+               'label': 'prefLabel'}
 
 LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
                          'mapping': GND_MAPPING,
@@ -505,35 +505,38 @@ LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
                                          'maxRows':10,
                                          'username':'***REMOVED***',
                                          'type':'json'}},
-          'SKOSMOS_KEYWORDS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
+          'TOP_CONCEPTS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
                                'mapping': SKOSMOS_KEYWORDS_MAPPING,
                                'filter': None,
                                'result': 'topconcepts',
                                'resourceid_prefix': '',
                                'source_name': 'SKOSMOS',
-                               'payload_query_field': '',
-                               'payload': {}},
+                               'payload_query_field': 'label',
+                               'payload': {'label': None}},
           'VOC_KEYWORDS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
                            'mapping': VOC_MAPPING,
                            'source_name': 'VOC',
                            'filter': None,
                            'result': 'results',
-                           'payload_query_field': None,
-                           'payload': {'lang': 'de',
+                           'payload_query_field': 'query',
+                           'payload': {'query': None,
+                                       'lang': 'de',
                                        'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline'}},
           'VOC_ROLES': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
                            'mapping': VOC_MAPPING,
                            'source_name': 'VOC',
                            'filter': None,
                            'result': 'results',
-                           'payload_query_field': None,
-                           'payload': {'lang': 'de',
+                           'payload_query_field': 'query',
+                           'payload': {'query': None,
+                                       'lang': 'de',
                                        'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role'}}}
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {'person': ('VIAF_PERSON', 'GND_PERSON'),
                   'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE' ),
-                  'keyword': ('SKOSMOS_KEYWORDS', 'VOC_KEYWORDS'),
+                  'keyword': ('VOC_KEYWORDS'),
+                  'keywords': ('TOP_CONCEPTS'),
                   'role': ('VOC_ROLES')}
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
