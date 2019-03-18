@@ -39,7 +39,7 @@ class PortfolioSchemaView(SchemaView):
     def __init__(self, **kwargs):
         super(PortfolioSchemaView, self).__init__(**kwargs)
         for r in self.renderer_classes:
-            if r.codec_class is OpenAPICodecJson:
+            if hasattr(r, 'codec_class') and r.codec_class is OpenAPICodecJson:
                 r.codec_class = OpenAPICodecDRFJson
 
 
