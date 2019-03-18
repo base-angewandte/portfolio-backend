@@ -10,11 +10,11 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from exiffield.fields import ExifField
 from PIL import Image as PIL_Image, ImageOps
 
 from core.models import Entry
 from general.models import ShortUUIDField
+from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
 
 STATUS_NOT_CONVERTED = 0
