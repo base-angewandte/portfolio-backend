@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 @swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup_all")
 @api_view(['GET'])
 def lookup_view(request, fieldname, *args, **kwargs):
-    return lookup_view_search(request, fieldname, *args, **kwargs)
+    # TODO: Configure to return all for some "fieldname"s
+    return Response([])
 
 
 @swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup")
@@ -57,27 +58,35 @@ def fetch_responses(querystring, active_sources):
                 
         for domain, req in fetch_requests.items():
             domain_dict = settings.LOOKUP.get(domain)
-            if status.is_success(req.result().status_code):
-                result_field = domain_dict.get('result')
-                try:        
-                    if result_field:
-                        result_json = json.loads(req.result().content).get(result_field)
-                    else:
-                        result_json = json.loads(req.result().content)
-                        
-                except json.JSONDecodeError as e:
-                    # probably 500 - result content is not in a json decodable format
-                    logger.error('Exception %s occured while decoding response: %s', repr(e), req.result().content)
-                    continue
+            try:
+                result = req.result()
+            except Exception as e:
+                logger.error('Error while reading result(): %s', repr(e))
+                continue
+            
+            if not status.is_success(result.status_code):
+                logger.error('Request to %s failed with error code %s', domain, result.status_code)
+                logger.error('Response  content: %s', result.content)
                 
-                if result_json and len(result_json):
-                    mapped_data = map_to_common_schema(result_json, domain_dict)
-                    responses.extend(mapped_data)
+            result_field = domain_dict.get('result')
+            try:        
+                if result_field:
+                    result_json = json.loads(result.content).get(result_field)
                 else:
-                    pass
+                    result_json = json.loads(result.content)
+                    
+            except json.JSONDecodeError as e:
+                # probably 500 - result content is not in a json decodable format
+                logger.error('Exception %s occured while decoding response: %s', repr(e), result.content)
+                continue
+                
+            if result_json and len(result_json):
+                mapped_data = map_to_common_schema(result_json, domain_dict)
+                responses.extend(mapped_data)
             else:
-                logger.error('Request to %s failed with error code %s', domain, req.result().status_code)
-                logger.error('Response  content: %s', req.result().content)
+                pass
+
+
     return responses
 
 
