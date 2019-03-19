@@ -1,26 +1,29 @@
-from django.conf import settings
-from django.shortcuts import render
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import viewsets
 import json
 import logging
 
+from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
 from requests_futures.sessions import FuturesSession
 from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
+
+@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup_all")
 @api_view(['GET'])
-def lookup_view(request, *args, **kwargs):
-    fieldname = kwargs.get('fieldname', '')
-    searchstr = kwargs.get('searchstr', '')
+def lookup_view(request, fieldname, *args, **kwargs):
+    return lookup_view_search(request, fieldname, *args, **kwargs)
+
+
+@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup")
+@api_view(['GET'])
+def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
     data = fetch_responses(searchstr,
                            settings.ACTIVE_SOURCES.get(fieldname, ()))
 
     return Response(data)
-
 
 
 def fetch_responses(querystring, active_sources):
@@ -32,7 +35,7 @@ def fetch_responses(querystring, active_sources):
                 (domain_dict.get('filter') and
                  all(suggestion.get(filter_field)==filter_value for filter_field, filter_value in domain_dict.get('filter').items()))):            
                 mapped_schema = {to_key: suggestion.get(from_key) for to_key, from_key in mapping.items()}
-                mapped_schema['resource_id'] = '{}{}'.format(domain_dict.get('resourceid_prefix', ''), mapped_schema.get('_id'))
+                mapped_schema['source'] = '{}{}'.format(domain_dict.get('resourceid_prefix') or '', mapped_schema.get('source'))
                 # not mapped from response but from config
                 mapped_schema['source_name'] =domain_dict.get('source_name')
                 data.append(mapped_schema)
@@ -47,7 +50,7 @@ def fetch_responses(querystring, active_sources):
         fetch_requests = {}
         for domain, val in settings.LOOKUP.items():
             if domain in active_sources:
-                payload = val.get('payload')
+                payload = val.get('payload') or {}
                 if val.get('payload_query_field'):
                     payload[val.get('payload_query_field')] = querystring
                 fetch_requests[domain] = session.get(val.get('url'), params=payload)

@@ -445,99 +445,145 @@ PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
 
 # Autosuggest
-GND_MAPPING = {'_id': 'id',  # common_schema: GND schema
-               'label': 'label'}
-VIAF_MAPPING = {'_id': 'viafid',  # common_schema: VIAF schema
-                'label': 'displayForm'}
-GEONAMES_MAPPING = {'_id': 'geonameId',  # common_schema: GEONAMES schema
-                    'label': 'toponymName'}
-SKOSMOS_KEYWORDS_MAPPING = {'_id': 'uri',
-                            'label': 'label'}
-VOC_MAPPING = {'_id': 'uri',
-               'label': 'prefLabel'}
+ANGEWANDTE_MAPPING = {
+    'source': 'id',
+    'label': 'name',
+}
+GND_MAPPING = {
+    'source': 'id',  # common_schema: GND schema
+    'label': 'label',
+}
+VIAF_MAPPING = {
+    'source': 'viafid',  # common_schema: VIAF schema
+    'label': 'displayForm',
+}
+GEONAMES_MAPPING = {
+    'source': 'geonameId',  # common_schema: GEONAMES schema
+    'label': 'toponymName',
+}
+SKOSMOS_KEYWORDS_MAPPING = {
+    'source': 'uri',
+    'label': 'label',
+}
+VOC_MAPPING = {
+    'source': 'uri',
+    'label': 'prefLabel',
+}
 
-LOOKUP = {'GND_PERSON': {'url': 'https://lobid.org/gnd/search',
-                         'mapping': GND_MAPPING,
-                         'filter': None,
-                         # if the results should be filtered by a field's value within the result
-                         'result': None,
-                         'resourceid_prefix': '',
-                         'source_name': 'GND',
-                         'payload_query_field': 'q',
-                         'payload': {'q':None, # filled with search string parameter
-                                     'format': 'json:suggest',
-                                     'filter': 'type:Person'}},
-          'VIAF_PERSON': {'url': 'http://www.viaf.org/viaf/AutoSuggest',
-                          'mapping': VIAF_MAPPING,
-                          'filter': {'nametype': 'personal'},  
-                          'result': 'result',
-                          'resourceid_prefix': 'http://www.viaf.org/viaf/',
-                          'source_name': 'VIAF',
-                          'payload_query_field': 'query',
-                          'payload': {'query':None}},
-
-          'GND_PLACE': { 'url': 'https://lobid.org/gnd/search',
-                         'mapping': GND_MAPPING,
-                         'filter': None,
-                         'result': None,
-                         'resourceid_prefix': '',
-                         'source_name': 'GND',
-                         'payload_query_field': 'q',
-                         'payload': {'q':None, # filled with search string parameter
-                                     'format': 'json:suggest',
-                                     'filter': 'type:PlaceOrGeographicName'}},
-          'VIAF_PLACE':  {'url': 'http://www.viaf.org/viaf/AutoSuggest',
-                          'mapping': VIAF_MAPPING,
-                          'filter': {'nametype': 'geographic'},
-                          'result': 'result',
-                          'resourceid_prefix': 'http://www.viaf.org/viaf/',
-                          'source_name': 'VIAF',
-                          'payload_query_field': 'query',
-                          'payload': {'query':None}},
-          'GEONAMES_PLACE': {'url': 'http://api.geonames.org/search',
-                             'mapping': GEONAMES_MAPPING,
-                             'filter': None,
-                             'result': 'geonames',
-                             'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
-                             'source_name': 'GEONAMES',
-                             'payload_query_field': 'q',
-                             'payload': {'q': None,
-                                         'maxRows':10,
-                                         'username':'***REMOVED***',
-                                         'type':'json'}},
-          'TOP_CONCEPTS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
-                               'mapping': SKOSMOS_KEYWORDS_MAPPING,
-                               'filter': None,
-                               'result': 'topconcepts',
-                               'resourceid_prefix': '',
-                               'source_name': 'SKOSMOS',
-                               'payload_query_field': 'label',
-                               'payload': {'label': None}},
-          'VOC_KEYWORDS': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
-                           'mapping': VOC_MAPPING,
-                           'source_name': 'VOC',
-                           'filter': None,
-                           'result': 'results',
-                           'payload_query_field': 'query',
-                           'payload': {'query': None,
-                                       'lang': 'de',
-                                       'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline'}},
-          'VOC_ROLES': {'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
-                           'mapping': VOC_MAPPING,
-                           'source_name': 'VOC',
-                           'filter': None,
-                           'result': 'results',
-                           'payload_query_field': 'query',
-                           'payload': {'query': None,
-                                       'lang': 'de',
-                                       'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role'}}}
+LOOKUP = {
+    'ANGEWANDTE_PERSON': {
+        'url': '{}api/persons'.format(SITE_URL),
+        'mapping': ANGEWANDTE_MAPPING,
+        'filter': None,
+        'result': 'users',
+        'resourceid_prefix': None,
+        'source_name': 'Angewandte',
+        'payload_query_field': 'searchstring',
+        'payload': None
+    },
+    'GND_PERSON': {
+        'url': 'https://lobid.org/gnd/search',
+        'mapping': GND_MAPPING,
+        'filter': None,  # if the results should be filtered by a field's value within the result
+        'result': None,
+        'resourceid_prefix': None,
+        'source_name': 'GND',
+        'payload_query_field': 'q',
+        'payload': {
+            'format': 'json:suggest',
+            'filter': 'type:Person',
+        }
+    },
+    'VIAF_PERSON': {
+        'url': 'http://www.viaf.org/viaf/AutoSuggest',
+        'mapping': VIAF_MAPPING,
+        'filter': {'nametype': 'personal'},
+        'result': 'result',
+        'resourceid_prefix': 'http://www.viaf.org/viaf/',
+        'source_name': 'VIAF',
+        'payload_query_field': 'query',
+        'payload': None,
+    },
+    'GND_PLACE': {
+        'url': 'https://lobid.org/gnd/search',
+        'mapping': GND_MAPPING,
+        'filter': None,
+        'result': None,
+        'resourceid_prefix': None,
+        'source_name': 'GND',
+        'payload_query_field': 'q',
+        'payload': {
+            'format': 'json:suggest',
+            'filter': 'type:PlaceOrGeographicName',
+        }
+    },
+    'VIAF_PLACE':  {
+        'url': 'http://www.viaf.org/viaf/AutoSuggest',
+        'mapping': VIAF_MAPPING,
+        'filter': {'nametype': 'geographic'},
+        'result': 'result',
+        'resourceid_prefix': 'http://www.viaf.org/viaf/',
+        'source_name': 'VIAF',
+        'payload_query_field': 'query',
+        'payload': None,
+    },
+    'GEONAMES_PLACE': {
+        'url': 'http://api.geonames.org/search',
+        'mapping': GEONAMES_MAPPING,
+        'filter': None,
+        'result': 'geonames',
+        'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
+        'source_name': 'GEONAMES',
+        'payload_query_field': 'q',
+        'payload': {
+            'maxRows': 10,
+            'username': '***REMOVED***',
+            'type': 'json',
+        }
+    },
+    'SKOSMOS_KEYWORDS': {
+        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
+        'mapping': SKOSMOS_KEYWORDS_MAPPING,
+        'filter': None,
+        'result': 'topconcepts',
+        'resourceid_prefix': None,
+        'source_name': 'SKOSMOS',
+        'payload_query_field': '',
+        'payload': None,
+    },
+    'VOC_KEYWORDS': {
+        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
+        'mapping': VOC_MAPPING,
+        'source_name': 'VOC',
+        'filter': None,
+        'result': 'results',
+        'payload_query_field': 'query',
+        'payload': {
+            'lang': 'de',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline',
+        }
+    },
+    'VOC_ROLES': {
+        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
+        'mapping': VOC_MAPPING,
+        'source_name': 'VOC',
+        'filter': None,
+        'result': 'results',
+        'payload_query_field': 'query',
+        'payload': {
+            'lang': 'de',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
+        }
+    },
+}
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
-ACTIVE_SOURCES = {'person': ('VIAF_PERSON', 'GND_PERSON'),
-                  'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE' ),
-                  'keyword': ('VOC_KEYWORDS'),
-                  'keywords': ('TOP_CONCEPTS'),
-                  'role': ('VOC_ROLES')}
+ACTIVE_SOURCES = {
+    'contributor': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', ),
+    'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE', ),
+    'keyword': ('SKOSMOS_KEYWORDS', 'VOC_KEYWORDS', ),
+    'role': ('VOC_ROLES', ),
+}
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
 

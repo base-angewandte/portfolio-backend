@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.conf import settings
+from django.urls import reverse_lazy
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
@@ -41,16 +42,11 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'reference': OrderedDict([('hidden', True)]),
             'published': OrderedDict([('hidden', True)]),
             'data': OrderedDict([('hidden', True)]),
-            'title': OrderedDict([
-                ('field_type', 'autocomplete'),
-                ('field_format', 'half'),
-                ('source', '{}/autosuggest/v1/person/'.format(settings.FORCE_SCRIPT_NAME)),
-                ('order', 1),
-            ]),
+            'title': OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 1)]),
             'subtitle': OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 2)]),
             'type': OrderedDict([
                 ('field_type', 'chips'),
-                ('source', '{}/api/v1/jsonschema/'.format(settings.FORCE_SCRIPT_NAME)),
+                ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
                 ('order', 3),
             ]),
             'texts': OrderedDict([('field_type', 'multiline'), ('source', ''), ('order', 4)]),
