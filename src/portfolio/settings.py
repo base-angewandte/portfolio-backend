@@ -461,7 +461,7 @@ GEONAMES_MAPPING = {
     'source': 'geonameId',  # common_schema: GEONAMES schema
     'label': 'toponymName',
 }
-SKOSMOS_KEYWORDS_MAPPING = {
+BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
     'label': 'label',
 }
@@ -541,20 +541,20 @@ LOOKUP = {
             'type': 'json',
         }
     },
-    'SKOSMOS_KEYWORDS': {
+    'BASE_KEYWORDS': {
         'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
-        'mapping': SKOSMOS_KEYWORDS_MAPPING,
+        'mapping': BASE_KEYWORDS_MAPPING,
         'filter': None,
         'result': 'topconcepts',
         'resourceid_prefix': None,
-        'source_name': 'SKOSMOS',
-        'payload_query_field': '',
+        'source_name': 'base',
+        'payload_query_field': 'label',
         'payload': None,
     },
     'VOC_KEYWORDS': {
         'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
         'mapping': VOC_MAPPING,
-        'source_name': 'VOC',
+        'source_name': 'Portfolio',
         'filter': None,
         'result': 'results',
         'payload_query_field': 'query',
@@ -581,7 +581,7 @@ LOOKUP = {
 ACTIVE_SOURCES = {
     'contributor': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', ),
     'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE', ),
-    'keyword': ('SKOSMOS_KEYWORDS', 'VOC_KEYWORDS', ),
+    'keyword': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
     'role': ('VOC_ROLES', ),
 }
 
