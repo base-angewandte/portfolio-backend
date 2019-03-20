@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.conf import settings
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from requests_futures.sessions import FuturesSession
 from rest_framework import status
@@ -10,15 +11,23 @@ from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
+fieldname_paramter = openapi.Parameter(
+    'fieldname',
+    openapi.IN_PATH,
+    required=True,
+    type=openapi.TYPE_STRING,
+    enum=list(settings.ACTIVE_SOURCES.keys()),
+)
 
-@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup_all")
+
+@swagger_auto_schema(methods=['get'], manual_parameters=[fieldname_paramter], operation_id="autosuggest_v1_lookup_all")
 @api_view(['GET'])
 def lookup_view(request, fieldname, *args, **kwargs):
     # TODO: Configure to return all for some "fieldname"s
     return Response([])
 
 
-@swagger_auto_schema(methods=['get'], operation_id="autosuggest_v1_lookup")
+@swagger_auto_schema(methods=['get'], manual_parameters=[fieldname_paramter], operation_id="autosuggest_v1_lookup")
 @api_view(['GET'])
 def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
     data = fetch_responses(searchstr,
