@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils.functional import lazy
 from django.utils.translation import get_language
+from requests import RequestException
 from skosmos_client import SkosmosClient
 
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
@@ -24,11 +25,14 @@ def get_preflabel(concept):
             try:
                 label = c.label('en' if language == 'de' else 'de')
             except KeyError:
-                label = ''
-        if label:
-            cache.set(cache_key, label, 1000)
+                pass
+        except RequestException:
+            pass
 
-    return label
+        if label:
+            cache.set(cache_key, label, 86400)  # 1 day
+
+    return label or ''
 
 
 get_preflabel_lazy = lazy(get_preflabel, str)
