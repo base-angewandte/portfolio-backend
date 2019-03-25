@@ -4,6 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+apimapper==0.5
 apispec==0.39.0
 certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
@@ -55,7 +56,6 @@ pyyaml==3.13              # via apispec, flex, swagger-spec-validator
 rainbow-saddle==0.4.0
 rdflib==4.2.2             # via skosmos-client
 redis==3.0.1              # via django-redis, rq
-requests-futures==0.9.9
 requests==2.21.0          # via coreapi, flex, python-cas, requests-futures, skosmos-client
 rfc3987==1.3.8            # via flex
 rq-scheduler==0.9

@@ -22,6 +22,7 @@ import environ
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from hashids import Hashids
+from apimapper import config as apiconfig
 
 env = environ.Env()
 env.read_env()
@@ -445,142 +446,106 @@ PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
 
 # Autosuggest
+SOURCES = {'ANGEWANDTE_PERSON': {apiconfig.URL: '{}api/persons'.format(SITE_URL),
+                                 apiconfig.QUERY_FIELD: 'searchstring',
+                                 apiconfig.PAYLOAD: None},
+           'GND_PERSON': {apiconfig.URL: 'https://lobid.org/gnd/search',
+                          apiconfig.QUERY_FIELD: 'q',
+                          apiconfig.PAYLOAD: {'format': 'json:suggest',
+                                              'filter': 'type:Person'}},
+           'VIAF_PERSON': {apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+                           apiconfig.QUERY_FIELD: 'query',
+                           apiconfig.PAYLOAD: None,},
+           'GND_PLACE': {apiconfig.URL: 'https://lobid.org/gnd/search',
+                         apiconfig.QUERY_FIELD: 'q',
+                         apiconfig.PAYLOAD: {'format': 'json:suggest',
+                                             'filter': 'type:PlaceOrGeographicName',}},
+           'VIAF_PLACE':  {apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+                           apiconfig.QUERY_FIELD: 'query',
+                           apiconfig.PAYLOAD: None,},
+           'GEONAMES_PLACE': {apiconfig.URL: 'http://api.geonames.org/search',
+                              apiconfig.QUERY_FIELD: 'q',
+                              apiconfig.PAYLOAD: {'maxRows': 10,
+                                                  'username': '***REMOVED***',
+                                                  'type': 'json',}},
+           'BASE_KEYWORDS': {apiconfig.URL: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
+                             apiconfig.QUERY_FIELD: None,
+                             apiconfig.PAYLOAD: None,},
+           'VOC_KEYWORDS': {apiconfig.URL: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
+                            apiconfig.QUERY_FIELD: 'query',
+                            apiconfig.PAYLOAD: {'lang': 'de',
+                                                'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline',}},
+           'VOC_ROLES': {apiconfig.URL: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
+                         apiconfig.QUERY_FIELD: 'query',
+                         apiconfig.PAYLOAD: {'lang': 'de',
+                                             'parent': 'http://base.uni-ak.ac.at/portfolio/cv/contributors',}},}
+
 ANGEWANDTE_MAPPING = {
     'source': 'id',
-    'label': 'name',
-}
+    'label': 'name',}
 GND_MAPPING = {
     'source': 'id',  # common_schema: GND schema
-    'label': 'label',
-}
+    'label': 'label',}
 VIAF_MAPPING = {
-    'source': 'viafid',  # common_schema: VIAF schema
-    'label': 'displayForm',
-}
-GEONAMES_MAPPING = {
-    'source': 'geonameId',  # common_schema: GEONAMES schema
-    'label': 'toponymName',
-}
+    'label': 'displayForm',}
+GEONAMES_MAPPING =  {'label': 'toponymName',}
 BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
-    'label': 'label',
-}
+    'label': 'label',}
 VOC_MAPPING = {
     'source': 'uri',
     'label': 'prefLabel',
 }
 
-LOOKUP = {
-    'ANGEWANDTE_PERSON': {
-        'url': '{}api/persons'.format(SITE_URL),
-        'mapping': ANGEWANDTE_MAPPING,
-        'filter': None,
-        'result': 'users',
-        'resourceid_prefix': None,
-        'source_name': 'Angewandte',
-        'payload_query_field': 'searchstring',
-        'payload': None
-    },
-    'GND_PERSON': {
-        'url': 'https://lobid.org/gnd/search',
-        'mapping': GND_MAPPING,
-        'filter': None,  # if the results should be filtered by a field's value within the result
-        'result': None,
-        'resourceid_prefix': None,
-        'source_name': 'GND',
-        'payload_query_field': 'q',
-        'payload': {
-            'format': 'json:suggest',
-            'filter': 'type:Person',
-        }
-    },
-    'VIAF_PERSON': {
-        'url': 'http://www.viaf.org/viaf/AutoSuggest',
-        'mapping': VIAF_MAPPING,
-        'filter': {'nametype': 'personal'},
-        'result': 'result',
-        'resourceid_prefix': 'http://www.viaf.org/viaf/',
-        'source_name': 'VIAF',
-        'payload_query_field': 'query',
-        'payload': None,
-    },
-    'GND_PLACE': {
-        'url': 'https://lobid.org/gnd/search',
-        'mapping': GND_MAPPING,
-        'filter': None,
-        'result': None,
-        'resourceid_prefix': None,
-        'source_name': 'GND',
-        'payload_query_field': 'q',
-        'payload': {
-            'format': 'json:suggest',
-            'filter': 'type:PlaceOrGeographicName',
-        }
-    },
-    'VIAF_PLACE':  {
-        'url': 'http://www.viaf.org/viaf/AutoSuggest',
-        'mapping': VIAF_MAPPING,
-        'filter': {'nametype': 'geographic'},
-        'result': 'result',
-        'resourceid_prefix': 'http://www.viaf.org/viaf/',
-        'source_name': 'VIAF',
-        'payload_query_field': 'query',
-        'payload': None,
-    },
-    'GEONAMES_PLACE': {
-        'url': 'http://api.geonames.org/search',
-        'mapping': GEONAMES_MAPPING,
-        'filter': None,
-        'result': 'geonames',
-        'resourceid_prefix': 'http://api.geonames.org/get?username=***REMOVED***&geonameId=',
-        'source_name': 'GEONAMES',
-        'payload_query_field': 'q',
-        'payload': {
-            'maxRows': 10,
-            'username': '***REMOVED***',
-            'type': 'json',
-        }
-    },
-    'BASE_KEYWORDS': {
-        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/basekw/topConcepts/',
-        'mapping': BASE_KEYWORDS_MAPPING,
-        'filter': None,
-        'result': 'topconcepts',
-        'resourceid_prefix': None,
-        'source_name': 'base',
-        'payload_query_field': 'label',
-        'payload': None,
-    },
-    'VOC_KEYWORDS': {
-        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
-        'mapping': VOC_MAPPING,
-        'source_name': 'Portfolio',
-        'filter': None,
-        'result': 'results',
-        'payload_query_field': 'query',
-        'payload': {
-            'lang': 'de',
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/discipline',
-        }
-    },
-    'VOC_ROLES': {
-        'url': 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search',
-        'mapping': VOC_MAPPING,
-        'source_name': 'VOC',
-        'filter': None,
-        'result': 'results',
-        'payload_query_field': 'query',
-        'payload': {
-            'lang': 'de',
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
-        }
-    },
+RESPONSE_MAPS = {'ANGEWANDTE_PERSON': {apiconfig.RESULT: 'users',
+                                       apiconfig.DIRECT: ANGEWANDTE_MAPPING,
+                                       apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'},}},
+                 
+                 'GND_PERSON': {apiconfig.DIRECT: GND_MAPPING,
+                                apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'},}},
+
+                 'VIAF_PERSON': {apiconfig.RESULT: 'result',
+                                 apiconfig.FILTER: {'nametype': 'personal'},
+                                 apiconfig.DIRECT: VIAF_MAPPING,
+                                 apiconfig.RULES: {'source_name': {apiconfig.RULE: '"VIAF"'},
+                                                'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                                                           apiconfig.FIELDS: {'p1': 'viafid'}},}},
+
+                 'GND_PLACE': {apiconfig.DIRECT: GND_MAPPING,
+                                apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'},}},
+                 
+                 'VIAF_PLACE':  {apiconfig.RESULT: 'result',
+                                 apiconfig.FILTER: {'nametype': 'geographic'},
+                                 apiconfig.DIRECT: VIAF_MAPPING ,
+                                 apiconfig.RULES: {'source_name': {apiconfig.RULE: '"VIAF"'},
+                                                'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                                                           apiconfig.FIELDS: {'p1': 'viafid'}},}},
+
+                 'GEONAMES_PLACE': {apiconfig.RESULT: 'geonames',
+                                    apiconfig.DIRECT: GEONAMES_MAPPING,
+                                    apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GEONAMES"'},
+                                                      'source':
+                                                      {apiconfig.RULE: '"http://api.geonames.org/get?username=***REMOVED***&geonameId={p1}"',
+                                                       apiconfig.FIELDS: {'p1': 'geonameId'}},}},
+
+                 'BASE_KEYWORDS': {apiconfig.RESULT: 'topconcepts',
+                                   apiconfig.DIRECT: BASE_KEYWORDS_MAPPING,
+                                   apiconfig.RULES: {'source_name': {apiconfig.RULE: '"base"'},}},
+
+                 'VOC_KEYWORDS': {apiconfig.RESULT: 'results',
+                                  apiconfig.DIRECT: VOC_MAPPING,
+                                  apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'},}},
+
+
+                 'VOC_ROLES': {apiconfig.RESULT: 'results',
+                               apiconfig.DIRECT: VOC_MAPPING,
+                               apiconfig.RULES: {'source_name': {apiconfig.RULE: '"VOC"'},}},
 }
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributor': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', ),
-    'place': ('GEONAMES_PLACE', 'GND_PLACE', 'VIAF_PLACE', ),
+    'place': ('GND_PLACE', 'GEONAMES_PLACE', 'VIAF_PLACE'),
     'keyword': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
     'role': ('VOC_ROLES', ),
 }
