@@ -56,7 +56,7 @@ pyyaml==3.13              # via apispec, flex, swagger-spec-validator
 rainbow-saddle==0.4.0
 rdflib==4.2.2             # via skosmos-client
 redis==3.0.1              # via django-redis, rq
-requests==2.21.0          # via coreapi, flex, python-cas, requests-futures, skosmos-client
+requests==2.21.0          # via apimapper, coreapi, flex, python-cas, skosmos-client
 rfc3987==1.3.8            # via flex
 rq-scheduler==0.9
 rq==0.13.0                # via django-rq, rq-scheduler
