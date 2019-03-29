@@ -24,20 +24,20 @@ class Entry(AbstractBaseModel):
 
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(verbose_name=get_preflabel_lazy('collection_title'), max_length=255)
+    title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)
     subtitle = models.CharField(
-        verbose_name=get_preflabel_lazy('collection_subtitle'), max_length=255, blank=True, null=True,
+        verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True,
     )
     type = models.CharField(
-        verbose_name=get_preflabel_lazy('collection_type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
+        verbose_name=get_preflabel_lazy('type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
     )
     notes = models.TextField(blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(
-        verbose_name=get_preflabel_lazy('collection_keywords'), validators=[validate_keywords], blank=True, null=True,
+        verbose_name=get_preflabel_lazy('keywords'), validators=[validate_keywords], blank=True, null=True,
     )
     texts = JSONField(
-        verbose_name=get_preflabel_lazy('collection_text'), validators=[validate_texts], blank=True, null=True,
+        verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True,
     )
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)

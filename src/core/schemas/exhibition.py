@@ -1,6 +1,8 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, GEOReferenceSchema, DateRangeSchema, DateTimeSchema
+from .general import ContributorSchema, GEOReferenceSchema, DateRangeSchema, DateTimeSchema, get_contributors_field, \
+    get_contributors_field_for_role
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -32,32 +34,16 @@ class DateOpeningLocationSchema(Schema):
     location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
         'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
         'field_format': 'half',
     }})
     location_description = fields.String(**{'x-attrs': {'order': 4, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ExhibitionSchema(Schema):
-    artist = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 1,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'artist'  # TODO: replace with id!
-    }})
-    curator = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'curator'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 3,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
+    artist = get_contributors_field_for_role('artist', {'order': 1})
+    curator = get_contributors_field_for_role('curator', {'order': 2})
+    contributors = get_contributors_field({'order': 3})
     date = fields.List(fields.Nested(DateOpeningLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 4,
         'field_type': 'group',

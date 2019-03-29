@@ -1,6 +1,8 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateSchema, LocationSchema
+from .general import ContributorSchema, DateSchema, LocationSchema, get_material_field, get_format_field, \
+    get_contributors_field, get_contributors_field_for_role
 
 # TODO use concept ids as keys
 TYPES = [
@@ -29,22 +31,12 @@ TYPES = [
 
 
 class VideoSchema(Schema):
-    director = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 1,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'director'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
+    director = get_contributors_field_for_role('director', {'order': 1})
+    contributors = get_contributors_field({'order': 2})
     published_in = fields.Str(**{'x-attrs': {
         'order': 3,
         'field_type': 'autocomplete',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
         'field_format': 'half',
     }})
     date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
@@ -64,15 +56,6 @@ class VideoSchema(Schema):
         'field_type': 'group',
         'show_label': False,
     }})
-    material = fields.List(fields.Str(), **{'x-attrs': {
-        'order': 8,
-        'field_type': 'chips',
-        'source': 'vocbench',
-    }})
+    material = get_material_field({'order': 8})
     duration = fields.Str(**{'x-attrs': {'order': 9, 'field_format': 'half'}})
-    format = fields.List(fields.Str(), **{'x-attrs': {
-        'order': 10,
-        'field_type': 'chips',
-        'source': 'vocbench',
-        'field_format': 'half',
-    }})
+    format = get_format_field({'order': 10})

@@ -1,6 +1,8 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateSchema, DateTimeSchema, LocationSchema
+from .general import ContributorSchema, DateSchema, DateTimeSchema, LocationSchema, get_contributors_field, \
+    get_contributors_field_for_role
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -17,32 +19,10 @@ TYPES = [
 
 class AwardSchema(Schema):
     category = fields.Str(**{'x-attrs': {'order': 1}})
-    winner = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'winner'  # TODO: replace with id!
-    }})
-    granted_by = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 3,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'granted_by'  # TODO: replace with id!
-    }})
-    jury = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 4,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'jury'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 5,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
+    winner = get_contributors_field_for_role('winner', {'order': 2})
+    granted_by = get_contributors_field_for_role('granted_by', {'order': 3})
+    jury = get_contributors_field_for_role('jury', {'order': 4})  # TODO: not sortable according to objects and forms
+    contributors = get_contributors_field({'order': 5})
     date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {
         'order': 6,
         'field_type': 'date',

@@ -512,6 +512,29 @@ SOURCES = {
             'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
         }
     },
+    'VOC_FORMATS': {
+        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.QUERY_FIELD: 'query',
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/format_type',
+        }
+    },
+    'VOC_MATERIALS': {
+        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.QUERY_FIELD: 'query',
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/material_type',
+        }
+    },
+    'VOC_LANGUAGES': {
+        apiconfig.URL: '{}languages/search'.format(SKOSMOS_API),
+        apiconfig.QUERY_FIELD: 'query',
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+        }
+    },
 }
 
 ANGEWANDTE_MAPPING = {
@@ -594,12 +617,27 @@ RESPONSE_MAPS = {
     'VOC_KEYWORDS': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
     'VOC_ROLES': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
+    },
+    'VOC_FORMATS': {
+        apiconfig.RESULT: 'results',
+        apiconfig.DIRECT: VOC_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
+    },
+    'VOC_MATERIALS': {
+        apiconfig.RESULT: 'results',
+        apiconfig.DIRECT: VOC_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
+    },
+    'VOC_LANGUAGES': {
+        apiconfig.RESULT: 'results',
+        apiconfig.DIRECT: VOC_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
 }
 
@@ -609,6 +647,9 @@ ACTIVE_SOURCES = {
     'places': ('GND_PLACE', 'GEONAMES_PLACE', 'VIAF_PLACE'),
     'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
     'roles': ('VOC_ROLES', ),
+    'formats': ('VOC_FORMATS', ),
+    'materials': ('VOC_MATERIALS', ),
+    'languages': ('VOC_LANGUAGES', ),
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year

@@ -1,6 +1,7 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateRangeSchema
+from .general import ContributorSchema, DateRangeSchema, get_contributors_field, get_contributors_field_for_role
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -15,25 +16,9 @@ TYPES = [
 
 
 class ResearchProjectSchema(Schema):
-    project_lead = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 1,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'project_lead'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
-    funding_institutions = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 3,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'funding_institution'  # TODO: replace with id!
-    }})
+    project_lead = get_contributors_field_for_role('project_lead', {'order': 1})
+    contributors = get_contributors_field({'order': 2})
+    funding = get_contributors_field_for_role('funding', {'order': 3})
     funding_category = fields.Str(**{'x-attrs': {'order': 4}})
     date = fields.Nested(DateRangeSchema, additionalProperties=False, **{'x-attrs': {'order': 5, 'field_type': 'date'}})
     url = fields.Str(**{'x-attrs': {'order': 6}})

@@ -1,6 +1,7 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateRangeLocationSchema
+from .general import ContributorSchema, DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -19,18 +20,8 @@ TYPES = [
 
 
 class PerformanceSchema(Schema):
-    artist = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 1,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'artist'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
+    artist = get_contributors_field_for_role('artist', {'order': 1})
+    contributors = get_contributors_field({'order': 2})
     date_location = fields.List(fields.Nested(DateRangeLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
         'field_type': 'group',

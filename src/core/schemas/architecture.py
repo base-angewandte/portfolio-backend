@@ -1,6 +1,8 @@
+from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateLocationSchema
+from .general import ContributorSchema, DateLocationSchema, get_material_field, get_format_field, \
+    get_contributors_field, get_contributors_field_for_role
 
 # TODO use concept ids as keys
 TYPES = [
@@ -15,35 +17,18 @@ TYPES = [
 
 
 class ArchitectureSchema(Schema):
-    architect = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 1,
-        'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-        'equivalent': 'contributors',
-        'default_role': 'architect'  # TODO: replace with id!
-    }})
-    contributors = fields.List(fields.Nested(ContributorSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'chips-below',
-        'source': 'http://localhost:8200/autosuggest/v1/person/',
-    }})
+    architecture = get_contributors_field_for_role('architecture', {'order': 1})
+    contributors = get_contributors_field({'order': 2})
     date_location = fields.List(fields.Nested(DateLocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 3,
         'field_type': 'group',
         'show_label': False,
     }})
-    material = fields.List(fields.Str(), **{'x-attrs': {
+    material = get_material_field({
+        'field_format': 'half',
         'order': 4,
-        'field_type': 'chips',
-        'source': 'vocbench',
-        'field_format': 'half',
-    }})
-    format = fields.List(fields.Str(), **{'x-attrs': {
-        'order': 5,
-        'field_type': 'chips',
-        'source': 'vocbench',
-        'field_format': 'half',
-    }})
+    })
+    format = get_format_field({'order': 5})
     url = fields.Str(**{'x-attrs': {
         'order': 6,
         'field_type': 'text',

@@ -2,7 +2,8 @@ from django.conf import settings
 from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, GEOReferenceSchema, DateSchema
+from .general import ContributorSchema, GEOReferenceSchema, DateSchema, get_format_field, get_material_field, \
+    get_contributors_field, get_contributors_field_for_role
 from ..skosmos import get_preflabel_lazy, get_uri
 
 # TODO use concept ids as keys
@@ -55,185 +56,107 @@ TYPES = [
 
 class PublishedInSchema(Schema):
     title = fields.Str(
-        title=get_preflabel_lazy('collection_title'),
+        title=get_preflabel_lazy('title'),
         **{'x-attrs': {
-            'order': 1,
             'field_format': 'half',
+            'order': 1,
         }},
     )
     subtitle = fields.Str(
-        title=get_preflabel_lazy('collection_subtitle'),
+        title=get_preflabel_lazy('subtitle'),
         **{'x-attrs': {
-            'order': 2,
             'field_format': 'half',
+            'order': 2,
         }},
     )
-    editors = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('editor'),
-        **{'x-attrs': {
-            'order': 3,
-            'field_type': 'chips',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'equivalent': 'contributors',
-            'default_role': get_uri('editor'),
-            'sortable': True
-        }},
-    )
-    publisher = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('publisher'),
-        **{'x-attrs': {
-            'order': 4,
-            'field_type': 'chips',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'equivalent': 'contributors',
-            'default_role': get_uri('publisher'),
-        }},
-    )
+    editor = get_contributors_field_for_role('editor', {'order': 3})
+    publisher = get_contributors_field_for_role('publisher', {'order': 4})
 
 
 class DocumentSchema(Schema):
-    authors = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('authors'),
-        **{'x-attrs': {
-            'order': 1,
-            'field_type': 'chips',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'equivalent': 'contributors',
-            'default_role': get_uri('authors'),
-            'sortable': True,
-        }},
-    )
-    editors = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('editor'),
-        **{'x-attrs': {
-            'order': 2,
-            'field_type': 'chips',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'equivalent': 'contributors',
-            'default_role': get_uri('editor'),
-            'sortable': True
-        }},
-    )
-    publisher = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('publisher'),
-        **{'x-attrs': {
-            'order': 3,
-            'field_type': 'chips',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'equivalent': 'contributors',
-            'default_role': get_uri('publisher'),
-        }},
-    )
+    authors = get_contributors_field_for_role('authors', {'order': 1})
+    editors = get_contributors_field_for_role('editor', {'order': 2})
+    publisher = get_contributors_field_for_role('publisher', {'order': 3})
     date = fields.Nested(
         DateSchema,
-        title=get_preflabel_lazy('collection_date'),
+        title=get_preflabel_lazy('date'),
         **{'x-attrs': {
-            'order': 4,
-            'field_type': 'date',
             'field_format': 'half',
+            'field_type': 'date',
+            'order': 4,
         }},
     )
     location = fields.List(
         fields.Nested(GEOReferenceSchema, additionalProperties=False),
-        title=get_preflabel_lazy('collection_location'),
+        title=get_preflabel_lazy('location'),
         **{'x-attrs': {
-            'order': 5,
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'place'}),
-            'field_type': 'chips',
             'field_format': 'half',
+            'field_type': 'chips',
+            'order': 5,
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
         }},
     )
     isbn = fields.Str(
-        title=get_preflabel_lazy('collection_isbn'),
+        title=get_preflabel_lazy('isbn'),
         **{'x-attrs': {
-            'order': 6,
             'field_format': 'half',
+            'order': 6,
         }},
     )
     doi = fields.Str(
-        title=get_preflabel_lazy('collection_doi'),
+        title=get_preflabel_lazy('doi'),
         **{'x-attrs': {
-            'order': 7,
             'field_format': 'half',
+            'order': 7,
         }},
     )
     url = fields.Str(
-        title=get_preflabel_lazy('collection_url'),
+        title=get_preflabel_lazy('url'),
         **{'x-attrs': {
-            'order': 8,
             'field_format': 'half',
+            'order': 8,
         }},
     )
     published_in = fields.List(
         fields.Nested(PublishedInSchema, additionalProperties=False),
-        title=get_preflabel_lazy('collection_published_in'),
+        title=get_preflabel_lazy('published_in'),
         **{'x-attrs': {
-            'order': 9,
             'field_type': 'group',
             'show_label': True,
+            'order': 9,
         }},
     )
     volume = fields.Str(
-        title=get_preflabel_lazy('collection_volume_issue'),
+        title=get_preflabel_lazy('volume_issue'),
         **{'x-attrs': {
-            'order': 10,
             'field_format': 'half',
+            'order': 10,
         }},
     )
     pages = fields.Str(
-        title=get_preflabel_lazy('collection_pages'),
+        title=get_preflabel_lazy('pages'),
         **{'x-attrs': {
-            'order': 11,
             'field_format': 'half',
+            'order': 11,
         }},
     )
-    contributors = fields.List(
-        fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('collection_contributor'),
-        **{'x-attrs': {
-            'order': 12,
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributor'}),
-            'field_type': 'chips-below',
-        }},
-    )
+    contributors = get_contributors_field({'order': 12})
     language = fields.List(
         fields.Str(),
-        title=get_preflabel_lazy('collection_title'),
+        title=get_preflabel_lazy('language'),
         **{'x-attrs': {
+            'field_format': 'half',
+            'field_type': 'chips',
             'order': 8,
-            'field_type': 'chips',
-            'source': 'vocbench',
-            'field_format': 'half',
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
         }},
     )
-    material = fields.List(
-        fields.Str(),
-        title=get_preflabel_lazy('collection_material'),
-        **{'x-attrs': {
-            'order': 14,
-            'field_type': 'chips',
-            'source': 'vocbench',
-        }},
-    )
-    format = fields.List(
-        fields.Str(),
-        title=get_preflabel_lazy('collection_format'),
-        **{'x-attrs': {
-            'order': 15,
-            'field_type': 'chips',
-            'source': 'vocbench',
-            'field_format': 'half',
-        }},
-    )
+    material = get_material_field({'order': 14})
+    format = get_format_field({'order': 15})
     edition = fields.Str(
-        title=get_preflabel_lazy('collection_edition'),
+        title=get_preflabel_lazy('edition'),
         **{'x-attrs': {
-            'order': 16,
             'field_format': 'half',
+            'order': 16,
         }},
     )

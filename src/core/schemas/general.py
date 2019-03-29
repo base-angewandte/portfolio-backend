@@ -1,13 +1,15 @@
 from django.conf import settings
+from django.urls import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, fields, validate
 
-from ..skosmos import get_preflabel_lazy
+from ..skosmos import get_preflabel_lazy, get_uri
 
 
 # contains shared schema definitions
 class GEOReferenceSchema(Schema):
     source = fields.Str()
-    label = fields.Str()
+    name = fields.Str()
     latitude = fields.Str()
     longitude = fields.Str()
 
@@ -30,7 +32,7 @@ class LocationSchema(Schema):
     location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 1,
         'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
         'field_format': 'half',
     }})
     location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
@@ -46,7 +48,7 @@ class DateLocationSchema(Schema):
     location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
         'order': 2,
         'field_type': 'chips',
-        'source': 'http://localhost:8200/autosuggest/v1/place/',
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
         'field_format': 'half',
 
     }})
@@ -55,28 +57,86 @@ class DateLocationSchema(Schema):
 
 class DateRangeLocationSchema(Schema):
     date = fields.Nested(DateRangeSchema, additionalProperties=False,
-                         title=get_preflabel_lazy('collection_date'),
+                         title=get_preflabel_lazy('date'),
                          **{'x-attrs': {
-                            'order': 1,
-                            'field_type': 'date',
+                                'order': 1,
+                                'field_type': 'date',
                             }})
     location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False),
-                           title=get_preflabel_lazy('collection_location'),
+                           title=get_preflabel_lazy('location'),
                            **{'x-attrs': {
                             'order': 2,
                             'field_type': 'chips',
-                            'source': 'http://localhost:8200/autosuggest/v1/place/',
+                            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
                             'field_format': 'half',
                             }})
     location_description = fields.String(
-        title=get_preflabel_lazy('collection_location_description'),
+        title=get_preflabel_lazy('location_description'),
         **{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
 
 
 class ContributorSchema(Schema):
-    label = fields.Str()
     source = fields.Str(**{'x-attrs': {'hidden': True}})
+    name = fields.Str()
     roles = fields.List(fields.Str())
+
+
+# shared fields
+
+def get_contributors_field(additional_attributes={}):
+    return fields.List(
+        fields.Nested(ContributorSchema, additionalProperties=False),
+        title=get_preflabel_lazy('contributor'),
+        **{'x-attrs': {
+            'field_type': 'chips-below',
+            'placeholder': _('Wähle beteiligte Personen oder Institutionen aus'),
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            **additional_attributes
+        }}
+    )
+
+
+def get_contributors_field_for_role(role, additional_attributes={}):
+    return fields.List(
+        fields.Nested(ContributorSchema, additionalProperties=False),
+        title=get_preflabel_lazy(role),
+        **{'x-attrs': {
+            'default_role': get_uri(role),
+            'equivalent': 'contributors',
+            'field_type': 'chips',
+            'placeholder': '{} {}'.format(_('Wähle'), get_preflabel_lazy(role)),
+            'sortable': True,
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            **additional_attributes
+        }}
+    )
+
+
+def get_format_field(additional_attributes={}):
+    return fields.List(
+        fields.Str(),
+        title=get_preflabel_lazy('format'),
+        **{'x-attrs': {
+            'field_format': 'half',
+            'field_type': 'chips',
+            'sortable': True,
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
+            **additional_attributes
+        }},
+    )
+
+
+def get_material_field(additional_attributes={}):
+    return fields.List(
+        fields.Str(),
+        title=get_preflabel_lazy('material'),
+        **{'x-attrs': {
+            'field_type': 'chips',
+            'sortable': True,
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
+            **additional_attributes
+        }},
+    )
 
 
 # schema definitions for entry model
@@ -99,13 +159,13 @@ class TextDataSchema(Schema):
             labels=settings.LANGUAGES_DICT.values(),
         ),
         required=True,
-        title=get_preflabel_lazy('collection_language'),
+        title=get_preflabel_lazy('language'),
     )
-    text = fields.Str(required=True, title=get_preflabel_lazy('collection_text'))
+    text = fields.Str(required=True, title=get_preflabel_lazy('text'))
 
 
 class TextSchema(Schema):
-    type = fields.Str(title=get_preflabel_lazy('collection_type'))
+    type = fields.Str(title=get_preflabel_lazy('type'))
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 
