@@ -10,6 +10,8 @@ from rest_framework.response import Response
 
 from apimapper import APIMapper
 
+from api.yasg import language_header_parameter
+
 logger = logging.getLogger(__name__)
 
 fieldname_paramter = openapi.Parameter(
@@ -21,14 +23,22 @@ fieldname_paramter = openapi.Parameter(
 )
 
 
-@swagger_auto_schema(methods=['get'], manual_parameters=[fieldname_paramter], operation_id="autosuggest_v1_lookup_all")
+@swagger_auto_schema(
+    methods=['get'],
+    manual_parameters=[fieldname_paramter, language_header_parameter],
+    operation_id='autosuggest_v1_lookup_all',
+)
 @api_view(['GET'])
 def lookup_view(request, fieldname, *args, **kwargs):
     # TODO: Configure to return all for some "fieldname"s
     return Response([])
 
 
-@swagger_auto_schema(methods=['get'], manual_parameters=[fieldname_paramter], operation_id="autosuggest_v1_lookup")
+@swagger_auto_schema(
+    methods=['get'],
+    manual_parameters=[fieldname_paramter, language_header_parameter],
+    operation_id='autosuggest_v1_lookup',
+)
 @api_view(['GET'])
 def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
     data = fetch_responses(searchstr,
