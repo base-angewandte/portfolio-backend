@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from apimapper import APIMapper
+from rest_framework.utils.encoders import JSONEncoder
 
 from api.yasg import language_header_parameter
 
@@ -50,7 +51,12 @@ def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
 def fetch_responses(querystring, active_sources):
     responses = []
     for src in active_sources:
-        api = APIMapper(settings.SOURCES.get(src), settings.RESPONSE_MAPS.get(src))
+        api = APIMapper(
+            # this is kinda hacky - change it if there's a better solution to force evaluation of lazy objects
+            # inside a dict
+            json.loads(json.dumps(settings.SOURCES.get(src), cls=JSONEncoder)),
+            settings.RESPONSE_MAPS.get(src),
+        )
         res = api.fetch_results(querystring)
         responses.extend(res)
 
