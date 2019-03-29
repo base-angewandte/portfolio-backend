@@ -494,6 +494,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
+            'group': 'http://base.uni-ak.ac.at/recherche/keywords/collection_base',
         },
     },
     'VOC_KEYWORDS': {
