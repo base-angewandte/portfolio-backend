@@ -24,6 +24,8 @@ from django.utils.translation import ugettext_lazy as _
 from hashids import Hashids
 from apimapper import config as apiconfig
 
+from general.utils import get_language_lazy
+
 env = environ.Env()
 env.read_env()
 
@@ -490,18 +492,22 @@ SOURCES = {
     'BASE_KEYWORDS': {
         apiconfig.URL: '{}basekw/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
-        apiconfig.PAYLOAD: None,
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+        },
     },
     'VOC_KEYWORDS': {
         apiconfig.URL: '{}disciplines/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
-        apiconfig.PAYLOAD: None,
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+        },
     },
     'VOC_ROLES': {
         apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: {
-            'lang': 'de',
+            'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
         }
     },
