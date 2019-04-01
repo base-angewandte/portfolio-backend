@@ -1,7 +1,6 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role
+from .general import DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role, get_url_field
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -22,4 +21,4 @@ class FestivalSchema(Schema):
         'field_type': 'group',
         'show_label': False,
     }}))
-    url = fields.Str(**{'x-attrs': {'order': 5}})
+    url = get_url_field({'order': 5})

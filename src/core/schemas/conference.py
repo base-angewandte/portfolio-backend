@@ -1,7 +1,6 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role
+from .general import DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role, get_url_field
 from ..schemas import ICON_EVENT
 from ..skosmos import get_preflabel_lazy
 
@@ -40,4 +39,4 @@ class ConferenceSchema(Schema):
         'field_type': 'group',
         'show_label': False,
     }})
-    url = fields.Str(title=get_preflabel_lazy('url'), **{'x-attrs': {'order': 6}})
+    url = get_url_field({'order': 6})

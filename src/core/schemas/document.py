@@ -1,10 +1,9 @@
-from django.conf import settings
 from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, GEOReferenceSchema, DateSchema, get_format_field, get_material_field, \
-    get_contributors_field, get_contributors_field_for_role
-from ..skosmos import get_preflabel_lazy, get_uri
+from .general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
+    get_date_field, get_location_group_field, get_url_field
+from ..skosmos import get_preflabel_lazy
 
 # TODO use concept ids as keys
 TYPES = [
@@ -77,25 +76,8 @@ class DocumentSchema(Schema):
     authors = get_contributors_field_for_role('authors', {'order': 1})
     editors = get_contributors_field_for_role('editor', {'order': 2})
     publisher = get_contributors_field_for_role('publisher', {'order': 3})
-    date = fields.Nested(
-        DateSchema,
-        title=get_preflabel_lazy('date'),
-        **{'x-attrs': {
-            'field_format': 'half',
-            'field_type': 'date',
-            'order': 4,
-        }},
-    )
-    location = fields.List(
-        fields.Nested(GEOReferenceSchema, additionalProperties=False),
-        title=get_preflabel_lazy('location'),
-        **{'x-attrs': {
-            'field_format': 'half',
-            'field_type': 'chips',
-            'order': 5,
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
-        }},
-    )
+    date = get_date_field({'order': 4})
+    location = get_location_group_field({'order': 5})
     isbn = fields.Str(
         title=get_preflabel_lazy('isbn'),
         **{'x-attrs': {
@@ -110,13 +92,7 @@ class DocumentSchema(Schema):
             'order': 7,
         }},
     )
-    url = fields.Str(
-        title=get_preflabel_lazy('url'),
-        **{'x-attrs': {
-            'field_format': 'half',
-            'order': 8,
-        }},
-    )
+    url = get_url_field({'field_format': 'half', 'order': 8})
     published_in = fields.List(
         fields.Nested(PublishedInSchema, additionalProperties=False),
         title=get_preflabel_lazy('published_in'),

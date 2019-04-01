@@ -1,8 +1,7 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateLocationSchema, get_material_field, get_format_field, \
-    get_contributors_field, get_contributors_field_for_role
+from .general import DateLocationSchema, get_material_field, get_format_field, get_contributors_field, \
+    get_contributors_field_for_role, get_url_field
 
 # TODO use concept ids as keys
 TYPES = [
@@ -29,7 +28,4 @@ class ArchitectureSchema(Schema):
         'order': 4,
     })
     format = get_format_field({'order': 5})
-    url = fields.Str(**{'x-attrs': {
-        'order': 6,
-        'field_type': 'text',
-    }})
+    url = get_url_field({'order': 6})

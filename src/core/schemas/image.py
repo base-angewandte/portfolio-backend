@@ -1,9 +1,7 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from core.skosmos import get_preflabel_lazy, get_uri
-from .general import ContributorSchema, LocationSchema, DateSchema, DateLocationSchema, get_material_field, \
-    get_format_field, get_contributors_field, get_contributors_field_for_role
+from .general import DateLocationSchema, get_material_field, get_format_field, get_contributors_field, \
+    get_contributors_field_for_role, get_url_field
 
 # TODO use concept ids as keys
 TYPES = [
@@ -34,4 +32,4 @@ class ImageSchema(Schema):
     material = get_material_field({'order': 4})
     format = get_format_field({'order': 5})
     dimensions = fields.Str(**{'x-attrs': {'order': 8, 'field_format': 'half'}})
-    url = fields.Str(**{'x-attrs': {'order': 5, 'field_format': 'half'}})
+    url = get_url_field({'field_format': 'half', 'order': 5})

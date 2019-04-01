@@ -1,8 +1,7 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, DateRangeLocationSchema, get_material_field, get_format_field, \
-    get_contributors_field, get_contributors_field_for_role
+from .general import DateRangeLocationSchema, get_material_field, get_format_field, get_contributors_field, \
+    get_contributors_field_for_role, get_url_field
 
 # TODO use concept ids as keys
 TYPES = [
@@ -32,7 +31,4 @@ class SculptureSchema(Schema):
         'field_type': 'text',
         'field_format': 'half'
     }})
-    url = fields.Str(**{'x-attrs': {
-        'order': 7,
-        'field_type': 'text',
-    }})
+    url = get_url_field({'order': 7})

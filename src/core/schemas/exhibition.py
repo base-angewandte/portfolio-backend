@@ -1,8 +1,7 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, GEOReferenceSchema, DateRangeSchema, DateTimeSchema, get_contributors_field, \
-    get_contributors_field_for_role
+from .general import DateRangeSchema, DateTimeSchema, get_contributors_field, get_contributors_field_for_role, \
+    get_location_field, get_url_field
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -31,12 +30,7 @@ class DateOpeningLocationSchema(Schema):
         'field_type': 'date',
         'field_format': 'half',
     }})
-    location = fields.List(fields.Nested(GEOReferenceSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 3,
-        'field_type': 'chips',
-        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
-        'field_format': 'half',
-    }})
+    location = get_location_field({'order': 3})
     location_description = fields.String(**{'x-attrs': {'order': 4, 'field_type': 'text', 'field_format': 'half'}})
 
 
@@ -49,4 +43,4 @@ class ExhibitionSchema(Schema):
         'field_type': 'group',
         'show_label': False,
     }})
-    url = fields.Str(**{'x-attrs': {'order': 5}})
+    url = get_url_field({'order': 5})

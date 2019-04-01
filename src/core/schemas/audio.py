@@ -1,8 +1,8 @@
 from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from .general import ContributorSchema, LocationSchema, DateSchema, get_material_field, get_format_field, \
-    get_contributors_field, get_contributors_field_for_role
+from .general import LocationSchema, get_material_field, get_format_field, get_contributors_field, \
+    get_contributors_field_for_role, get_date_field, get_url_field
 
 # TODO use concept ids as keys
 TYPES = [
@@ -37,14 +37,14 @@ class AudioSchema(Schema):
         'field_type': 'autocomplete',
         'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
     }})
-    date = fields.Nested(DateSchema, additionalProperties=False, **{'x-attrs': {'order': 5, 'field_type': 'date', 'field_format': 'half'}})
+    date = get_date_field({'order': 5})
     language = fields.List(fields.Str(), **{'x-attrs': {
         'order': 6,
         'field_type': 'chips',
         'source': 'vocbench',
         'field_format': 'half',
     }})
-    url = fields.Str(**{'x-attrs': {'order': 7}})
+    url = get_url_field({'order': 7})
     location = fields.List(fields.Nested(LocationSchema, additionalProperties=False), **{'x-attrs': {
         'order': 8,
         'field_type': 'group',
