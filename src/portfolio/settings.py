@@ -430,6 +430,7 @@ ACTIVE_SCHEMAS = env.list(
         'image',
         'research_project',
         'sculpture',
+        'software',
         'video',
         'workshop',
     ]
@@ -652,6 +653,7 @@ ACTIVE_SOURCES = {
     'formats': ('VOC_FORMATS', ),
     'materials': ('VOC_MATERIALS', ),
     'languages': ('VOC_LANGUAGES', ),
+    'licenses': (),
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year

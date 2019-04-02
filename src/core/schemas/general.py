@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, fields, validate
 
-from ..skosmos import get_preflabel_lazy, get_uri
+from ..skosmos import get_preflabel_lazy, get_uri, get_languages
 
 
 # shared fields
@@ -50,6 +50,27 @@ def get_date_field(additional_attributes={}):
     )
 
 
+def get_date_location_group_field(additional_attributes={}):
+    return fields.List(
+        fields.Nested(DateLocationSchema, additionalProperties=False),
+        **{'x-attrs': {
+            'field_type': 'group',
+            'show_label': False,
+            **additional_attributes
+        }}
+    )
+
+
+def get_duration_field(additional_attributes={}):
+    return fields.Str(
+        title=get_preflabel_lazy('duration'),
+        **{'x-attrs': {
+            'field_format': 'half',
+            **additional_attributes
+        }}
+    )
+
+
 def get_format_field(additional_attributes={}):
     return fields.List(
         fields.Str(),
@@ -59,6 +80,33 @@ def get_format_field(additional_attributes={}):
             'field_type': 'chips',
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
+            **additional_attributes
+        }},
+    )
+
+
+def get_language_field(additional_attributes={}, required=False):
+    return fields.Str(
+        validate=validate.OneOf(
+            get_languages()[0],
+            labels=get_languages()[1],
+        ),
+        required=required,
+        title=get_preflabel_lazy('language'),
+        **{'x-attrs': {
+            **additional_attributes
+        }},
+    )
+
+
+def get_language_list_field(additional_attributes={}):
+    return fields.List(
+        get_language_field(),
+        title=get_preflabel_lazy('language'),
+        **{'x-attrs': {
+            'field_format': 'half',
+            'field_type': 'chips',
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
             **additional_attributes
         }},
     )
@@ -111,8 +159,19 @@ def get_material_field(additional_attributes={}):
     )
 
 
-def get_url_field(additional_attributes={}):
+def get_published_in_field(additional_attributes={}):
     return fields.Str(
+        title=get_preflabel_lazy('published_in'),
+        **{'x-attrs': {
+            'field_type': 'autocomplete',
+            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            **additional_attributes
+        }},
+    )
+
+
+def get_url_field(additional_attributes={}):
+    return fields.Url(
         title=get_preflabel_lazy('url'),
         **{'x-attrs': {
             **additional_attributes
@@ -186,14 +245,7 @@ class KeywordsModelSchema(Schema):
 
 # texts
 class TextDataSchema(Schema):
-    language = fields.Str(
-        validate=validate.OneOf(
-            settings.LANGUAGES_DICT.keys(),
-            labels=settings.LANGUAGES_DICT.values(),
-        ),
-        required=True,
-        title=get_preflabel_lazy('language'),
-    )
+    language = get_language_field(required=True)
     text = fields.Str(required=True, title=get_preflabel_lazy('text'))
 
 
