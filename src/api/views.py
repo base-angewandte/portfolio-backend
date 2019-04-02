@@ -198,8 +198,8 @@ def user_information(request, *args, **kwargs):
     data = {
         'name': attributes.get('display_name'),
         'email': attributes.get('email'),
-        'permissions': attributes.get('permissions').split(',') if attributes.get('permissions') else [],
-        'groups': attributes.get('groups').split(',') if attributes.get('groups') else [],
+        'permissions': attributes.get('permissions') or [],
+        'groups': attributes.get('groups') or [],
         'space': get_free_space_for_user(request.user) if request.user else None,
     }
 
