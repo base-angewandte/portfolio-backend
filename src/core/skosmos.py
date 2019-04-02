@@ -8,6 +8,31 @@ from skosmos_client import SkosmosClient
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
 
 
+def get_languages():
+    language = get_language() or 'en'
+    cache_key_languages = 'get_languages_{}'.format(language)
+    cache_key_languages_labels = 'get_languages_labels_{}'.format(language)
+
+    languages = cache.get(cache_key_languages, [])
+    languages_labels = cache.get(cache_key_languages_labels, [])
+
+    if not languages or not languages_labels:
+        r = skosmos.top_concepts(settings.LANGUAGES_VOCID, lang=language)
+
+        r = sorted(r, key=lambda k: k['label'])
+
+        for l in r:
+            languages.append(l['uri'])
+            languages_labels.append(l['label'])
+
+        if languages:
+            cache.set(cache_key_languages, languages, 86400)  # 1 day
+        if languages_labels:
+            cache.set(cache_key_languages_labels, languages_labels, 86400)  # 1 day
+
+    return languages, languages_labels
+
+
 def get_uri(concept):
     return '{}{}'.format(settings.PORTFOLIO_GRAPH, concept)
 
