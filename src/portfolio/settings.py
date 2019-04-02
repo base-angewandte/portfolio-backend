@@ -447,6 +447,8 @@ SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
 PORTFOLIO_VOCID = 'portfolio'
 PORTFOLIO_GRAPH = 'http://base.uni-ak.ac.at/portfolio/cv/'
 
+LANGUAGES_VOCID = 'languages'
+
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
