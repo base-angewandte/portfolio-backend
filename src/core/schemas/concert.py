@@ -1,7 +1,7 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema
 
-from .general import DateTimeSchema, get_contributors_field, get_contributors_field_for_role, get_location_field, \
-    get_url_field
+from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
+    get_date_time_range_location_group_field
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -14,23 +14,10 @@ TYPES = [
 ]
 
 
-class DateTimeLocationSchema(Schema):
-    date = fields.Nested(DateTimeSchema, additionalProperties=False, **{'x-attrs': {
-        'order': 1,
-        'field_type': 'date',
-    }})
-    location = get_location_field({'order': 2})
-    location_description = fields.String(**{'x-attrs': {'order': 3, 'field_type': 'text', 'field_format': 'half'}})
-
-
 class ConcertSchema(Schema):
     music = get_contributors_field_for_role('music', {'order': 1})
-    composition = get_contributors_field_for_role('composition', {'order': 2})
-    conductor = get_contributors_field_for_role('conductor', {'order': 3})
+    conductor = get_contributors_field_for_role('conductor', {'order': 2})
+    composition = get_contributors_field_for_role('composition', {'order': 3})
     contributors = get_contributors_field({'order': 4})
-    date_location = fields.List(fields.Nested(DateTimeLocationSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 5,
-        'field_type': 'group',
-        'show_label': False,
-    }})
+    date_time_range_location = get_date_time_range_location_group_field({'order': 5})
     url = get_url_field({'order': 6})

@@ -1,6 +1,6 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema
 
-from .general import DateRangeLocationSchema, get_contributors_field, get_url_field
+from .general import get_contributors_field, get_url_field, get_date_range_time_range_location_group_field
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -29,9 +29,5 @@ TYPES = [
 
 class EventSchema(Schema):
     contributors = get_contributors_field({'order': 1})
-    date_location = fields.List(fields.Nested(DateRangeLocationSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 2,
-        'field_type': 'group',
-        'show_label': False,
-    }})
+    date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 2})
     url = get_url_field({'order': 3})

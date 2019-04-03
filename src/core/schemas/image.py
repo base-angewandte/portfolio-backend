@@ -1,7 +1,7 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema
 
 from .general import get_material_field, get_format_field, get_contributors_field, get_contributors_field_for_role, \
-    get_url_field, get_date_location_group_field
+    get_url_field, get_date_location_group_field, get_dimensions_field
 
 # TODO use concept ids as keys
 TYPES = [
@@ -25,4 +25,4 @@ class ImageSchema(Schema):
     url = get_url_field({'field_format': 'half', 'order': 4})
     material = get_material_field({'order': 5})
     format = get_format_field({'order': 6})
-    dimensions = fields.Str(**{'x-attrs': {'order': 7, 'field_format': 'half'}})
+    dimensions = get_dimensions_field({'order': 7})

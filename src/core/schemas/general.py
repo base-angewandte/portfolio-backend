@@ -1,9 +1,36 @@
-from django.conf import settings
+from datetime import datetime
+
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, ValidationError, fields, validate
 
 from ..skosmos import get_preflabel_lazy, get_uri, get_languages
+
+
+# validators
+
+def validate_date(data):
+    try:
+        datetime.strptime(data, '%d.%m.%Y')
+    except ValueError:
+        try:
+            datetime.strptime(data, '%Y')
+        except ValueError:
+            raise ValidationError(_('Invalid date entry (expected dd.mm.yyyy or yyyy)'))
+
+
+def validate_full_date(data):
+    try:
+        datetime.strptime(data, '%d.%m.%Y')
+    except ValueError:
+        raise ValidationError(_('Invalid date entry (expected dd.mm.yyyy)'))
+
+
+def validate_year(data):
+    try:
+        datetime.strptime(data, '%Y')
+    except ValueError:
+        raise ValidationError(_('Invalid date entry (expected yyyy)'))
 
 
 # shared fields
@@ -37,11 +64,11 @@ def get_contributors_field_for_role(role, additional_attributes={}):
     )
 
 
-def get_date_field(additional_attributes={}):
-    return fields.Nested(
-        DateSchema,
+def get_date_field(additional_attributes={}, validator=validate_date):
+    return fields.Date(
         title=get_preflabel_lazy('date'),
         additionalProperties=False,
+        validate=validator,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
@@ -56,6 +83,83 @@ def get_date_location_group_field(additional_attributes={}):
         **{'x-attrs': {
             'field_type': 'group',
             'show_label': False,
+            **additional_attributes
+        }}
+    )
+
+
+def get_date_range_field(additional_attributes={}):
+    return fields.Nested(
+        DateRangeSchema,
+        additionalProperties=False,
+        **{'x-attrs': {
+            'field_format': 'half',
+            'field_type': 'date',
+            **additional_attributes
+        }},
+    )
+
+
+def get_date_range_time_range_field(additional_attributes={}):
+    return fields.Nested(
+        DateRangeTimeRangeSchema,
+        additionalProperties=False,
+        **{'x-attrs': {
+            'field_type': 'date',
+            **additional_attributes
+        }},
+    )
+
+
+def get_date_range_time_range_location_group_field(additional_attributes={}):
+    return fields.List(
+        fields.Nested(DateRangeTimeRangeLocationSchema, additionalProperties=False),
+        **{'x-attrs': {
+            'field_type': 'group',
+            'show_label': False,
+            **additional_attributes
+        }},
+    )
+
+
+def get_date_time_field(additional_attributes={}):
+    return fields.Nested(
+        DateTimeSchema,
+        additionalProperties=False,
+        **{'x-attrs': {
+            'field_type': 'date',
+            **additional_attributes
+        }},
+    )
+
+
+def get_date_time_range_field(additional_attributes={}):
+    return fields.Nested(
+        DateTimeRangeSchema,
+        additionalProperties=False,
+        **{'x-attrs': {
+            'field_type': 'date',
+            **additional_attributes
+        }},
+    )
+
+
+def get_date_time_range_location_group_field(additional_attributes={}):
+    return fields.List(
+        fields.Nested(DateTimeRangeLocationSchema, additionalProperties=False),
+        **{'x-attrs': {
+            'field_type': 'group',
+            'show_label': False,
+            **additional_attributes
+        }},
+    )
+
+
+def get_dimensions_field(additional_attributes={}):
+    fields.Str(
+        title=get_preflabel_lazy('dimensions'),
+        **{'x-attrs': {
+            'field_format': 'half',
             **additional_attributes
         }}
     )
@@ -188,18 +292,27 @@ class GEOReferenceSchema(Schema):
     longitude = fields.Str()
 
 
-class DateSchema(Schema):
-    date = fields.Date()
-
-
 class DateRangeSchema(Schema):
-    date_from = fields.Date()
-    date_to = fields.Date()
+    date_from = fields.Date(validate=validate_full_date)
+    date_to = fields.Date(validate=validate_full_date)
+
+
+class DateRangeTimeRangeSchema(Schema):
+    date_from = fields.Date(validate=validate_full_date)
+    date_to = fields.Date(validate=validate_full_date)
+    time_from = fields.Time()
+    time_to = fields.Time()
 
 
 class DateTimeSchema(Schema):
-    date = fields.Date()
+    date = fields.Date(validate=validate_full_date)
     time = fields.Time()
+
+
+class DateTimeRangeSchema(Schema):
+    date = fields.Date(validate=validate_full_date)
+    time_from = fields.Time()
+    time_to = fields.Time()
 
 
 class LocationSchema(Schema):
@@ -207,7 +320,6 @@ class LocationSchema(Schema):
     location_description = get_location_description_field({'field_format': 'half', 'order': 2})
 
 
-# TODO: currently only used for architecture (and not sure it is needed there) - check if this is necessary
 class DateLocationSchema(Schema):
     date = get_date_field({'order': 1})
     location = get_location_field({'order': 2})
@@ -215,12 +327,19 @@ class DateLocationSchema(Schema):
 
 
 class DateRangeLocationSchema(Schema):
-    date = fields.Nested(DateRangeSchema, additionalProperties=False,
-                         title=get_preflabel_lazy('date'),
-                         **{'x-attrs': {
-                                'order': 1,
-                                'field_type': 'date',
-                            }})
+    date = get_date_range_field({'order': 1})
+    location = get_location_field({'order': 2})
+    location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+
+
+class DateRangeTimeRangeLocationSchema(Schema):
+    date = get_date_range_time_range_field({'order': 1})
+    location = get_location_field({'order': 2})
+    location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+
+
+class DateTimeRangeLocationSchema(Schema):
+    date = get_date_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 

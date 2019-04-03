@@ -2,7 +2,8 @@ from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
 from core.skosmos import get_preflabel_lazy
-from .general import get_contributors_field, get_contributors_field_for_role, get_date_field, get_url_field
+from .general import get_contributors_field, get_contributors_field_for_role, get_date_field, get_url_field, \
+    validate_year
 
 # TODO use concept ids as keys
 TYPES = [
@@ -62,5 +63,5 @@ class SoftwareSchema(Schema):
         }},
     )
     contributors = get_contributors_field({'order': 8})
-    date = get_date_field({'order': 9})
+    date = get_date_field({'order': 9}, validator=validate_year)
     url = get_url_field({'order': 10})

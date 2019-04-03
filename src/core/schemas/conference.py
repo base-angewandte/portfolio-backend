@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 
-from .general import DateRangeLocationSchema, get_contributors_field, get_contributors_field_for_role, get_url_field
+from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
+    get_date_range_time_range_location_group_field
 from ..schemas import ICON_EVENT
 from ..skosmos import get_preflabel_lazy
 
@@ -29,14 +30,10 @@ TYPES = [
 class ConferenceSchema(Schema):
     organiser = get_contributors_field_for_role('organiser_management', {'order': 1})
     lecture = get_contributors_field_for_role('lecture', {'order': 2})
-    title_of_contribution = fields.Str(
+    title_of_paper = fields.Str(
         title=get_preflabel_lazy('title_of_paper'),
-        **{'x-attrs': {'order': 3}})
+        **{'x-attrs': {'order': 3}},
+    )
     contributors = get_contributors_field({'order': 4})
-    # TODO: this should actually also include time!! check again after discussion
-    date_location = fields.List(fields.Nested(DateRangeLocationSchema, additionalProperties=False), **{'x-attrs': {
-        'order': 5,
-        'field_type': 'group',
-        'show_label': False,
-    }})
+    date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 5})
     url = get_url_field({'order': 6})

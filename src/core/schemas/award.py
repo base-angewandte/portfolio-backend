@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
-from .general import DateTimeSchema, LocationSchema, get_contributors_field, get_contributors_field_for_role, \
-    get_date_field, get_url_field
+from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
+    get_date_location_group_field, get_date_time_field
 from ..schemas import ICON_EVENT
 
 ICON = ICON_EVENT
@@ -22,15 +22,6 @@ class AwardSchema(Schema):
     granted_by = get_contributors_field_for_role('granted_by', {'order': 3})
     jury = get_contributors_field_for_role('jury', {'order': 4})  # TODO: not sortable according to objects and forms
     contributors = get_contributors_field({'order': 5})
-    date = get_date_field({'order': 6})
-    award_ceremony = fields.Nested(DateTimeSchema, additionalProperties=False, **{'x-attrs': {
-        'order': 7,
-        'field_type': 'date',
-        'field_format': 'half',
-    }})
-    location = fields.Nested(LocationSchema, additionalProperties=False, **{'x-attrs': {
-        'order': 8,
-        'field_type': 'group',
-        'show_label': False,
-    }})
+    date_location = get_date_location_group_field({'order': 6})
+    award_ceremony = get_date_time_field({'field_format': 'half', 'order': 7})
     url = get_url_field({'order': 9})

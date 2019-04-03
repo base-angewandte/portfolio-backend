@@ -1,4 +1,3 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
 from .general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \

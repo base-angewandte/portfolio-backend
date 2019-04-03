@@ -1,10 +1,7 @@
-from django.urls import reverse_lazy
-from marshmallow import Schema, fields
+from marshmallow import Schema
 
-from core.skosmos import get_preflabel_lazy
-from .general import LocationSchema, get_material_field, get_format_field, get_contributors_field, \
-    get_contributors_field_for_role, get_date_field, get_url_field, get_language_list_field, \
-    get_date_location_group_field, get_published_in_field, get_duration_field
+from .general import get_material_field, get_format_field, get_contributors_field, get_contributors_field_for_role, \
+    get_language_list_field, get_date_location_group_field, get_published_in_field, get_duration_field
 
 # TODO use concept ids as keys
 TYPES = [
