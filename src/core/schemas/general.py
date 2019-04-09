@@ -288,6 +288,11 @@ def get_url_field(additional_attributes={}):
 class GEOReferenceSchema(Schema):
     source = fields.Str()
     name = fields.Str()
+    house_number = fields.Str()
+    street = fields.Str()
+    postcode = fields.Str()
+    city = fields.Str()
+    country = fields.Str()
     latitude = fields.Str()
     longitude = fields.Str()
 
