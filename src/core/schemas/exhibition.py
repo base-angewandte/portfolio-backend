@@ -20,7 +20,7 @@ TYPES = [
 
 
 class DateOpeningLocationSchema(Schema):
-    date = get_date_range_field({'order': 1})
+    date = get_date_range_field({'order': 1, 'field_format': 'full'})
     opening = get_date_time_range_field({'order': 2})
     location = get_location_field({'order': 3})
     location_description = get_location_description_field({'field_format': 'half', 'order': 4})

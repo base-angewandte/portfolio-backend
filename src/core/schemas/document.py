@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 from .general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
-    get_date_field, get_location_group_field, get_url_field, get_language_list_field
+    get_date_field, get_location_field, get_url_field, get_language_list_field
 from ..skosmos import get_preflabel_lazy
 
 # TODO use concept ids as keys
@@ -76,7 +76,7 @@ class DocumentSchema(Schema):
     editors = get_contributors_field_for_role('editor', {'order': 2})
     publisher = get_contributors_field_for_role('publisher', {'order': 3})
     date = get_date_field({'order': 4})
-    location = get_location_group_field({'order': 5})
+    location = get_location_field({'order': 5})
     isbn = fields.Str(
         title=get_preflabel_lazy('isbn'),
         **{'x-attrs': {
@@ -91,7 +91,7 @@ class DocumentSchema(Schema):
             'order': 7,
         }},
     )
-    url = get_url_field({'field_format': 'half', 'order': 8})
+    url = get_url_field({'order': 8})
     published_in = fields.List(
         fields.Nested(PublishedInSchema, additionalProperties=False),
         title=get_preflabel_lazy('published_in'),
@@ -117,7 +117,7 @@ class DocumentSchema(Schema):
     )
     contributors = get_contributors_field({'order': 12})
     language = get_language_list_field({'order': 13})
-    material = get_material_field({'order': 14})
+    material = get_material_field({'order': 14, 'field_format': 'half'})
     format = get_format_field({'order': 15})
     edition = fields.Str(
         title=get_preflabel_lazy('edition'),
