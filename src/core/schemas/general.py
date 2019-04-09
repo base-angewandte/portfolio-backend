@@ -156,7 +156,7 @@ def get_date_time_range_location_group_field(additional_attributes={}):
 
 
 def get_dimensions_field(additional_attributes={}):
-    fields.Str(
+    return fields.Str(
         title=get_preflabel_lazy('dimensions'),
         **{'x-attrs': {
             'field_format': 'half',
