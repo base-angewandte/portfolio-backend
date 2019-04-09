@@ -101,12 +101,14 @@ class CommonInfo(models.Model):
     file = models.FileField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     entry_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
     published = models.BooleanField(default=False)
+    # TODO add choices
+    license = models.CharField(max_length=255, null=True)
 
     class Meta:
         abstract = True
@@ -204,6 +206,7 @@ class Audio(CommonInfo):
             'original': self.file.url,
             'metadata': self.metadata,
             'published': self.published,
+            'license': self.license,
         }
 
     def get_mp3(self):
@@ -235,6 +238,7 @@ class Document(CommonInfo):
             'original': self.file.url,
             'metadata': self.metadata,
             'published': self.published,
+            'license': self.license,
         }
 
     def get_preview_image(self):
@@ -296,6 +300,7 @@ class Image(CommonInfo):
             'original': self.file.url,
             'metadata': self.metadata,
             'published': self.published,
+            'license': self.license,
         }
 
     def get_thumbnail(self):
@@ -332,6 +337,7 @@ class Video(CommonInfo):
             'original': self.file.url,
             'metadata': self.metadata,
             'published': self.published,
+            'license': self.license,
         }
 
     def get_playlist(self):
@@ -381,6 +387,7 @@ class Other(CommonInfo):
             'original': self.file.url,
             'metadata': self.metadata,
             'published': self.published,
+            'license': self.license,
         }
 
     def media_info_and_convert(self):

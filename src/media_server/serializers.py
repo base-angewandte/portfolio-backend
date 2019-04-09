@@ -7,6 +7,7 @@ class MediaCreateSerializer(serializers.Serializer):
     file = serializers.FileField()
     entry = serializers.CharField()
     published = serializers.BooleanField()
+    license = serializers.CharField()
 
     def validate_entry(self, value):
         try:
@@ -25,3 +26,4 @@ class MediaUpdateSerializer(serializers.Serializer):
 
 class MediaPartialUpdateSerializer(serializers.Serializer):
     published = serializers.BooleanField(required=False)
+    license = serializers.CharField(required=False)
