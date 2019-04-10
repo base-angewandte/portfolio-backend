@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, ValidationError, fields, validate
 
-from ..skosmos import get_preflabel_lazy, get_uri, get_languages
+from ..skosmos import get_preflabel_lazy, get_uri, get_languages, get_altlabel_lazy
 
 
 # validators
@@ -38,7 +38,7 @@ def validate_year(data):
 def get_contributors_field(additional_attributes={}):
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy('contributor'),
+        title=get_altlabel_lazy('contributor'),
         **{'x-attrs': {
             'field_type': 'chips-below',
             'placeholder': _('Wähle beteiligte Personen oder Institutionen aus'),
@@ -51,7 +51,7 @@ def get_contributors_field(additional_attributes={}):
 def get_contributors_field_for_role(role, additional_attributes={}):
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_preflabel_lazy(role),
+        title=get_altlabel_lazy(role),
         **{'x-attrs': {
             'default_role': get_uri(role),
             'equivalent': 'contributors',

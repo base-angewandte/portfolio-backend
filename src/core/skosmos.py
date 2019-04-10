@@ -3,6 +3,7 @@ from django.core.cache import cache
 from django.utils.functional import lazy
 from django.utils.translation import get_language
 from requests import RequestException
+from rdflib.namespace import SKOS
 from skosmos_client import SkosmosClient
 
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
@@ -33,17 +34,40 @@ def get_languages():
     return languages, languages_labels
 
 
-def get_uri(concept):
-    return '{}{}'.format(settings.PORTFOLIO_GRAPH, concept)
+def get_uri(concept, graph=settings.VOC_GRAPH):
+    return '{}{}'.format(graph, concept)
 
 
-def get_preflabel(concept):
+def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
     language = get_language() or 'en'
-    cache_key = 'get_preflabel_{}_{}'.format(language, concept)
+    cache_key = 'get_altlabel_{}_{}'.format(language, concept)
 
     label = cache.get(cache_key)
     if not label:
-        c = skosmos.get_concept(settings.PORTFOLIO_VOCID, '{}{}'.format(settings.PORTFOLIO_GRAPH, concept))
+        try:
+            graph = skosmos.data('{}{}'.format(graph, concept))
+            for uri, l in graph.subject_objects(SKOS.altLabel):
+                if l.language == language:
+                    label = l
+                    break
+                else:
+                    label = l
+        except RequestException:
+            pass
+
+        if label:
+            cache.set(cache_key, label, 86400)  # 1 day
+
+    return label or get_preflabel(concept, project, graph)
+
+
+def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
+    language = get_language() or 'en'
+    cache_key = 'get_preflabel_{}_{}'.format(language, concept)
+
+    label = None  # cache.get(cache_key)
+    if not label:
+        c = skosmos.get_concept(project, '{}{}'.format(graph, concept))
         try:
             label = c.label(language)
         except KeyError:
@@ -60,4 +84,5 @@ def get_preflabel(concept):
     return label or ''
 
 
+get_altlabel_lazy = lazy(get_altlabel, str)
 get_preflabel_lazy = lazy(get_preflabel, str)

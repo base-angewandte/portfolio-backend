@@ -28,7 +28,7 @@ TYPES = [
 
 
 class AudioSchema(Schema):
-    authors = get_contributors_field_for_role('authors', {'order': 1})
+    authors = get_contributors_field_for_role('author', {'order': 1})
     artist = get_contributors_field_for_role('artist', {'order': 2})
     contributors = get_contributors_field({'order': 3})
     published_in = get_published_in_field({'order': 4})
