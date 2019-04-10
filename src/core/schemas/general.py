@@ -72,6 +72,7 @@ def get_date_field(additional_attributes={}, validator=validate_date):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
+            'date_format': 'date_year',
             **additional_attributes
         }},
     )
@@ -106,6 +107,7 @@ def get_date_range_time_range_field(additional_attributes={}):
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
+            'date_format': 'date_year',
             **additional_attributes
         }},
     )
@@ -268,6 +270,7 @@ def get_published_in_field(additional_attributes={}):
         title=get_preflabel_lazy('published_in'),
         **{'x-attrs': {
             'field_type': 'autocomplete',
+            'field_format': 'half',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             **additional_attributes
         }},

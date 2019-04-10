@@ -18,4 +18,4 @@ class FestivalSchema(Schema):
     curator = get_contributors_field_for_role('curator', {'order': 3})
     contributors = get_contributors_field({'order': 4})
     date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 5})
-    url = get_url_field({'order': 5})
+    url = get_url_field({'order': 6})

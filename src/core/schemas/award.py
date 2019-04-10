@@ -24,4 +24,4 @@ class AwardSchema(Schema):
     contributors = get_contributors_field({'order': 5})
     date_location = get_date_location_group_field({'order': 6})
     award_ceremony = get_date_time_field({'field_format': 'half', 'order': 7})
-    url = get_url_field({'order': 9})
+    url = get_url_field({'order': 9, 'field_format': 'half'})

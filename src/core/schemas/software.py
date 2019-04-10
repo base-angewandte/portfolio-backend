@@ -63,5 +63,5 @@ class SoftwareSchema(Schema):
         }},
     )
     contributors = get_contributors_field({'order': 8})
-    date = get_date_field({'order': 9}, validator=validate_year)
-    url = get_url_field({'order': 10})
+    date = get_date_field({'order': 9, 'date_format': 'year'}, validator=validate_year)
+    url = get_url_field({'order': 10, 'field_format': 'half'})
