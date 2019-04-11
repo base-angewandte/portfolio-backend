@@ -538,6 +538,14 @@ SOURCES = {
             'lang': get_language_lazy(),
         }
     },
+    'VOC_TEXTTYPES': {
+        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.QUERY_FIELD: 'query',
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/text_type',
+        }
+    },
 }
 
 ANGEWANDTE_MAPPING = {
@@ -642,6 +650,11 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: VOC_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
+    'VOC_TEXTTYPES': {
+        apiconfig.RESULT: 'results',
+        apiconfig.DIRECT: VOC_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
+    },
 }
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
@@ -654,6 +667,7 @@ ACTIVE_SOURCES = {
     'materials': ('VOC_MATERIALS', ),
     'languages': ('VOC_LANGUAGES', ),
     'licenses': (),
+    'texttypes': ('VOC_TEXTTYPES', )
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
