@@ -72,7 +72,7 @@ class PublishedInSchema(Schema):
 
 
 class DocumentSchema(Schema):
-    authors = get_contributors_field_for_role('authors', {'order': 1})
+    authors = get_contributors_field_for_role('author', {'order': 1})
     editors = get_contributors_field_for_role('editor', {'order': 2})
     publisher = get_contributors_field_for_role('publisher', {'order': 3})
     date = get_date_field({'order': 4})
