@@ -32,7 +32,12 @@ fieldname_paramter = openapi.Parameter(
 @api_view(['GET'])
 def lookup_view(request, fieldname, *args, **kwargs):
     # TODO: Configure to return all for some "fieldname"s
-    return Response([])
+    # return Response([])
+    data = fetch_responses('',
+                           settings.ACTIVE_SOURCES.get(fieldname, ()))
+
+    return Response(data)
+
 
 
 @swagger_auto_schema(

@@ -2,7 +2,7 @@
 # sync environment with 'pip-sync'
 # to update all packages run 'pip-compile --upgrade'
 
-apimapper==0.5
+apimapper==0.7
 apispec==0.39.0
 concurrent-log-handler==0.9.12
 django==1.11.18

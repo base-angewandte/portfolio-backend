@@ -510,6 +510,7 @@ SOURCES = {
     'VOC_ROLES': {
         apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
