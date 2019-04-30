@@ -43,6 +43,7 @@ def get_contributors_field(additional_attributes={}):
             'field_type': 'chips-below',
             'placeholder': _('Wähle beteiligte Personen oder Institutionen aus'),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            'source_role': '',
             **additional_attributes
         }}
     )

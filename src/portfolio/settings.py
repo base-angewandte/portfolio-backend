@@ -495,6 +495,7 @@ SOURCES = {
     'BASE_KEYWORDS': {
         apiconfig.URL: '{}basekw/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
             'group': 'http://base.uni-ak.ac.at/recherche/keywords/collection_base',
@@ -503,6 +504,7 @@ SOURCES = {
     'VOC_KEYWORDS': {
         apiconfig.URL: '{}disciplines/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
         },
@@ -535,6 +537,7 @@ SOURCES = {
     'VOC_LANGUAGES': {
         apiconfig.URL: '{}languages/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
         }
@@ -551,21 +554,32 @@ SOURCES = {
 
 ANGEWANDTE_MAPPING = {
     'source': 'id',
-    'label': 'name',
+    'name': 'name',
 }
-GND_MAPPING = {
+GND_CONTRIBUTORS_MAPPING = {
     'source': 'id',  # common_schema: GND schema
-    'label': 'label',
+    'name': 'label',
 }
-VIAF_MAPPING = {
-    'label': 'displayForm',
+GND_PLACES_MAPPING = {
+    'source': 'id',  # common_schema: GND schema
+    'name': 'label',
+}
+VIAF_CONTRIBUTORS_MAPPING = {
+    'name': 'displayForm',
+}
+VIAF_PLACES_MAPPING = {
+    'name': 'toponymName',
 }
 GEONAMES_MAPPING = {
-    'label': 'toponymName',
+    'name': 'toponymName',
 }
 BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
-    'label': 'prefLabel',
+    'keyword': 'prefLabel',
+}
+VOC_KEYWORDS_MAPPING = {
+    'source': 'uri',
+    'keyword': 'prefLabel',
 }
 VOC_MAPPING = {
     'source': 'uri',
@@ -579,13 +593,13 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
     'GND_PERSON': {
-        apiconfig.DIRECT: GND_MAPPING,
+        apiconfig.DIRECT: GND_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PERSON': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'personal'},
-        apiconfig.DIRECT: VIAF_MAPPING,
+        apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
             'source': {
@@ -595,13 +609,13 @@ RESPONSE_MAPS = {
         }
     },
     'GND_PLACE': {
-        apiconfig.DIRECT: GND_MAPPING,
+        apiconfig.DIRECT: GND_PLACES_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PLACE': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'geographic'},
-        apiconfig.DIRECT: VIAF_MAPPING,
+        apiconfig.DIRECT: VIAF_PLACES_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
             'source': {
@@ -628,7 +642,7 @@ RESPONSE_MAPS = {
     },
     'VOC_KEYWORDS': {
         apiconfig.RESULT: 'results',
-        apiconfig.DIRECT: VOC_MAPPING,
+        apiconfig.DIRECT: VOC_KEYWORDS_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
     'VOC_ROLES': {
