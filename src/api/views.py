@@ -180,6 +180,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     retrieve:
     Returns a certain JSONSchema.
     """
+    lookup_value_regex = '.+'
 
     def list(self, request, *args, **kwargs):
         return Response(ACTIVE_TYPES)
