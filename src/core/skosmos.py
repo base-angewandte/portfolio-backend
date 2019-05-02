@@ -50,8 +50,6 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
                 if l.language == language:
                     label = l
                     break
-                else:
-                    label = l
         except RequestException:
             pass
 
