@@ -7,7 +7,7 @@ class MediaCreateSerializer(serializers.Serializer):
     file = serializers.FileField()
     entry = serializers.CharField()
     published = serializers.BooleanField()
-    license = serializers.CharField()
+    license = serializers.CharField(required=False)
 
     def validate_entry(self, value):
         try:
