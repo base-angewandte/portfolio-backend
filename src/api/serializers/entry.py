@@ -42,16 +42,25 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'reference': OrderedDict([('hidden', True)]),
             'published': OrderedDict([('hidden', True)]),
             'data': OrderedDict([('hidden', True)]),
-            'title': OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 1)]),
-            'subtitle': OrderedDict([('field_type', 'autocomplete'), ('field_format', 'half'), ('order', 2)]),
+            # switched field type from autocomplete to text until autocomplete actually supported
+            # TODO: switch back to autocomplete
+            'title': OrderedDict([('field_type', 'text'), ('field_format', 'half'), ('order', 1)]),
+            'subtitle': OrderedDict([('field_type', 'text'), ('field_format', 'half'), ('order', 2)]),
             'type': OrderedDict([
                 ('field_type', 'chips'),
                 ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
                 ('order', 3),
             ]),
-            'texts': OrderedDict([('field_type', 'multiline'), ('source', ''), ('order', 4)]),
-            'keywords': OrderedDict([('field_type', 'chips'), ('source', ''), ('order', 5)]),
+            'texts': OrderedDict([('field_type', 'multiline'),
+                                  ('source_type', 'https://voc.uni-ak.ac.at/skosmos/rest/v1/portfolio/search?lang=de&parent=http://base.uni-ak.ac.at/portfolio/cv/text_type'),
+                                  ('order', 4)]),
+            'keywords': OrderedDict([
+                ('field_type', 'chips'),
+                ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
+                ('order', 5)
+            ]),
             'notes': OrderedDict([('field_type', 'multiline'), ('order', 6)]),
+            'icon': OrderedDict([('hidden', True)])
         }
 
     @swagger_serializer_method(serializer_or_field=RelationsSerializer)
