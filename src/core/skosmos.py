@@ -84,5 +84,19 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
     return label or ''
 
 
+def get_collection_members(collection, maxhits=1000, use_cache=True):
+    cache_key = 'get_collection_members_{}'.format(collection)
+
+    members = cache.get(cache_key) if use_cache else None
+    if not members:
+        m = skosmos.search(query='*', group=collection, maxhits=maxhits, lang='en')
+        members = [i['uri'] for i in m]
+
+        if members:
+            cache.set(cache_key, members, 86400)  # 1 day
+
+    return members or []
+
+
 get_altlabel_lazy = lazy(get_altlabel, str)
 get_preflabel_lazy = lazy(get_preflabel, str)
