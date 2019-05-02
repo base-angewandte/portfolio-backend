@@ -196,6 +196,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
 def user_information(request, *args, **kwargs):
     attributes = request.session.get('attributes', {})
     data = {
+        'uuid': request.user.username,
         'name': attributes.get('display_name'),
         'email': attributes.get('email'),
         'permissions': attributes.get('permissions') or [],
