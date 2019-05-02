@@ -3,28 +3,11 @@ from marshmallow import Schema, fields
 from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
     get_date_range_time_range_location_group_field
 from ..schemas import ICON_EVENT
-from ..skosmos import get_preflabel_lazy
+from ..skosmos import get_collection_members, get_preflabel_lazy
 
 ICON = ICON_EVENT
 
-# TODO use concept ids as keys
-TYPES = [
-    'Keynote',
-    'Konferenzteilnahme',
-    'Präsentation',
-    'Symposium',
-    'Tagung',
-    'Konferenz',
-    'Vortrag',
-    'Talk',
-    'Lesung',
-    'Gespräch',
-    'Artistic Research Meeting',
-    'Podiumsdiskussion',
-    'Projektpräsentation',
-    'Künstler / innengespräch'
-    'lecture performance',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference', use_cache=False)
 
 
 class ConferenceSchema(Schema):

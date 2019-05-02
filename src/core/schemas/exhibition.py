@@ -3,20 +3,11 @@ from marshmallow import Schema, fields
 from .general import get_contributors_field, get_contributors_field_for_role, get_location_field, get_url_field, \
     get_date_range_field, get_date_time_range_field, get_location_description_field
 from ..schemas import ICON_EVENT
+from ..skosmos import get_collection_members
 
 ICON = ICON_EVENT
 
-# TODO use concept ids as keys
-TYPES = [
-    'Einzelausstellung',
-    'Gruppenausstellung',
-    'Vernissage',
-    'Finissage',
-    'Messe-Präsentation',
-    'Retrospektive',
-    'Soloausstellung',
-    'Werkschau',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition', use_cache=False)
 
 
 class DateOpeningLocationSchema(Schema):

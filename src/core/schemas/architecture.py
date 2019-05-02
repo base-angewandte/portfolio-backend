@@ -2,17 +2,9 @@ from marshmallow import Schema
 
 from .general import get_material_field, get_format_field, get_contributors_field, get_contributors_field_for_role, \
     get_url_field, get_date_location_group_field
+from ..skosmos import get_collection_members
 
-# TODO use concept ids as keys
-TYPES = [
-    'Gebäude',
-    'Bau',
-    'Struktur',
-    'Architekturdesign',
-    'Statik',
-    'Architekturmodell',
-    'Architekturprojekt',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_architecture', use_cache=False)
 
 
 class ArchitectureSchema(Schema):

@@ -4,18 +4,9 @@ from marshmallow import Schema, fields
 from core.skosmos import get_preflabel_lazy
 from .general import get_contributors_field, get_contributors_field_for_role, get_date_field, get_url_field, \
     validate_year
+from ..skosmos import get_collection_members
 
-# TODO use concept ids as keys
-TYPES = [
-    'Computerprogramm',
-    'Client-Server Software',
-    'Treiber Software',
-    'Handy App',
-    'Betriebssystem',
-    'Software',
-    'Computerspiel',
-    'Web Applikation',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
 
 
 class SoftwareSchema(Schema):

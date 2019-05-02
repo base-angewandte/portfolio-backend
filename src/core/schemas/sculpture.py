@@ -2,18 +2,9 @@ from marshmallow import Schema
 
 from .general import get_material_field, get_format_field, get_contributors_field, get_contributors_field_for_role, \
     get_url_field, get_date_location_group_field, get_dimensions_field
+from ..skosmos import get_collection_members
 
-# TODO use concept ids as keys
-TYPES = [
-    'Installation',
-    'Auftragsarbeit',
-    'Kunst im öffentlichen Raum',
-    'Skulptur',
-    'Plastik',
-    'Keramik',
-    'Textil',
-    'Schmuck',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture', use_cache=False)
 
 
 class SculptureSchema(Schema):

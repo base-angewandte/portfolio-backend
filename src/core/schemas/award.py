@@ -3,17 +3,14 @@ from marshmallow import Schema, fields
 from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
     get_date_location_group_field, get_date_time_field
 from ..schemas import ICON_EVENT
+from ..skosmos import get_collection_members
 
 ICON = ICON_EVENT
 
-# TODO use concept ids as keys
-TYPES = [
-    'Wettbewerb',
-    'artist in residence',
-    'Preis',
-    'Auszeichnung',
-    'Nominierung',
-]
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants',
+    use_cache=False,
+)
 
 
 class AwardSchema(Schema):

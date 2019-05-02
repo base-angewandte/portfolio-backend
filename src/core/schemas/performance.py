@@ -3,20 +3,11 @@ from marshmallow import Schema
 from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
     get_date_range_time_range_location_group_field, get_material_field, get_format_field
 from ..schemas import ICON_EVENT
+from ..skosmos import get_collection_members
 
 ICON = ICON_EVENT
 
-# TODO use concept ids as keys
-TYPES = [
-    'Performance',
-    'Theaterstück',
-    'Aufführung',
-    'Intervention',
-    'Live Art',
-    'Performance Art',
-    'Solo-Performance',
-    'Tanzperformance',
-]
+TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_performance', use_cache=False)
 
 
 class PerformanceSchema(Schema):

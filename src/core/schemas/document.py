@@ -2,54 +2,12 @@ from marshmallow import Schema, fields
 
 from .general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
     get_date_field, get_location_field, get_url_field, get_language_list_field
-from ..skosmos import get_preflabel_lazy
+from ..skosmos import get_collection_members, get_preflabel_lazy
 
-# TODO use concept ids as keys
-TYPES = [
-    'Monographie',
-    'Periodikum',
-    'Sammelband',
-    'Aufsatzsammlung',
-    'Künstlerbuch',
-    'Zeitungsbericht',
-    'Interview',
-    'Zeitungsartikel',
-    'Kolumne',
-    'Blog',
-    'Ausstellungskatalog',
-    'Katalog',
-    'Rezension',
-    'Kritik',
-    'Beitrag in Sammelband',
-    'Aufsatz',
-    'Beitrag in Fachzeitschrift (SCI,  SSCI, A&HCI)',
-    'Masterarbeit',
-    'Diplomarbeit',
-    'Dissertation',
-    'Bachelorarbeit',
-    'Essay',
-    'Studie',
-    'Tagungsbericht',
-    'Kommentar',
-    'Fanzine',
-    'Buchreihe',
-    'Schriftenreihe',
-    'Edition',
-    'Drehbuch',
-    'Libretto',
-    'Gutachten',
-    'Clipping',
-    'Zeitschrift',
-    'Magazin',
-    'Archivalie',
-    'Printbeitrag',
-    'Onlinebeitrag',
-    'wissenschaftliche Veröffentlichung',
-    'künstlerische Veröffentlichung',
-    'Katalog/künstlerisches Druckwerk',
-    'künstlerischer Ton-/Bild-/Datenträger',
-    'Beitrag zu künstlerischem Ton-/Bild-/Datenträger',
-]
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication',
+    use_cache=False,
+)
 
 
 class PublishedInSchema(Schema):
