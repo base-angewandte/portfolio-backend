@@ -510,28 +510,33 @@ SOURCES = {
         },
     },
     'VOC_ROLES': {
-        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/role',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
+            'unique': True,
         }
     },
     'VOC_FORMATS': {
-        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/format_type',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/format_type',
+            'unique': True,
         }
     },
     'VOC_MATERIALS': {
-        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/material_type',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/material_type',
+            'unique': True,
         }
     },
     'VOC_LANGUAGES': {
@@ -540,14 +545,17 @@ SOURCES = {
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
+            'unique': True,
         }
     },
     'VOC_TEXTTYPES': {
-        apiconfig.URL: '{}portfolio/search'.format(SKOSMOS_API),
+        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
-            'parent': 'http://base.uni-ak.ac.at/portfolio/cv/text_type',
+            'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/text_type',
+            'unique': True,
         }
     },
 }
@@ -682,7 +690,7 @@ ACTIVE_SOURCES = {
     'materials': ('VOC_MATERIALS', ),
     'languages': ('VOC_LANGUAGES', ),
     'licenses': (),
-    'texttypes': ('VOC_TEXTTYPES', )
+    'texttypes': ('VOC_TEXTTYPES', ),
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
