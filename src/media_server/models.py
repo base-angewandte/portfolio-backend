@@ -108,7 +108,7 @@ class CommonInfo(models.Model):
     exif = ExifField(source='file')
     published = models.BooleanField(default=False)
     # TODO add choices
-    license = models.CharField(max_length=255, null=True)
+    license = models.CharField(max_length=255, default=None, null=True)
 
     class Meta:
         abstract = True
