@@ -65,7 +65,7 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
     language = get_language() or 'en'
     cache_key = 'get_preflabel_{}_{}'.format(language, concept)
 
-    label = None  # cache.get(cache_key)
+    label = cache.get(cache_key)
     if not label:
         c = skosmos.get_concept(project, '{}{}'.format(graph, concept))
         try:
