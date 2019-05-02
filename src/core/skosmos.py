@@ -45,8 +45,8 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
     label = cache.get(cache_key)
     if not label:
         try:
-            graph = skosmos.data('{}{}'.format(graph, concept))
-            for uri, l in graph.subject_objects(SKOS.altLabel):
+            g = skosmos.data('{}{}'.format(graph, concept))
+            for uri, l in g.subject_objects(SKOS.altLabel):
                 if l.language == language:
                     label = l
                     break
