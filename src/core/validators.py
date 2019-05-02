@@ -11,7 +11,8 @@ def validate_keywords(value):
         if len(value) > len(set(map(tuple, map(dict.items, value)))):
             raise ValidationError(_('Keywords contains duplicate entries'))
     except SchemaValidationError as e:
-        raise ValidationError(_('Invalid keywords: {}'.format(e.message)))
+        msg = _('Invalid keywords: %(error)s') % {'error': e.message}
+        raise ValidationError(msg)
 
 
 def validate_texts(value):
@@ -26,4 +27,5 @@ def validate_texts(value):
                 if len(languages) > len(set(languages)):
                     raise ValidationError(_('Same language is defined multiple times'))
     except SchemaValidationError as e:
-        raise ValidationError(_('Invalid texts: {}'.format(e.message)))
+        msg = _('Invalid texts: %(error)s') % {'error': e.message}
+        raise ValidationError(msg)

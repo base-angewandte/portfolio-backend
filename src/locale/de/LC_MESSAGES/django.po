@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-13 15:48+0100\n"
+"POT-Creation-Date: 2019-05-02 14:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,68 +17,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/serializers/relation.py:20
+#: api/serializers/relation.py:18
 msgid "Relation already exists"
 msgstr "Verknüpfung existiert bereits"
 
-#: api/serializers/relation.py:27 api/views.py:115
+#: api/serializers/relation.py:25 api/views.py:125
 msgid "Current user is not the owner of this entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: api/views.py:119 media_server/serializers.py:15
+#: api/views.py:129 media_server/serializers.py:16
 msgid "Entry does not exist"
 msgstr "Eintrag existiert nicht"
 
-#: api/views.py:180
+#: api/views.py:191
 msgid "Schema not found for the given query."
 msgstr "Kein Schemata gefunden"
 
-#: core/models.py:55
-msgid "Invalid data: {}"
-msgstr "Ungültige Daten: {}"
+#: core/models.py:61
+#, python-format
+msgid "Invalid data: %(error)s"
+msgstr "Ungültige Daten: %(error)s"
 
-#: core/models.py:57
+#: core/models.py:64
 msgid "Data without type"
 msgstr "Daten ohne Typ"
 
-#: core/models.py:90
+#: core/models.py:97
 msgid "Both entries must belong to the same user"
 msgstr "Beide Einträge müssen demselben Benutzer gehören"
 
-#: core/schemas/__init__.py:13
+#: core/schemas/__init__.py:14
 msgid "Schemas improperly configured"
 msgstr "Schemata ungenügend konfiguriert"
 
-#: core/schemas/__init__.py:31
+#: core/schemas/__init__.py:39
 msgid "Active schemas contain duplicate types"
 msgstr "Aktive Schemata enthalten Duplikate"
+
+#: core/schemas/general.py:20
+msgid "Invalid date entry (expected dd.mm.yyyy or yyyy)"
+msgstr ""
+
+#: core/schemas/general.py:27
+msgid "Invalid date entry (expected dd.mm.yyyy)"
+msgstr ""
+
+#: core/schemas/general.py:34
+msgid "Invalid date entry (expected yyyy)"
+msgstr ""
+
+#: core/schemas/general.py:45
+msgid "Choose contributors"
+msgstr "Wähle beteiligte Personen oder Institutionen aus"
+
+#: core/schemas/general.py:61
+msgid "Choose"
+msgstr "Wähle"
 
 #: core/validators.py:12
 msgid "Keywords contains duplicate entries"
 msgstr "Schlagwörter enthalten Duplikate"
 
 #: core/validators.py:14
-msgid "Invalid keywords: {}"
-msgstr "Ungültige Schlagwörter: {}"
+#, python-format
+msgid "Invalid keywords: %(error)s"
+msgstr "Ungültige Schlagwörter: %(error)s"
 
-#: core/validators.py:27
+#: core/validators.py:28
 msgid "Same language is defined multiple times"
 msgstr "Dieselbe Sprache wird mehrmals definiert"
 
-#: core/validators.py:29
-msgid "Invalid texts: {}"
-msgstr "Ungültige Texte: {}"
+#: core/validators.py:30
+#, python-format
+msgid "Invalid texts: %(error)s"
+msgstr "Ungültige Texte: %(error)s"
 
-#: media_server/serializers.py:18
+#: media_server/serializers.py:19
 msgid "Current user is not the owner of entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: media_server/views.py:89 media_server/views.py:151 media_server/views.py:194
+#: media_server/views.py:89 media_server/views.py:152 media_server/views.py:195
 msgid "Current user is not the owner of this media object"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
 
-#: media_server/views.py:103 media_server/views.py:162
-#: media_server/views.py:202
+#: media_server/views.py:103 media_server/views.py:163
+#: media_server/views.py:203
 msgid "Media object does not exist"
 msgstr "Medienobjekt existiert nicht"
 
@@ -86,10 +109,10 @@ msgstr "Medienobjekt existiert nicht"
 msgid "No space left for user"
 msgstr "Kein Speicherplatz mehr für diesen Benutzer"
 
-#: portfolio/settings.py:241
+#: portfolio/settings.py:247
 msgid "German"
 msgstr "Deutsch"
 
-#: portfolio/settings.py:242
+#: portfolio/settings.py:248
 msgid "English"
 msgstr "Englisch"

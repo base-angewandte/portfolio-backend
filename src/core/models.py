@@ -58,7 +58,8 @@ class Entry(AbstractBaseModel):
                 try:
                     validate(self.data, schema)
                 except SchemaValidationError as e:
-                    raise ValidationError(_('Invalid data: {}'.format(e.message)))
+                    msg = _('Invalid data: %(error)s') % {'error': e.message}
+                    raise ValidationError(msg)
         elif self.data:
             raise ValidationError(_('Data without type'))
 
