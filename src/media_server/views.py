@@ -128,7 +128,7 @@ class MediaViewSet(viewsets.GenericViewSet):
                 mime_type=mime_type,
                 file=serializer.validated_data['file'],
                 published=serializer.validated_data['published'],
-                license=serializer.validated_data['license'],
+                license=serializer.validated_data.get('license') or None,
             )
             m.save()
 
