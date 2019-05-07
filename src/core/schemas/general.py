@@ -98,6 +98,7 @@ def get_date_range_field(additional_attributes={}):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
+            'date_format': 'day',
             **additional_attributes
         }},
     )
@@ -109,7 +110,7 @@ def get_date_range_time_range_field(additional_attributes={}):
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
-            'date_format': 'date_year',
+            'date_format': 'day',
             **additional_attributes
         }},
     )
