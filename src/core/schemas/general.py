@@ -291,6 +291,16 @@ def get_url_field(additional_attributes={}):
 
 # shared schema definitions
 
+class MultilingualStringSchema(Schema):
+    de = fields.Str()
+    en = fields.Str()
+
+
+class GeometrySchema(Schema):
+    type = fields.Str()
+    coordinates = fields.List(fields.Float())
+
+
 class GEOReferenceSchema(Schema):
     source = fields.Str()
     name = fields.Str()
@@ -298,9 +308,9 @@ class GEOReferenceSchema(Schema):
     street = fields.Str()
     postcode = fields.Str()
     city = fields.Str()
+    region = fields.Str()
     country = fields.Str()
-    latitude = fields.Str()
-    longitude = fields.Str()
+    geometry = fields.Nested(GeometrySchema, additionalProperties=False)
 
 
 class DateRangeSchema(Schema):
@@ -355,10 +365,15 @@ class DateTimeRangeLocationSchema(Schema):
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
+class RoleSchema(Schema):
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
+    role = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+
 class ContributorSchema(Schema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     name = fields.Str()
-    roles = fields.List(fields.Str())
+    roles = fields.List(fields.Nested(RoleSchema, additionalProperties=False))
 
 
 # schema definitions for entry model
@@ -366,7 +381,7 @@ class ContributorSchema(Schema):
 # keywords
 class KeywordSchema(Schema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
-    keyword = fields.Str()
+    keyword = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
 class KeywordsModelSchema(Schema):
