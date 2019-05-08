@@ -25,7 +25,7 @@ def validate_texts(value):
             if data:
                 languages = []
                 for d in data:
-                    languages.append(d['language'])
+                    languages.append(json.dumps(d['language'], sort_keys=True))
                 if len(languages) > len(set(languages)):
                     raise ValidationError(_('Same language is defined multiple times'))
     except SchemaValidationError as e:
