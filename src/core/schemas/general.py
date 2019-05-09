@@ -45,6 +45,8 @@ def get_contributors_field(additional_attributes={}):
             'placeholder': _('Choose contributors'),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'source_role': '',
+            'allow_unkown_entries': True,
+            'dynamic_autosuggest': True,
             **additional_attributes
         }}
     )
@@ -61,6 +63,8 @@ def get_contributors_field_for_role(role, additional_attributes={}):
             'placeholder': format_lazy('{} {}', _('Choose'), get_preflabel_lazy(role)),
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            'allow_unkown_entries': True,
+            'dynamic_autosuggest': True,
             **additional_attributes
         }}
     )
