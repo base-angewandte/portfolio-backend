@@ -45,6 +45,8 @@ def get_contributors_field(additional_attributes={}):
             'placeholder': _('Choose contributors'),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'source_role': '',
+            'allow_unkown_entries': True,
+            'dynamic_autosuggest': True,
             **additional_attributes
         }}
     )
@@ -61,6 +63,8 @@ def get_contributors_field_for_role(role, additional_attributes={}):
             'placeholder': format_lazy('{} {}', _('Choose'), get_preflabel_lazy(role)),
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            'allow_unkown_entries': True,
+            'dynamic_autosuggest': True,
             **additional_attributes
         }}
     )
@@ -98,6 +102,7 @@ def get_date_range_field(additional_attributes={}):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
+            'date_format': 'day',
             **additional_attributes
         }},
     )
@@ -109,7 +114,7 @@ def get_date_range_time_range_field(additional_attributes={}):
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
-            'date_format': 'date_year',
+            'date_format': 'day',
             **additional_attributes
         }},
     )

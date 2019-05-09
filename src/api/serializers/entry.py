@@ -57,7 +57,9 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'keywords': OrderedDict([
                 ('field_type', 'chips'),
                 ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
-                ('order', 5)
+                ('order', 5),
+                ('allow_unkown_entries', True),
+                ('dynamic_autosuggest', True,),
             ]),
             'notes': OrderedDict([('field_type', 'multiline'), ('order', 6)]),
             'icon': OrderedDict([('hidden', True)])
