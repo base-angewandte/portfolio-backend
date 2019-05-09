@@ -194,23 +194,9 @@ def get_format_field(additional_attributes={}):
     )
 
 
-def get_language_field(additional_attributes={}, required=False):
-    return fields.Str(
-        validate=validate.OneOf(
-            get_languages()[0],
-            labels=get_languages()[1],
-        ),
-        required=required,
-        title=get_preflabel_lazy('language'),
-        **{'x-attrs': {
-            **additional_attributes
-        }},
-    )
-
-
 def get_language_list_field(additional_attributes={}):
     return fields.List(
-        get_language_field(),
+        fields.Nested(LanguageDataSchema, additionalProperties=False),
         title=get_preflabel_lazy('language'),
         **{'x-attrs': {
             'field_format': 'half',
@@ -389,13 +375,29 @@ class KeywordsModelSchema(Schema):
 
 
 # texts
+class LanguageDataSchema(Schema):
+    source = fields.Str(
+        validate=validate.OneOf(
+            get_languages()[0],
+            labels=get_languages()[1],
+        ),
+        **{'x-attrs': {'hidden': True}}
+    )
+    language = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+
 class TextDataSchema(Schema):
-    language = get_language_field(required=True)
+    language = fields.Nested(LanguageDataSchema, additionalProperties=False)
     text = fields.Str(required=True, title=get_preflabel_lazy('text'))
 
 
+class TextTypeSchema(Schema):
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
+    type = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+
 class TextSchema(Schema):
-    type = fields.Str(title=get_preflabel_lazy('type'))
+    type = fields.Nested(TextTypeSchema, additionalProperties=False, title=get_preflabel_lazy('type'))
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 
