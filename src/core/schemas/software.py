@@ -3,7 +3,7 @@ from marshmallow import Schema, fields
 
 from core.skosmos import get_preflabel_lazy
 from .general import get_contributors_field, get_contributors_field_for_role, get_date_field, get_url_field, \
-    validate_year
+    validate_year, SourceMultilingualLabelSchema
 from ..skosmos import get_collection_members
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
@@ -18,8 +18,10 @@ class SoftwareSchema(Schema):
             'order': 2,
         }},
     )
-    open_source_licence = fields.Str(
+    open_source_licence = fields.Nested(
+        SourceMultilingualLabelSchema,
         title=get_preflabel_lazy('open_source_licence'),
+        additionalProperties=False,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
