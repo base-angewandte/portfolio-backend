@@ -186,7 +186,7 @@ def get_duration_field(additional_attributes={}):
 
 def get_format_field(additional_attributes={}):
     return fields.List(
-        fields.Str(),
+        fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
         title=get_preflabel_lazy('format'),
         **{'x-attrs': {
             'field_format': 'half',
@@ -247,7 +247,7 @@ def get_location_group_field(additional_attributes={}):
 
 def get_material_field(additional_attributes={}):
     return fields.List(
-        fields.Str(),
+        fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
         title=get_preflabel_lazy('material'),
         **{'x-attrs': {
             'field_type': 'chips',
@@ -286,6 +286,11 @@ class MultilingualStringSchema(Schema):
     en = fields.Str()
 
 
+class SourceMultilingualLabelSchema(Schema):
+    source = fields.Str(**{'x-attrs': {'hidden': True}})
+    label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+
 class GeometrySchema(Schema):
     type = fields.Str()
     coordinates = fields.List(fields.Float())
@@ -293,7 +298,7 @@ class GeometrySchema(Schema):
 
 class GEOReferenceSchema(Schema):
     source = fields.Str()
-    name = fields.Str()
+    label = fields.Str()
     house_number = fields.Str()
     street = fields.Str()
     postcode = fields.Str()
@@ -355,27 +360,17 @@ class DateTimeRangeLocationSchema(Schema):
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
-class RoleSchema(Schema):
-    source = fields.Str(**{'x-attrs': {'hidden': True}})
-    role = fields.Nested(MultilingualStringSchema, additionalProperties=False)
-
-
 class ContributorSchema(Schema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
-    name = fields.Str()
-    roles = fields.List(fields.Nested(RoleSchema, additionalProperties=False))
+    label = fields.Str()
+    roles = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
 
 
 # schema definitions for entry model
 
 # keywords
-class KeywordSchema(Schema):
-    source = fields.Str(**{'x-attrs': {'hidden': True}})
-    keyword = fields.Nested(MultilingualStringSchema, additionalProperties=False)
-
-
 class KeywordsModelSchema(Schema):
-    keywords = fields.List(fields.Nested(KeywordSchema, additionalProperties=False))
+    keywords = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
 
 
 # texts
@@ -387,7 +382,7 @@ class LanguageDataSchema(Schema):
         ),
         **{'x-attrs': {'hidden': True}}
     )
-    language = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+    label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
 class TextDataSchema(Schema):
@@ -395,13 +390,8 @@ class TextDataSchema(Schema):
     text = fields.Str(required=True, title=get_preflabel_lazy('text'))
 
 
-class TextTypeSchema(Schema):
-    source = fields.Str(**{'x-attrs': {'hidden': True}})
-    type = fields.Nested(MultilingualStringSchema, additionalProperties=False)
-
-
 class TextSchema(Schema):
-    type = fields.Nested(TextTypeSchema, additionalProperties=False, title=get_preflabel_lazy('type'))
+    type = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False, title=get_preflabel_lazy('type'))
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 
