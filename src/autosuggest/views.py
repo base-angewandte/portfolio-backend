@@ -1,17 +1,17 @@
 import json
 import logging
 
+from apimapper import APIMapper
 from django.conf import settings
+from django.utils.module_loading import import_string
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from apimapper import APIMapper
 from rest_framework.utils.encoders import JSONEncoder
 
 from api.yasg import language_header_parameter
+from core.skosmos import autosuggest
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +31,17 @@ fieldname_paramter = openapi.Parameter(
 )
 @api_view(['GET'])
 def lookup_view(request, fieldname, *args, **kwargs):
-    # TODO: Configure to return all for some "fieldname"s
-    # return Response([])
-    data = fetch_responses('',
-                           settings.ACTIVE_SOURCES.get(fieldname, ()))
+    source = settings.ACTIVE_SOURCES.get(fieldname, ())
+
+    if isinstance(source, dict):
+        source = source.get('all', ())
+
+    if isinstance(source, str):
+        data = import_string(source)()
+    else:
+        data = fetch_responses('', source)
 
     return Response(data)
-
 
 
 @swagger_auto_schema(
@@ -47,8 +51,15 @@ def lookup_view(request, fieldname, *args, **kwargs):
 )
 @api_view(['GET'])
 def lookup_view_search(request, fieldname, searchstr='', *args, **kwargs):
-    data = fetch_responses(searchstr,
-                           settings.ACTIVE_SOURCES.get(fieldname, ()))
+    source = settings.ACTIVE_SOURCES.get(fieldname, ())
+
+    if isinstance(source, dict):
+        source = source.get('search', ())
+
+    if isinstance(source, str):
+        data = autosuggest(import_string(source)(), searchstr)
+    else:
+        data = fetch_responses(searchstr, source)
 
     return Response(data)
 

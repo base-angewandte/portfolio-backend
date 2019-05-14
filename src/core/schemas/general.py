@@ -5,7 +5,7 @@ from django.utils.text import format_lazy
 from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, ValidationError, fields, validate
 
-from ..skosmos import get_preflabel_lazy, get_uri, get_languages, get_altlabel_lazy
+from ..skosmos import get_preflabel_lazy, get_uri, get_languages_choices, get_altlabel_lazy
 
 
 # validators
@@ -377,8 +377,8 @@ class KeywordsModelSchema(Schema):
 class LanguageDataSchema(Schema):
     source = fields.Str(
         validate=validate.OneOf(
-            get_languages()[0],
-            labels=get_languages()[1],
+            get_languages_choices()[0],
+            labels=get_languages_choices()[1],
         ),
         **{'x-attrs': {'hidden': True}}
     )

@@ -696,13 +696,17 @@ RESPONSE_MAPS = {
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', 'GND_INSTITUTION'),
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
-    'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
-    'roles': ('VOC_ROLES', ),
-    'formats': ('VOC_FORMATS', ),
-    'materials': ('VOC_MATERIALS', ),
-    'languages': ('VOC_LANGUAGES', ),
+    'keywords': {
+        'all': 'core.skosmos.get_base_keywords',
+        'search': 'core.skosmos.get_keywords',
+    },
+    'roles': 'core.skosmos.get_roles',
+    'formats': 'core.skosmos.get_formats',
+    'materials': 'core.skosmos.get_materials',
+    'languages': 'core.skosmos.get_languages',
     'licenses': (),
-    'texttypes': ('VOC_TEXTTYPES', ),
+    'texttypes': 'core.skosmos.get_text_types',
+    'types': 'core.skosmos.get_entry_types',
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=1024 * 1024 * 1024)  # user quota / year
