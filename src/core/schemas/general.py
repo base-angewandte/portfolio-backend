@@ -284,6 +284,7 @@ def get_url_field(additional_attributes={}):
 class MultilingualStringSchema(Schema):
     de = fields.Str()
     en = fields.Str()
+    fr = fields.Str()
 
 
 class SourceMultilingualLabelSchema(Schema):
