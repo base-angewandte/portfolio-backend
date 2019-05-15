@@ -30,7 +30,7 @@ restart-gunicorn:
 	docker-compose exec portfolio-django bash -c 'kill -HUP `cat /var/run/django.pid`'
 
 restart-rq:
-	docker-compose restart portfolio-rq portfolio-rq-scheduler
+	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
 
 update: git-update init init-static restart-gunicorn restart-rq
 

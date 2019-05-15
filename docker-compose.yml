@@ -42,9 +42,37 @@ services:
       - portfolionet
     restart: always
 
-  portfolio-rq:
+  portfolio-rq-worker-1:
     build: ./src
-    container_name: portfolio-rq
+    container_name: portfolio-rq-worker-1
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker high default
+
+  portfolio-rq-worker-2:
+    build: ./src
+    container_name: portfolio-rq-worker-2
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker high default
+
+  portfolio-rq-worker-3:
+    build: ./src
+    container_name: portfolio-rq-worker-3
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
       - POSTGRES_USER=$PORTFOLIO_DB_USER
