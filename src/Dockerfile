@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
         libmagic-dev \
         libimage-exiftool-perl \
+        ghostscript \
         bc \
     && rm -rf /var/lib/apt/lists/*
 
