@@ -11,4 +11,4 @@ class MediaServerConfig(AppConfig):
         job_id = '1c80dc0d-b81d-46b0-9c59-d3c2f4da679b'
 
         if job_id not in scheduler:
-            scheduler.cron('5 2 * * *', 'media_server.models.repair', id=job_id)
+            scheduler.cron('5 2 * * *', 'media_server.models.repair', id=job_id, timeout=7200)

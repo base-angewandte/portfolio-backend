@@ -448,7 +448,7 @@ def repair():
         for i in m:
             i.status = STATUS_NOT_CONVERTED
             i.save()
-            django_rq.enqueue(i.media_info_and_convert)
+            django_rq.enqueue(i.media_info_and_convert, timeout=300)
 
 
 # Signal handling
