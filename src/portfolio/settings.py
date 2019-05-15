@@ -370,6 +370,8 @@ if DEBUG or TESTING:
     for queueConfig in iter(RQ_QUEUES.values()):
         queueConfig['ASYNC'] = False
 
+RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
+
 
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
