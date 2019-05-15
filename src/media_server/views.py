@@ -3,6 +3,7 @@ import mimetypes
 from os.path import basename, join
 
 import magic
+from PIL.Image import DecompressionBombError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
@@ -105,6 +106,7 @@ class MediaViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(responses={
         200: openapi.Response(''),
         400: openapi.Response('Bad request'),
+        415: openapi.Response('Unsupported media type'),
         422: openapi.Response('User quota exceeded'),
     })
     def create(self, request, *args, **kwargs):
@@ -130,6 +132,17 @@ class MediaViewSet(viewsets.GenericViewSet):
                 published=serializer.validated_data['published'],
                 license=serializer.validated_data.get('license') or None,
             )
+
+            try:
+                m.file.width
+            except DecompressionBombError as dbe:
+                msg = str(dbe)
+                logger.exception(msg)
+                return Response(msg, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            except AttributeError:
+                # not an image
+                pass
+
             m.save()
 
             return Response(m.pk)
