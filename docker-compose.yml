@@ -54,7 +54,7 @@ services:
     networks:
       - portfolionet
     restart: always
-    command: python manage.py rqworker high default
+    command: python manage.py rqworker default
 
   portfolio-rq-worker-2:
     build: ./src
@@ -82,7 +82,7 @@ services:
     networks:
       - portfolionet
     restart: always
-    command: python manage.py rqworker high default
+    command: python manage.py rqworker high video default
 
   portfolio-rq-scheduler:
     build: ./src

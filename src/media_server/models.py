@@ -456,7 +456,6 @@ def repair():
 @receiver(post_save, sender=Audio)
 @receiver(post_save, sender=Document)
 @receiver(post_save, sender=Image)
-@receiver(post_save, sender=Video)
 @receiver(post_save, sender=Other)
 def media_post_save(sender, instance, created, *args, **kwargs):
     if created:
@@ -464,6 +463,16 @@ def media_post_save(sender, instance, created, *args, **kwargs):
             # ensure status is STATUS_NOT_CONVERTED
             sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
             transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+
+
+@receiver(post_save, sender=Video)
+def video_post_save(sender, instance, created, *args, **kwargs):
+    if created:
+        queue = django_rq.get_queue('video')
+        with transaction.atomic():
+            # ensure status is STATUS_NOT_CONVERTED
+            sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+            transaction.on_commit(lambda: queue.enqueue(instance.media_info_and_convert))
 
 
 @receiver(post_delete, sender=Audio)
