@@ -13,6 +13,12 @@ search_vectors = (
 
 
 class EntryManager(models.Manager):
+    def create_clean(self, **kwargs):
+        entry = self.model(**kwargs)
+        entry.full_clean()
+        entry.save()
+        return entry
+
     def search(self, text):
         search_query = SearchQuery(text)
         search_rank = SearchRank(search_vectors, search_query)
