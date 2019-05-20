@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from PIL import Image as PIL_Image, ImageOps
+from PIL import Image as PIL_Image, ImageOps, ImageDraw, ImageFont
 
 from core.models import Entry
 from general.models import ShortUUIDField
@@ -273,15 +273,34 @@ class Image(CommonInfo):
                 if not os.path.exists(path):
                     os.makedirs(path)
 
-                im = PIL_Image.open(self.file.path)
-                if im.mode in ('RGBA', 'LA'):
-                    fill_color = (255, 255, 255)
-                    background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
-                    background.paste(im, im.split()[-1])
-                    im = background
-                im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
-                im.save(os.path.join(path, 'tn.jpg'))
-                im.close()
+                try:
+                    im = PIL_Image.open(self.file.path)
+                    if im.mode in ('RGBA', 'LA'):
+                        fill_color = (255, 255, 255)
+                        background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
+                        background.paste(im, im.split()[-1])
+                        im = background
+                    im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
+                    im.save(os.path.join(path, 'tn.jpg'))
+                    im.close()
+                except OSError:
+                    logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+                    # create fallback image
+                    tn_width = 400
+                    tn_height = 300
+                    im = PIL_Image.new('RGB', (tn_width, tn_height), (255, 255, 255))
+                    message = 'No preview\navailable'
+                    fnt = ImageFont.truetype(
+                        os.path.join(settings.BASE_DIR, 'static', 'fonts', 'source-sans-pro-v11-latin-regular.ttf'),
+                        40
+                    )
+                    d = ImageDraw.Draw(im)
+                    w, h = d.textsize(message, font=fnt)
+                    x = (tn_width-w)/2
+                    y = 30
+                    d.text((x, y), message, font=fnt, spacing=4, align='center', fill=(111, 111, 111))
+                    im.save(os.path.join(path, 'tn.jpg'))
+                    im.close()
 
                 self.status = STATUS_CONVERTED
                 self.save()
