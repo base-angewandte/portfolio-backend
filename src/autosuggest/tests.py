@@ -112,6 +112,16 @@ class AutoSuggestTestCase(TestCase):
 
     def test_texttypes(self):
         res = fetch_responses('abs', ('VOC_TEXTTYPES',))
-        assert( any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' for rec in res))
+        assert  any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' for rec in res)
         return
 
+    def test_all_labels(self):
+        VOC_SOURCES = ('VOC_TEXTTYPES', 'VOC_LANGUAGES', 'VOC_MATERIALS', 'VOC_FORMATS','VOC_ROLES', 'VOC_KEYWORDS')
+        for voc_source in VOC_SOURCES:
+            res = fetch_responses('a', (voc_source,))
+            assert len(res)>0, '{} is empty'.format(voc_source)
+            for rec in res:
+                assert 'prefLabels' in rec, '{}: no prefLabels'.format(voc_source)
+                assert 'en' in rec.get('prefLabels')
+                assert 'de' in rec.get('prefLabels')
+            

@@ -515,6 +515,7 @@ SOURCES = {
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
             'group': 'http://base.uni-ak.ac.at/recherche/keywords/collection_base',
+            'fields': 'prefLabel'
         },
     },
     'VOC_KEYWORDS': {
@@ -524,6 +525,8 @@ SOURCES = {
         # NOTE: SKOSMOS API does not return anything if the query string is simply a wildward
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
+            'fields': 'prefLabel'
+
         },
     },
     'VOC_ROLES': {
@@ -534,6 +537,7 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
             'unique': True,
+            'fields': 'prefLabel'            
         }
     },
     'VOC_FORMATS': {
@@ -544,6 +548,7 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/format_type',
             'unique': True,
+            'fields': 'prefLabel'
         }
     },
     'VOC_MATERIALS': {
@@ -554,6 +559,7 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/material_type',
             'unique': True,
+            'fields': 'prefLabel'
         }
     },
     'VOC_LANGUAGES': {
@@ -563,6 +569,7 @@ SOURCES = {
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
             'unique': True,
+            'fields': 'prefLabel'
         }
     },
     'VOC_TEXTTYPES': {
@@ -573,6 +580,7 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/text_type',
             'unique': True,
+            'fields': 'prefLabel'
         }
     },
 }
@@ -602,13 +610,11 @@ BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
     'keyword': 'prefLabel',
 }
-VOC_KEYWORDS_MAPPING = {
-    'source': 'uri',
-    'keyword': 'prefLabel',
-}
+
 VOC_MAPPING = {
     'source': 'uri',
     'label': 'prefLabel',
+    'prefLabels': 'prefLabels',
 }
 
 RESPONSE_MAPS = {
@@ -671,7 +677,7 @@ RESPONSE_MAPS = {
     },
     'VOC_KEYWORDS': {
         apiconfig.RESULT: 'results',
-        apiconfig.DIRECT: VOC_KEYWORDS_MAPPING,
+        apiconfig.DIRECT: VOC_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
     'VOC_ROLES': {
@@ -706,12 +712,12 @@ ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', ) ,
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
     'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
-    'roles': ('VOC_ROLES', ),  # 'core.skosmos.get_roles',
-    'formats': ('VOC_FORMATS', ),  # 'core.skosmos.get_formats',
-    'materials': ('VOC_MATERIALS', ),  # 'core.skosmos.get_materials',
-    'languages': ('VOC_LANGUAGES', ),  # 'core.skosmos.get_languages',
+    'roles': ('VOC_ROLES', ),
+    'formats': ('VOC_FORMATS', ),
+    'materials': ('VOC_MATERIALS', ),
+    'languages': ('VOC_LANGUAGES', ),
     'licenses': (),
-    'texttypes': ('VOC_TEXTTYPES', ),  # 'core.skosmos.get_text_types',
+    'texttypes': ('VOC_TEXTTYPES', ),
     'types': 'core.skosmos.get_entry_types',
 }
 
