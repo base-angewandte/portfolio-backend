@@ -705,11 +705,11 @@ RESPONSE_MAPS = {
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', 'GND_INSTITUTION'),
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
-    'keywords':('VOC_KEYWORDS',), 
     'roles': ('VOC_ROLES',), # 'core.skosmos.get_roles',
     'formats': ('VOC_FORMATS', ), # 'core.skosmos.get_formats',
     'materials': ('VOC_MATERIALS', ), # 'core.skosmos.get_materials',
     'languages': ('VOC_LANGUAGES',), # 'core.skosmos.get_languages',
+    'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
     'licenses': (),
     'texttypes': ('VOC_TEXTTYPES',), # 'core.skosmos.get_text_types',
     'types': 'core.skosmos.get_entry_types',
