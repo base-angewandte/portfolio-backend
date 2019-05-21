@@ -521,6 +521,7 @@ SOURCES = {
         apiconfig.URL: '{}disciplines/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
+        # NOTE: SKOSMOS API does not return anything if the query string is simply a wildward
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
         },
@@ -704,16 +705,13 @@ RESPONSE_MAPS = {
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', ) ,
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
-    'keywords': {
-        'all': 'core.skosmos.get_base_keywords',
-        'search': 'core.skosmos.get_keywords',
-    },
-    'roles': 'core.skosmos.get_roles',
-    'formats': 'core.skosmos.get_formats',
-    'materials': 'core.skosmos.get_materials',
-    'languages': 'core.skosmos.get_languages',
+    'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
+    'roles': ('VOC_ROLES', ),  # 'core.skosmos.get_roles',
+    'formats': ('VOC_FORMATS', ),  # 'core.skosmos.get_formats',
+    'materials': ('VOC_MATERIALS', ),  # 'core.skosmos.get_materials',
+    'languages': ('VOC_LANGUAGES', ),  # 'core.skosmos.get_languages',
     'licenses': (),
-    'texttypes': 'core.skosmos.get_text_types',
+    'texttypes': ('VOC_TEXTTYPES', ),  # 'core.skosmos.get_text_types',
     'types': 'core.skosmos.get_entry_types',
 }
 
