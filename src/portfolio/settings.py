@@ -702,7 +702,7 @@ RESPONSE_MAPS = {
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
-    'contributors': ('ANGEWANDTE_PERSON', 'VIAF_PERSON', 'GND_PERSON', 'GND_INSTITUTION'),
+    'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', ) ,
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
