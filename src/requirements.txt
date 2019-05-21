@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-apimapper==0.7
+apimapper==0.7.2
 apispec==0.39.0
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
