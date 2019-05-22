@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from django.urls import reverse_lazy
-from django.utils.text import format_lazy
 from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, ValidationError, fields, validate
 
 from ..skosmos import get_preflabel_lazy, get_uri, get_languages_choices, get_altlabel_lazy
+from ..utils import placeholder_lazy
 
 
 # validators
@@ -42,7 +42,7 @@ def get_contributors_field(additional_attributes={}):
         title=get_altlabel_lazy('contributor'),
         **{'x-attrs': {
             'field_type': 'chips-below',
-            'placeholder': _('Choose contributors'),
+            'placeholder': placeholder_lazy(get_altlabel_lazy('contributor')),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'source_role': '',
             'allow_unkown_entries': True,
@@ -60,7 +60,7 @@ def get_contributors_field_for_role(role, additional_attributes={}):
             'default_role': get_uri(role),
             'equivalent': 'contributors',
             'field_type': 'chips',
-            'placeholder': format_lazy('{} {}', _('Choose'), get_preflabel_lazy(role)),
+            'placeholder': placeholder_lazy(get_altlabel_lazy(role)),
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'allow_unkown_entries': True,

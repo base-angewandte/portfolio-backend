@@ -2,11 +2,14 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import ugettext_lazy as _
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
 from core.models import Entry, Relation
+from core.skosmos import get_preflabel_lazy
+from core.utils import placeholder_lazy
 from media_server.models import get_image_for_entry, has_entry_media
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
@@ -66,7 +69,11 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'notes': OrderedDict([
                 ('field_type', 'multiline'),
                 ('order', 6),
-                ('placeholder', _('Enter Notes (Will not be published)'))]),
+                (
+                    'placeholder',
+                    format_lazy('{} ({})', placeholder_lazy(get_preflabel_lazy('notes')), _('will not be published'))
+                ),
+            ]),
             'icon': OrderedDict([('hidden', True)]),
             'has_media': OrderedDict([('hidden', True)]),
         }

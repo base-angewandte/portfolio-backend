@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-02 14:58+0200\n"
+"POT-Creation-Date: 2019-05-22 18:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: api/serializers/entry.py:74
+msgid "will not be published"
+msgstr "Werden nicht veröffentlicht"
+
 #: api/serializers/relation.py:18
 msgid "Relation already exists"
 msgstr "Verknüpfung existiert bereits"
@@ -25,7 +29,7 @@ msgstr "Verknüpfung existiert bereits"
 msgid "Current user is not the owner of this entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: api/views.py:129 media_server/serializers.py:16
+#: api/views.py:129 media_server/serializers.py:17
 msgid "Entry does not exist"
 msgstr "Eintrag existiert nicht"
 
@@ -66,53 +70,50 @@ msgstr ""
 msgid "Invalid date entry (expected yyyy)"
 msgstr ""
 
-#: core/schemas/general.py:45
-msgid "Choose contributors"
-msgstr "Wähle beteiligte Personen oder Institutionen aus"
+#: core/utils.py:4
+#, python-format
+msgid "Enter %(label)s"
+msgstr "%(label)s eintragen"
 
-#: core/schemas/general.py:61
-msgid "Choose"
-msgstr "Wähle"
-
-#: core/validators.py:12
+#: core/validators.py:14
 msgid "Keywords contains duplicate entries"
 msgstr "Schlagwörter enthalten Duplikate"
 
-#: core/validators.py:14
+#: core/validators.py:16
 #, python-format
 msgid "Invalid keywords: %(error)s"
 msgstr "Ungültige Schlagwörter: %(error)s"
 
-#: core/validators.py:28
+#: core/validators.py:30
 msgid "Same language is defined multiple times"
 msgstr "Dieselbe Sprache wird mehrmals definiert"
 
-#: core/validators.py:30
+#: core/validators.py:32
 #, python-format
 msgid "Invalid texts: %(error)s"
 msgstr "Ungültige Texte: %(error)s"
 
-#: media_server/serializers.py:19
+#: media_server/serializers.py:20
 msgid "Current user is not the owner of entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: media_server/views.py:89 media_server/views.py:152 media_server/views.py:195
+#: media_server/views.py:90 media_server/views.py:169 media_server/views.py:212
 msgid "Current user is not the owner of this media object"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
 
-#: media_server/views.py:103 media_server/views.py:163
-#: media_server/views.py:203
+#: media_server/views.py:104 media_server/views.py:180
+#: media_server/views.py:220
 msgid "Media object does not exist"
 msgstr "Medienobjekt existiert nicht"
 
-#: media_server/views.py:117
+#: media_server/views.py:119
 msgid "No space left for user"
 msgstr "Kein Speicherplatz mehr für diesen Benutzer"
 
-#: portfolio/settings.py:247
+#: portfolio/settings.py:244
 msgid "German"
 msgstr "Deutsch"
 
-#: portfolio/settings.py:248
+#: portfolio/settings.py:245
 msgid "English"
 msgstr "Englisch"
