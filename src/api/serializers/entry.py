@@ -66,7 +66,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'notes': OrderedDict([
                 ('field_type', 'multiline'),
                 ('order', 6),
-                ('placeholder',_('Enter Notes (Will not be published)'))]),
+                ('placeholder', _('Enter Notes (Will not be published)'))]),
             'icon': OrderedDict([('hidden', True)]),
             'has_media': OrderedDict([('hidden', True)]),
         }
