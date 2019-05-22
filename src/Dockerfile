@@ -3,12 +3,28 @@ FROM python:3.7
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        bc \
         ffmpeg \
         libmagic-dev \
         libimage-exiftool-perl \
+        sudo \
+        cmake \
+        gtk-doc-tools \
         ghostscript \
-        bc \
+        libjpeg62-turbo-dev \
+        libtiff5-dev \
+        zlib1g-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libwebp-dev \
+        tcl8.6-dev \
+        tk8.6-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
     && rm -rf /var/lib/apt/lists/*
+
+ADD pillow_depends /depends
+RUN cd /depends && ./install_openjpeg.sh && ./install_imagequant.sh && ./install_raqm.sh
 
 RUN mkdir /logs
 VOLUME /logs
