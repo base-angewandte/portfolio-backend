@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ADD pillow_depends /depends
 RUN cd /depends && ./install_openjpeg.sh && ./install_imagequant.sh && ./install_raqm.sh
 
+RUN apt-get remove -y cmake gtk-doc-tools && apt-get autoremove -y
+
 RUN mkdir /logs
 VOLUME /logs
 
