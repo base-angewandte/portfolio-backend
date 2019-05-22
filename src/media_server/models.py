@@ -438,6 +438,15 @@ MIME_TYPE_TO_MODEL = {
 }
 
 
+def has_entry_media(entry_id):
+    ret = False
+    for model in iter(PREFIX_TO_MODEL.values()):
+        ret = ret or model.objects.filter(entry_id=entry_id).exists()
+        if ret:
+            break
+    return ret
+
+
 def get_media_for_entry(entry_id):
     ret = []
     for model in iter(PREFIX_TO_MODEL.values()):

@@ -2,11 +2,12 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
 from core.models import Entry, Relation
-from media_server.models import get_image_for_entry
+from media_server.models import get_image_for_entry, has_entry_media
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
@@ -31,6 +32,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
     relations = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
+    has_media = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -61,8 +63,12 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 ('allow_unkown_entries', True),
                 ('dynamic_autosuggest', True,),
             ]),
-            'notes': OrderedDict([('field_type', 'multiline'), ('order', 6)]),
-            'icon': OrderedDict([('hidden', True)])
+            'notes': OrderedDict([
+                ('field_type', 'multiline'),
+                ('order', 6),
+                ('placeholder',_('Enter Notes (Will not be published)'))]),
+            'icon': OrderedDict([('hidden', True)]),
+            'has_media': OrderedDict([('hidden', True)]),
         }
 
     @swagger_serializer_method(serializer_or_field=RelationsSerializer)
@@ -82,3 +88,6 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
 
     def get_icon(self, obj) -> str:
         return obj.icon
+
+    def get_has_media(self, obj) -> bool:
+        return has_entry_media(obj.pk)
