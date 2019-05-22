@@ -31,7 +31,7 @@ class Entry(AbstractBaseModel):
     type = models.CharField(
         verbose_name=get_preflabel_lazy('type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
     )
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(
         verbose_name=get_preflabel_lazy('keywords'), validators=[validate_keywords], blank=True, null=True,
