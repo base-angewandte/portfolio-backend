@@ -112,6 +112,9 @@ class CommonInfo(models.Model):
 
     class Meta:
         abstract = True
+        indexes = [
+            models.Index(fields=['entry_id']),
+        ]
 
     @property
     def metadata(self):
