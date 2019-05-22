@@ -5,7 +5,7 @@
 apimapper==0.7.2
 apispec==0.39.0
 concurrent-log-handler==0.9.12
-django==1.11.18
+django==1.11.20
 django-cas-ng==3.5.10
 django-cleanup==3.0.1
 django-cors-headers==2.4.0
