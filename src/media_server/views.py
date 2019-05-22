@@ -142,6 +142,10 @@ class MediaViewSet(viewsets.GenericViewSet):
             except AttributeError:
                 # not an image
                 pass
+            except RuntimeError:
+                # webp image
+                # https://code.djangoproject.com/ticket/29705
+                pass
 
             m.save()
 
