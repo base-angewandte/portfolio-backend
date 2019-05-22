@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
         libmagic-dev \
         libimage-exiftool-perl \
-        sudo \
         cmake \
         gtk-doc-tools \
         ghostscript \

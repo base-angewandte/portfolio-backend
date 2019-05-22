@@ -8,7 +8,7 @@ archive=libimagequant-2.12.2
 pushd $archive
 
 make shared
-sudo cp libimagequant.so* /usr/lib/
-sudo cp libimagequant.h /usr/include/
+cp libimagequant.so* /usr/lib/
+cp libimagequant.h /usr/include/
 
 popd

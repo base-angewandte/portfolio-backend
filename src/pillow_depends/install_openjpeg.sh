@@ -7,6 +7,6 @@ archive=openjpeg-2.3.0
 
 pushd $archive
 
-cmake -DCMAKE_INSTALL_PREFIX=/usr . && make -j4 && sudo make -j4 install
+cmake -DCMAKE_INSTALL_PREFIX=/usr . && make -j4 && make -j4 install
 
 popd
