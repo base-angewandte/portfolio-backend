@@ -38,6 +38,13 @@ class AutoSuggestTestCase(TestCase):
 
         return
 
+    def test_viaf_corporate(self):
+        res = fetch_responses('Universität Wien', ('VIAF_INSTITUTION',))
+        assert( any(rec['source'] == 'http://www.viaf.org/viaf/131901031' for rec in res))
+
+        return
+
+    
     def test_places_geonames(self):
         res = fetch_responses('Wien', ('GEONAMES_PLACE',))
         assert( any(rec['source'] == 'http://api.geonames.org/get?username=***REMOVED***&geonameId=2761369' for rec in res))
