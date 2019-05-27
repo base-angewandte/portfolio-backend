@@ -593,34 +593,30 @@ SOURCES = {
 
 ANGEWANDTE_MAPPING = {
     'source': 'id',
-    'name': 'name',
+    'label': 'name',
 }
-GND_CONTRIBUTORS_MAPPING = {
+GND_MAPPING = {
     'source': 'id',  # common_schema: GND schema
-    'name': 'label',
+    'label': 'label',
 }
-GND_PLACES_MAPPING = {
-    'source': 'id',  # common_schema: GND schema
-    'name': 'label',
-}
+
 VIAF_CONTRIBUTORS_MAPPING = {
-    'name': 'displayForm',
+    'label': 'displayForm',
 }
 VIAF_PLACES_MAPPING = {
-    'name': 'toponymName',
+    'label': 'toponymName',
 }
 GEONAMES_MAPPING = {
-    'name': 'toponymName',
+    'label': 'toponymName',
 }
 BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
-    'keyword': 'prefLabel',
+    'label': 'prefLabels',
 }
 
 VOC_MAPPING = {
     'source': 'uri',
-    'label': 'prefLabel',
-    'prefLabels': 'prefLabels',
+    'label': 'prefLabels',
 }
 
 RESPONSE_MAPS = {
@@ -630,11 +626,11 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
     'GND_PERSON': {
-        apiconfig.DIRECT: GND_CONTRIBUTORS_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'GND_INSTITUTION': {
-        apiconfig.DIRECT: GND_CONTRIBUTORS_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PERSON': {
@@ -663,7 +659,7 @@ RESPONSE_MAPS = {
     },
 
     'GND_PLACE': {
-        apiconfig.DIRECT: GND_PLACES_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PLACE': {
@@ -702,7 +698,6 @@ RESPONSE_MAPS = {
     'VOC_ROLES': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
     },
     'VOC_FORMATS': {
         apiconfig.RESULT: 'results',
@@ -722,7 +717,6 @@ RESPONSE_MAPS = {
     'VOC_TEXTTYPES': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
     },
 }
 
