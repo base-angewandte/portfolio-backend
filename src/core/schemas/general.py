@@ -192,6 +192,7 @@ def get_format_field(additional_attributes={}):
             'field_format': 'half',
             'field_type': 'chips',
             'sortable': True,
+            'allow_unkown_entries': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
             **additional_attributes
         }},
@@ -218,6 +219,7 @@ def get_location_field(additional_attributes={}):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
+            'dynamic_autosuggest': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
             **additional_attributes
         }},
@@ -252,6 +254,7 @@ def get_material_field(additional_attributes={}):
         **{'x-attrs': {
             'field_type': 'chips',
             'sortable': True,
+            'allow_unkown_entries': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
             **additional_attributes
         }},
