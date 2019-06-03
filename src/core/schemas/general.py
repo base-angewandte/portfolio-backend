@@ -211,6 +211,8 @@ def get_format_field(additional_attributes={}):
             'field_format': 'half',
             'field_type': 'chips',
             'sortable': True,
+            'allow_unkown_entries': True,
+            'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
             'placeholder': placeholder_lazy(label),
             **additional_attributes
@@ -226,6 +228,7 @@ def get_language_list_field(additional_attributes={}):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
+            'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
             'placeholder': placeholder_lazy(label),
             **additional_attributes
@@ -241,6 +244,7 @@ def get_location_field(additional_attributes={}):
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
+            'dynamic_autosuggest': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
             'placeholder': placeholder_lazy(label),
             **additional_attributes
@@ -277,6 +281,8 @@ def get_material_field(additional_attributes={}):
         **{'x-attrs': {
             'field_type': 'chips',
             'sortable': True,
+            'allow_unkown_entries': True,
+            'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
             'placeholder': placeholder_lazy(label),
             **additional_attributes
@@ -288,7 +294,8 @@ def get_published_in_field(additional_attributes={}):
     return get_string_field(
         get_preflabel_lazy('published_in'),
         {
-            'field_type': 'autocomplete',
+            # TODO: changed from autocomplete to text until autocomplete available
+            'field_type': 'text',
             'field_format': 'half',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             **additional_attributes

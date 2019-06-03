@@ -65,6 +65,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 ('order', 5),
                 ('allow_unkown_entries', True),
                 ('dynamic_autosuggest', True,),
+                ('set_label_language', True,),
             ]),
             'notes': OrderedDict([
                 ('field_type', 'multiline'),

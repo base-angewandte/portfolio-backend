@@ -488,6 +488,12 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: None,
     },
+    'VIAF_INSTITUTION': {
+        apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+        apiconfig.QUERY_FIELD: 'query',
+        apiconfig.PAYLOAD: None,
+    },
+
     'GND_PLACE': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
@@ -589,34 +595,30 @@ SOURCES = {
 
 ANGEWANDTE_MAPPING = {
     'source': 'id',
-    'name': 'name',
+    'label': 'name',
 }
-GND_CONTRIBUTORS_MAPPING = {
+GND_MAPPING = {
     'source': 'id',  # common_schema: GND schema
-    'name': 'label',
+    'label': 'label',
 }
-GND_PLACES_MAPPING = {
-    'source': 'id',  # common_schema: GND schema
-    'name': 'label',
-}
+
 VIAF_CONTRIBUTORS_MAPPING = {
-    'name': 'displayForm',
+    'label': 'displayForm',
 }
 VIAF_PLACES_MAPPING = {
-    'name': 'toponymName',
+    'label': 'toponymName',
 }
 GEONAMES_MAPPING = {
-    'name': 'toponymName',
+    'label': 'toponymName',
 }
 BASE_KEYWORDS_MAPPING = {
     'source': 'uri',
-    'keyword': 'prefLabel',
+    'label': 'prefLabels',
 }
 
 VOC_MAPPING = {
     'source': 'uri',
-    'label': 'prefLabel',
-    'prefLabels': 'prefLabels',
+    'label': 'prefLabels',
 }
 
 RESPONSE_MAPS = {
@@ -626,11 +628,11 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
     'GND_PERSON': {
-        apiconfig.DIRECT: GND_CONTRIBUTORS_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'GND_INSTITUTION': {
-        apiconfig.DIRECT: GND_CONTRIBUTORS_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PERSON': {
@@ -645,8 +647,21 @@ RESPONSE_MAPS = {
             },
         }
     },
+    'VIAF_INSTITUTION': {
+        apiconfig.RESULT: 'result',
+        apiconfig.FILTER: {'nametype': 'corporate'},
+        apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
+        apiconfig.RULES: {
+            'source_name': {apiconfig.RULE: '"VIAF"'},
+            'source': {
+                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                apiconfig.FIELDS: {'p1': 'viafid'},
+            },
+        }
+    },
+
     'GND_PLACE': {
-        apiconfig.DIRECT: GND_PLACES_MAPPING,
+        apiconfig.DIRECT: GND_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
     },
     'VIAF_PLACE': {
@@ -685,7 +700,6 @@ RESPONSE_MAPS = {
     'VOC_ROLES': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
     },
     'VOC_FORMATS': {
         apiconfig.RESULT: 'results',
@@ -705,13 +719,12 @@ RESPONSE_MAPS = {
     'VOC_TEXTTYPES': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"portfolio"'}},
     },
 }
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
-    'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', ) ,
+    'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
     'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
     'roles': ('VOC_ROLES', ),
