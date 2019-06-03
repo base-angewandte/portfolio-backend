@@ -51,12 +51,13 @@ def get_string_field(label, additional_attributes):
 
 
 def get_contributors_field(additional_attributes={}):
+    label = get_altlabel_lazy('contributor')
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_altlabel_lazy('contributor'),
+        title=label,
         **{'x-attrs': {
             'field_type': 'chips-below',
-            'placeholder': placeholder_lazy(get_altlabel_lazy('contributor')),
+            'placeholder': placeholder_lazy(label),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'source_role': '',
             'allow_unkown_entries': True,
@@ -67,14 +68,15 @@ def get_contributors_field(additional_attributes={}):
 
 
 def get_contributors_field_for_role(role, additional_attributes={}):
+    label = get_altlabel_lazy(role)
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
-        title=get_altlabel_lazy(role),
+        title=label,
         **{'x-attrs': {
             'default_role': get_uri(role),
             'equivalent': 'contributors',
             'field_type': 'chips',
-            'placeholder': placeholder_lazy(get_altlabel_lazy(role)),
+            'placeholder': placeholder_lazy(label),
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'allow_unkown_entries': True,
@@ -85,14 +87,16 @@ def get_contributors_field_for_role(role, additional_attributes={}):
 
 
 def get_date_field(additional_attributes={}, validator=validate_date):
+    label = get_preflabel_lazy('date')
     return fields.Date(
-        title=get_preflabel_lazy('date'),
+        title=label,
         additionalProperties=False,
         validate=validator,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
             'date_format': 'date_year',
+            'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
     )
@@ -179,72 +183,78 @@ def get_date_time_range_location_group_field(additional_attributes={}):
 
 
 def get_dimensions_field(additional_attributes={}):
-    return fields.Str(
-        title=get_preflabel_lazy('dimensions'),
-        **{'x-attrs': {
+    return get_string_field(
+        get_preflabel_lazy('dimensions'),
+        {
             'field_format': 'half',
             **additional_attributes
-        }}
+        }
     )
 
 
 def get_duration_field(additional_attributes={}):
-    return fields.Str(
-        title=get_preflabel_lazy('duration'),
-        **{'x-attrs': {
+    return get_string_field(
+        get_preflabel_lazy('duration'),
+        {
             'field_format': 'half',
             **additional_attributes
-        }}
+        }
     )
 
 
 def get_format_field(additional_attributes={}):
+    label = get_preflabel_lazy('format')
     return fields.List(
         fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
-        title=get_preflabel_lazy('format'),
+        title=label,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
+            'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
     )
 
 
 def get_language_list_field(additional_attributes={}):
+    label = get_preflabel_lazy('language')
     return fields.List(
         fields.Nested(LanguageDataSchema, additionalProperties=False),
-        title=get_preflabel_lazy('language'),
+        title=label,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
+            'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
     )
 
 
 def get_location_field(additional_attributes={}):
+    label = get_preflabel_lazy('location')
     return fields.List(
         fields.Nested(GEOReferenceSchema, additionalProperties=False),
-        title=get_preflabel_lazy('location'),
+        title=label,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
+            'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
     )
 
 
 def get_location_description_field(additional_attributes={}):
-    return fields.String(
-        title=get_preflabel_lazy('location_description'),
-        **{'x-attrs': {
+    return get_string_field(
+        get_preflabel_lazy('location_description'),
+        {
             'field_type': 'text',
             **additional_attributes
-        }},
+        }
     )
 
 
@@ -260,36 +270,37 @@ def get_location_group_field(additional_attributes={}):
 
 
 def get_material_field(additional_attributes={}):
+    label = get_preflabel_lazy('material')
     return fields.List(
         fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
-        title=get_preflabel_lazy('material'),
+        title=label,
         **{'x-attrs': {
             'field_type': 'chips',
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
+            'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
     )
 
 
 def get_published_in_field(additional_attributes={}):
-    return fields.Str(
-        title=get_preflabel_lazy('published_in'),
-        **{'x-attrs': {
+    return get_string_field(
+        get_preflabel_lazy('published_in'),
+        {
             'field_type': 'autocomplete',
             'field_format': 'half',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             **additional_attributes
-        }},
+        }
     )
 
 
 def get_url_field(additional_attributes={}):
-    return fields.Url(
-        title=get_preflabel_lazy('url'),
-        **{'x-attrs': {
-            **additional_attributes
-        }},
+    return get_field(
+        fields.Str,  # TODO change back to fields.Url
+        get_preflabel_lazy('url'),
+        {**additional_attributes}
     )
 
 
