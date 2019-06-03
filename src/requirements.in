@@ -4,7 +4,7 @@
 
 apimapper==0.7.2
 apispec==0.39.0
-concurrent-log-handler==0.9.12
+concurrent-log-handler==0.9.16
 django==1.11.20
 django-cas-ng==3.5.10
 django-cleanup==3.0.1

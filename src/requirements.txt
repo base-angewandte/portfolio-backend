@@ -10,7 +10,7 @@ certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 choicesenum==0.5.3        # via django-exiffield
 click==7.0                # via flex, pip-tools, rq
-concurrent-log-handler==0.9.12
+concurrent-log-handler==0.9.16
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 croniter==0.3.30          # via rq-scheduler
@@ -45,6 +45,7 @@ markupsafe==1.1.1         # via jinja2
 marshmallow==2.15.5
 pillow==5.3.0
 pip-tools==2.0.2
+portalocker==1.4.0        # via concurrent-log-handler
 psutil==5.6.2             # via rainbow-saddle
 psycopg2-binary==2.7.5
 pyparsing==2.4.0          # via rdflib
