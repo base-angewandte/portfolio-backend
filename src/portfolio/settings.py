@@ -268,6 +268,8 @@ PROTECTED_MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'as
 PROTECTED_MEDIA_LOCATION = '{}/internal/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 PROTECTED_MEDIA_SERVER = 'nginx' if not DEBUG else 'django'
 
+FILE_UPLOAD_PERMISSIONS = 0o644
+
 """ Logging """
 LOG_DIR = os.path.join(BASE_DIR, '..', 'logs')
 
