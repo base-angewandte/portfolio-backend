@@ -297,7 +297,7 @@ def get_published_in_field(additional_attributes={}):
             # TODO: changed from autocomplete to text until autocomplete available
             'field_type': 'text',
             'field_format': 'half',
-            'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+            # 'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             **additional_attributes
         }
     )
