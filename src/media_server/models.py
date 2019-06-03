@@ -16,6 +16,7 @@ from core.models import Entry
 from general.models import ShortUUIDField
 from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
+from .utils import image_transpose_exif
 
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
@@ -278,11 +279,17 @@ class Image(CommonInfo):
 
                 try:
                     im = PIL_Image.open(self.file.path)
+
+                    # handle rotation in exif data
+                    im = image_transpose_exif(im)
+
+                    # handle alpha
                     if im.mode in ('RGBA', 'LA'):
                         fill_color = (255, 255, 255)
                         background = PIL_Image.new(im.mode[:-1], im.size, fill_color)
                         background.paste(im, im.split()[-1])
                         im = background
+
                     im = ImageOps.fit(im, (400, 300), PIL_Image.ANTIALIAS)
                     im.save(os.path.join(path, 'tn.jpg'))
                     im.close()
