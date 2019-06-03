@@ -455,6 +455,8 @@ if DEBUG:
     INTERNAL_IPS = ('127.0.0.1', )
 
 SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
+TAX_ID = 'potax'
+TAX_GRAPH = 'http://base.uni-ak.ac.at/portfolio/taxonomy/'
 VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 

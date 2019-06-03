@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework.utils.encoders import JSONEncoder
 
 from .general import TextsModelSchema, KeywordsModelSchema
+from ..skosmos import get_preflabel_lazy
 
 if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
     raise ImproperlyConfigured(_('Schemas improperly configured'))
@@ -32,7 +33,7 @@ for schema in settings.ACTIVE_SCHEMAS:
 
 
 ACTIVE_TYPES_CHOICES = [
-    [i, _(i)] for i in ACTIVE_TYPES  # TODO change _ to get_preflabel_lazy as soon as TYPES are concept ids
+    [i, get_preflabel_lazy(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH)] for i in ACTIVE_TYPES
 ]
 
 if len(set(ACTIVE_TYPES)) < len(ACTIVE_TYPES):
