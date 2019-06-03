@@ -1,15 +1,14 @@
 from django.test import TestCase
+from .views import fetch_responses
 
-# Create your tests here.
-from django.test import TestCase
-from  .views import fetch_responses
 
 class AutoSuggestTestCase(TestCase):
-    '''
-    tests based on current settings configured. 
+    """
+    tests based on current settings configured.
     TODO:
-    very repettitve, make it better with decorators
-    '''
+    very repetitive, make it better with decorators
+    """
+
     def test_empty_contributors_all(self):
         res = fetch_responses('', ('VIAF_PERSON', 'GND_PERSON', 'GND_INSTITUTION'))
         assert(len(res))
@@ -44,7 +43,6 @@ class AutoSuggestTestCase(TestCase):
 
         return
 
-    
     def test_places_geonames(self):
         res = fetch_responses('Wien', ('GEONAMES_PLACE',))
         assert( any(rec['source'] == 'http://api.geonames.org/get?username=***REMOVED***&geonameId=2761369' for rec in res))
