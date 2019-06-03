@@ -36,6 +36,20 @@ def validate_year(data):
 
 # shared fields
 
+def get_field(field, label, additional_attributes):
+    return field(
+        title=label,
+        **{'x-attrs': {
+            'placeholder': placeholder_lazy(label),
+            **additional_attributes
+        }},
+    )
+
+
+def get_string_field(label, additional_attributes):
+    return get_field(fields.Str, label, additional_attributes)
+
+
 def get_contributors_field(additional_attributes={}):
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
