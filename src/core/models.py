@@ -4,33 +4,24 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.functional import lazy
 from django.utils.translation import ugettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
 from general.models import AbstractBaseModel, ShortUUIDField
 from .managers import EntryManager
-from .schemas import ACTIVE_TYPES_CHOICES, ICON_DEFAULT, get_jsonschema, get_icon
+from .schemas import ICON_DEFAULT, get_jsonschema, get_icon
 from .skosmos import get_preflabel_lazy
-from .validators import validate_texts, validate_keywords
+from .validators import validate_texts, validate_keywords, validate_type
 
 
 class Entry(AbstractBaseModel):
-    @staticmethod
-    def get_type_choices(lang=None):
-        return ACTIVE_TYPES_CHOICES
-
-    TYPE_CHOICES = lazy(get_type_choices.__func__, tuple)()
-
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)
     subtitle = models.CharField(
         verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True,
     )
-    type = models.CharField(
-        verbose_name=get_preflabel_lazy('type'), max_length=255, choices=TYPE_CHOICES, blank=True, null=True,
-    )
+    type = JSONField(verbose_name=get_preflabel_lazy('type'), validators=[validate_type], blank=True, null=True)
     notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(

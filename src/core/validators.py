@@ -4,7 +4,15 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from jsonschema import validate, ValidationError as SchemaValidationError
 
-from .schemas import get_texts_jsonschema, get_keywords_jsonschema
+from .schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
+
+
+def validate_type(value):
+    try:
+        validate(value, get_type_jsonschema())
+    except SchemaValidationError as e:
+        msg = _('Invalid type: %(error)s') % {'error': e.message}
+        raise ValidationError(msg)
 
 
 def validate_keywords(value):

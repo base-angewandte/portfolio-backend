@@ -9,7 +9,7 @@ from drf_yasg.utils import force_real_str, swagger_auto_schema
 from rest_framework import serializers
 from rest_framework.utils.encoders import JSONEncoder
 
-from core.schemas import get_texts_jsonschema, get_keywords_jsonschema
+from core.schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
 
 language_header_parameter = openapi.Parameter(
     'Accept-Language',
@@ -29,7 +29,14 @@ class JSONFieldInspector(FieldInspector):
         SwaggerType, ChildSwaggerType = self._get_partial_types(field, swagger_object_type, use_references, **kwargs)
 
         if isinstance(field, serializers.JSONField):
-            if field.field_name == 'keywords':
+            if field.field_name == 'type':
+                return SwaggerType(
+                    title=force_real_str(field.label) if field.label else None,
+                    type=openapi.TYPE_OBJECT,
+                    properties=get_type_jsonschema()['properties'],
+                    additionalProperties=False,
+                )
+            elif field.field_name == 'keywords':
                 return SwaggerType(
                     title=force_real_str(field.label) if field.label else None,
                     type=openapi.TYPE_ARRAY,

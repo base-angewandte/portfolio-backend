@@ -1,7 +1,8 @@
 from django.conf import settings
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext_lazy as _
-from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.translation import ugettext_lazy as _, get_language
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
@@ -13,7 +14,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES, get_jsonschema
+from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 from .serializers.entry import EntrySerializer
@@ -66,14 +67,33 @@ class CountModelMixin(object):
         return Response(content)
 
 
+class EntryFilter(FilterSet):
+    type = CharFilter(field_name='type', lookup_expr='source')
+
+    class Meta:
+        model = Entry
+        fields = ['type']
+
+
+entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type_source')
+
+
 @method_decorator(swagger_auto_schema(
     manual_parameters=[
-        openapi.Parameter('q', openapi.IN_QUERY, required=False, description="Search query", type=openapi.TYPE_STRING),
+        openapi.Parameter(
+            'sort',
+            openapi.IN_QUERY,
+            required=False,
+            description='Which field to use when ordering the results.',
+            type=openapi.TYPE_STRING,
+            enum=list(entry_ordering_fields) + ['-{}'.format(i) for i in entry_ordering_fields],
+        ),
+        openapi.Parameter('q', openapi.IN_QUERY, required=False, description='Search query', type=openapi.TYPE_STRING),
         openapi.Parameter(
             'link_selection_for',
             openapi.IN_QUERY,
             required=False,
-            description="Get link selection for a certain entry",
+            description='Get link selection for a certain entry',
             type=openapi.TYPE_STRING
         ),
     ]
@@ -107,8 +127,8 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     serializer_class = EntrySerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
-    filter_fields = ('type',)  # TODO
-    ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type')  # TODO
+    filterset_class = EntryFilter
+    ordering_fields = entry_ordering_fields
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 
@@ -131,13 +151,16 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     @swagger_auto_schema(responses={200: openapi.Response('')})
     @action(detail=False, filter_backends=[], pagination_class=None)
     def types(self, request, *args, **kwargs):
+        language = get_language() or 'en'
         content = self.get_queryset().exclude(
             type__isnull=True).exclude(type__exact='').values_list('type', flat=True).distinct().order_by()
-        return Response(content)
+        return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '')))
 
     def get_queryset(self):
         user = self.request.user
-        qs = Entry.objects.filter(owner=user).order_by('-date_changed')
+        qs = Entry.objects.filter(owner=user).annotate(
+            type_source=KeyTextTransform('source', 'type')
+        ).order_by('-date_changed')
 
         if self.action == 'list':
             q = self.request.query_params.get('q', None)
@@ -183,7 +206,8 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     lookup_value_regex = '.+'
 
     def list(self, request, *args, **kwargs):
-        return Response(ACTIVE_TYPES)
+        language = get_language() or 'en'
+        return Response(sorted(ACTIVE_TYPES_LIST, key=lambda x: x.get('label', {}).get(language, '')))
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)

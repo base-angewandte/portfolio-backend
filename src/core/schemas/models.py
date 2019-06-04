@@ -6,6 +6,11 @@ from ..skosmos import get_preflabel_lazy
 
 # schema definitions for entry model
 
+# type
+class TypeModelSchema(Schema):
+    type = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False)
+
+
 # keywords
 class KeywordsModelSchema(Schema):
     keywords = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
