@@ -162,11 +162,11 @@ def get_materials():
 
 
 def get_roles():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/role', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/role')
 
 
 def get_text_types():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/text_type', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/text_type')
 
 
 def get_entry_types():
