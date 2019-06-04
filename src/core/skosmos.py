@@ -212,8 +212,11 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
     return label or get_preflabel(concept, project, graph)
 
 
-def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
-    language = get_language() or 'en'
+def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
+    if lang:
+        language = lang
+    else:
+        language = get_language() or 'en'
     cache_key = 'get_preflabel_{}_{}'.format(language, concept)
 
     label = cache.get(cache_key)
@@ -223,7 +226,7 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
             label = c.label(language)
         except KeyError:
             try:
-                label = c.label('en' if language == 'de' else 'de')
+                label = c.label('de' if language == 'en' else 'en')
             except KeyError:
                 pass
         except RequestException:
