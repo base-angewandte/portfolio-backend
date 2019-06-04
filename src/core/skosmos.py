@@ -161,8 +161,16 @@ def get_materials():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/material_type', source_name='voc')
 
 
+def get_media_licenses():
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_media_licenses', source_name='voc')
+
+
 def get_roles():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/role')
+
+
+def get_software_licenses():
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses', source_name='voc')
 
 
 def get_text_types():
