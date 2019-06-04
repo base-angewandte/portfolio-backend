@@ -728,13 +728,17 @@ RESPONSE_MAPS = {
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
     'places': ('GND_PLACE', 'GEONAMES_PLACE'),
-    'keywords': ('BASE_KEYWORDS', 'VOC_KEYWORDS', ),
-    'roles': ('VOC_ROLES', ),
-    'formats': ('VOC_FORMATS', ),
-    'materials': ('VOC_MATERIALS', ),
-    'languages': ('VOC_LANGUAGES', ),
-    'licenses': (),
-    'texttypes': ('VOC_TEXTTYPES', ),
+    'keywords': {
+        'all': 'core.skosmos.get_base_keywords',
+        'search': 'core.skosmos.get_keywords',
+    },
+    'roles': 'core.skosmos.get_roles',
+    'formats': 'core.skosmos.get_formats',
+    'materials': 'core.skosmos.get_materials',
+    'languages': 'core.skosmos.get_languages',
+    'medialicenses': 'core.skosmos.get_media_licenses',
+    'softwarelicenses': 'core.skosmos.get_software_licenses',
+    'texttypes': 'core.skosmos.get_text_types',
     'types': 'core.skosmos.get_entry_types',
 }
 
