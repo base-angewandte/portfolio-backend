@@ -68,7 +68,7 @@ class CountModelMixin(object):
 
 
 class EntryFilter(FilterSet):
-    type = CharFilter(field_name='type', lookup_expr='source')
+    type = CharFilter(field_name='type', lookup_expr='source__iexact')
 
     class Meta:
         model = Entry
