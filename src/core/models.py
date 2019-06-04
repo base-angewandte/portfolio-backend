@@ -27,9 +27,7 @@ class Entry(AbstractBaseModel):
     keywords = JSONField(
         verbose_name=get_preflabel_lazy('keywords'), validators=[validate_keywords], blank=True, null=True,
     )
-    texts = JSONField(
-        verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True,
-    )
+    texts = JSONField(verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True)
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
