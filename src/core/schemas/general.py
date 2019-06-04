@@ -324,6 +324,17 @@ class SourceMultilingualLabelSchema(Schema):
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
+class LanguageDataSchema(Schema):
+    source = fields.Str(
+        validate=validate.OneOf(
+            get_languages_choices()[0],
+            labels=get_languages_choices()[1],
+        ),
+        **{'x-attrs': {'hidden': True}}
+    )
+    label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+
 class GeometrySchema(Schema):
     type = fields.Str()
     coordinates = fields.List(fields.Float())
@@ -397,36 +408,3 @@ class ContributorSchema(Schema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Str()
     roles = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
-
-
-# schema definitions for entry model
-
-# keywords
-class KeywordsModelSchema(Schema):
-    keywords = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
-
-
-# texts
-class LanguageDataSchema(Schema):
-    source = fields.Str(
-        validate=validate.OneOf(
-            get_languages_choices()[0],
-            labels=get_languages_choices()[1],
-        ),
-        **{'x-attrs': {'hidden': True}}
-    )
-    label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
-
-
-class TextDataSchema(Schema):
-    language = fields.Nested(LanguageDataSchema, additionalProperties=False)
-    text = fields.Str(required=True, title=get_preflabel_lazy('text'))
-
-
-class TextSchema(Schema):
-    type = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False, title=get_preflabel_lazy('type'))
-    data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
-
-
-class TextsModelSchema(Schema):
-    texts = fields.List(fields.Nested(TextSchema, additionalProperties=False))

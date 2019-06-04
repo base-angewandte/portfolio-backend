@@ -8,7 +8,7 @@ from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.utils.encoders import JSONEncoder
 
-from .general import TextsModelSchema, KeywordsModelSchema
+from .models import TextsModelSchema, KeywordsModelSchema
 from ..skosmos import get_preflabel_lazy
 
 if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
@@ -21,7 +21,7 @@ ACTIVE_TUPLES = []
 ACTIVE_TYPES = []
 
 for schema in settings.ACTIVE_SCHEMAS:
-    s = importlib.import_module('.{}'.format(schema), __name__)
+    s = importlib.import_module('.entries.{}'.format(schema), __name__)
     ACTIVE_TUPLES.append(
         (
             s.TYPES,

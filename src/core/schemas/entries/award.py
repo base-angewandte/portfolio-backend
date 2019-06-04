@@ -1,9 +1,9 @@
 from marshmallow import Schema
 
-from .general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
+from ..general import get_contributors_field, get_contributors_field_for_role, get_url_field, \
     get_date_location_group_field, get_date_time_field, get_string_field
-from ..schemas import ICON_EVENT
-from ..skosmos import get_collection_members, get_preflabel_lazy
+from ...schemas import ICON_EVENT
+from ...skosmos import get_collection_members, get_preflabel_lazy
 
 ICON = ICON_EVENT
 

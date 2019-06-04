@@ -1,8 +1,8 @@
 from marshmallow import Schema, fields
 
-from .general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
+from ..general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
     get_date_field, get_location_field, get_url_field, get_language_list_field, get_string_field
-from ..skosmos import get_collection_members, get_preflabel_lazy
+from ...skosmos import get_collection_members, get_preflabel_lazy
 
 TYPES = get_collection_members(
     'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication',
