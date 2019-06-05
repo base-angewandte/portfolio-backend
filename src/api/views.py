@@ -154,7 +154,7 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
         language = get_language() or 'en'
         content = self.get_queryset().exclude(
             type__isnull=True).exclude(type__exact='').values_list('type', flat=True).distinct().order_by()
-        return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '')))
+        return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
     def get_queryset(self):
         user = self.request.user
@@ -207,7 +207,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
 
     def list(self, request, *args, **kwargs):
         language = get_language() or 'en'
-        return Response(sorted(ACTIVE_TYPES_LIST, key=lambda x: x.get('label', {}).get(language, '')))
+        return Response(sorted(ACTIVE_TYPES_LIST, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)
