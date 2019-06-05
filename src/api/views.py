@@ -30,7 +30,7 @@ SchemaView = get_schema_view(
         # contact=openapi.Contact(email=""),
         # license=openapi.License(name=""),
     ),
-    validators=['flex', 'ssv'] if settings.DEBUG else None,
+    validators=['ssv'] if settings.DEBUG else None,
     public=False,
     # permission_classes=(permissions.IsAuthenticated,),
 )

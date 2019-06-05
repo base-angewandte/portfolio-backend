@@ -17,7 +17,7 @@ django-filter==2.0.0
 django-redis==4.10.0
 django-rq==2.0
 djangorestframework==3.8.2
-drf-yasg[validation]==1.10.2
+drf-yasg[validation]==1.15.0
 hashids==1.2.0
 jsonschema==2.6.0
 markdown==2.6.11
