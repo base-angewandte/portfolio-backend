@@ -57,7 +57,11 @@ def get_search_data(uri):
 
 
 def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
-    cache_key = hashlib.md5('_'.join([uri, vocid or '', str(fetch_children), source_name or '']).encode('utf-8')).hexdigest()
+    language = get_language() or 'en'
+
+    cache_key = hashlib.md5(
+        '_'.join([uri, vocid or '', str(fetch_children), source_name or '', language]).encode('utf-8')
+    ).hexdigest()
 
     data = cache.get(cache_key, [])
 
@@ -91,6 +95,10 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
                         data.append(cmd)
 
         if data:
+            data = sorted(
+                data,
+                key=lambda x: x.get('label', {}).get(language, x.get('label', {}).get('en', 'zzz')).lower()
+            )
             cache.set(cache_key, data, CACHE_TIME)
 
     return data
