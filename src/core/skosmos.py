@@ -22,7 +22,7 @@ def autosuggest(data, query, language=None):
 
     query = unaccent(query.lower())
 
-    result = list(filter(lambda d: query in unaccent(d['label'].get(language, '').lower()), data))
+    result = list(filter(lambda d: query in unaccent(d['label'].get(language, d['label'].get('en', '')).lower()), data))
 
     return result
 
