@@ -151,7 +151,7 @@ def get_languages_choices():
     if not languages or not languages_labels:
         r = skosmos.top_concepts(settings.LANGUAGES_VOCID, lang=language)
 
-        r = sorted(r, key=lambda k: k['label'])
+        r = sorted(r, key=lambda k: k['label'].lower())
 
         for l in r:
             languages.append(l['uri'])
