@@ -67,7 +67,7 @@ def schema2jsonschema(schema, force_text=False):
 
 def get_jsonschema(entry_type, force_text=False):
     for t, s, i in ACTIVE_TUPLES:
-        if entry_type in t:
+        if entry_type.get('source') in t:
             return schema2jsonschema(s, force_text)
 
 
