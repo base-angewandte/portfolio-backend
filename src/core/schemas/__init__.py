@@ -67,13 +67,13 @@ def schema2jsonschema(schema, force_text=False):
 
 def get_jsonschema(entry_type, force_text=False):
     for t, s, i in ACTIVE_TUPLES:
-        if entry_type.get('source') in t:
+        if entry_type in t:
             return schema2jsonschema(s, force_text)
 
 
 def get_icon(entry_type):
     for t, s, i in ACTIVE_TUPLES:
-        if entry_type.get('source') in t:
+        if entry_type in t:
             return i
 
 

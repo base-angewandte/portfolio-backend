@@ -37,13 +37,13 @@ class Entry(AbstractBaseModel):
     @property
     def icon(self):
         if self.type:
-            return get_icon(self.type)
+            return get_icon(self.type.get('source'))
         return ICON_DEFAULT
 
     def clean(self):
         if self.type:
             if self.data:
-                schema = get_jsonschema(self.type, force_text=True)
+                schema = get_jsonschema(self.type.get('source'), force_text=True)
                 try:
                     validate(self.data, schema)
                 except SchemaValidationError as e:
