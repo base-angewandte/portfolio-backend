@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from .decorators import is_allowed
 from .models import PREFIX_TO_MODEL, get_model_for_mime_type
-from .serializers import MediaCreateSerializer, MediaUpdateSerializer, MediaPartialUpdateSerializer
+from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 
     action_serializers = {
         'create': MediaCreateSerializer,
-        'update': MediaUpdateSerializer,
+        # 'update': MediaUpdateSerializer,
         'partial_update': MediaPartialUpdateSerializer,
     }
 
@@ -182,14 +182,14 @@ class MediaViewSet(viewsets.GenericViewSet):
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={
-        204: openapi.Response(''),
-        400: openapi.Response('Bad request'),
-        403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Media object not found'),
-    })
-    def update(self, request, pk=None, *args, **kwargs):
-        return self._update(request, pk=pk, partial=False, *args, **kwargs)
+    # @swagger_auto_schema(responses={
+    #     204: openapi.Response(''),
+    #     400: openapi.Response('Bad request'),
+    #     403: openapi.Response('Access not allowed'),
+    #     404: openapi.Response('Media object not found'),
+    # })
+    # def update(self, request, pk=None, *args, **kwargs):
+    #     return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
     @swagger_auto_schema(responses={
         204: openapi.Response(''),
