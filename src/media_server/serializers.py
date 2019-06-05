@@ -3,7 +3,16 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from core.models import Entry
-from .validators import validate_license
+from .validators import validate_license as vl
+
+
+def validate_license(value):
+    if value:
+        try:
+            vl(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.message)
+    return value
 
 
 class MediaCreateSerializer(serializers.Serializer):
@@ -23,12 +32,7 @@ class MediaCreateSerializer(serializers.Serializer):
         return value
 
     def validate_license(self, value):
-        if value:
-            try:
-                validate_license(value)
-            except ValidationError as e:
-                raise serializers.ValidationError(e.message)
-        return value
+        return validate_license(value)
 
 
 class MediaUpdateSerializer(serializers.Serializer):
@@ -40,9 +44,4 @@ class MediaPartialUpdateSerializer(serializers.Serializer):
     license = serializers.JSONField(required=False)
 
     def validate_license(self, value):
-        if value:
-            try:
-                validate_license(value)
-            except ValidationError as e:
-                raise serializers.ValidationError(e.message)
-        return value
+        return validate_license(value)
