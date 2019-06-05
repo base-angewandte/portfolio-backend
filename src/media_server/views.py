@@ -65,6 +65,9 @@ class MediaViewSet(viewsets.GenericViewSet):
         'partial_update': MediaPartialUpdateSerializer,
     }
 
+    def get_queryset(self):
+        return None
+
     def get_serializer_class(self):
         if hasattr(self, 'action_serializers'):
             if self.action in self.action_serializers:
