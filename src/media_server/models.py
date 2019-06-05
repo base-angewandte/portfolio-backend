@@ -7,6 +7,7 @@ import subprocess
 import django_rq
 import magic
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -17,6 +18,7 @@ from general.models import ShortUUIDField
 from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
 from .utils import image_transpose_exif
+from .validators import validate_license
 
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
@@ -108,8 +110,7 @@ class CommonInfo(models.Model):
     mime_type = models.CharField(blank=True, default='', max_length=255)
     exif = ExifField(source='file')
     published = models.BooleanField(default=False)
-    # TODO add choices
-    license = models.CharField(max_length=255, default=None, null=True)
+    license = JSONField(validators=[validate_license], blank=True, null=True)
 
     class Meta:
         abstract = True
