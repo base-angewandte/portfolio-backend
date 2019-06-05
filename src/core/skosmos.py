@@ -118,7 +118,7 @@ def get_disciplines():
 
 
 def get_formats():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/format_type', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/format_type')
 
 
 def get_keywords():
@@ -129,7 +129,7 @@ def get_keywords():
 
 
 def get_languages():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/languages/iso_639_1', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/languages/iso_639_1')
 
 
 def get_languages_choices():
@@ -158,11 +158,11 @@ def get_languages_choices():
 
 
 def get_materials():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/material_type', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/material_type')
 
 
 def get_media_licenses():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_media_licenses', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_media_licenses')
 
 
 def get_roles():
@@ -170,7 +170,7 @@ def get_roles():
 
 
 def get_software_licenses():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses', source_name='voc')
+    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses')
 
 
 def get_text_types():
@@ -186,7 +186,7 @@ def get_entry_types():
         from .schemas import ACTIVE_TYPES
         data = list(filter(
             lambda x: x['source'] in ACTIVE_TYPES,
-            fetch_data('http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy', source_name='voc')
+            fetch_data('http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy')
         ))
 
         if data:
