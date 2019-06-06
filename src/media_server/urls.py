@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.urls import re_path
+from django.urls import path
 
 from .views import protected_view
 
 urlpatterns = [
-    re_path(r'^(?P<path>.*)$', protected_view, {'server': settings.PROTECTED_MEDIA_SERVER, }, name='protected_media'),
+    path('<path:path>', protected_view, {'server': settings.PROTECTED_MEDIA_SERVER, }, name='protected_media'),
 ]
