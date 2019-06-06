@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
 from django.utils.translation import ugettext_lazy as _
-from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 @is_allowed
-@xframe_options_exempt
+@xframe_options_sameorigin
 def protected_view(request, path, server, as_download=False):
     if server == 'nginx':
         mimetype, encoding = mimetypes.guess_type(path)
