@@ -12,8 +12,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 class ConferenceSchema(Schema):
     organiser = get_contributors_field_for_role('organiser_management', {'order': 1})
-    lecture = get_contributors_field_for_role('lecture', {'order': 2})
-    title_of_paper = get_string_field(get_preflabel_lazy('title_of_paper'), {'order': 3})
-    contributors = get_contributors_field({'order': 4})
-    date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 5})
-    url = get_url_field({'order': 6})
+    lecturer = get_contributors_field_for_role('lecturer', {'order': 2})
+    contributors = get_contributors_field({'order': 3})
+    date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 4})
+    url = get_url_field({'order': 5})
