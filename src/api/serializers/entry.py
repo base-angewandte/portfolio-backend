@@ -68,10 +68,12 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 ('placeholder', placeholder_lazy(get_preflabel_lazy('type'))),
                 ('set_label_language', True,),
             ]),
-            'texts': OrderedDict([('field_type', 'multiline'),
-                                  ('source_type', ''),
-                                  ('order', 4),
-                                  ('placeholder', placeholder_lazy(get_preflabel_lazy('text')))]),
+            'texts': OrderedDict([
+                ('field_type', 'multiline'),
+                ('source_type', ''),
+                ('order', 4),
+                ('placeholder', placeholder_lazy(get_preflabel_lazy('text'))),
+            ]),
             'keywords': OrderedDict([
                 ('field_type', 'chips'),
                 ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
