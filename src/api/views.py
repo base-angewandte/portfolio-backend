@@ -23,7 +23,7 @@ from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator
 
 SchemaView = get_schema_view(
     openapi.Info(
-        title="Portfolio API",
+        title='Portfolio API',
         default_version=settings.REST_FRAMEWORK.get('DEFAULT_VERSION'),
         # description="",
         # terms_of_service="",
