@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.urls import include, path, re_path
 from rest_framework import routers
 
 from media_server.views import MediaViewSet
@@ -13,10 +13,11 @@ router.register(r'media', MediaViewSet, basename='media')
 
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'user/$', views.user_information, name='user'),
+    path('', include(router.urls)),
+    path('user/', views.user_information, name='user'),
+    path('user/<str:pk>/data/', views.user_data, name='user_data'),
 
-    url(r'^swagger(?P<format>\.json|\.yaml)$', views.no_ui_view, name='schema-json'),
-    url(r'^swagger/$', views.swagger_view, name='schema-swagger-ui'),
-    url(r'^redoc/$', views.redoc_view, name='schema-redoc'),
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', views.no_ui_view, name='schema-json'),
+    path('swagger/', views.swagger_view, name='schema-swagger-ui'),
+    path('redoc/', views.redoc_view, name='schema-redoc'),
 ]

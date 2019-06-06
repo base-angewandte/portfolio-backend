@@ -25,7 +25,7 @@ django-extensions==2.1.7
 django-filter==2.1.0
 django-redis==4.10.0
 django-rq==2.0
-django==1.11.20
+django==2.2.2
 djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 gunicorn==19.9.0
@@ -63,7 +63,7 @@ ruamel.yaml==0.15.97      # via drf-yasg
 shortuuid==0.5.0
 six==1.12.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pyrsistent, python-cas, python-dateutil, swagger-spec-validator
 skosmos-client==0.3.0
-sqlparse==0.3.0           # via django-debug-toolbar
+sqlparse==0.3.0           # via django, django-debug-toolbar
 swagger-spec-validator==2.4.3  # via drf-yasg
 uritemplate==3.0.0        # via coreapi, drf-yasg
 urllib3==1.25.3           # via requests

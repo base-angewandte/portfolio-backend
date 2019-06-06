@@ -1,16 +1,16 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 # NOTE: fieldname must be present in ACTIVE_SOURCES in portfolio/settings for this to work
 urlpatterns = [
-    url(
+    re_path(
         r'^(?P<fieldname>({}))/$'.format('|'.join(settings.ACTIVE_SOURCES.keys())),
         views.lookup_view,
         name='lookup_all',
     ),
-    url(
+    re_path(
         r'^(?P<fieldname>({}))/(?P<searchstr>(.*))/$'.format('|'.join(settings.ACTIVE_SOURCES.keys())),
         views.lookup_view_search,
         name='lookup',
