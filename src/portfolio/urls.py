@@ -16,7 +16,7 @@ Including another URLconf
 import django_cas_ng.views
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.urls import include, path
 
 urlpatterns = [
     path('***REMOVED***', admin.site.urls),
@@ -26,7 +26,7 @@ urlpatterns = [
     path('accounts/callback/', django_cas_ng.views.CallbackView.as_view(), name='cas_ng_proxy_callback'),
 
     path('api/', include('api.urls')),
-    re_path(r'^autosuggest/(?P<version>(v1))/', include('autosuggest.urls')),
+    path('autosuggest/', include('autosuggest.urls')),
 
     path('p/', include('media_server.urls')),
 ]
