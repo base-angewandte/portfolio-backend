@@ -18,15 +18,15 @@ class SoftwareSchema(Schema):
             'order': 2,
         },
     )
-    open_source_licence = fields.Nested(
+    open_source_license = fields.Nested(
         SourceMultilingualLabelSchema,
-        title=get_preflabel_lazy('open_source_licence'),
+        title=get_preflabel_lazy('open_source_license'),
         additionalProperties=False,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'chips',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'}),
-            'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_licence')),
+            'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_license')),
             'order': 3,
         }},
     )
