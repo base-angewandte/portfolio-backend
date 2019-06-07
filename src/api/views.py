@@ -1,5 +1,11 @@
+import json
+import operator
+from functools import reduce
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _, get_language
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
@@ -14,7 +20,10 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema
+from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
+from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
+from core.skosmos import get_preflabel, get_altlabel_collection, get_collection_members
+from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 from .serializers.entry import EntrySerializer
@@ -228,5 +237,260 @@ def user_information(request, *args, **kwargs):
         'groups': attributes.get('groups') or [],
         'space': get_free_space_for_user(request.user) if request.user else None,
     }
+
+    return Response(data)
+
+
+@swagger_auto_schema(methods=['get'], operation_id='api_v1_user_data', responses={
+    200: openapi.Response(''),
+    403: openapi.Response('Access not allowed'),
+    404: openapi.Response('User not found'),
+})
+@api_view(['GET'])
+def user_data(request, pk=None, *args, **kwargs):
+    # TODO handle authorization
+    # TODO get roles  [item for item in dicts if item['source'] == 'uuid']
+
+    UserModel = get_user_model()
+
+    try:
+        user = UserModel.objects.get(username=pk)
+    except UserModel.DoesNotExist:
+        raise exceptions.NotFound(_('User does not exist'))
+
+    lang = get_language() or 'en'
+
+    def get_role(data):  # TODO
+        return
+
+    def get_data(label, kw_filters, q_filters=None):
+        d = {
+            'label': label,
+            'data': [],
+        }
+
+        qs = Entry.objects.filter(**kw_filters)
+
+        if q_filters:
+            qs = qs.filter(reduce(operator.or_, (Q(**d) for d in q_filters)))
+
+        qs = qs.annotate(data_date=KeyTextTransform('date', 'data')).order_by('-data_date', 'title')
+
+        for e in qs:
+            d['data'].append({
+                'title': e.title,
+                'subtitle': e.subtitle or None,
+                'type': e.type.get('label').get(lang),
+                'role': get_role(e.data),
+                'location': None,  # TODO
+                'year': get_year_from_javascript_datetime(e.data['date']) if e.data.get('date') else None,
+            })
+
+        return d
+
+    general_publications_q_filters = []
+
+    title_key = 'title'
+    subtitle_key = 'subtitle'
+    type_key = 'type'
+    role_key = 'role'
+    location_key = 'location'
+    year_key = 'year'
+
+    data = {
+        'entry_labels': {
+            title_key: get_preflabel('title'),
+            subtitle_key: get_preflabel('subtitle'),
+            type_key: get_preflabel('type'),
+            role_key: get_preflabel('role'),
+            location_key: get_preflabel('location'),
+            year_key: get_preflabel('year'),
+        },
+        'data': []
+    }
+
+    # Publications collected
+    pub_data = {
+        'label': get_altlabel_collection('collection_document_publication', lang=lang),
+        'data': [],
+    }
+
+    monographs_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_monograph'
+    )
+    composite_volumes_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_composite_volume'
+    )
+    articles_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_article'
+    )
+    chapters_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_chapter'
+    )
+    reviews_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_review'
+    )
+    general_publications_types = list(set(DOCUMENT_TYPES) - set(
+        monographs_types + composite_volumes_types + articles_types + chapters_types + reviews_types
+    ))
+
+    for l, f, qf in (
+        # Monographs
+        (
+            get_altlabel_collection('collection_monograph', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=monographs_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
+            None,
+        ),
+        # Composite Volumes
+        (
+            get_altlabel_collection('collection_composite_volume', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=composite_volumes_types,
+                data__contains={'editors': [{'source': user.username}]},
+            ),
+            None,
+        ),
+        # Articles
+        (
+            get_altlabel_collection('collection_article', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=articles_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
+            None,
+        ),
+        # Chapters
+        (
+            get_altlabel_collection('collection_chapter', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=chapters_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
+            None,
+        ),
+        # Reviews
+        (
+            get_altlabel_collection('collection_review', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=reviews_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
+            None,
+        ),
+        # General Publications
+        (
+            '{} {}'.format(
+                'Sonstige' if lang == 'de' else 'General',
+                get_altlabel_collection('collection_document_publication', lang=lang)
+            ),
+            dict(
+                owner=user,
+                type__source__in=general_publications_types,
+            ),
+            [
+                dict(data__contains={'authors': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+    ):
+        if qf:
+            general_publications_q_filters += qf
+        pub_data['data'].append(get_data(l, f, qf))
+
+    data['data'].append(pub_data)
+
+    research_projects_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_research_project'
+    )
+    awards_and_grants_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants'
+    )
+    exhibitions_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition'
+    )
+
+    for l, f, qf in (
+        # Research Projects
+        (
+            get_altlabel_collection('collection_research_project', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=research_projects_types,
+            ),
+            [
+                dict(data__contains={'project_lead': [{'source': user.username}]}),
+                dict(data__contains={'funding': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Awards and Grants
+        (
+            get_altlabel_collection('collection_awards_and_grants', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=awards_and_grants_types,
+            ),
+            [
+                dict(data__contains={'winner': [{'source': user.username}]}),
+                dict(data__contains={'granted_by': [{'source': user.username}]}),
+                dict(data__contains={'jury': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Exhibitions
+        (
+            get_altlabel_collection('collection_exhibition', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=exhibitions_types,
+
+            ),
+            [
+                dict(data__contains={'artist': [{'source': user.username}]}),
+                dict(data__contains={'curator': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # TODO
+        # Conferences
+        # Conference contributons
+        # Architecture
+        # Audio
+        # Concert
+        # Event
+        # Festival
+        # Image
+        # Performance
+        # Sculpture
+        # Software
+        # Video
+        # Workshop
+    ):
+        if qf:
+            general_publications_q_filters += qf
+        data['data'].append(get_data(l, f, qf))
+
+    # General Publications
+    general_publications_types = list(set(ACTIVE_TYPES) - set(
+        monographs_types + composite_volumes_types + articles_types + chapters_types + reviews_types +
+        general_publications_types + research_projects_types + awards_and_grants_types + exhibitions_types
+    ))
+
+    data['data'].append(get_data(
+        'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
+        dict(
+            owner=user,
+            type__source__in=general_publications_types,
+        ),
+        [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
+    ))
 
     return Response(data)
