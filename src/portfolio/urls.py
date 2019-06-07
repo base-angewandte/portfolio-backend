@@ -15,24 +15,24 @@ Including another URLconf
 """
 import django_cas_ng.views
 from django.conf import settings
-from django.conf.urls import include, url
 from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
-    url(r'^***REMOVED***', admin.site.urls),
+    path('***REMOVED***', admin.site.urls),
 
-    url(r'^accounts/login/$', django_cas_ng.views.login, name='cas_ng_login'),
-    url(r'^accounts/logout/$', django_cas_ng.views.logout, name='cas_ng_logout'),
-    url(r'^accounts/callback/$', django_cas_ng.views.callback, name='cas_ng_proxy_callback'),
+    path('accounts/login/', django_cas_ng.views.LoginView.as_view(), name='cas_ng_login'),
+    path('accounts/logout/', django_cas_ng.views.LogoutView.as_view(), name='cas_ng_logout'),
+    path('accounts/callback/', django_cas_ng.views.CallbackView.as_view(), name='cas_ng_proxy_callback'),
 
-    url(r'^api/', include('api.urls')),
-    url(r'^autosuggest/(?P<version>(v1))/', include('autosuggest.urls')),
+    path('api/', include('api.urls')),
+    path('autosuggest/', include('autosuggest.urls')),
 
-    url(r'^p/', include('media_server.urls')),
+    path('p/', include('media_server.urls')),
 ]
 
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
+        path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
