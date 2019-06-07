@@ -39,3 +39,6 @@ start-dev:
 		portfolio-redis \
 		portfolio-postgres \
 		portfolio-lool
+
+migrate-4d:
+	docker-compose exec portfolio-django bash -c "python manage.py clear_entries && python manage.py migrate_4d_all"
