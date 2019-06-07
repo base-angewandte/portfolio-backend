@@ -207,8 +207,11 @@ def get_uri(concept, graph=settings.VOC_GRAPH):
     return '{}{}'.format(graph, concept)
 
 
-def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
-    language = get_language() or 'en'
+def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
+    if lang:
+        language = lang
+    else:
+        language = get_language() or 'en'
     cache_key = 'get_altlabel_{}_{}'.format(language, concept)
 
     label = cache.get(cache_key)
