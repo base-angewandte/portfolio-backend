@@ -1,0 +1,18 @@
+version: '2'
+services:
+
+  portfolio-redis:
+    ports:
+      - 127.0.0.1:6379:6379
+
+  portfolio-postgres:
+    ports:
+      - 127.0.0.1:5432:5432
+
+  portfolio-django:
+    ports:
+      - 127.0.0.1:8200:8200
+
+  portfolio-lool:
+    ports:
+      - 127.0.0.1:9980:9980

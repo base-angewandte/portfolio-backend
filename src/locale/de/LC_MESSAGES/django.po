@@ -1,0 +1,119 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-05-22 18:35+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: api/serializers/entry.py:74
+msgid "will not be published"
+msgstr "Werden nicht veröffentlicht"
+
+#: api/serializers/relation.py:18
+msgid "Relation already exists"
+msgstr "Verknüpfung existiert bereits"
+
+#: api/serializers/relation.py:25 api/views.py:125
+msgid "Current user is not the owner of this entry"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
+
+#: api/views.py:129 media_server/serializers.py:17
+msgid "Entry does not exist"
+msgstr "Eintrag existiert nicht"
+
+#: api/views.py:191
+msgid "Schema not found for the given query."
+msgstr "Kein Schemata gefunden"
+
+#: core/models.py:61
+#, python-format
+msgid "Invalid data: %(error)s"
+msgstr "Ungültige Daten: %(error)s"
+
+#: core/models.py:64
+msgid "Data without type"
+msgstr "Daten ohne Typ"
+
+#: core/models.py:97
+msgid "Both entries must belong to the same user"
+msgstr "Beide Einträge müssen demselben Benutzer gehören"
+
+#: core/schemas/__init__.py:14
+msgid "Schemas improperly configured"
+msgstr "Schemata ungenügend konfiguriert"
+
+#: core/schemas/__init__.py:39
+msgid "Active schemas contain duplicate types"
+msgstr "Aktive Schemata enthalten Duplikate"
+
+#: core/schemas/general.py:20
+msgid "Invalid date entry (expected dd.mm.yyyy or yyyy)"
+msgstr ""
+
+#: core/schemas/general.py:27
+msgid "Invalid date entry (expected dd.mm.yyyy)"
+msgstr ""
+
+#: core/schemas/general.py:34
+msgid "Invalid date entry (expected yyyy)"
+msgstr ""
+
+#: core/utils.py:4
+#, python-format
+msgid "Enter %(label)s"
+msgstr "%(label)s eintragen"
+
+#: core/validators.py:14
+msgid "Keywords contains duplicate entries"
+msgstr "Schlagwörter enthalten Duplikate"
+
+#: core/validators.py:16
+#, python-format
+msgid "Invalid keywords: %(error)s"
+msgstr "Ungültige Schlagwörter: %(error)s"
+
+#: core/validators.py:30
+msgid "Same language is defined multiple times"
+msgstr "Dieselbe Sprache wird mehrmals definiert"
+
+#: core/validators.py:32
+#, python-format
+msgid "Invalid texts: %(error)s"
+msgstr "Ungültige Texte: %(error)s"
+
+#: media_server/serializers.py:20
+msgid "Current user is not the owner of entry"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
+
+#: media_server/views.py:90 media_server/views.py:169 media_server/views.py:212
+msgid "Current user is not the owner of this media object"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
+
+#: media_server/views.py:104 media_server/views.py:180
+#: media_server/views.py:220
+msgid "Media object does not exist"
+msgstr "Medienobjekt existiert nicht"
+
+#: media_server/views.py:119
+msgid "No space left for user"
+msgstr "Kein Speicherplatz mehr für diesen Benutzer"
+
+#: portfolio/settings.py:244
+msgid "German"
+msgstr "Deutsch"
+
+#: portfolio/settings.py:245
+msgid "English"
+msgstr "Englisch"
