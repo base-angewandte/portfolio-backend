@@ -7,6 +7,7 @@ services:
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - $PORTFOLIO_ASSETS:/assets
+      - $PORTFOLIO_FRONTEND:/portfolio-frontend
     ports:
       - 127.0.0.1:80:80
     networks:
