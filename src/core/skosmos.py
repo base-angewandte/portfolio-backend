@@ -231,6 +231,10 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
     return label or get_preflabel(concept, project, graph)
 
 
+def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None):
+    return get_altlabel(collection, project, graph, lang).replace('Sammlung', '').replace('Collection', '').strip()
+
+
 def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
     if lang:
         language = lang
