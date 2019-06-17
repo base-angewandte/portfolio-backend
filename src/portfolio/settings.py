@@ -744,8 +744,8 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"PELIAS"'},
             'source': {
-                apiconfig.RULE: '"http://api.geonames.org/get?username=***REMOVED***&geonameId={p1}"',
-                apiconfig.FIELDS: {'p1': 'type'},
+                apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
+                apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
         }     
     }
