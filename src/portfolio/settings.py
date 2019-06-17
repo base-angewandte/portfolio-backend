@@ -461,7 +461,7 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 
 LANGUAGES_VOCID = 'languages'
-
+PELIAS_KEY = '***REMOVED***'
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
@@ -593,6 +593,16 @@ SOURCES = {
             'fields': 'prefLabel'
         }
     },
+    'PELIAS': {
+        apiconfig.URL: 'https://api.geocode.earth/v1/search',
+        apiconfig.QUERY_FIELD: 'text',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
+        apiconfig.PAYLOAD: {
+            'api_key': PELIAS_KEY,
+            'lang': get_language_lazy(),
+        }
+    }
+
 }
 
 ANGEWANDTE_MAPPING = {
@@ -620,8 +630,14 @@ BASE_KEYWORDS_MAPPING = {
 
 VOC_MAPPING = {
     'source': 'uri',
-    'label': 'prefLabels',
+    'label': 'prefLabel',
+    'prefLabels': 'prefLabels',
 }
+PELIAS_MAPPING = {
+    'source': ('properties','gid'),
+    'label': ('properties', 'label')
+}
+
 
 RESPONSE_MAPS = {
     'ANGEWANDTE_PERSON': {
@@ -722,12 +738,23 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
     },
+    'PELIAS': {
+        apiconfig.RESULT: 'features',
+        apiconfig.DIRECT: PELIAS_MAPPING,
+        apiconfig.RULES: {
+            'source_name': {apiconfig.RULE: '"PELIAS"'},
+            'source': {
+                apiconfig.RULE: '"http://api.geonames.org/get?username=***REMOVED***&geonameId={p1}"',
+                apiconfig.FIELDS: {'p1': 'type'},
+            },
+        }     
+    }
 }
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
-    'places': ('GND_PLACE', 'GEONAMES_PLACE'),
+    'places': ('PELIAS','GND_PLACE', 'GEONAMES_PLACE'),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
         'search': 'core.skosmos.get_keywords',
