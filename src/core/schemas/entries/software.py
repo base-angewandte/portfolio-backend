@@ -28,6 +28,7 @@ class SoftwareSchema(Schema):
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'}),
             'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_license')),
             'order': 3,
+            'set_label_language': True,
         }},
     )
     lines_of_code = get_field(

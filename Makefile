@@ -41,4 +41,7 @@ start-dev:
 		portfolio-lool
 
 migrate-4d:
-	docker-compose exec portfolio-django bash -c "python manage.py clear_entries && python manage.py migrate_4d_all"
+	docker-compose exec portfolio-django bash -c "python manage.py migrate_4d_all"
+
+clear-entries:
+	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
