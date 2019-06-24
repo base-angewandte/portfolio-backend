@@ -15,10 +15,13 @@ from PIL import Image as PIL_Image, ImageOps, ImageDraw, ImageFont
 
 from core.models import Entry
 from general.models import ShortUUIDField
+from .apps import MediaServerConfig
 from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
 from .utils import image_transpose_exif
 from .validators import validate_license
+
+SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
 
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
@@ -222,7 +225,7 @@ class Audio(CommonInfo):
         self.set_mime_type()
 
         # convert
-        script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-mp3.sh')
+        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
         path = self.file.path
         destination = self.get_protected_assets_path()
 
@@ -257,7 +260,7 @@ class Document(CommonInfo):
         self.set_mime_type()
 
         # convert
-        script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-preview.sh')
+        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-preview.sh')
         path = self.file.path
         destination = self.get_protected_assets_path()
 
@@ -401,7 +404,7 @@ class Video(CommonInfo):
         self.set_mime_type()
 
         # convert
-        script_path = os.path.join(settings.BASE_DIR, 'scripts', 'create-vod-hls.sh')
+        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
         path = self.file.path
         destination = self.get_protected_assets_path()
 
