@@ -9,7 +9,7 @@ apispec==0.39.0
 attrs==19.1.0             # via jsonschema
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
-choicesenum==0.5.3        # via django-exiffield
+choicesenum==0.5.3
 click==7.0                # via pip-tools, rq
 concurrent-log-handler==0.9.16
 coreapi==2.3.3            # via drf-yasg
@@ -20,7 +20,6 @@ django-cleanup==3.2.0
 django-cors-headers==3.0.2
 django-debug-toolbar==1.11
 django-environ==0.4.5
-django-exiffield==2.0.0
 django-extensions==2.1.7
 django-filter==2.1.0
 django-redis==4.10.0
@@ -35,13 +34,13 @@ inflection==0.3.1         # via drf-yasg
 isodate==0.6.0            # via rdflib
 itypes==1.1.0             # via coreapi
 jinja2==2.10.1            # via coreschema
-jsonfield2==3.0.2         # via django-exiffield
+jsonfield2==3.0.2
 jsonschema==3.0.1
 lxml==4.3.3               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
-pillow==5.4.1
+pillow==6.0.0
 pip-tools==3.7.0
 portalocker==1.4.0        # via concurrent-log-handler
 psutil==5.6.2             # via rainbow-saddle
