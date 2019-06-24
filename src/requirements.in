@@ -2,7 +2,7 @@
 # sync environment with 'pip-sync'
 # to update all packages run 'pip-compile --upgrade'
 
-apimapper==0.7.2
+apimapper==0.7.3
 apispec==0.39.0
 choicesenum==0.5.3  # for django-exiffield
 concurrent-log-handler==0.9.16

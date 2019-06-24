@@ -1,6 +1,9 @@
 from django.test import TestCase
 from .views import fetch_responses
 
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 class AutoSuggestTestCase(TestCase):
     """
@@ -8,7 +11,6 @@ class AutoSuggestTestCase(TestCase):
     TODO:
     very repetitive, make it better with decorators
     """
-
     def test_empty_contributors_all(self):
         res = fetch_responses('', ('VIAF_PERSON', 'GND_PERSON', 'GND_INSTITUTION'))
         assert(len(res))
@@ -121,12 +123,19 @@ class AutoSuggestTestCase(TestCase):
         return
 
     def test_all_labels(self):
-        VOC_SOURCES = ('VOC_TEXTTYPES', 'VOC_LANGUAGES', 'VOC_MATERIALS', 'VOC_FORMATS','VOC_ROLES', 'VOC_KEYWORDS')
+        VOC_SOURCES = ('VOC_LANGUAGES', 'VOC_MATERIALS', 'VOC_FORMATS','VOC_ROLES', 'VOC_KEYWORDS','VOC_TEXTTYPES')
         for voc_source in VOC_SOURCES:
             res = fetch_responses('a', (voc_source,))
             assert len(res)>0, '{} is empty'.format(voc_source)
             for rec in res:
-                assert 'prefLabels' in rec, '{}: no prefLabels'.format(voc_source)
+                assert 'label' in rec, '{}: no prefLabels'.format(voc_source)
                 assert 'en' in rec.get('prefLabels')
                 assert 'de' in rec.get('prefLabels')
+
+        return
+
+    def test_pelias(self):
+        res = fetch_responses('wien', ('PELIAS',))
+        assert  any(rec['label'] == 'Vienna, Austria' for rec in res)
+        return
             
