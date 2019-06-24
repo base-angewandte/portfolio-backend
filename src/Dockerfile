@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         gtk-doc-tools \
         ghostscript \
+        libffi-dev \
         libjpeg62-turbo-dev \
         libtiff5-dev \
         zlib1g-dev \
