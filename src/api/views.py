@@ -85,7 +85,7 @@ class EntryFilter(FilterSet):
         fields = ['type']
 
 
-entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type_source')
+entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type_source', 'type_de', 'type_en')
 
 
 @method_decorator(swagger_auto_schema(
@@ -169,7 +169,9 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     def get_queryset(self):
         user = self.request.user
         qs = Entry.objects.filter(owner=user).annotate(
-            type_source=KeyTextTransform('source', 'type')
+            type_source=KeyTextTransform('source', 'type'),
+            type_de=KeyTextTransform('de', KeyTextTransform('label', 'type')),
+            type_en=KeyTextTransform('en', KeyTextTransform('label', 'type')),
         ).order_by('-date_changed')
 
         if self.action == 'list':
