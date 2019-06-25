@@ -13,7 +13,7 @@ from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import exceptions, filters, viewsets, permissions
+from rest_framework import exceptions, viewsets, permissions
 from rest_framework.decorators import action, api_view
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -23,6 +23,7 @@ from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_preflabel, get_altlabel_collection, get_collection_members
+from general.drf.filters import CaseInsensitiveOrderingFilter
 from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
@@ -135,7 +136,7 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     """
 
     serializer_class = EntrySerializer
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filter_backends = (DjangoFilterBackend, CaseInsensitiveOrderingFilter,)
     filterset_class = EntryFilter
     ordering_fields = entry_ordering_fields
     pagination_class = StandardLimitOffsetPagination
