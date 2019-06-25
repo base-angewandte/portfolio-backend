@@ -40,7 +40,6 @@ lxml==4.3.3               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
-pillow==6.0.0
 pip-tools==3.7.0
 portalocker==1.4.0        # via concurrent-log-handler
 psutil==5.6.2             # via rainbow-saddle
