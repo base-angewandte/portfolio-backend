@@ -2,8 +2,8 @@
 
 set -e
 
-# Usage create-vod-hls.sh SOURCE_FILE [OUTPUT_NAME]
-[[ ! "${2}" ]] && echo "Usage: create-preview.sh HOST SOURCE_FILE [OUTPUT_NAME]" && exit 1
+# Usage create-preview.sh SOURCE_FILE [DESTINATION]
+[[ ! "${2}" ]] && echo "Usage: create-preview.sh HOST SOURCE_FILE [DESTINATION]" && exit 1
 
 host="${1}"
 source="${2}"

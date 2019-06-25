@@ -2,8 +2,8 @@
 
 set -e
 
-# Usage create-vod-hls.sh SOURCE_FILE [OUTPUT_NAME]
-[[ ! "${1}" ]] && echo "Usage: create-mp3.sh SOURCE_FILE [OUTPUT_NAME]" && exit 1
+# Usage create-mp3.sh SOURCE_FILE [DESTINATION]
+[[ ! "${1}" ]] && echo "Usage: create-mp3.sh SOURCE_FILE [DESTINATION]" && exit 1
 
 source="${1}"
 target="${2}"
