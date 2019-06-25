@@ -460,7 +460,6 @@ TAX_GRAPH = 'http://base.uni-ak.ac.at/portfolio/taxonomy/'
 VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 
-LANGUAGES_VOCID = 'languages'
 PELIAS_KEY = '***REMOVED***'
 # Autosuggest
 SOURCES = {
