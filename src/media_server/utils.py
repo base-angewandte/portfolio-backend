@@ -20,7 +20,7 @@ def get_quota_for_user(user):
 
 
 def get_free_space_for_user(user):
-    return get_quota_for_user(user) - get_used_space_for_user(user)
+    return max(get_quota_for_user(user) - get_used_space_for_user(user), 0)
 
 
 def get_used_space_for_user(user):
