@@ -16,7 +16,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from .decorators import is_allowed
-from .models import PREFIX_TO_MODEL, get_model_for_mime_type
+from .models import Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -77,12 +77,10 @@ class MediaViewSet(viewsets.GenericViewSet):
         return super(MediaViewSet, self).get_serializer_class()
 
     def _get_media_object(self, pk):
-        model = PREFIX_TO_MODEL.get(pk[0])
-        if model:
-            try:
-                return model.objects.get(id=pk)
-            except model.DoesNotExist:
-                pass
+        try:
+            return Media.objects.get(id=pk)
+        except Media.DoesNotExist:
+            pass
 
     def _update(self, request, pk=None, partial=False, *args, **kwargs):
         if pk:
@@ -99,8 +97,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     if serializer.validated_data:
-                        model = PREFIX_TO_MODEL[pk[0]]
-                        model.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                        Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -126,13 +123,12 @@ class MediaViewSet(viewsets.GenericViewSet):
 
             mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
 
-            model = get_model_for_mime_type(mime_type)
-
-            m = model(
+            m = Media(
+                file=serializer.validated_data['file'],
+                type=get_type_for_mime_type(mime_type),
                 owner=request.user,
                 entry_id=serializer.validated_data['entry'],
                 mime_type=mime_type,
-                file=serializer.validated_data['file'],
                 published=serializer.validated_data['published'],
                 license=serializer.validated_data.get('license') or None,
             )

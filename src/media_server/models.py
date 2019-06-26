@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import shutil
@@ -17,6 +16,7 @@ from general.models import ShortUUIDField
 from .apps import MediaServerConfig
 from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
+from .utils import user_hash
 from .validators import validate_license
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
@@ -32,11 +32,18 @@ STATUS_CHOICES = (
     (STATUS_ERROR, 'error'),
 )
 
-AUDIO_PREFIX = 'a'
-DOCUMENT_PREFIX = 'd'
-IMAGE_PREFIX = 'i'
-VIDEO_PREFIX = 'v'
-OTHER_PREFIX = 'x'
+AUDIO_TYPE = 'a'
+DOCUMENT_TYPE = 'd'
+IMAGE_TYPE = 'i'
+VIDEO_TYPE = 'v'
+OTHER_TYPE = 'x'
+TYPE_CHOICES = (
+    (AUDIO_TYPE, 'audio'),
+    (DOCUMENT_TYPE, 'document'),
+    (IMAGE_TYPE, 'image'),
+    (VIDEO_TYPE, 'video'),
+    (OTHER_TYPE, 'other'),
+)
 
 AUDIO_MIME_TYPES = [
     'audio/aiff',
@@ -97,12 +104,13 @@ logger = logging.getLogger(__name__)
 
 
 def user_directory_path(instance, filename):
-    return '{}/{}/{}'.format(settings.HASHIDS.encode(instance.owner.id), instance.__class__.__name__.lower(), filename)
+    return '{}/{}'.format(user_hash(instance.owner.username), filename)
 
 
-class CommonInfo(models.Model):
+class Media(models.Model):
     id = ShortUUIDField(primary_key=True)
     file = models.FileField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
+    type = models.CharField(choices=TYPE_CHOICES, max_length=1, default=OTHER_TYPE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -114,7 +122,6 @@ class CommonInfo(models.Model):
     license = JSONField(validators=[validate_license], blank=True, null=True)
 
     class Meta:
-        abstract = True
         indexes = [
             models.Index(fields=['entry_id']),
         ]
@@ -135,10 +142,6 @@ class CommonInfo(models.Model):
         for k in remove:
             ret.pop(k, None)
         return ret
-
-    @property
-    def save_id(self):
-        return self.id.replace(':', '')
 
     def convert(self, command):
         try:
@@ -167,16 +170,51 @@ class CommonInfo(models.Model):
             self.save()
 
     def get_protected_assets_path(self):
-        return os.path.join(os.path.dirname(self.file.path), self.save_id)
+        return os.path.join(os.path.dirname(self.file.path), self.id)
 
     def get_protected_assets_url(self):
-        return self.file.storage.url(user_directory_path(self, self.save_id))
+        return self.file.storage.url(user_directory_path(self, self.id))
 
     def get_image(self):
-        return None
+        if self.type == DOCUMENT_TYPE:
+            return self.get_url('preview.jpg')
+        elif self.type == IMAGE_TYPE:
+            return self.get_url('tn.jpg')
+        elif self.type == VIDEO_TYPE:
+            return self.get_url('cover.jpg')
 
     def get_data(self):
-        pass
+        data = {
+            'id': self.pk,
+            'type': self.type,
+            'original': self.file.url,
+            'metadata': self.metadata,
+            'published': self.published,
+            'license': self.license,
+        }
+        if self.type == AUDIO_TYPE:
+            data.update({
+                'mp3': self.get_url('listen.mp3'),
+            })
+        elif self.type == DOCUMENT_TYPE:
+            data.update({
+                'thumbnail': self.get_image(),
+                'pdf': self.get_url('preview.pdf'),
+            })
+        elif self.type == IMAGE_TYPE:
+            data.update({
+                'thumbnail': self.get_image(),
+            })
+        elif self.type == VIDEO_TYPE:
+            data.update({
+                'cover': {
+                    'gif': self.get_url('cover.gif'),
+                    'jpg': self.get_image(),
+                },
+                'playlist': self.get_url('playlist.m3u8'),
+            })
+
+        return data
 
     def check_file(self, filename):
         path = os.path.join(self.get_protected_assets_path(), filename)
@@ -190,7 +228,33 @@ class CommonInfo(models.Model):
             return None
 
     def media_info_and_convert(self):
-        pass
+        # media info
+        self.set_mime_type()
+
+        # convert
+        path = self.file.path
+        destination = self.get_protected_assets_path()
+
+        if self.type == DOCUMENT_TYPE:
+            script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-preview.sh')
+            self.convert(['/bin/bash', script_path, settings.LOOL_HOST, path, destination])
+        else:
+            if self.type == AUDIO_TYPE:
+                script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
+            elif self.type == IMAGE_TYPE:
+                script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-tn.sh')
+                if self.mime_type == 'image/vnd.adobe.photoshop':
+                    path += '[0]'
+            elif self.type == VIDEO_TYPE:
+                script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
+            else:
+                # since we don't know what it is, we just set the status
+                self.status = STATUS_CONVERTED
+                self.save()
+                script_path = None
+
+            if script_path:
+                self.convert(['/bin/bash', script_path, path, destination])
 
     def set_mime_type(self):
         self.file.open()
@@ -200,278 +264,61 @@ class CommonInfo(models.Model):
         self.save()
 
 
-# Models
-
-class Audio(CommonInfo):
-    id = ShortUUIDField(prefix=AUDIO_PREFIX, primary_key=True)
-
-    def get_data(self):
-        return {
-            'id': self.pk,
-            'mp3': self.get_mp3(),
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
-
-    def get_mp3(self):
-        return self.get_url('listen.mp3')
-
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
-        # convert
-        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
-        path = self.file.path
-        destination = self.get_protected_assets_path()
-
-        self.convert(['/bin/bash', script_path, path, destination])
-
-
-class Document(CommonInfo):
-    id = ShortUUIDField(prefix=DOCUMENT_PREFIX, primary_key=True)
-
-    def get_image(self):
-        return self.get_preview_image()
-
-    def get_data(self):
-        return {
-            'id': self.pk,
-            'thumbnail': self.get_preview_image(),
-            'pdf': self.get_preview_pdf(),
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
-
-    def get_preview_image(self):
-        return self.get_url('preview.jpg')
-
-    def get_preview_pdf(self):
-        return self.get_url('preview.pdf')
-
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
-        # convert
-        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-preview.sh')
-        path = self.file.path
-        destination = self.get_protected_assets_path()
-
-        self.convert(['/bin/bash', script_path, settings.LOOL_HOST, path, destination])
-
-
-class Image(CommonInfo):
-    id = ShortUUIDField(prefix=IMAGE_PREFIX, primary_key=True)
-
-    def get_image(self):
-        return self.get_thumbnail()
-
-    def get_data(self):
-        return {
-            'id': self.pk,
-            'thumbnail': self.get_thumbnail(),
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
-
-    def get_thumbnail(self):
-        return self.get_url('tn.jpg')
-
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
-        # convert
-        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-tn.sh')
-        path = self.file.path
-        destination = self.get_protected_assets_path()
-        if self.mime_type == 'image/vnd.adobe.photoshop':
-            path += '[0]'
-        self.convert(['/bin/bash', script_path, path, destination])
-
-
-class Video(CommonInfo):
-    id = ShortUUIDField(prefix=VIDEO_PREFIX, primary_key=True)
-
-    def get_cover_gif(self):
-        return self.get_url('cover.gif')
-
-    def get_cover_jpg(self):
-        return self.get_url('cover.jpg')
-
-    def get_image(self):
-        return self.get_cover_jpg()
-
-    def get_data(self):
-        return {
-            'id': self.pk,
-            'cover': {
-                'gif': self.get_cover_gif(),
-                'jpg': self.get_cover_jpg(),
-            },
-            'playlist': self.get_playlist(),
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
-
-    def get_playlist(self):
-        return self.get_url('playlist.m3u8')
-
-    def ffprobe(self):
-        try:
-            command = [
-                "ffprobe",
-                "-loglevel", "quiet",
-                "-print_format", "json",
-                "-show_format",
-                "-show_streams",
-                self.file.path,
-            ]
-
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-            out, err = process.communicate()
-
-            if process.returncode == 0:
-                metadata = json.loads(out)
-                metadata['format'].pop('filename')
-                return metadata
-
-        except OSError:
-            pass
-
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
-        # convert
-        script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
-        path = self.file.path
-        destination = self.get_protected_assets_path()
-
-        self.convert(['/bin/bash', script_path, path, destination])
-
-
-class Other(CommonInfo):
-    id = ShortUUIDField(prefix=OTHER_PREFIX, primary_key=True)
-
-    def get_data(self):
-        return {
-            'id': self.pk,
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
-
-    def media_info_and_convert(self):
-        # media info
-        self.set_mime_type()
-
-        # convert
-        # since we don't know what it is, we just set the status
-        self.status = STATUS_CONVERTED
-        self.save()
-
-
-PREFIX_TO_MODEL = {
-    AUDIO_PREFIX: Audio,
-    DOCUMENT_PREFIX: Document,
-    IMAGE_PREFIX: Image,
-    VIDEO_PREFIX: Video,
-    OTHER_PREFIX: Other,
-}
-
-MIME_TYPE_TO_MODEL = {
-    **{k: Audio for k in AUDIO_MIME_TYPES},
-    **{k: Document for k in DOCUMENT_MIME_TYPES},
-    **{k: Image for k in IMAGE_MIME_TYPES},
-    **{k: Video for k in VIDEO_MIME_TYPES},
+MIME_TYPE_TO_TYPE = {
+    **{k: AUDIO_TYPE for k in AUDIO_MIME_TYPES},
+    **{k: DOCUMENT_TYPE for k in DOCUMENT_MIME_TYPES},
+    **{k: IMAGE_TYPE for k in IMAGE_MIME_TYPES},
+    **{k: VIDEO_TYPE for k in VIDEO_MIME_TYPES},
 }
 
 
 def has_entry_media(entry_id):
-    ret = False
-    for model in iter(PREFIX_TO_MODEL.values()):
-        ret = ret or model.objects.filter(entry_id=entry_id).exists()
-        if ret:
-            break
-    return ret
+    return Media.objects.filter(entry_id=entry_id).exists()
 
 
 def get_media_for_entry(entry_id):
-    ret = []
-    for model in iter(PREFIX_TO_MODEL.values()):
-        ret += model.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
-    return ret
+    return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
 
 def get_image_for_entry(entry_id):
-    selected = None
-    for model in iter(PREFIX_TO_MODEL.values()):
-        m = model.objects.filter(entry_id=entry_id).order_by('created').first()
-        if m and (not selected or selected.created > m.created):
-            selected = m
-    if selected:
-        return selected.get_image()
-
-    return None
+    for m in Media.objects.filter(entry_id=entry_id).order_by('created'):
+        if m.get_image():
+            return m.get_image()
 
 
-def get_model_for_mime_type(mime_type):
+def get_type_for_mime_type(mime_type):
     try:
-        return MIME_TYPE_TO_MODEL[mime_type]
+        return MIME_TYPE_TO_TYPE[mime_type]
     except KeyError:
-        return Other
+        return OTHER_TYPE
 
 
 def repair():
-    for model in iter(PREFIX_TO_MODEL.values()):
-        m = model.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR])
-        for i in m:
-            i.status = STATUS_NOT_CONVERTED
-            i.save()
-            django_rq.enqueue(i.media_info_and_convert)
+    for m in Media.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR]):
+        m.status = STATUS_NOT_CONVERTED
+        m.save()
+        django_rq.enqueue(m.media_info_and_convert)
 
 
 # Signal handling
 
-@receiver(post_save, sender=Audio)
-@receiver(post_save, sender=Document)
-@receiver(post_save, sender=Image)
-@receiver(post_save, sender=Other)
+@receiver(post_save, sender=Media)
 def media_post_save(sender, instance, created, *args, **kwargs):
     if created:
-        with transaction.atomic():
-            # ensure status is STATUS_NOT_CONVERTED
-            sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-            transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+        if instance.type == VIDEO_TYPE:
+            queue = django_rq.get_queue('video')
+            with transaction.atomic():
+                # ensure status is STATUS_NOT_CONVERTED
+                sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+                transaction.on_commit(lambda: queue.enqueue(instance.media_info_and_convert))
+        else:
+            with transaction.atomic():
+                # ensure status is STATUS_NOT_CONVERTED
+                sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+                transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
 
 
-@receiver(post_save, sender=Video)
-def video_post_save(sender, instance, created, *args, **kwargs):
-    if created:
-        queue = django_rq.get_queue('video')
-        with transaction.atomic():
-            # ensure status is STATUS_NOT_CONVERTED
-            sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-            transaction.on_commit(lambda: queue.enqueue(instance.media_info_and_convert))
-
-
-@receiver(post_delete, sender=Audio)
-@receiver(post_delete, sender=Document)
-@receiver(post_delete, sender=Image)
-@receiver(post_delete, sender=Video)
-@receiver(post_delete, sender=Other)
+@receiver(post_delete, sender=Media)
 def media_post_delete(sender, instance, *args, **kwargs):
     try:
         shutil.rmtree(instance.get_protected_assets_path())
@@ -481,5 +328,4 @@ def media_post_delete(sender, instance, *args, **kwargs):
 
 @receiver(post_delete, sender=Entry)
 def entry_post_delete(sender, instance, *args, **kwargs):
-    for model in iter(PREFIX_TO_MODEL.values()):
-        model.objects.filter(entry_id=instance.pk).delete()
+    Media.objects.filter(entry_id=instance.pk).delete()

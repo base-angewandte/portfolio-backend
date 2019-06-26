@@ -1,10 +1,17 @@
-import functools
 import math
 import os
 
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
+
+
+def user_hash(username):
+    return settings.HASHIDS.encode_hex(username.encode('utf-8').hex())
+
+
+def decode_user_hash(hash):
+    return bytes.fromhex(settings.HASHIDS.decode_hex(hash)).decode('utf-8')
 
 
 def get_quota_for_user(user):
@@ -24,7 +31,7 @@ def get_free_space_for_user(user):
 
 
 def get_used_space_for_user(user):
-    path = os.path.join(settings.PROTECTED_MEDIA_ROOT, settings.HASHIDS.encode(user.id))
+    path = os.path.join(settings.PROTECTED_MEDIA_ROOT, user_hash(user.username))
     size = 0
     for root, dirs, files in os.walk(path):
         size += sum(os.path.getsize(os.path.join(root, name)) for name in files)
