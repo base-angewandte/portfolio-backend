@@ -1,0 +1,1 @@
+0 0 * * * docker exec portfolio-django /django/scripts/logrotate.sh > /dev/stdout
