@@ -18,8 +18,8 @@ class DateOpeningLocationSchema(Schema):
 
 
 class ExhibitionSchema(Schema):
-    artist = get_contributors_field_for_role('artist', {'order': 1})
-    curator = get_contributors_field_for_role('curator', {'order': 2})
+    artists = get_contributors_field_for_role('artist', {'order': 1})
+    curators = get_contributors_field_for_role('curator', {'order': 2})
     contributors = get_contributors_field({'order': 3})
     date = fields.List(
         fields.Nested(DateOpeningLocationSchema, additionalProperties=False),

@@ -9,7 +9,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 class AudioSchema(Schema):
     authors = get_contributors_field_for_role('author', {'order': 1})
-    artist = get_contributors_field_for_role('artist', {'order': 2})
+    artists = get_contributors_field_for_role('artist', {'order': 2})
     contributors = get_contributors_field({'order': 3})
     published_in = get_published_in_field({'order': 4})
     url = get_url_field({'order': 5, 'field_format': 'half'})

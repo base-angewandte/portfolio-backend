@@ -12,7 +12,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 class ConcertSchema(Schema):
     music = get_contributors_field_for_role('music', {'order': 1})
-    conductor = get_contributors_field_for_role('conductor', {'order': 2})
+    conductors = get_contributors_field_for_role('conductor', {'order': 2})
     composition = get_contributors_field_for_role('composition', {'order': 3})
     contributors = get_contributors_field({'order': 4})
     date_time_range_location = get_date_time_range_location_group_field({'order': 5})

@@ -15,7 +15,7 @@ TYPES = get_collection_members(
 
 class AwardSchema(Schema):
     category = get_string_field(get_preflabel_lazy('category'), {'order': 1})
-    winner = get_contributors_field_for_role('winner', {'order': 2})
+    winners = get_contributors_field_for_role('winner', {'order': 2})
     granted_by = get_contributors_field_for_role('granted_by', {'order': 3})
     jury = get_contributors_field_for_role('jury', {'order': 4})
     contributors = get_contributors_field({'order': 5})

@@ -10,7 +10,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class SoftwareSchema(Schema):
-    software_developer = get_contributors_field_for_role('software_developer', {'order': 1})
+    software_developers = get_contributors_field_for_role('software_developer', {'order': 1})
     programming_language = get_string_field(
         get_preflabel_lazy('programming_language'),
         {

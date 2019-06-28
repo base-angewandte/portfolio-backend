@@ -11,8 +11,8 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class WorkshopSchema(Schema):
-    organiser = get_contributors_field_for_role('organiser_management', {'order': 1})
-    lecturer = get_contributors_field_for_role('lecturer', {'order': 2})
+    organisers = get_contributors_field_for_role('organiser_management', {'order': 1})
+    lecturers = get_contributors_field_for_role('lecturer', {'order': 2})
     contributors = get_contributors_field({'order': 3})
     date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 4})
     url = get_url_field({'order': 5})
