@@ -281,7 +281,7 @@ def get_media_for_entry(entry_id):
 
 
 def get_image_for_entry(entry_id):
-    for m in Media.objects.filter(entry_id=entry_id).order_by('created'):
+    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED).order_by('created'):
         if m.get_image():
             return m.get_image()
 
