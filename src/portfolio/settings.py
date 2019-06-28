@@ -72,13 +72,16 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[urlparse(SITE_URL).hostname])
 
 BEHIND_PROXY = env.bool('BEHIND_PROXY', default=True)
 
-ADMINS = getaddresses([env('DJANGO_ADMINS', default='Philipp Mayer <philipp.mayer@uni-ak.ac.at>')])
+DJANGO_ADMINS = env('DJANGO_ADMINS', default=None)
 
-MANAGERS = ADMINS
+if DJANGO_ADMINS:
+    ADMINS = getaddresses([DJANGO_ADMINS])
+    MANAGERS = ADMINS
 
-SUPERUSERS = env.tuple('SUPERUSERS', default=(
-    '***REMOVED***',  # Philipp Mayer
-))
+DJANGO_SUPERUSERS = env.tuple('DJANGO_SUPERUSERS', default=None)
+
+if DJANGO_SUPERUSERS:
+    SUPERUSERS = DJANGO_SUPERUSERS
 
 # Application definition
 
