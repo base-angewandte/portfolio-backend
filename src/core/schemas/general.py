@@ -346,7 +346,7 @@ class GEOReferenceSchema(Schema):
     house_number = fields.Str()
     street = fields.Str()
     postcode = fields.Str()
-    city = fields.Str()
+    locality = fields.Str()  # towns, hamlets, cities
     region = fields.Str()
     country = fields.Str()
     geometry = fields.Nested(GeometrySchema, additionalProperties=False)

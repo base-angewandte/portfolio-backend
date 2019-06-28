@@ -643,7 +643,7 @@ PELIAS_MAPPING = {
     'house_number': ('properties', 'housenumber'),
     'street': ('properties', 'street'),
     'postcode': ('properties', 'postalcode'),
-    'city': ('properties', 'locality'),
+    'locality': ('properties', 'locality'),
     'region': ('properties', 'region'),
     'country': ('properties', 'country'),
     'geometry': ('geometry', ),
