@@ -459,9 +459,10 @@ TAX_ID = 'potax'
 TAX_GRAPH = 'http://base.uni-ak.ac.at/portfolio/taxonomy/'
 VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
-
 LANGUAGES_VOCID = 'languages'
-PELIAS_KEY = '***REMOVED***'
+
+PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
+
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
@@ -595,11 +596,13 @@ SOURCES = {
         }
     },
     'PELIAS': {
-        apiconfig.URL: 'https://api.geocode.earth/v1/search',
+        apiconfig.URL: 'https://api.geocode.earth/v1/autocomplete',
         apiconfig.QUERY_FIELD: 'text',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
-            'api_key': PELIAS_KEY,
+            'api_key': PELIAS_API_KEY,
+            'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
+            'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
             'lang': get_language_lazy(),
         }
     }
@@ -635,8 +638,15 @@ VOC_MAPPING = {
     'prefLabels': 'prefLabels',
 }
 PELIAS_MAPPING = {
-    'source': ('properties','gid'),
-    'label': ('properties', 'label')
+    'source': ('properties', 'gid'),
+    'label': ('properties', 'label'),
+    'house_number': ('properties', 'housenumber'),
+    'street': ('properties', 'street'),
+    'postcode': ('properties', 'postalcode'),
+    'city': ('properties', 'locality'),
+    'region': ('properties', 'region'),
+    'country': ('properties', 'country'),
+    'geometry': ('geometry', ),
 }
 
 
@@ -743,7 +753,7 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
         apiconfig.RULES: {
-            'source_name': {apiconfig.RULE: '"PELIAS"'},
+            'source_name': {apiconfig.RULE: '"geocode.earth"'},
             'source': {
                 apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
@@ -755,7 +765,7 @@ RESPONSE_MAPS = {
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
-    'places': ('PELIAS','GND_PLACE', 'GEONAMES_PLACE'),
+    'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
         'search': 'core.skosmos.get_keywords',
