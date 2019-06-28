@@ -473,6 +473,7 @@ SOURCES = {
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
+        apiconfig.TIMEOUT: 2,
         apiconfig.PAYLOAD: {
             'format': 'json:suggest',
             'filter': 'type:Person',
