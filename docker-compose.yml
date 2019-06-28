@@ -107,6 +107,16 @@ services:
       - portfolionet
     restart: always
 
+  portfolio-cron:
+    build: ./docker/cron
+    container_name: portfolio-cron
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/cron/crontab:/tmp/crontab
+    networks:
+      - portfolionet
+    restart: always
+
 
 networks:
   portfolionet:
