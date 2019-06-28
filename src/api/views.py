@@ -14,7 +14,7 @@ from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, viewsets, permissions
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
@@ -23,13 +23,15 @@ from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_preflabel, get_altlabel_collection, get_collection_members
+from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
 from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator
+from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator, language_header_parameter, \
+    authorization_header_paramter
 
 SchemaView = get_schema_view(
     openapi.Info(
@@ -248,12 +250,11 @@ def user_information(request, *args, **kwargs):
     200: openapi.Response(''),
     403: openapi.Response('Access not allowed'),
     404: openapi.Response('User not found'),
-})
+}, manual_parameters=[authorization_header_paramter, language_header_parameter])
 @api_view(['GET'])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
 def user_data(request, pk=None, *args, **kwargs):
-    # TODO handle authorization
-    # TODO get roles  [item for item in dicts if item['source'] == 'uuid']
-
     UserModel = get_user_model()
 
     try:
@@ -263,8 +264,98 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    def get_role(data):  # TODO
-        return
+    def get_role(data):
+        fields_to_check = [
+            'architecture',
+            'authors',
+            'artists',
+            'winners',
+            'granted_by',
+            'jury',
+            'music',
+            'conductors',
+            'composition',
+            'organisers',
+            'lecturers',
+            'editors',
+            'publishers',
+            'curators',
+            'project_lead',
+            'project_partnership',
+            'funding',
+            'software_developers',
+            'directors',
+            'contributors',
+        ]
+        roles = []
+        for fld in fields_to_check:
+            if data.get(fld):
+                for c in data[fld]:
+                    if c.get('source') == user.username and c.get('roles'):
+                        for r in c['roles']:
+                            roles.append(r.get('label').get(lang))
+
+        if roles:
+            return ', '.join(sorted(set(roles)))
+
+    def get_location(data):
+        locations = []
+        i = []
+        if data.get('location', {}).get('label'):
+            locations.append(data['location']['label'])
+        elif data.get('date_location'):
+            i = data['date_location']
+        elif data.get('date_time_range_location'):
+            i = data['date_time_range_location']
+        elif data.get('date_range_time_range_location'):
+            i = data['date_range_time_range_location']
+        elif isinstance(data.get('date'), list):
+            i = data['date']
+
+        if i:
+            for o in i:
+                if o.get('location'):
+                    for l in o['location']:
+                        if l.get('label'):
+                            locations.append(l['label'])
+                # elif o.get('location_description'):
+                #    locations.append(o['location_description'])
+
+        if locations:
+            return ', '.join(sorted(set(locations)))
+
+    def get_year(data):
+        years = []
+        if data.get('date'):
+            if isinstance(data['date'], dict):
+                if data['date'].get('date_from'):
+                    years.append(get_year_from_javascript_datetime(data['date']['date_from']))
+                elif data['date'].get('date_to'):
+                    years.append(get_year_from_javascript_datetime(data['date']['date_to']))
+            elif isinstance(data['date'], list):
+                for dols in data['date']:
+                    if dols.get('date', {}).get('date_from'):
+                        years.append(get_year_from_javascript_datetime(dols['date']['date_from']))
+                    elif dols.get('date', {}).get('date_to'):
+                        years.append(get_year_from_javascript_datetime(dols['date']['date_to']))
+            years.append(get_year_from_javascript_datetime(data['date']))
+        elif data.get('date_location'):
+            for dl in data['date_location']:
+                if dl.get('date'):
+                    years.append(get_year_from_javascript_datetime(dl['date']))
+        elif data.get('date_time_range_location'):
+            for dtrl in data['date_time_range_location']:
+                if dtrl.get('date', {}).get('date'):
+                    years.append(get_year_from_javascript_datetime(dtrl['date']['date']))
+        elif data.get('date_range_time_range_location'):
+            for drtrl in data['date_range_time_range_location']:
+                if drtrl.get('date', {}).get('date_from'):
+                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_from']))
+                elif drtrl.get('date', {}).get('date_to'):
+                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_to']))
+
+        if years:
+            return ', '.join(sorted(set(years)))
 
     def get_data(label, kw_filters, q_filters=None):
         d = {
@@ -285,8 +376,8 @@ def user_data(request, pk=None, *args, **kwargs):
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
                 'role': get_role(e.data),
-                'location': None,  # TODO
-                'year': get_year_from_javascript_datetime(e.data['date']) if e.data.get('date') else None,
+                'location': get_location(e.data),
+                'year': get_year(e.data),
             })
 
         return d
@@ -419,6 +510,45 @@ def user_data(request, pk=None, *args, **kwargs):
     exhibitions_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition'
     )
+    conferences_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference'
+    )
+    conference_contributions_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution'
+    )
+    architectures_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_architecture'
+    )
+    audios_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio'
+    )
+    concerts_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_concert'
+    )
+    events_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_event'
+    )
+    festivals_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_festival'
+    )
+    images_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_image'
+    )
+    performances_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_performance'
+    )
+    sculptures_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture'
+    )
+    softwares_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software'
+    )
+    videos_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video'
+    )
+    workshops_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_workshop'
+    )
 
     for l, f, qf in (
         # Research Projects
@@ -442,7 +572,7 @@ def user_data(request, pk=None, *args, **kwargs):
                 type__source__in=awards_and_grants_types,
             ),
             [
-                dict(data__contains={'winner': [{'source': user.username}]}),
+                dict(data__contains={'winners': [{'source': user.username}]}),
                 dict(data__contains={'granted_by': [{'source': user.username}]}),
                 dict(data__contains={'jury': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -454,28 +584,176 @@ def user_data(request, pk=None, *args, **kwargs):
             dict(
                 owner=user,
                 type__source__in=exhibitions_types,
-
             ),
             [
-                dict(data__contains={'artist': [{'source': user.username}]}),
-                dict(data__contains={'curator': [{'source': user.username}]}),
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'curators': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
             ],
         ),
-        # TODO
         # Conferences
+        (
+            get_altlabel_collection('collection_conference', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=conferences_types,
+            ),
+            [
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'lecturers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
         # Conference contributons
-        # Architecture
-        # Audio
-        # Concert
-        # Event
-        # Festival
-        # Image
-        # Performance
-        # Sculpture
-        # Software
-        # Video
-        # Workshop
+        (
+            get_altlabel_collection('collection_conference_contribution', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=conference_contributions_types,
+            ),
+            [
+                dict(data__contains={'lecturers': [{'source': user.username}]}),
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Architectures
+        (
+            get_altlabel_collection('collection_architecture', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=architectures_types,
+            ),
+            [
+                dict(data__contains={'architecture': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Audios
+        (
+            get_altlabel_collection('collection_audio', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=audios_types,
+            ),
+            [
+                dict(data__contains={'authors': [{'source': user.username}]}),
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Concerts
+        (
+            get_altlabel_collection('collection_concert', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=concerts_types,
+            ),
+            [
+                dict(data__contains={'music': [{'source': user.username}]}),
+                dict(data__contains={'conductors': [{'source': user.username}]}),
+                dict(data__contains={'composition': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Events
+        (
+            get_altlabel_collection('collection_event', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=events_types,
+            ),
+            [
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Festivals
+        (
+            get_altlabel_collection('collection_festival', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=festivals_types,
+            ),
+            [
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'curators': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Images
+        (
+            get_altlabel_collection('collection_image', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=images_types,
+            ),
+            [
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Performances
+        (
+            get_altlabel_collection('collection_performance', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=performances_types,
+            ),
+            [
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Sculptures
+        (
+            get_altlabel_collection('collection_sculpture', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=sculptures_types,
+            ),
+            [
+                dict(data__contains={'artists': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Softwares
+        (
+            get_altlabel_collection('collection_software', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=softwares_types,
+            ),
+            [
+                dict(data__contains={'software_developers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Videos
+        (
+            get_altlabel_collection('collection_film_video', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=videos_types,
+            ),
+            [
+                dict(data__contains={'directors': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Workshops
+        (
+            get_altlabel_collection('collection_workshop', lang=lang),
+            dict(
+                owner=user,
+                type__source__in=workshops_types,
+            ),
+            [
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'lecturers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
     ):
         if qf:
             general_publications_q_filters += qf
@@ -484,7 +762,10 @@ def user_data(request, pk=None, *args, **kwargs):
     # General Publications
     general_publications_types = list(set(ACTIVE_TYPES) - set(
         monographs_types + composite_volumes_types + articles_types + chapters_types + reviews_types +
-        general_publications_types + research_projects_types + awards_and_grants_types + exhibitions_types
+        general_publications_types + research_projects_types + awards_and_grants_types + exhibitions_types +
+        conferences_types + conference_contributions_types + architectures_types + audios_types + architectures_types +
+        audios_types + concerts_types + events_types + festivals_types + images_types + performances_types +
+        sculptures_types + softwares_types + videos_types + workshops_types
     ))
 
     data['data'].append(get_data(
