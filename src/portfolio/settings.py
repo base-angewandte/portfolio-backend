@@ -515,7 +515,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'maxRows': 10,
-            'username': '***REMOVED***',
+            'username': '_'.join([urlparse(SITE_URL).hostname.replace('.', '_'), PROJECT_NAME]),
             'type': 'json',
         }
     },
@@ -701,7 +701,7 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"GEONAMES"'},
             'source': {
-                apiconfig.RULE: '"http://api.geonames.org/get?username=***REMOVED***&geonameId={p1}"',
+                apiconfig.RULE: '"http://api.geonames.org/get?geonameId={p1}"',
                 apiconfig.FIELDS: {'p1': 'geonameId'},
             },
         }
