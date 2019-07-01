@@ -11,7 +11,9 @@ class CaseInsensitiveOrderingFilter(OrderingFilter):
         if ordering:
             new_ordering = []
             for field in ordering:
-                if field.startswith('-'):
+                if any(x in field for x in ['date', 'published']):
+                    new_ordering.append(field)
+                elif field.startswith('-'):
                     new_ordering.append(Lower(field[1:]).desc())
                 else:
                     new_ordering.append(Lower(field).asc())
