@@ -208,7 +208,6 @@ class RelationViewSet(viewsets.GenericViewSet, CreateModelMixin, DestroyModelMix
         return Relation.objects.filter(from_entry__owner=user, to_entry__owner=user)
 
 
-@method_decorator(language_header_decorator, name='retrieve')
 class JsonSchemaViewSet(viewsets.ViewSet):
     """
     list:
@@ -219,10 +218,12 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     """
     lookup_value_regex = '.+'
 
+    @language_header_decorator
     def list(self, request, *args, **kwargs):
         language = get_language() or 'en'
         return Response(sorted(ACTIVE_TYPES_LIST, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
+    @language_header_decorator
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)
         if not schema:
