@@ -70,13 +70,15 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             ]),
             'texts': OrderedDict([
                 ('field_type', 'multiline'),
-                ('source_type', ''),
+                ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'}),),
+                ('prefetch', ['source_type']),
                 ('order', 4),
                 ('placeholder', placeholder_lazy(get_preflabel_lazy('text'))),
             ]),
             'keywords': OrderedDict([
                 ('field_type', 'chips'),
                 ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
+                ('prefetch', ['source']),
                 ('order', 5),
                 ('allow_unkown_entries', True),
                 ('dynamic_autosuggest', True,),

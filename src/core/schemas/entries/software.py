@@ -26,6 +26,7 @@ class SoftwareSchema(Schema):
             'field_format': 'half',
             'field_type': 'chips',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'}),
+            'prefetch': ['source'],
             'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_license')),
             'order': 3,
             'set_label_language': True,

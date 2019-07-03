@@ -59,7 +59,8 @@ def get_contributors_field(additional_attributes={}):
             'field_type': 'chips-below',
             'placeholder': placeholder_lazy(label),
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
-            'source_role': '',
+            'source_role': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'roles'}),
+            'prefetch': ['source_role'],
             'allow_unkown_entries': True,
             'dynamic_autosuggest': True,
             **additional_attributes
@@ -214,6 +215,7 @@ def get_format_field(additional_attributes={}):
             'allow_unkown_entries': True,
             'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
+            'prefetch': ['source'],
             'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
@@ -230,6 +232,7 @@ def get_language_list_field(additional_attributes={}):
             'field_type': 'chips',
             'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
+            'prefetch': ['source'],
             'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
@@ -284,6 +287,7 @@ def get_material_field(additional_attributes={}):
             'allow_unkown_entries': True,
             'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
+            'prefetch': ['source'],
             'placeholder': placeholder_lazy(label),
             **additional_attributes
         }},
