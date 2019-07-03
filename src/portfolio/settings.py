@@ -652,6 +652,7 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
+        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.DIRECT: GND_MAPPING,
