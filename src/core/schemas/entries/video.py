@@ -8,7 +8,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class VideoSchema(Schema):
-    director = get_contributors_field_for_role('director', {'order': 1})
+    directors = get_contributors_field_for_role('director', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     published_in = get_published_in_field({'order': 3})
     url = get_url_field({'order': 4, 'field_format': 'half'})

@@ -3,10 +3,10 @@ import mimetypes
 from os.path import basename, join
 
 import magic
-from PIL.Image import DecompressionBombError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
+from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
@@ -17,7 +17,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from .decorators import is_allowed
-from .models import PREFIX_TO_MODEL, get_model_for_mime_type
+from .models import Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -57,6 +57,18 @@ def protected_view(request, path, server, as_download=False):
 
 # DRF views
 
+license_param = openapi.Parameter(
+    'license',
+    openapi.IN_FORM,
+    description='media license json object',
+    required=False,
+    type=openapi.TYPE_STRING,
+    **{'x-attrs': {
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})
+    }}
+)
+
+
 class MediaViewSet(viewsets.GenericViewSet):
     parser_classes = (FormParser, MultiPartParser)
     serializer_class = MediaCreateSerializer
@@ -78,12 +90,10 @@ class MediaViewSet(viewsets.GenericViewSet):
         return super(MediaViewSet, self).get_serializer_class()
 
     def _get_media_object(self, pk):
-        model = PREFIX_TO_MODEL.get(pk[0])
-        if model:
-            try:
-                return model.objects.get(id=pk)
-            except model.DoesNotExist:
-                pass
+        try:
+            return Media.objects.get(id=pk)
+        except Media.DoesNotExist:
+            pass
 
     def _update(self, request, pk=None, partial=False, *args, **kwargs):
         if pk:
@@ -100,8 +110,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     if serializer.validated_data:
-                        model = PREFIX_TO_MODEL[pk[0]]
-                        model.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                        Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -113,7 +122,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         400: openapi.Response('Bad request'),
         415: openapi.Response('Unsupported media type'),
         422: openapi.Response('User quota exceeded'),
-    })
+    }, manual_parameters=[license_param])
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
@@ -127,30 +136,15 @@ class MediaViewSet(viewsets.GenericViewSet):
 
             mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
 
-            model = get_model_for_mime_type(mime_type)
-
-            m = model(
+            m = Media(
+                file=serializer.validated_data['file'],
+                type=get_type_for_mime_type(mime_type),
                 owner=request.user,
                 entry_id=serializer.validated_data['entry'],
                 mime_type=mime_type,
-                file=serializer.validated_data['file'],
                 published=serializer.validated_data['published'],
                 license=serializer.validated_data.get('license') or None,
             )
-
-            try:
-                m.file.width
-            except DecompressionBombError as dbe:
-                msg = str(dbe)
-                logger.exception(msg)
-                return Response(msg, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-            except AttributeError:
-                # not an image
-                pass
-            except RuntimeError:
-                # webp image
-                # https://code.djangoproject.com/ticket/29705
-                pass
 
             m.save()
 
@@ -189,7 +183,7 @@ class MediaViewSet(viewsets.GenericViewSet):
     #     400: openapi.Response('Bad request'),
     #     403: openapi.Response('Access not allowed'),
     #     404: openapi.Response('Media object not found'),
-    # })
+    # }, manual_parameters=[license_param])
     # def update(self, request, pk=None, *args, **kwargs):
     #     return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
@@ -198,7 +192,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         400: openapi.Response('Bad request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
-    })
+    }, manual_parameters=[license_param])
     def partial_update(self, request, pk=None, *args, **kwargs):
         return self._update(request, pk=pk, partial=True, *args, **kwargs)
 

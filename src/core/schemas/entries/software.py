@@ -10,7 +10,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class SoftwareSchema(Schema):
-    software_developer = get_contributors_field_for_role('software_developer', {'order': 1})
+    software_developers = get_contributors_field_for_role('software_developer', {'order': 1})
     programming_language = get_string_field(
         get_preflabel_lazy('programming_language'),
         {
@@ -26,8 +26,10 @@ class SoftwareSchema(Schema):
             'field_format': 'half',
             'field_type': 'chips',
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'}),
+            'prefetch': ['source'],
             'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_license')),
             'order': 3,
+            'set_label_language': True,
         }},
     )
     lines_of_code = get_field(

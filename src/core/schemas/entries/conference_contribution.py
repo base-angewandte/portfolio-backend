@@ -14,9 +14,9 @@ TYPES = get_collection_members(
 
 
 class ConferenceContributionSchema(Schema):
-    lecturer = get_contributors_field_for_role('lecturer', {'order': 1})
+    lecturers = get_contributors_field_for_role('lecturer', {'order': 1})
     title_of_event = get_string_field(get_preflabel_lazy('title_of_event'), {'order': 2})
-    organiser = get_contributors_field_for_role('organiser_management', {'order': 3})
+    organisers = get_contributors_field_for_role('organiser_management', {'order': 3})
     contributors = get_contributors_field({'order': 4})
     date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 5})
     url = get_url_field({'order': 6})

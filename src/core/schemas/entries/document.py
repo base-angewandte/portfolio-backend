@@ -32,7 +32,7 @@ class PublishedInSchema(Schema):
 class DocumentSchema(Schema):
     authors = get_contributors_field_for_role('author', {'order': 1})
     editors = get_contributors_field_for_role('editor', {'order': 2})
-    publisher = get_contributors_field_for_role('publisher', {'order': 3})
+    publishers = get_contributors_field_for_role('publisher', {'order': 3})
     date = get_date_field({'order': 4})
     location = get_location_field({'order': 5})
     isbn = get_string_field(

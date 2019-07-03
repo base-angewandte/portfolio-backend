@@ -11,6 +11,13 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from core.schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
 
+authorization_header_paramter = openapi.Parameter(
+    'Authorization',
+    openapi.IN_HEADER,
+    required=True,
+    type=openapi.TYPE_STRING,
+)
+
 language_header_parameter = openapi.Parameter(
     'Accept-Language',
     openapi.IN_HEADER,

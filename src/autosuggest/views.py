@@ -1,7 +1,8 @@
 import json
 import logging
 
-from apimapper import APIMapper
+from apimapper import APIMapper, config as apiconfig
+
 from django.conf import settings
 from django.utils.module_loading import import_string
 from drf_yasg import openapi
@@ -72,6 +73,7 @@ def fetch_responses(querystring, active_sources):
             # inside a dict
             json.loads(json.dumps(settings.SOURCES.get(src), cls=JSONEncoder)),
             settings.RESPONSE_MAPS.get(src),
+            timeout=2,
         )
         res = api.fetch_results(querystring)
         responses.extend(res)

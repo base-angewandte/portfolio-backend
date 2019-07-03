@@ -207,8 +207,11 @@ def get_uri(concept, graph=settings.VOC_GRAPH):
     return '{}{}'.format(graph, concept)
 
 
-def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
-    language = get_language() or 'en'
+def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
+    if lang:
+        language = lang
+    else:
+        language = get_language() or 'en'
     cache_key = 'get_altlabel_{}_{}'.format(language, concept)
 
     label = cache.get(cache_key)
@@ -226,6 +229,10 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH):
             cache.set(cache_key, label, CACHE_TIME)
 
     return label or get_preflabel(concept, project, graph)
+
+
+def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None):
+    return get_altlabel(collection, project, graph, lang).replace('Sammlung', '').replace('Collection', '').strip()
 
 
 def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):

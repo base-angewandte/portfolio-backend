@@ -72,13 +72,14 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[urlparse(SITE_URL).hostname])
 
 BEHIND_PROXY = env.bool('BEHIND_PROXY', default=True)
 
-ADMINS = getaddresses([env('DJANGO_ADMINS', default='Philipp Mayer <philipp.mayer@uni-ak.ac.at>')])
+DJANGO_ADMINS = env('DJANGO_ADMINS', default=None)
 
-MANAGERS = ADMINS
+if DJANGO_ADMINS:
+    ADMINS = getaddresses([DJANGO_ADMINS])
+    MANAGERS = ADMINS
 
-SUPERUSERS = env.tuple('SUPERUSERS', default=(
-    '0F4D81CF842D441F8A0020DE45F4CBD5',  # Philipp Mayer
-))
+SUPERUSERS = env.tuple('DJANGO_SUPERUSERS', default=())
+
 
 # Application definition
 
@@ -92,6 +93,7 @@ INSTALLED_APPS = [
 
     # Third-party apps
     'rest_framework',
+    'rest_framework.authtoken',
     'drf_yasg',
     'django_filters',
     'django_extensions',
@@ -124,11 +126,6 @@ CAS_RETRY_LOGIN = True
 CAS_VERSION = '3'
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
-CAS_RENAME_ATTRIBUTES = {
-    'firstName': 'first_name',
-    'lastName': 'last_name',
-    'email0': 'email',
-}
 
 """ Email settings """
 SERVER_EMAIL = 'error@%s' % urlparse(SITE_URL).hostname
@@ -432,6 +429,7 @@ ACTIVE_SCHEMAS = env.list(
         'award',
         'concert',
         'conference',
+        'conference_contribution',
         'document',
         'event',
         'exhibition',
@@ -459,8 +457,9 @@ TAX_ID = 'potax'
 TAX_GRAPH = 'http://base.uni-ak.ac.at/portfolio/taxonomy/'
 VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
-
 LANGUAGES_VOCID = 'languages'
+
+PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 
 # Autosuggest
 SOURCES = {
@@ -514,7 +513,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'maxRows': 10,
-            'username': 'oeaw_adlib',
+            'username': '_'.join([urlparse(SITE_URL).hostname.replace('.', '_'), PROJECT_NAME]),
             'type': 'json',
         }
     },
@@ -593,6 +592,18 @@ SOURCES = {
             'fields': 'prefLabel'
         }
     },
+    'PELIAS': {
+        apiconfig.URL: 'https://api.geocode.earth/v1/autocomplete',
+        apiconfig.QUERY_FIELD: 'text',
+        apiconfig.QUERY_SUFFIX_WILDCARD: True,
+        apiconfig.PAYLOAD: {
+            'api_key': PELIAS_API_KEY,
+            'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
+            'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
+            'lang': get_language_lazy(),
+        }
+    }
+
 }
 
 ANGEWANDTE_MAPPING = {
@@ -620,14 +631,28 @@ BASE_KEYWORDS_MAPPING = {
 
 VOC_MAPPING = {
     'source': 'uri',
-    'label': 'prefLabels',
+    'label': 'prefLabel',
+    'prefLabels': 'prefLabels',
 }
+PELIAS_MAPPING = {
+    'source': ('properties', 'gid'),
+    'label': ('properties', 'label'),
+    'house_number': ('properties', 'housenumber'),
+    'street': ('properties', 'street'),
+    'postcode': ('properties', 'postalcode'),
+    'locality': ('properties', 'locality'),
+    'region': ('properties', 'region'),
+    'country': ('properties', 'country'),
+    'geometry': ('geometry', ),
+}
+
 
 RESPONSE_MAPS = {
     'ANGEWANDTE_PERSON': {
         apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
+        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.DIRECT: GND_MAPPING,
@@ -684,7 +709,7 @@ RESPONSE_MAPS = {
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"GEONAMES"'},
             'source': {
-                apiconfig.RULE: '"http://api.geonames.org/get?username=oeaw_adlib&geonameId={p1}"',
+                apiconfig.RULE: '"http://api.geonames.org/get?geonameId={p1}"',
                 apiconfig.FIELDS: {'p1': 'geonameId'},
             },
         }
@@ -722,12 +747,23 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
     },
+    'PELIAS': {
+        apiconfig.RESULT: 'features',
+        apiconfig.DIRECT: PELIAS_MAPPING,
+        apiconfig.RULES: {
+            'source_name': {apiconfig.RULE: '"geocode.earth"'},
+            'source': {
+                apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
+                apiconfig.FIELDS: {'p1': ('properties', 'gid')},
+            },
+        }     
+    }
 }
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
-    'places': ('GND_PLACE', 'GEONAMES_PLACE'),
+    'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
         'search': 'core.skosmos.get_keywords',

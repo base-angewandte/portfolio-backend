@@ -8,7 +8,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class ImageSchema(Schema):
-    artist = get_contributors_field_for_role('artist', {'order': 1})
+    artists = get_contributors_field_for_role('artist', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     date_location = get_date_location_group_field({'order': 3})
     url = get_url_field({'order': 4})

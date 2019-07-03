@@ -11,7 +11,7 @@ TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/coll
 
 
 class PerformanceSchema(Schema):
-    artist = get_contributors_field_for_role('artist', {'order': 1})
+    artists = get_contributors_field_for_role('artist', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 3})
     material = get_material_field({'order': 4})
