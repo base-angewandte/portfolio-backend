@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 LOG_DIR=/logs
-APPEND=$( date -d "yesterday 13:00 " '+%Y-%m-%d' )
+APPEND=$( TZ=Europe/Vienna date -d "yesterday 13:00 " '+%Y-%m-%d' )
 ACCESS_LOG=${LOG_DIR}/gunicorn.access.log
 ACCESS_LOG_ROTATED=${ACCESS_LOG}.${APPEND}
 ERROR_LOG=${LOG_DIR}/gunicorn.error.log
