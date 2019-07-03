@@ -73,7 +73,7 @@ def fetch_responses(querystring, active_sources):
             # inside a dict
             json.loads(json.dumps(settings.SOURCES.get(src), cls=JSONEncoder)),
             settings.RESPONSE_MAPS.get(src),
-            timeout=1,
+            timeout=2,
         )
         res = api.fetch_results(querystring)
         responses.extend(res)

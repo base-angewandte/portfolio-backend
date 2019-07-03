@@ -6,6 +6,7 @@ import magic
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
+from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
@@ -55,6 +56,18 @@ def protected_view(request, path, server, as_download=False):
 
 
 # DRF views
+
+license_param = openapi.Parameter(
+    'license',
+    openapi.IN_FORM,
+    description='media license json object',
+    required=False,
+    type=openapi.TYPE_STRING,
+    **{'x-attrs': {
+        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})
+    }}
+)
+
 
 class MediaViewSet(viewsets.GenericViewSet):
     parser_classes = (FormParser, MultiPartParser)
@@ -109,7 +122,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         400: openapi.Response('Bad request'),
         415: openapi.Response('Unsupported media type'),
         422: openapi.Response('User quota exceeded'),
-    })
+    }, manual_parameters=[license_param])
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
@@ -170,7 +183,7 @@ class MediaViewSet(viewsets.GenericViewSet):
     #     400: openapi.Response('Bad request'),
     #     403: openapi.Response('Access not allowed'),
     #     404: openapi.Response('Media object not found'),
-    # })
+    # }, manual_parameters=[license_param])
     # def update(self, request, pk=None, *args, **kwargs):
     #     return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
@@ -179,7 +192,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         400: openapi.Response('Bad request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('Media object not found'),
-    })
+    }, manual_parameters=[license_param])
     def partial_update(self, request, pk=None, *args, **kwargs):
         return self._update(request, pk=pk, partial=True, *args, **kwargs)
 
