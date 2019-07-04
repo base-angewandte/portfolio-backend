@@ -440,7 +440,6 @@ ACTIVE_SCHEMAS = env.list(
         'sculpture',
         'software',
         'video',
-        'workshop',
     ]
 )
 
