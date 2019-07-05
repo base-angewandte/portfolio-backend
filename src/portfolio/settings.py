@@ -466,6 +466,7 @@ SOURCES = {
         apiconfig.URL: '{}api/persons'.format(SITE_URL),
         apiconfig.QUERY_FIELD: 'searchstring',
         apiconfig.PAYLOAD: None,
+        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -651,7 +652,6 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
-        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.DIRECT: GND_MAPPING,
