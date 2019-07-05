@@ -176,7 +176,6 @@ ROOT_URLCONF = '{}.urls'.format(PROJECT_NAME)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -759,9 +758,14 @@ RESPONSE_MAPS = {
     }
 }
 
+CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION')
+
+if 'uni-ak.ac.at' in SITE_URL:
+    CONTRIBUTORS = tuple(x for x in ['ANGEWANDTE_PERSON', *CONTRIBUTORS])
+
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
-    'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
+    'contributors': CONTRIBUTORS,
     'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
