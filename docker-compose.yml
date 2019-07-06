@@ -108,7 +108,7 @@ services:
     restart: always
 
   portfolio-cron:
-    build: ./docker/cron
+    image: paradoxon/alpine-cron
     container_name: portfolio-cron
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
