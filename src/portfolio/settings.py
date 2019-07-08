@@ -176,7 +176,6 @@ ROOT_URLCONF = '{}.urls'.format(PROJECT_NAME)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -440,7 +439,6 @@ ACTIVE_SCHEMAS = env.list(
         'sculpture',
         'software',
         'video',
-        'workshop',
     ]
 )
 
@@ -467,6 +465,7 @@ SOURCES = {
         apiconfig.URL: '{}api/persons'.format(SITE_URL),
         apiconfig.QUERY_FIELD: 'searchstring',
         apiconfig.PAYLOAD: None,
+        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -652,7 +651,6 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
-        apiconfig.TIMEOUT: 10,
     },
     'GND_PERSON': {
         apiconfig.DIRECT: GND_MAPPING,
@@ -760,9 +758,14 @@ RESPONSE_MAPS = {
     }
 }
 
+CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION')
+
+if 'uni-ak.ac.at' in SITE_URL:
+    CONTRIBUTORS = tuple(x for x in ['ANGEWANDTE_PERSON', *CONTRIBUTORS])
+
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
-    'contributors': ('ANGEWANDTE_PERSON', 'GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION') ,
+    'contributors': CONTRIBUTORS,
     'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',

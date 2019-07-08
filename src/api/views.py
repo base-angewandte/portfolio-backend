@@ -547,9 +547,6 @@ def user_data(request, pk=None, *args, **kwargs):
     videos_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video'
     )
-    workshops_types = get_collection_members(
-        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_workshop'
-    )
 
     for l, f, qf in (
         # Research Projects
@@ -742,19 +739,6 @@ def user_data(request, pk=None, *args, **kwargs):
                 dict(data__contains={'contributors': [{'source': user.username}]}),
             ],
         ),
-        # Workshops
-        (
-            get_altlabel_collection('collection_workshop', lang=lang),
-            dict(
-                owner=user,
-                type__source__in=workshops_types,
-            ),
-            [
-                dict(data__contains={'organisers': [{'source': user.username}]}),
-                dict(data__contains={'lecturers': [{'source': user.username}]}),
-                dict(data__contains={'contributors': [{'source': user.username}]}),
-            ],
-        ),
     ):
         if qf:
             general_publications_q_filters += qf
@@ -766,7 +750,7 @@ def user_data(request, pk=None, *args, **kwargs):
         general_publications_types + research_projects_types + awards_and_grants_types + exhibitions_types +
         conferences_types + conference_contributions_types + architectures_types + audios_types + architectures_types +
         audios_types + concerts_types + events_types + festivals_types + images_types + performances_types +
-        sculptures_types + softwares_types + videos_types + workshops_types
+        sculptures_types + softwares_types + videos_types
     ))
 
     data['data'].append(get_data(
