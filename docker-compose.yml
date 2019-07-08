@@ -113,8 +113,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./docker/cron/crontab:/tmp/crontab
-    networks:
-      - portfolionet
+    network_mode: "none"
     restart: always
 
 
