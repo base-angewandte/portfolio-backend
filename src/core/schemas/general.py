@@ -97,7 +97,7 @@ def get_date_field(additional_attributes={}, validator=validate_date):
             'field_format': 'half',
             'field_type': 'date',
             'date_format': 'date_year',
-            'placeholder': placeholder_lazy(label),
+            'placeholder': {'date': placeholder_lazy(label)},
             **additional_attributes
         }},
     )
@@ -115,6 +115,7 @@ def get_date_location_group_field(additional_attributes={}):
 
 
 def get_date_range_field(additional_attributes={}):
+    label = get_preflabel_lazy('date')
     return fields.Nested(
         DateRangeSchema,
         additionalProperties=False,
@@ -122,18 +123,22 @@ def get_date_range_field(additional_attributes={}):
             'field_format': 'half',
             'field_type': 'date',
             'date_format': 'day',
+            'placeholder': {'date': placeholder_lazy(label)},
             **additional_attributes
         }},
     )
 
 
 def get_date_range_time_range_field(additional_attributes={}):
+    label_date = get_preflabel_lazy('date')
+    label_time = get_preflabel_lazy('time')
     return fields.Nested(
         DateRangeTimeRangeSchema,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
             'date_format': 'day',
+            'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
             **additional_attributes
         }},
     )
@@ -151,22 +156,28 @@ def get_date_range_time_range_location_group_field(additional_attributes={}):
 
 
 def get_date_time_field(additional_attributes={}):
+    label_date = get_preflabel_lazy('date')
+    label_time = get_preflabel_lazy('time')
     return fields.Nested(
         DateTimeSchema,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
+            'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
             **additional_attributes
         }},
     )
 
 
 def get_date_time_range_field(additional_attributes={}):
+    label_date = get_preflabel_lazy('date')
+    label_time = get_preflabel_lazy('time')
     return fields.Nested(
         DateTimeRangeSchema,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
+            'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
             **additional_attributes
         }},
     )
