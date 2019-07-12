@@ -2,9 +2,10 @@ import json
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from jsonschema import validate, ValidationError as SchemaValidationError
+from jsonschema import ValidationError as SchemaValidationError, validate
 
 from core.skosmos import get_media_licenses
+
 from .schemas import get_license_jsonschema
 
 

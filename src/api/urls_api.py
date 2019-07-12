@@ -2,8 +2,8 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 
 from media_server.views import MediaViewSet
-from . import views
 
+from . import views
 
 router = routers.DefaultRouter()
 router.register(r'entry', views.EntryViewSet, basename='entry')

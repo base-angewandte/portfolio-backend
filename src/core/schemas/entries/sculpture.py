@@ -1,8 +1,15 @@
 from marshmallow import Schema
 
-from ..general import get_material_field, get_format_field, get_contributors_field, get_contributors_field_for_role, \
-    get_url_field, get_date_location_group_field, get_dimensions_field
 from ...skosmos import get_collection_members
+from ..general import (
+    get_contributors_field,
+    get_contributors_field_for_role,
+    get_date_location_group_field,
+    get_dimensions_field,
+    get_format_field,
+    get_material_field,
+    get_url_field,
+)
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture', use_cache=False)
 

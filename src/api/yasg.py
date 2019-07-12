@@ -9,7 +9,7 @@ from drf_yasg.utils import force_real_str, swagger_auto_schema
 from rest_framework import serializers
 from rest_framework.utils.encoders import JSONEncoder
 
-from core.schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
+from core.schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 
 authorization_header_paramter = openapi.Parameter(
     'Authorization',

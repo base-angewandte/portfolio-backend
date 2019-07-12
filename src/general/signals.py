@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.dispatch import receiver
-
 from django_cas_ng.signals import cas_user_authenticated
 
 

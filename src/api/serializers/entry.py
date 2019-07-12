@@ -10,6 +10,7 @@ from core.models import Entry, Relation
 from core.skosmos import get_preflabel_lazy
 from core.utils import placeholder_lazy
 from media_server.models import get_image_for_entry, has_entry_media
+
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 

@@ -1,9 +1,16 @@
 from marshmallow import Schema, fields
 
-from ..general import get_contributors_field, get_contributors_field_for_role, get_location_field, get_url_field, \
-    get_date_range_field, get_date_time_range_field, get_location_description_field
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members
+from ..general import (
+    get_contributors_field,
+    get_contributors_field_for_role,
+    get_date_range_field,
+    get_date_time_range_field,
+    get_location_description_field,
+    get_location_field,
+    get_url_field,
+)
 
 ICON = ICON_EVENT
 

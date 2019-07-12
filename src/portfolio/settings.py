@@ -19,10 +19,10 @@ from email.utils import getaddresses
 from urllib.parse import urlparse
 
 import environ
+from apimapper import config as apiconfig
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from hashids import Hashids
-from apimapper import config as apiconfig
 
 from general.utils import get_language_lazy
 

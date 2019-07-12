@@ -5,13 +5,14 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
-from jsonschema import validate, ValidationError as SchemaValidationError
+from jsonschema import ValidationError as SchemaValidationError, validate
 
 from general.models import AbstractBaseModel, ShortUUIDField
+
 from .managers import EntryManager
-from .schemas import ICON_DEFAULT, get_jsonschema, get_icon
+from .schemas import ICON_DEFAULT, get_icon, get_jsonschema
 from .skosmos import get_preflabel_lazy
-from .validators import validate_texts, validate_keywords, validate_type
+from .validators import validate_keywords, validate_texts, validate_type
 
 
 class Entry(AbstractBaseModel):

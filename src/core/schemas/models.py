@@ -1,8 +1,7 @@
 from marshmallow import Schema, fields
 
-from .general import SourceMultilingualLabelSchema, LanguageDataSchema
 from ..skosmos import get_preflabel_lazy
-
+from .general import LanguageDataSchema, SourceMultilingualLabelSchema
 
 # schema definitions for entry model
 

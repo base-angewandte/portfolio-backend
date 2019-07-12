@@ -1,7 +1,8 @@
-from django.test import TestCase
-from .views import fetch_responses
-
 import logging
+
+from django.test import TestCase
+
+from .views import fetch_responses
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -138,4 +139,3 @@ class AutoSuggestTestCase(TestCase):
         res = fetch_responses('wien', ('PELIAS',))
         assert  any(rec['label'] == 'Vienna, Austria' for rec in res)
         return
-            

@@ -1,10 +1,18 @@
 from django.urls import reverse_lazy
 from marshmallow import Schema, fields
 
-from ..general import get_contributors_field, get_contributors_field_for_role, get_date_field, get_url_field, \
-    validate_year, get_string_field, get_field, SourceMultilingualLabelSchema
 from ...skosmos import get_collection_members, get_preflabel_lazy
 from ...utils import placeholder_lazy
+from ..general import (
+    SourceMultilingualLabelSchema,
+    get_contributors_field,
+    get_contributors_field_for_role,
+    get_date_field,
+    get_field,
+    get_string_field,
+    get_url_field,
+    validate_year,
+)
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
 

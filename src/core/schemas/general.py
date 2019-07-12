@@ -4,9 +4,8 @@ from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from marshmallow import Schema, ValidationError, fields, validate
 
-from ..skosmos import get_preflabel_lazy, get_uri, get_languages_choices, get_altlabel_lazy
+from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
-
 
 # validators
 

@@ -5,8 +5,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils.functional import lazy
 from django.utils.translation import get_language
-from requests import RequestException
 from rdflib.namespace import SKOS
+from requests import RequestException
 from skosmos_client import SkosmosClient
 
 from .utils import unaccent

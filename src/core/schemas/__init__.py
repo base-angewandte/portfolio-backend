@@ -8,8 +8,8 @@ from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.utils.encoders import JSONEncoder
 
-from .models import TextsModelSchema, KeywordsModelSchema, TypeModelSchema
-from ..skosmos import get_preflabel_lazy, get_preflabel
+from ..skosmos import get_preflabel, get_preflabel_lazy
+from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema
 
 if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
     raise ImproperlyConfigured(_('Schemas improperly configured'))

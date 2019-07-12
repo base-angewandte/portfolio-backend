@@ -7,13 +7,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Q
 from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext_lazy as _, get_language
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
+from django.utils.translation import get_language, ugettext_lazy as _
+from django_filters.rest_framework import CharFilter, DjangoFilterBackend, FilterSet
 from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import exceptions, viewsets, permissions
+from rest_framework import exceptions, permissions, viewsets
 from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -22,16 +22,22 @@ from rest_framework.response import Response
 from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
-from core.skosmos import get_preflabel, get_altlabel_collection, get_collection_members
+from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
 from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
+
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator, language_header_parameter, \
-    authorization_header_paramter
+from .yasg import (
+    JSONAutoSchema,
+    OpenAPICodecDRFJson,
+    authorization_header_paramter,
+    language_header_decorator,
+    language_header_parameter,
+)
 
 SchemaView = get_schema_view(
     openapi.Info(
