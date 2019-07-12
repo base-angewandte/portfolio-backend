@@ -1,4 +1,6 @@
 [tool.black]
+# change line-length and skip-string-normalization to default as soon as django coding styles are adopted
+# https://github.com/django/deps/blob/master/accepted/0008-black.rst
 line-length = 119
 skip-string-normalization = true
 include = '\.pyi?$'
