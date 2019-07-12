@@ -2,13 +2,14 @@ import json
 import logging
 
 from apimapper import APIMapper, config as apiconfig
-from django.conf import settings
-from django.utils.module_loading import import_string
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
+
+from django.conf import settings
+from django.utils.module_loading import import_string
 
 from api.yasg import language_header_parameter
 from core.skosmos import autosuggest

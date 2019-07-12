@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
+from drf_yasg.utils import swagger_serializer_method
+from rest_framework import serializers
+
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import ugettext_lazy as _
-from drf_yasg.utils import swagger_serializer_method
-from rest_framework import serializers
 
 from core.models import Entry, Relation
 from core.skosmos import get_preflabel_lazy

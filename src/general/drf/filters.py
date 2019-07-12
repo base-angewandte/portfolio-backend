@@ -1,5 +1,6 @@
-from django.db.models.functions import Lower
 from rest_framework.filters import OrderingFilter
+
+from django.db.models.functions import Lower
 
 
 # from https://github.com/encode/django-rest-framework/issues/3280

@@ -2,11 +2,12 @@ import importlib
 import json
 
 from apispec.ext.marshmallow.openapi import OpenAPIConverter
+from rest_framework.utils.encoders import JSONEncoder
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
-from rest_framework.utils.encoders import JSONEncoder
 
 from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema

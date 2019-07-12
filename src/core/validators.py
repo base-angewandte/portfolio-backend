@@ -1,8 +1,9 @@
 import json
 
+from jsonschema import ValidationError as SchemaValidationError, validate
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from jsonschema import ValidationError as SchemaValidationError, validate
 
 from .schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 

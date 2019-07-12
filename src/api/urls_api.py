@@ -1,5 +1,6 @@
-from django.urls import include, path, re_path
 from rest_framework import routers
+
+from django.urls import include, path, re_path
 
 from media_server.views import MediaViewSet
 

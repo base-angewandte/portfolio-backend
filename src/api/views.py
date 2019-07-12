@@ -2,12 +2,6 @@ import json
 import operator
 from functools import reduce
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models import Q
-from django.utils.decorators import method_decorator
-from django.utils.translation import get_language, ugettext_lazy as _
 from django_filters.rest_framework import CharFilter, DjangoFilterBackend, FilterSet
 from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
@@ -18,6 +12,13 @@ from rest_framework.decorators import action, api_view, authentication_classes, 
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.utils.translation import get_language, ugettext_lazy as _
 
 from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema

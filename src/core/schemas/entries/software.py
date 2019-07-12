@@ -1,5 +1,6 @@
-from django.urls import reverse_lazy
 from marshmallow import Schema, fields
+
+from django.urls import reverse_lazy
 
 from ...skosmos import get_collection_members, get_preflabel_lazy
 from ...utils import placeholder_lazy
