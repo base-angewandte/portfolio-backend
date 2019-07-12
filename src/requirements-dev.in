@@ -1,0 +1,5 @@
+# compile this file with 'pip-compile requirements.in requirements-dev.in --output-file requirements-dev.txt'
+# sync environment with 'pip-sync requirements-dev.txt'
+# to update all packages run 'pip-compile --upgrade requirements.in requirements-dev.in --output-file requirements-dev.txt'
+
+pre-commit==1.17.0
