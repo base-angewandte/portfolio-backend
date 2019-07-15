@@ -99,7 +99,7 @@ services:
     command: python manage.py rqscheduler
 
   portfolio-lool:
-    image: collabora/code:4.0.0.2
+    image: collabora/code:4.0.5.2
     container_name: portfolio-lool
     volumes:
       - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
