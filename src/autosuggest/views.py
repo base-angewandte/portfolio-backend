@@ -1,7 +1,7 @@
 import json
 import logging
 
-from apimapper import APIMapper, config as apiconfig
+from apimapper import APIMapper
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view

@@ -6,4 +6,4 @@ class GeneralConfig(AppConfig):
 
     def ready(self):
         # import signal handlers
-        from . import signals
+        from . import signals  # noqa: F401

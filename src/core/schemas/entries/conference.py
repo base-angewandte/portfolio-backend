@@ -1,12 +1,11 @@
 from marshmallow import Schema
 
 from ...schemas import ICON_EVENT
-from ...skosmos import get_collection_members, get_preflabel_lazy
+from ...skosmos import get_collection_members
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
     get_date_range_time_range_location_group_field,
-    get_string_field,
     get_url_field,
 )
 

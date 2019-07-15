@@ -5,6 +5,7 @@ from .general import LanguageDataSchema, SourceMultilingualLabelSchema
 
 # schema definitions for entry model
 
+
 # type
 class TypeModelSchema(Schema):
     type = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False)

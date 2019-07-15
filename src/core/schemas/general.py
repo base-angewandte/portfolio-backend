@@ -10,6 +10,7 @@ from ..utils import placeholder_lazy
 
 # validators
 
+
 def validate_date(data):
     try:
         datetime.strptime(data, '%d.%m.%Y')
@@ -35,6 +36,7 @@ def validate_year(data):
 
 
 # shared fields
+
 
 def get_field(field, label, additional_attributes):
     return field(

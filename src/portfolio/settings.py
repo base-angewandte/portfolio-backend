@@ -546,7 +546,7 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
             'unique': True,
-            'fields': 'prefLabel'            
+            'fields': 'prefLabel'
         }
     },
     'VOC_FORMATS': {
@@ -755,7 +755,7 @@ RESPONSE_MAPS = {
                 apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
-        }     
+        }
     }
 }
 
