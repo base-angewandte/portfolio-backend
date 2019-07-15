@@ -20,3 +20,10 @@ repos:
 #        language_version: python3.7
 #        types: [python]
 #        exclude: (/migrations/|/exiffield/)
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.8
+    hooks:
+      - id: flake8
+        language_version: python3.7
+        types: [python]
+        exclude: (/migrations/|/exiffield/|manage.py|migrate_4d_.*\.py)
