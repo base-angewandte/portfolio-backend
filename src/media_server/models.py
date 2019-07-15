@@ -181,7 +181,7 @@ class Media(models.Model):
         if self.type == DOCUMENT_TYPE:
             return self.get_url('preview.jpg')
         elif self.type == IMAGE_TYPE:
-            return self.get_url('tn.jpg')
+            return self.get_url(['tn.jpg', 'tn-0.jpg'])
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
 
@@ -223,11 +223,15 @@ class Media(models.Model):
         return os.path.isfile(path)
 
     def get_url(self, filename):
-        if self.check_file(filename):
-            return '{}/{}'.format(self.get_protected_assets_url(), filename)
-        else:
-            logger.error('File {} does not exist for {}'.format(filename, self.id))
-            return None
+        if isinstance(filename, str):
+            filename = [filename]
+
+        for f in filename:
+            if self.check_file(f):
+                return '{}/{}'.format(self.get_protected_assets_url(), filename)
+
+        logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
+        return None
 
     def media_info_and_convert(self):
         # media info
