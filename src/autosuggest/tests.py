@@ -51,7 +51,7 @@ class AutoSuggestTestCase(TestCase):
 
     def test_places_geonames(self):
         res = fetch_responses('Wien', ('GEONAMES_PLACE',))
-        assert(any(rec['source'] == 'http://api.geonames.org/get?username=***REMOVED***&geonameId=2761369' for rec in res))
+        assert(any(rec['source'] == 'http://api.geonames.org/get?geonameId=2761369' for rec in res))
 
         return
 
