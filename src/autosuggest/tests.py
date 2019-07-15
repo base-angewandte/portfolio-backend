@@ -25,7 +25,7 @@ class AutoSuggestTestCase(TestCase):
 
         return
 
-    def test_contributors_gnd_person(self):
+    def test_contributors_gnd_institution(self):
         res = fetch_responses('Goethe-Institut München', ('GND_INSTITUTION',))
         assert(any(rec['source'] == 'http://d-nb.info/gnd/10068828-7' for rec in res))
         return
