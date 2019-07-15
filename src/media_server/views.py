@@ -18,7 +18,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
 from .decorators import is_allowed
-from .models import Media, get_type_for_mime_type
+from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -136,10 +136,23 @@ class MediaViewSet(viewsets.GenericViewSet):
                 )
 
             mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
+            media_type = get_type_for_mime_type(mime_type)
+
+            if mime_type in ['application/octet-stream', 'application/zip']:
+                # check for office document
+                serializer.validated_data['file'].seek(0)
+                magic_type = magic.from_buffer(serializer.validated_data['file'].read(1048576))
+                if magic_type in [
+                    'Microsoft Word 2007+',
+                    'Microsoft PowerPoint 2007+',
+                    'Microsoft Excel 2007+',
+                    'Microsoft OOXML',
+                ]:
+                    media_type = DOCUMENT_TYPE
 
             m = Media(
                 file=serializer.validated_data['file'],
-                type=get_type_for_mime_type(mime_type),
+                type=media_type,
                 owner=request.user,
                 entry_id=serializer.validated_data['entry'],
                 mime_type=mime_type,
