@@ -132,7 +132,11 @@ class AutoSuggestTestCase(TestCase):
 
         return
 
-    @vcr.use_cassette('fixtures/vcr_cassettes/autosuggest.yaml', record_mode='new_episodes')
+    @vcr.use_cassette(
+        'fixtures/vcr_cassettes/autosuggest.yaml',
+        filter_query_parameters=['api_key'],
+        record_mode='new_episodes',
+    )
     def test_pelias(self):
         res = fetch_responses('wien', ('PELIAS',))
         assert any(rec['label'] == 'Vienna, Austria' for rec in res)
