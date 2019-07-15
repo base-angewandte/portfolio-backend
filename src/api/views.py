@@ -371,7 +371,7 @@ def user_data(request, pk=None, *args, **kwargs):
             'data': [],
         }
 
-        qs = Entry.objects.filter(**kw_filters)
+        qs = Entry.objects.filter(published=True, **kw_filters)
 
         if q_filters:
             qs = qs.filter(reduce(operator.or_, (Q(**d) for d in q_filters)))
