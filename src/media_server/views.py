@@ -135,7 +135,7 @@ class MediaViewSet(viewsets.GenericViewSet):
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
+            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
 
             m = Media(
                 file=serializer.validated_data['file'],
