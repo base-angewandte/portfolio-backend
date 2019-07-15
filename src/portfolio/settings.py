@@ -458,6 +458,7 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 LANGUAGES_VOCID = 'languages'
 
+GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 
 # Autosuggest
@@ -513,7 +514,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'maxRows': 10,
-            'username': '_'.join([urlparse(SITE_URL).hostname.replace('.', '_'), PROJECT_NAME]),
+            'username': GEONAMES_USER,
             'type': 'json',
         }
     },
@@ -764,10 +765,18 @@ CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTIO
 if 'uni-ak.ac.at' in SITE_URL:
     CONTRIBUTORS = tuple(x for x in ['ANGEWANDTE_PERSON', *CONTRIBUTORS])
 
+if PELIAS_API_KEY:
+    PLACES = ('PELIAS', )
+elif GEONAMES_USER:
+    PLACES = ('GND_PLACE', 'GEONAMES_PLACE', )
+else:
+    PLACES = ('GND_PLACE', )
+
+
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': CONTRIBUTORS,
-    'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
+    'places': PLACES,
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
         'search': 'core.skosmos.get_keywords',
