@@ -228,7 +228,7 @@ class Media(models.Model):
 
         for f in filename:
             if self.check_file(f):
-                return '{}/{}'.format(self.get_protected_assets_url(), filename)
+                return '{}/{}'.format(self.get_protected_assets_url(), f)
 
         logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
         return None
