@@ -1,5 +1,7 @@
 import logging
 
+import vcr
+
 from django.test import TestCase
 
 from .views import fetch_responses
@@ -130,6 +132,7 @@ class AutoSuggestTestCase(TestCase):
 
         return
 
+    @vcr.use_cassette('fixtures/vcr_cassettes/autosuggest.yaml', record_mode='new_episodes')
     def test_pelias(self):
         res = fetch_responses('wien', ('PELIAS',))
         assert any(rec['label'] == 'Vienna, Austria' for rec in res)

@@ -32,7 +32,7 @@ drf-yasg[validation]==1.15.0
 gunicorn==19.9.0
 hashids==1.2.0
 identify==1.4.5           # via pre-commit
-idna==2.8                 # via requests
+idna==2.8                 # via requests, yarl
 importlib-metadata==0.18  # via pre-commit
 importlib-resources==1.0.2  # via pre-commit
 inflection==0.3.1         # via drf-yasg
@@ -45,6 +45,7 @@ lxml==4.3.4               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
+multidict==4.5.2          # via yarl
 nodeenv==1.3.3            # via pre-commit
 pip-tools==3.7.0
 portalocker==1.4.0        # via concurrent-log-handler
@@ -57,7 +58,7 @@ python-cas==1.4.0         # via django-cas-ng
 python-dateutil==2.8.0    # via croniter
 python-magic==0.4.15
 pytz==2019.1              # via django
-pyyaml==5.1.1             # via apispec, aspy.yaml, pre-commit, swagger-spec-validator
+pyyaml==5.1.1             # via apispec, aspy.yaml, pre-commit, swagger-spec-validator, vcrpy
 rainbow-saddle==0.4.0
 rdflib==4.2.2             # via skosmos-client
 redis==3.2.1              # via django-redis, django-rq, rq
@@ -66,14 +67,17 @@ rq-scheduler==0.9
 rq==1.0                   # via django-rq, rq-scheduler
 ruamel.yaml==0.15.99      # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, pyrsistent, python-cas, python-dateutil, swagger-spec-validator
+six==1.12.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, pyrsistent, python-cas, python-dateutil, swagger-spec-validator, vcrpy
 skosmos-client==0.3.0
 sqlparse==0.3.0           # via django, django-debug-toolbar
 swagger-spec-validator==2.4.3  # via drf-yasg
 toml==0.10.0              # via pre-commit
 uritemplate==3.0.0        # via coreapi, drf-yasg
 urllib3==1.25.3           # via requests
+vcrpy==2.0.1
 virtualenv==16.6.1        # via pre-commit
 werkzeug==0.15.4
+wrapt==1.11.2             # via vcrpy
 xmltodict==0.12.0
+yarl==1.3.0               # via vcrpy
 zipp==0.5.2               # via importlib-metadata

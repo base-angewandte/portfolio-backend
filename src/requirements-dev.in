@@ -3,3 +3,4 @@
 # to update all packages run 'pip-compile --upgrade requirements.in requirements-dev.in --output-file requirements-dev.txt'
 
 pre-commit==1.17.0
+vcrpy==2.0.1
