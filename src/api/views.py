@@ -363,7 +363,7 @@ def user_data(request, pk=None, *args, **kwargs):
                     years.append(get_year_from_javascript_datetime(drtrl['date']['date_to']))
 
         if years:
-            return ', '.join(sorted(set(years)))
+            return ', '.join(str(y) for y in sorted(set(years)))
 
     def get_data(label, kw_filters, q_filters=None):
         d = {
