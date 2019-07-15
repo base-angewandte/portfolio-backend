@@ -15,5 +15,12 @@ def boolean_input(question, default=None):
     return result[0].lower() == 'y'
 
 
+def get_year_from_date(d):
+    return datetime.strptime(d, '%Y-%m-%d').year
+
+
 def get_year_from_javascript_datetime(dt):
-    return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%S.%fZ').year
+    try:
+        return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%S.%fZ').year
+    except ValueError:
+        return get_year_from_date(dt)
