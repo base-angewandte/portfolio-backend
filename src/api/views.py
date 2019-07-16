@@ -325,9 +325,9 @@ def user_data(request, pk=None, *args, **kwargs):
         if i:
             for o in i:
                 if o.get('location'):
-                    for l in o['location']:
-                        if l.get('label'):
-                            locations.append(l['label'])
+                    for lo in o['location']:
+                        if lo.get('label'):
+                            locations.append(lo['label'])
                 # elif o.get('location_description'):
                 #    locations.append(o['location_description'])
 
@@ -368,7 +368,7 @@ def user_data(request, pk=None, *args, **kwargs):
             return ', '.join(str(y) for y in sorted(set(years)))
 
     def get_data(label, kw_filters, q_filters=None):
-        d = {
+        ret = {
             'label': label,
             'data': [],
         }
@@ -376,12 +376,12 @@ def user_data(request, pk=None, *args, **kwargs):
         qs = Entry.objects.filter(published=True, **kw_filters)
 
         if q_filters:
-            qs = qs.filter(reduce(operator.or_, (Q(**d) for d in q_filters)))
+            qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
 
         qs = qs.annotate(data_date=KeyTextTransform('date', 'data')).order_by('-data_date', 'title')
 
         for e in qs:
-            d['data'].append({
+            ret['data'].append({
                 'title': e.title,
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
@@ -390,7 +390,7 @@ def user_data(request, pk=None, *args, **kwargs):
                 'year': get_year(e.data),
             })
 
-        return d
+        return ret
 
     general_publications_q_filters = []
 
@@ -401,7 +401,7 @@ def user_data(request, pk=None, *args, **kwargs):
     location_key = 'location'
     year_key = 'year'
 
-    data = {
+    usr_data = {
         'entry_labels': {
             title_key: get_preflabel('title'),
             subtitle_key: get_preflabel('subtitle'),
@@ -512,7 +512,7 @@ def user_data(request, pk=None, *args, **kwargs):
             pub_data['data'].append(d)
 
     if pub_data['data']:
-        data['data'].append(pub_data)
+        usr_data['data'].append(pub_data)
 
     research_projects_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_research_project'
@@ -756,7 +756,7 @@ def user_data(request, pk=None, *args, **kwargs):
             general_publications_q_filters += qf
         d = get_data(l, f, qf)
         if d['data']:
-            data['data'].append(d)
+            usr_data['data'].append(d)
 
     # General Publications
     general_publications_types = list(set(ACTIVE_TYPES) - set(
@@ -776,6 +776,6 @@ def user_data(request, pk=None, *args, **kwargs):
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
     )
     if d['data']:
-        data['data'].append(d)
+        usr_data['data'].append(d)
 
-    return Response(data if data['data'] else {'data': []})
+    return Response(usr_data if usr_data['data'] else {'data': []})
