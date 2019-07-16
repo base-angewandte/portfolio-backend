@@ -505,9 +505,12 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        pub_data['data'].append(get_data(l, f, qf))
+        d = get_data(l, f, qf)
+        if d['data']:
+            pub_data['data'].append(d)
 
-    data['data'].append(pub_data)
+    if pub_data['data']:
+        data['data'].append(pub_data)
 
     research_projects_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_research_project'
@@ -749,7 +752,9 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        data['data'].append(get_data(l, f, qf))
+        d = get_data(l, f, qf)
+        if d['data']:
+            data['data'].append(d)
 
     # General Publications
     general_publications_types = list(set(ACTIVE_TYPES) - set(
@@ -760,13 +765,15 @@ def user_data(request, pk=None, *args, **kwargs):
         sculptures_types + softwares_types + videos_types
     ))
 
-    data['data'].append(get_data(
+    d = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
         dict(
             owner=user,
             type__source__in=general_publications_types,
         ),
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
-    ))
+    )
+    if d['data']:
+        data['data'].append(d)
 
-    return Response(data)
+    return Response(data if data['data'] else {'data': []})
