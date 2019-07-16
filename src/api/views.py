@@ -309,8 +309,10 @@ def user_data(request, pk=None, *args, **kwargs):
     def get_location(data):
         locations = []
         i = []
-        if data.get('location', {}).get('label'):
-            locations.append(data['location']['label'])
+        if data.get('location'):
+            for lo in data['location']:
+                if lo.get('label'):
+                    locations.append(lo['label'])
         elif data.get('date_location'):
             i = data['date_location']
         elif data.get('date_time_range_location'):
