@@ -186,7 +186,11 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
         if self.action == 'list':
             q = self.request.query_params.get('q', None)
             if q:
-                qs = Entry.objects.search(q).filter(owner=user)
+                qs = Entry.objects.search(q).filter(owner=user).annotate(
+                    type_source=KeyTextTransform('source', 'type'),
+                    type_de=KeyTextTransform('de', KeyTextTransform('label', 'type')),
+                    type_en=KeyTextTransform('en', KeyTextTransform('label', 'type')),
+                )
 
             entry_pk = self.request.query_params.get('link_selection_for', None)
             if entry_pk:
