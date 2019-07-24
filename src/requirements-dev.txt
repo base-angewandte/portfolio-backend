@@ -50,6 +50,7 @@ nodeenv==1.3.3            # via pre-commit
 pip-tools==3.9.0
 portalocker==1.4.0        # via concurrent-log-handler
 pre-commit==1.17.0
+progressbar2==3.42.0
 psutil==5.6.3             # via rainbow-saddle
 psycopg2-binary==2.8.2
 pyparsing==2.4.0          # via rdflib
@@ -57,6 +58,7 @@ pyrsistent==0.15.3        # via jsonschema
 python-cas==1.4.0         # via django-cas-ng
 python-dateutil==2.8.0    # via croniter
 python-magic==0.4.15
+python-utils==2.3.0       # via progressbar2
 pytz==2019.1              # via django
 pyyaml==5.1.1             # via apispec, aspy.yaml, pre-commit, swagger-spec-validator, vcrpy
 rainbow-saddle==0.4.0
@@ -67,7 +69,7 @@ rq-scheduler==0.9
 rq==1.0                   # via django-rq, rq-scheduler
 ruamel.yaml==0.15.99      # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, pyrsistent, python-cas, python-dateutil, swagger-spec-validator, vcrpy
+six==1.12.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, vcrpy
 skosmos-client==0.3.0
 sqlparse==0.3.0           # via django, django-debug-toolbar
 swagger-spec-validator==2.4.3  # via drf-yasg

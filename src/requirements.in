@@ -25,6 +25,7 @@ jsonschema==3.0.1
 markdown==3.1.1  # for djangorestframework
 marshmallow==2.19.2
 pip-tools==3.9.0
+progressbar2==3.42.0
 psycopg2-binary==2.8.2
 python-magic==0.4.15
 rq-scheduler==0.9
