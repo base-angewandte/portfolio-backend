@@ -45,3 +45,7 @@ migrate-4d:
 
 clear-entries:
 	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
+
+pip-compile:
+	pip-compile src/requirements.in --output-file src/requirements.txt
+	pip-compile src/requirements.in src/requirements-dev.in --output-file src/requirements-dev.txt
