@@ -40,7 +40,7 @@ lxml==4.3.3               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
-pip-tools==3.7.0
+pip-tools==3.9.0
 portalocker==1.4.0        # via concurrent-log-handler
 psutil==5.6.2             # via rainbow-saddle
 psycopg2-binary==2.8.2
@@ -67,3 +67,6 @@ uritemplate==3.0.0        # via coreapi, drf-yasg
 urllib3==1.25.3           # via requests
 werkzeug==0.15.4
 xmltodict==0.12.0
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools==41.0.1        # via jsonschema, markdown
