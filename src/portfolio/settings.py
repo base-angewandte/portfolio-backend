@@ -461,6 +461,8 @@ LANGUAGES_VOCID = 'languages'
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 
+REQUEST_HEADER = {'Accept-Language': get_language_lazy()}
+
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
@@ -468,14 +470,17 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'searchstring',
         apiconfig.PAYLOAD: None,
         apiconfig.TIMEOUT: 10,
+        apiconfig.HEADER: REQUEST_HEADER
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'format': 'json:suggest',
-            'filter': 'type:Person',
-        }
+            'filter': 'type:Person',            
+        },
+        apiconfig.HEADER: REQUEST_HEADER
+        
     },
     'GND_INSTITUTION': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -545,6 +550,7 @@ SOURCES = {
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
+
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
             'unique': True,
             'fields': 'prefLabel'
