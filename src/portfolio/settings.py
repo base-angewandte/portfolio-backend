@@ -458,29 +458,31 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 LANGUAGES_VOCID = 'languages'
 
+ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 
-REQUEST_HEADER = {'Accept-Language': get_language_lazy()}
+ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
-        apiconfig.URL: '{}api/persons'.format(SITE_URL),
-        apiconfig.QUERY_FIELD: 'searchstring',
+        apiconfig.URL: '{}autosuggest/v1/persons/'.format(SITE_URL),
+        apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: None,
         apiconfig.TIMEOUT: 10,
-        apiconfig.HEADER: REQUEST_HEADER
+        apiconfig.HEADER: {
+            'Authorization': 'Bearer {}'.format(ANGEWANDTE_API_KEY)
+        },
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'format': 'json:suggest',
-            'filter': 'type:Person',            
+            'filter': 'type:Person',
         },
-        apiconfig.HEADER: REQUEST_HEADER
-        
+        apiconfig.HEADER: ACCEPT_LANGUAGE_HEADER,
     },
     'GND_INSTITUTION': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -614,8 +616,8 @@ SOURCES = {
 }
 
 ANGEWANDTE_MAPPING = {
-    'source': 'id',
-    'label': 'name',
+    'source': 'uuid',
+    'label': 'label',
 }
 GND_MAPPING = {
     'source': 'id',  # common_schema: GND schema
@@ -656,7 +658,6 @@ PELIAS_MAPPING = {
 
 RESPONSE_MAPS = {
     'ANGEWANDTE_PERSON': {
-        apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
