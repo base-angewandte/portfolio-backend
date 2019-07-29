@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=src/requirements-dev.txt src/requirements-dev.in src/requirements.in
 #
-apimapper==0.7.6
+apimapper==0.7.7
 apispec==0.39.0
 aspy.yaml==1.3.0          # via pre-commit
 attrs==19.1.0             # via jsonschema

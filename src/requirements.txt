@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=src/requirements.txt src/requirements.in
 #
-apimapper==0.7.6
+apimapper==0.7.7
 apispec==0.39.0
 attrs==19.1.0             # via jsonschema
 certifi==2019.3.9         # via requests
