@@ -382,7 +382,7 @@ def user_data(request, pk=None, *args, **kwargs):
         if q_filters:
             qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
 
-        qs = qs.annotate(data_date=KeyTextTransform('date', 'data')).order_by('-data_date', 'title')
+        qs = qs.order_by('title')
 
         for e in qs:
             ret['data'].append({
@@ -393,6 +393,8 @@ def user_data(request, pk=None, *args, **kwargs):
                 'location': get_location(e.data),
                 'year': get_year(e.data),
             })
+
+        ret['data'] = sorted(ret['data'], key=lambda x: x['year'] or '0000', reverse=True)
 
         return ret
 
