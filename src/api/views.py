@@ -26,7 +26,6 @@ from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
-from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 
@@ -276,102 +275,6 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    def get_role(data):
-        fields_to_check = [
-            'architecture',
-            'authors',
-            'artists',
-            'winners',
-            'granted_by',
-            'jury',
-            'music',
-            'conductors',
-            'composition',
-            'organisers',
-            'lecturers',
-            'editors',
-            'publishers',
-            'curators',
-            'project_lead',
-            'project_partnership',
-            'funding',
-            'software_developers',
-            'directors',
-            'contributors',
-        ]
-        roles = []
-        for fld in fields_to_check:
-            if data.get(fld):
-                for c in data[fld]:
-                    if c.get('source') == user.username and c.get('roles'):
-                        for r in c['roles']:
-                            roles.append(r.get('label').get(lang))
-
-        if roles:
-            return ', '.join(sorted(set(roles)))
-
-    def get_location(data):
-        locations = []
-        i = []
-        if data.get('location'):
-            for lo in data['location']:
-                if lo.get('label'):
-                    locations.append(lo['label'])
-        elif data.get('date_location'):
-            i = data['date_location']
-        elif data.get('date_time_range_location'):
-            i = data['date_time_range_location']
-        elif data.get('date_range_time_range_location'):
-            i = data['date_range_time_range_location']
-        elif isinstance(data.get('date'), list):
-            i = data['date']
-
-        if i:
-            for o in i:
-                if o.get('location'):
-                    for lo in o['location']:
-                        if lo.get('label'):
-                            locations.append(lo['label'])
-                # elif o.get('location_description'):
-                #    locations.append(o['location_description'])
-
-        if locations:
-            return ', '.join(sorted(set(locations)))
-
-    def get_year(data):
-        years = []
-        if data.get('date'):
-            if isinstance(data['date'], dict):
-                if data['date'].get('date_from'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_from']))
-                elif data['date'].get('date_to'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_to']))
-            elif isinstance(data['date'], list):
-                for dols in data['date']:
-                    if dols.get('date', {}).get('date_from'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_from']))
-                    elif dols.get('date', {}).get('date_to'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_to']))
-            else:
-                years.append(get_year_from_javascript_datetime(data['date']))
-        elif data.get('date_location'):
-            for dl in data['date_location']:
-                if dl.get('date'):
-                    years.append(get_year_from_javascript_datetime(dl['date']))
-        elif data.get('date_time_range_location'):
-            for dtrl in data['date_time_range_location']:
-                if dtrl.get('date', {}).get('date'):
-                    years.append(get_year_from_javascript_datetime(dtrl['date']['date']))
-        elif data.get('date_range_time_range_location'):
-            for drtrl in data['date_range_time_range_location']:
-                if drtrl.get('date', {}).get('date_from'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_from']))
-                elif drtrl.get('date', {}).get('date_to'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_to']))
-
-        if years:
-            return ', '.join(str(y) for y in sorted(set(years)))
-
     def get_data(label, kw_filters, q_filters=None):
         ret = {
             'label': label,
@@ -390,9 +293,9 @@ def user_data(request, pk=None, *args, **kwargs):
                 'title': e.title,
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
-                'role': get_role(e.data),
-                'location': get_location(e.data),
-                'year': get_year(e.data),
+                'role': e.owner_role_display,
+                'location': e.location_display,
+                'year': e.year_display,
             })
 
         ret['data'] = sorted(ret['data'], key=lambda x: x['year'] or '0000', reverse=True)
