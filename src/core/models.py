@@ -2,6 +2,7 @@ from jsonschema import ValidationError as SchemaValidationError, validate
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
@@ -36,6 +37,12 @@ class Entry(AbstractBaseModel):
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     objects = EntryManager()
+
+    class Meta:
+        indexes = [
+            GinIndex(fields=['type']),
+            GinIndex(fields=['data']),
+        ]
 
     @property
     def icon(self):
