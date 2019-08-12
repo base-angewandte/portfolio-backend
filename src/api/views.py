@@ -352,7 +352,8 @@ def user_data(request, pk=None, *args, **kwargs):
                         years.append(get_year_from_javascript_datetime(dols['date']['date_from']))
                     elif dols.get('date', {}).get('date_to'):
                         years.append(get_year_from_javascript_datetime(dols['date']['date_to']))
-            years.append(get_year_from_javascript_datetime(data['date']))
+            else:
+                years.append(get_year_from_javascript_datetime(data['date']))
         elif data.get('date_location'):
             for dl in data['date_location']:
                 if dl.get('date'):
