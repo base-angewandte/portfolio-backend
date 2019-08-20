@@ -5,7 +5,6 @@ import subprocess
 
 import django_rq
 import magic
-from rq import get_current_job
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -168,12 +167,10 @@ class Media(models.Model):
                     self.status = STATUS_ERROR
                     self.save()
         except Exception as e:
+            logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
             self.status = STATUS_ERROR
             self.save()
-            if get_current_job() is not None:
-                raise e
-            else:
-                logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
+            raise e
 
     def get_protected_assets_path(self):
         return os.path.join(os.path.dirname(self.file.path), self.id)
