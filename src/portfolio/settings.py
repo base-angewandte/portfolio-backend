@@ -320,6 +320,16 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple_with_time',
         },
+        'rq_file': {
+            'level': 'DEBUG',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'rq.log'),
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 1000,
+            'use_gzip': True,
+            'delay': True,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         '': {
@@ -338,9 +348,9 @@ LOGGING = {
             'propagate': True,
         },
         'rq.worker': {
-            'handlers': ['rq_console', 'mail_admins'],
+            'handlers': ['rq_console', 'rq_file', 'mail_admins'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         }
     }
 }
