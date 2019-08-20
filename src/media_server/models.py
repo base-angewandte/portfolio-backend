@@ -5,6 +5,7 @@ import subprocess
 
 import django_rq
 import magic
+from rq import get_current_job
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -167,7 +168,12 @@ class Media(models.Model):
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+            msg = 'Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type))
+            if get_current_job() is not None:
+                rq_logger = logging.getLogger('rq.worker')
+                rq_logger.exception(msg)
+            else:
+                logger.exception(msg)
             self.status = STATUS_ERROR
             self.save()
 
