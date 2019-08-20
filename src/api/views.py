@@ -8,13 +8,15 @@ from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, permissions, viewsets
-from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
+from rest_framework.decorators import action, api_view, authentication_classes, parser_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Q
 from django.utils.decorators import method_decorator
@@ -689,3 +691,78 @@ def user_data(request, pk=None, *args, **kwargs):
         usr_data['data'].append(d)
 
     return Response(usr_data if usr_data['data'] else {'data': []})
+
+
+@swagger_auto_schema(
+    methods=['post'],
+    operation_id='api_v1_wb_data',
+    responses={
+        200: openapi.Response(''),
+        400: openapi.Response('Bad Request'),
+        403: openapi.Response('Access not allowed'),
+    },
+    manual_parameters=[
+        authorization_header_paramter,
+        language_header_parameter,
+        openapi.Parameter(
+            'collection',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'roles',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'users',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+    ]
+)
+@api_view(['POST'])
+@parser_classes([FormParser, MultiPartParser])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
+def wb_data(request, *args, **kwargs):
+    users = request.POST.getlist('users') or []
+    collection = request.POST.get('collection') or None
+    types = get_collection_members(collection) if collection else None
+    roles = request.POST.getlist('roles') or []
+
+    if not users or not collection or not types or not roles:
+        raise exceptions.ParseError()
+
+    q_filters = []
+
+    for user in users:
+        for role in roles:
+            q_filters.append(dict(data__contains={role: [{'source': user}]}))
+
+    qs = Entry.objects.filter(
+        published=True,
+        type__source__in=types,
+    ).filter(
+        reduce(operator.or_, (Q(**x) for x in q_filters))
+    ).annotate(
+        rel=ArrayAgg('relations__id')
+    ).values(
+        'id',
+        'date_created',
+        'date_changed',
+        'owner__username',
+        'title',
+        'subtitle',
+        'type',
+        'reference',
+        'keywords',
+        'texts',
+        'data',
+        'rel',
+    )
+
+    return Response(qs)
