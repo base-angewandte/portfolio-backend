@@ -194,15 +194,11 @@ class Media(models.Model):
 
     def get_previews(self):
         ret = []
-        endings = ['jpg', 'png']
-        url = self.get_url(['preview.{}'.format(e) for e in endings])
-        if url:
-            ret.append({'original': url})
-
-        for x in [640, 768, 1024, 1366, 1600, 1920]:
-            url = self.get_url(['preview-{}.{}'.format(x, e) for e in endings])
-            if url:
-                ret.append({'{}w'.format(x): url})
+        if self.check_file('preview.txt'):
+            with open(self.get_file_path('preview.txt')) as f:
+                for line in f:
+                    k, v = line.rstrip('\n').split(',')
+                    ret.append({'{}w'.format(k): self.get_url(v)})
         return ret
 
     def get_data(self):
@@ -239,8 +235,11 @@ class Media(models.Model):
 
         return data
 
+    def get_file_path(self, filename):
+        return os.path.join(self.get_protected_assets_path(), filename)
+
     def check_file(self, filename):
-        path = os.path.join(self.get_protected_assets_path(), filename)
+        path = self.get_file_path(filename)
         return os.path.isfile(path)
 
     def get_url(self, filename):

@@ -32,12 +32,20 @@ else
   filetype="png"
 fi
 
+previewtxt="${target}/preview.txt"
+
+> ${previewtxt}
+
 for resolution in "${resolutions[@]}"; do
   if [[ width -lt resolution ]]; then
-    convert "${source}" -auto-orient -adaptive-resize ${resolution}\> "${target}/preview.${filetype}"
+    outfile="preview-${width}.${filetype}"
+    convert "${source}" -auto-orient -adaptive-resize ${resolution}\> "${target}/$outfile"
+    echo "${width},${outfile}" >> ${previewtxt}
     break
   else
-    convert "${source}" -auto-orient -adaptive-resize ${resolution} "${target}/preview-${resolution}.${filetype}"
+    outfile="preview-${resolution}.${filetype}"
+    convert "${source}" -auto-orient -adaptive-resize ${resolution} "${target}/$outfile"
+    echo "${resolution},${outfile}" >> ${previewtxt}
   fi
 done
 
