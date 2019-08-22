@@ -12,7 +12,6 @@ from ..general import (
     get_field,
     get_string_field,
     get_url_field,
-    validate_year,
 )
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
@@ -67,5 +66,5 @@ class SoftwareSchema(Schema):
         {'order': 7},
     )
     contributors = get_contributors_field({'order': 8})
-    date = get_date_field({'order': 9, 'date_format': 'year'}, validator=validate_year)
+    date = get_date_field({'order': 9, 'date_format': 'year'}, pattern=r'^\d{4}$')
     url = get_url_field({'order': 10, 'field_format': 'half'})

@@ -1,39 +1,9 @@
-from datetime import datetime
-
-from marshmallow import Schema, ValidationError, fields, validate
+from marshmallow import Schema, fields, validate
 
 from django.urls import reverse_lazy
-from django.utils.translation import ugettext_lazy as _
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
-
-# validators
-
-
-def validate_date(data):
-    try:
-        datetime.strptime(data, '%d.%m.%Y')
-    except ValueError:
-        try:
-            datetime.strptime(data, '%Y')
-        except ValueError:
-            raise ValidationError(_('Invalid date entry (expected dd.mm.yyyy or yyyy)'))
-
-
-def validate_full_date(data):
-    try:
-        datetime.strptime(data, '%d.%m.%Y')
-    except ValueError:
-        raise ValidationError(_('Invalid date entry (expected dd.mm.yyyy)'))
-
-
-def validate_year(data):
-    try:
-        datetime.strptime(data, '%Y')
-    except ValueError:
-        raise ValidationError(_('Invalid date entry (expected yyyy)'))
-
 
 # shared fields
 
@@ -89,12 +59,12 @@ def get_contributors_field_for_role(role, additional_attributes={}):
     )
 
 
-def get_date_field(additional_attributes={}, validator=validate_date):
+def get_date_field(additional_attributes={}, pattern=r'^\d{4}(-\d{2})?(-\d{2})?$'):
     label = get_preflabel_lazy('date')
-    return fields.Date(
+    return fields.Str(
         title=label,
         additionalProperties=False,
-        validate=validator,
+        pattern=pattern,
         **{'x-attrs': {
             'field_format': 'half',
             'field_type': 'date',
@@ -370,24 +340,24 @@ class GEOReferenceSchema(Schema):
 
 
 class DateRangeSchema(Schema):
-    date_from = fields.Date(validate=validate_full_date)
-    date_to = fields.Date(validate=validate_full_date)
+    date_from = fields.Date()
+    date_to = fields.Date()
 
 
 class DateRangeTimeRangeSchema(Schema):
-    date_from = fields.Date(validate=validate_full_date)
-    date_to = fields.Date(validate=validate_full_date)
+    date_from = fields.Date()
+    date_to = fields.Date()
     time_from = fields.Time()
     time_to = fields.Time()
 
 
 class DateTimeSchema(Schema):
-    date = fields.Date(validate=validate_full_date)
+    date = fields.Date()
     time = fields.Time()
 
 
 class DateTimeRangeSchema(Schema):
-    date = fields.Date(validate=validate_full_date)
+    date = fields.Date()
     time_from = fields.Time()
     time_to = fields.Time()
 
