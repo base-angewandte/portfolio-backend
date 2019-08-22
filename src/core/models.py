@@ -1,4 +1,4 @@
-from jsonschema import ValidationError as SchemaValidationError, validate
+from jsonschema import Draft3Validator, ValidationError as SchemaValidationError, draft3_format_checker, validate
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -161,7 +161,7 @@ class Entry(AbstractBaseModel):
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
                 try:
-                    validate(self.data, schema)
+                    validate(self.data, schema, cls=Draft3Validator, format_checker=draft3_format_checker)
                 except SchemaValidationError as e:
                     msg = _('Invalid data: %(error)s') % {'error': e.message}
                     raise ValidationError(msg)
