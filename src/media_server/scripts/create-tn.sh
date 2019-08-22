@@ -5,6 +5,15 @@ set -e
 # Usage create-tn.sh SOURCE_FILE [DESTINATION]
 [[ ! "${1}" ]] && echo "Usage: create-tn.sh SOURCE_FILE [DESTINATION]" && exit 1
 
+resolutions=(
+  640
+  768
+  1024
+  1366
+  1600
+  1920
+)
+
 source="${1}"
 target="${2}"
 if [[ ! "${target}" ]]; then
@@ -14,5 +23,22 @@ fi
 mkdir -p ${target}
 
 convert "${source}" -auto-orient -background white -alpha remove -alpha off -thumbnail 400x300^ -gravity center -extent 400x300 "${target}/tn.jpg"
+
+width=$(identify -format "%[fx:w]" "${source}")
+
+if $(identify -format '%[opaque]' "${source}"); then
+  filetype="jpg"
+else
+  filetype="png"
+fi
+
+for resolution in "${resolutions[@]}"; do
+  if [[ width -lt resolution ]]; then
+    convert "${source}" -auto-orient -adaptive-resize ${resolution}\> "${target}/preview.${filetype}"
+    break
+  else
+    convert "${source}" -auto-orient -adaptive-resize ${resolution} "${target}/preview-${resolution}.${filetype}"
+  fi
+done
 
 echo "Done - thumbnail is at ${target}/"

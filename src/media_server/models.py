@@ -192,6 +192,19 @@ class Media(models.Model):
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
 
+    def get_previews(self):
+        ret = []
+        endings = ['jpg', 'png']
+        url = self.get_url(['preview.{}'.format(e) for e in endings])
+        if url:
+            ret.append({'original': url})
+
+        for x in [640, 768, 1024, 1366, 1600, 1920]:
+            url = self.get_url(['preview-{}.{}'.format(x, e) for e in endings])
+            if url:
+                ret.append({'{}w'.format(x): url})
+        return ret
+
     def get_data(self):
         data = {
             'id': self.pk,
@@ -213,6 +226,7 @@ class Media(models.Model):
         elif self.type == IMAGE_TYPE:
             data.update({
                 'thumbnail': self.get_image(),
+                'previews': self.get_previews(),
             })
         elif self.type == VIDEO_TYPE:
             data.update({
