@@ -72,6 +72,12 @@ def get_jsonschema(entry_type, force_text=False):
             return schema2jsonschema(s, force_text)
 
 
+def get_schema(entry_type):
+    for t, s, i in ACTIVE_TUPLES:
+        if entry_type in t:
+            return s
+
+
 def get_icon(entry_type):
     for t, s, i in ACTIVE_TUPLES:
         if entry_type in t:
