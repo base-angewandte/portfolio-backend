@@ -35,3 +35,6 @@ class BaseSchema(Schema):
     @post_load
     def create_object(self, data):
         return GenericModel(self, **data)
+
+    def year_display(self, data):
+        return None

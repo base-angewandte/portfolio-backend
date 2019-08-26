@@ -14,6 +14,7 @@ from ..general import (
     get_string_field,
     get_url_field,
 )
+from ..utils import year_from_date_regex_field
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
 
@@ -69,3 +70,7 @@ class SoftwareSchema(BaseSchema):
     contributors = get_contributors_field({'order': 8})
     date = get_date_field({'order': 9, 'date_format': 'year'}, pattern=r'^\d{4}$')
     url = get_url_field({'order': 10, 'field_format': 'half'})
+
+    def year_display(self, data):
+        if data.get('date'):
+            return year_from_date_regex_field(data['date'])

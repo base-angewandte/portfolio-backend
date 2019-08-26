@@ -12,6 +12,7 @@ from ..general import (
     get_location_field,
     get_url_field,
 )
+from ..utils import years_list_from_date_range, years_to_string
 
 ICON = ICON_EVENT
 
@@ -38,3 +39,12 @@ class ExhibitionSchema(BaseSchema):
         }},
     )
     url = get_url_field({'order': 5})
+
+    def year_display(self, data):
+        if data.get('date'):
+            years = []
+            for dol in data['date']:
+                if dol.get('date'):
+                    years += years_list_from_date_range(dol['date'])
+            if years:
+                return years_to_string(years)

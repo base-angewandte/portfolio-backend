@@ -10,10 +10,9 @@ from django.dispatch import receiver
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
-from general.utils import get_year_from_javascript_datetime
 
 from .managers import EntryManager
-from .schemas import ICON_DEFAULT, get_icon, get_jsonschema
+from .schemas import ICON_DEFAULT, get_icon, get_jsonschema, get_schema
 from .skosmos import get_preflabel_lazy
 from .validators import validate_keywords, validate_texts, validate_type
 
@@ -121,40 +120,11 @@ class Entry(AbstractBaseModel):
 
     @property
     def year_display(self):
-        data = self.data
-        years = []
-
-        if data.get('date'):
-            if isinstance(data['date'], dict):
-                if data['date'].get('date_from'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_from']))
-                elif data['date'].get('date_to'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_to']))
-            elif isinstance(data['date'], list):
-                for dols in data['date']:
-                    if dols.get('date', {}).get('date_from'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_from']))
-                    elif dols.get('date', {}).get('date_to'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_to']))
-            else:
-                years.append(get_year_from_javascript_datetime(data['date']))
-        if data.get('date_location'):
-            for dl in data['date_location']:
-                if dl.get('date'):
-                    years.append(get_year_from_javascript_datetime(dl['date']))
-        if data.get('date_time_range_location'):
-            for dtrl in data['date_time_range_location']:
-                if dtrl.get('date', {}).get('date'):
-                    years.append(get_year_from_javascript_datetime(dtrl['date']['date']))
-        if data.get('date_range_time_range_location'):
-            for drtrl in data['date_range_time_range_location']:
-                if drtrl.get('date', {}).get('date_from'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_from']))
-                elif drtrl.get('date', {}).get('date_to'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_to']))
-
-        if years:
-            return ', '.join(str(y) for y in sorted(set(years)))
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().year_display(data)
 
     def clean(self):
         if self.type:

@@ -9,6 +9,7 @@ from ..general import (
     get_string_field,
     get_url_field,
 )
+from ..utils import years_from_date_location_group_field
 
 ICON = ICON_EVENT
 
@@ -27,3 +28,7 @@ class AwardSchema(BaseSchema):
     date_location = get_date_location_group_field({'order': 6})
     award_ceremony = get_date_time_field({'field_format': 'half', 'order': 7})
     url = get_url_field({'order': 9, 'field_format': 'half'})
+
+    def year_display(self, data):
+        if data.get('date_location'):
+            return years_from_date_location_group_field(data['date_location'])

@@ -9,6 +9,7 @@ from ..general import (
     get_material_field,
     get_url_field,
 )
+from ..utils import years_from_date_location_group_field
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture', use_cache=False)
 
@@ -21,3 +22,7 @@ class SculptureSchema(BaseSchema):
     format = get_format_field({'order': 5})
     dimensions = get_dimensions_field({'order': 6})
     url = get_url_field({'order': 7})
+
+    def year_display(self, data):
+        if data.get('date_location'):
+            return years_from_date_location_group_field(data['date_location'])
