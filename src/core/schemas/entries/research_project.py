@@ -19,5 +19,5 @@ class ResearchProjectSchema(BaseSchema):
     funding = get_contributors_field_for_role('funding', {'order': 3})
     funding_category = fields.Str(**{'x-attrs': {'order': 4}})
     contributors = get_contributors_field({'order': 5})
-    date = get_date_range_field({'order': 6, 'field_format': 'full'})
+    date_range = get_date_range_field({'order': 6, 'field_format': 'full'})
     url = get_url_field({'order': 7})
