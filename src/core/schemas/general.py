@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
+from .base import BaseSchema
 
 # shared fields
 
@@ -340,18 +341,18 @@ def get_url_field(additional_attributes=None):
 
 # shared schema definitions
 
-class MultilingualStringSchema(Schema):
+class MultilingualStringSchema(BaseSchema):
     de = fields.Str()
     en = fields.Str()
     fr = fields.Str()
 
 
-class SourceMultilingualLabelSchema(Schema):
+class SourceMultilingualLabelSchema(BaseSchema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
-class LanguageDataSchema(Schema):
+class LanguageDataSchema(BaseSchema):
     source = fields.Str(
         validate=validate.OneOf(
             get_languages_choices()[0],
@@ -362,12 +363,12 @@ class LanguageDataSchema(Schema):
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
-class GeometrySchema(Schema):
+class GeometrySchema(BaseSchema):
     type = fields.Str()
     coordinates = fields.List(fields.Float())
 
 
-class GEOReferenceSchema(Schema):
+class GEOReferenceSchema(BaseSchema):
     source = fields.Str()
     label = fields.Str()
     house_number = fields.Str()
@@ -402,36 +403,36 @@ class DateTimeRangeSchema(Schema):
     time_to = fields.Time()
 
 
-class LocationSchema(Schema):
+class LocationSchema(BaseSchema):
     location = get_location_field({'order': 1})
     location_description = get_location_description_field({'field_format': 'half', 'order': 2})
 
 
-class DateLocationSchema(Schema):
+class DateLocationSchema(BaseSchema):
     date = get_date_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'order': 3})
 
 
-class DateRangeLocationSchema(Schema):
+class DateRangeLocationSchema(BaseSchema):
     date = get_date_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
-class DateRangeTimeRangeLocationSchema(Schema):
+class DateRangeTimeRangeLocationSchema(BaseSchema):
     date = get_date_range_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
-class DateTimeRangeLocationSchema(Schema):
+class DateTimeRangeLocationSchema(BaseSchema):
     date = get_date_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
-class ContributorSchema(Schema):
+class ContributorSchema(BaseSchema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Str()
     roles = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))

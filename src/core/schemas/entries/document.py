@@ -1,6 +1,7 @@
-from marshmallow import Schema, fields
+from marshmallow import fields
 
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -19,7 +20,7 @@ TYPES = get_collection_members(
 )
 
 
-class PublishedInSchema(Schema):
+class PublishedInSchema(BaseSchema):
     title = get_string_field(
         get_preflabel_lazy('title'),
         {
@@ -38,7 +39,7 @@ class PublishedInSchema(Schema):
     publisher = get_contributors_field_for_role('publisher', {'order': 4})
 
 
-class DocumentSchema(Schema):
+class DocumentSchema(BaseSchema):
     authors = get_contributors_field_for_role('author', {'order': 1})
     editors = get_contributors_field_for_role('editor', {'order': 2})
     publishers = get_contributors_field_for_role('publisher', {'order': 3})

@@ -1,7 +1,6 @@
-from marshmallow import Schema
-
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -18,7 +17,7 @@ TYPES = get_collection_members(
 )
 
 
-class ConferenceContributionSchema(Schema):
+class ConferenceContributionSchema(BaseSchema):
     lecturers = get_contributors_field_for_role('lecturer', {'order': 1})
     title_of_event = get_string_field(get_preflabel_lazy('title_of_event'), {'order': 2})
     organisers = get_contributors_field_for_role('organiser_management', {'order': 3})

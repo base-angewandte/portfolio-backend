@@ -1,6 +1,5 @@
-from marshmallow import Schema
-
 from ...skosmos import get_collection_members
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -13,7 +12,7 @@ from ..general import (
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_architecture', use_cache=False)
 
 
-class ArchitectureSchema(Schema):
+class ArchitectureSchema(BaseSchema):
     architecture = get_contributors_field_for_role('architecture', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     date_location = get_date_location_group_field({'order': 3})

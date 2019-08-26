@@ -1,6 +1,5 @@
-from marshmallow import Schema
-
 from ...skosmos import get_collection_members
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -16,7 +15,7 @@ from ..general import (
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio', use_cache=False)
 
 
-class AudioSchema(Schema):
+class AudioSchema(BaseSchema):
     authors = get_contributors_field_for_role('author', {'order': 1})
     artists = get_contributors_field_for_role('artist', {'order': 2})
     contributors = get_contributors_field({'order': 3})

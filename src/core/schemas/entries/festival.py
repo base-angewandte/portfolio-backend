@@ -1,7 +1,6 @@
-from marshmallow import Schema
-
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -14,7 +13,7 @@ ICON = ICON_EVENT
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_festival', use_cache=False)
 
 
-class FestivalSchema(Schema):
+class FestivalSchema(BaseSchema):
     organisers = get_contributors_field_for_role('organiser_management', {'order': 1})
     artists = get_contributors_field_for_role('artist', {'order': 2})
     curators = get_contributors_field_for_role('curator', {'order': 3})

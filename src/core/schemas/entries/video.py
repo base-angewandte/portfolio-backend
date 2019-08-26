@@ -1,6 +1,5 @@
-from marshmallow import Schema
-
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -17,7 +16,7 @@ from ..general import (
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video', use_cache=False)
 
 
-class VideoSchema(Schema):
+class VideoSchema(BaseSchema):
     directors = get_contributors_field_for_role('director', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     published_in = get_published_in_field({'order': 3})

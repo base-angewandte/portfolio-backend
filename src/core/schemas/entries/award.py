@@ -1,7 +1,6 @@
-from marshmallow import Schema
-
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -19,7 +18,7 @@ TYPES = get_collection_members(
 )
 
 
-class AwardSchema(Schema):
+class AwardSchema(BaseSchema):
     category = get_string_field(get_preflabel_lazy('category'), {'order': 1})
     winners = get_contributors_field_for_role('winner', {'order': 2})
     granted_by = get_contributors_field_for_role('granted_by', {'order': 3})

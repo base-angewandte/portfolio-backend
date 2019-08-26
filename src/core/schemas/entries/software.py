@@ -1,9 +1,10 @@
-from marshmallow import Schema, fields
+from marshmallow import fields
 
 from django.urls import reverse_lazy
 
 from ...skosmos import get_collection_members, get_preflabel_lazy
 from ...utils import placeholder_lazy
+from ..base import BaseSchema
 from ..general import (
     SourceMultilingualLabelSchema,
     get_contributors_field,
@@ -17,7 +18,7 @@ from ..general import (
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
 
 
-class SoftwareSchema(Schema):
+class SoftwareSchema(BaseSchema):
     software_developers = get_contributors_field_for_role('software_developer', {'order': 1})
     programming_language = get_string_field(
         get_preflabel_lazy('programming_language'),
