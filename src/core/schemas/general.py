@@ -22,7 +22,9 @@ def get_string_field(label, additional_attributes):
     return get_field(fields.Str, label, additional_attributes)
 
 
-def get_contributors_field(additional_attributes={}):
+def get_contributors_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_altlabel_lazy('contributor')
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
@@ -40,7 +42,9 @@ def get_contributors_field(additional_attributes={}):
     )
 
 
-def get_contributors_field_for_role(role, additional_attributes={}):
+def get_contributors_field_for_role(role, additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_altlabel_lazy(role)
     return fields.List(
         fields.Nested(ContributorSchema, additionalProperties=False),
@@ -59,7 +63,9 @@ def get_contributors_field_for_role(role, additional_attributes={}):
     )
 
 
-def get_date_field(additional_attributes={}, pattern=r'^\d{4}(-\d{2})?(-\d{2})?$'):
+def get_date_field(additional_attributes=None, pattern=r'^\d{4}(-\d{2})?(-\d{2})?$'):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('date')
     return fields.Str(
         title=label,
@@ -75,7 +81,9 @@ def get_date_field(additional_attributes={}, pattern=r'^\d{4}(-\d{2})?(-\d{2})?$
     )
 
 
-def get_date_location_group_field(additional_attributes={}):
+def get_date_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return fields.List(
         fields.Nested(DateLocationSchema, additionalProperties=False),
         **{'x-attrs': {
@@ -86,7 +94,9 @@ def get_date_location_group_field(additional_attributes={}):
     )
 
 
-def get_date_range_field(additional_attributes={}):
+def get_date_range_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('date')
     return fields.Nested(
         DateRangeSchema,
@@ -101,7 +111,9 @@ def get_date_range_field(additional_attributes={}):
     )
 
 
-def get_date_range_time_range_field(additional_attributes={}):
+def get_date_range_time_range_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     return fields.Nested(
@@ -116,7 +128,9 @@ def get_date_range_time_range_field(additional_attributes={}):
     )
 
 
-def get_date_range_time_range_location_group_field(additional_attributes={}):
+def get_date_range_time_range_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return fields.List(
         fields.Nested(DateRangeTimeRangeLocationSchema, additionalProperties=False),
         **{'x-attrs': {
@@ -127,7 +141,9 @@ def get_date_range_time_range_location_group_field(additional_attributes={}):
     )
 
 
-def get_date_time_field(additional_attributes={}):
+def get_date_time_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     return fields.Nested(
@@ -141,7 +157,9 @@ def get_date_time_field(additional_attributes={}):
     )
 
 
-def get_date_time_range_field(additional_attributes={}):
+def get_date_time_range_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     return fields.Nested(
@@ -155,7 +173,9 @@ def get_date_time_range_field(additional_attributes={}):
     )
 
 
-def get_date_time_range_location_group_field(additional_attributes={}):
+def get_date_time_range_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return fields.List(
         fields.Nested(DateTimeRangeLocationSchema, additionalProperties=False),
         **{'x-attrs': {
@@ -166,7 +186,9 @@ def get_date_time_range_location_group_field(additional_attributes={}):
     )
 
 
-def get_dimensions_field(additional_attributes={}):
+def get_dimensions_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return get_string_field(
         get_preflabel_lazy('dimensions'),
         {
@@ -176,7 +198,9 @@ def get_dimensions_field(additional_attributes={}):
     )
 
 
-def get_duration_field(additional_attributes={}):
+def get_duration_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return get_string_field(
         get_preflabel_lazy('duration'),
         {
@@ -186,7 +210,9 @@ def get_duration_field(additional_attributes={}):
     )
 
 
-def get_format_field(additional_attributes={}):
+def get_format_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('format')
     return fields.List(
         fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
@@ -205,7 +231,9 @@ def get_format_field(additional_attributes={}):
     )
 
 
-def get_language_list_field(additional_attributes={}):
+def get_language_list_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('language')
     return fields.List(
         fields.Nested(LanguageDataSchema, additionalProperties=False),
@@ -222,7 +250,9 @@ def get_language_list_field(additional_attributes={}):
     )
 
 
-def get_location_field(additional_attributes={}):
+def get_location_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('location')
     return fields.List(
         fields.Nested(GEOReferenceSchema, additionalProperties=False),
@@ -238,7 +268,9 @@ def get_location_field(additional_attributes={}):
     )
 
 
-def get_location_description_field(additional_attributes={}):
+def get_location_description_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return get_string_field(
         get_preflabel_lazy('location_description'),
         {
@@ -248,7 +280,9 @@ def get_location_description_field(additional_attributes={}):
     )
 
 
-def get_location_group_field(additional_attributes={}):
+def get_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return fields.List(
         fields.Nested(LocationSchema, additionalProperties=False),
         **{'x-attrs': {
@@ -259,7 +293,9 @@ def get_location_group_field(additional_attributes={}):
     )
 
 
-def get_material_field(additional_attributes={}):
+def get_material_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     label = get_preflabel_lazy('material')
     return fields.List(
         fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False),
@@ -277,7 +313,9 @@ def get_material_field(additional_attributes={}):
     )
 
 
-def get_published_in_field(additional_attributes={}):
+def get_published_in_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return get_string_field(
         get_preflabel_lazy('published_in'),
         {
@@ -290,7 +328,9 @@ def get_published_in_field(additional_attributes={}):
     )
 
 
-def get_url_field(additional_attributes={}):
+def get_url_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
     return get_field(
         fields.Str,  # TODO change back to fields.Url
         get_preflabel_lazy('url'),
