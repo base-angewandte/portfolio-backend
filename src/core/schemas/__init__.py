@@ -12,9 +12,6 @@ from django.utils.translation import ugettext_lazy as _
 from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema
 
-if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
-    raise ImproperlyConfigured(_('Schemas improperly configured'))
-
 ICON_DEFAULT = static('img/sheet-empty.svg')
 ICON_EVENT = static('img/calendar-number.svg')
 
@@ -23,35 +20,47 @@ ACTIVE_TYPES = []
 ACTIVE_TYPES_CHOICES = []
 ACTIVE_TYPES_LIST = []
 
-for schema in settings.ACTIVE_SCHEMAS:
-    s = importlib.import_module('.entries.{}'.format(schema), __name__)
-    ACTIVE_TUPLES.append(
-        (
-            s.TYPES,
-            getattr(s, '{}Schema'.format(''.join(x.capitalize() for x in schema.split('_')))),
-            s.ICON if hasattr(s, 'ICON') else ICON_DEFAULT,
+
+def init():
+    if not settings.OPEN_API_VERSION or not settings.ACTIVE_SCHEMAS:
+        raise ImproperlyConfigured(_('Schemas improperly configured'))
+
+    global ACTIVE_TUPLES
+    global ACTIVE_TYPES
+    global ACTIVE_TYPES_CHOICES
+    global ACTIVE_TYPES_LIST
+
+    for schema in settings.ACTIVE_SCHEMAS:
+        s = importlib.import_module('.entries.{}'.format(schema), __name__)
+        ACTIVE_TUPLES.append(
+            (
+                s.TYPES,
+                getattr(s, '{}Schema'.format(''.join(x.capitalize() for x in schema.split('_')))),
+                s.ICON if hasattr(s, 'ICON') else ICON_DEFAULT,
+            )
         )
-    )
-    ACTIVE_TYPES += [*s.TYPES]
+        ACTIVE_TYPES += [*s.TYPES]
 
-for i in ACTIVE_TYPES:
-    ACTIVE_TYPES_CHOICES.append(
-        [i, get_preflabel_lazy(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH)]
-    )
+    for i in ACTIVE_TYPES:
+        ACTIVE_TYPES_CHOICES.append(
+            [i, get_preflabel_lazy(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH)]
+        )
 
-    ACTIVE_TYPES_LIST.append(
-        {
-            'source': i,
-            'label': {
-                'de': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'),
-                'en': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'),
+        ACTIVE_TYPES_LIST.append(
+            {
+                'source': i,
+                'label': {
+                    'de': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'),
+                    'en': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'),
+                }
             }
-        }
-    )
+        )
 
-if len(set(ACTIVE_TYPES)) < len(ACTIVE_TYPES):
-    raise ImproperlyConfigured(_('Active schemas contain duplicate types'))
+    if len(set(ACTIVE_TYPES)) < len(ACTIVE_TYPES):
+        raise ImproperlyConfigured(_('Active schemas contain duplicate types'))
 
+
+init()
 
 converter = OpenAPIConverter(settings.OPEN_API_VERSION)
 
