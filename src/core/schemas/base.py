@@ -37,12 +37,18 @@ class BaseSchema(Schema):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contributors_fields = []
+        self.locations_fields = []
         for fld in self.declared_fields:
             if (
                 fld == 'contributors'
                 or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
             ):
                 self.contributors_fields.append(fld)
+            elif (
+                'location' in fld
+                or self.declared_fields[fld].metadata.get('x-attrs', {}).get('locations_info')
+            ):
+                self.locations_fields.append(fld)
 
     @post_load
     def create_object(self, data):
@@ -59,6 +65,23 @@ class BaseSchema(Schema):
                             roles.append(r.get('label').get(lang))
         if roles:
             return ', '.join(sorted(set(roles)))
+
+    def location_display(self, data):
+        locations = []
+        for fld in self.locations_fields:
+            if data.get(fld):
+                if fld == 'location':
+                    for loc in data[fld]:
+                        if loc.get('label'):
+                            locations.append(loc['label'])
+                else:
+                    for o in data[fld]:
+                        if o.get('location'):
+                            for loc in o['location']:
+                                if loc.get('label'):
+                                    locations.append(loc['label'])
+        if locations:
+            return ', '.join(sorted(set(locations)))
 
     def year_display(self, data):
         return None

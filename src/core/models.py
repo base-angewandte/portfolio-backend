@@ -51,34 +51,11 @@ class Entry(AbstractBaseModel):
 
     @property
     def location_display(self):
-        data = self.data
-        locations = []
-        lst = []
-        if data.get('location'):
-            for lo in data['location']:
-                if lo.get('label'):
-                    locations.append(lo['label'])
-        if data.get('date_location'):
-            lst.append(data['date_location'])
-        if data.get('date_time_range_location'):
-            lst.append(data['date_time_range_location'])
-        if data.get('date_range_time_range_location'):
-            lst.append(data['date_range_time_range_location'])
-        if isinstance(data.get('date'), list):
-            lst.append(data['date'])
-
-        if lst:
-            for x in lst:
-                for o in x:
-                    if o.get('location'):
-                        for lo in o['location']:
-                            if lo.get('label'):
-                                locations.append(lo['label'])
-                    # elif o.get('location_description'):
-                    #    locations.append(o['location_description'])
-
-        if locations:
-            return ', '.join(sorted(set(locations)))
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().location_display(data)
 
     @property
     def owner_role_display(self):
