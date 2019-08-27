@@ -13,7 +13,7 @@ from ..general import (
     get_string_field,
     get_url_field,
 )
-from ..utils import year_from_date_regex_field
+from ..utils import year_from_date
 
 TYPES = get_collection_members(
     'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication',
@@ -98,4 +98,4 @@ class DocumentSchema(BaseSchema):
 
     def year_display(self, data):
         if data.get('date'):
-            return year_from_date_regex_field(data['date'])
+            return year_from_date(data['date'])
