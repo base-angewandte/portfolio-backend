@@ -1,5 +1,7 @@
 from marshmallow import Schema, post_load
 
+from django.utils.translation import get_language
+
 
 class GenericModel:
     def __init__(self, schema, **kwargs):
@@ -32,9 +34,31 @@ class GenericModel:
 
 
 class BaseSchema(Schema):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.contributors_fields = []
+        for fld in self.declared_fields:
+            if (
+                fld == 'contributors'
+                or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
+            ):
+                self.contributors_fields.append(fld)
+
     @post_load
     def create_object(self, data):
         return GenericModel(self, **data)
+
+    def role_display(self, data, user_source):
+        lang = get_language() or 'en'
+        roles = []
+        for fld in self.contributors_fields:
+            if data.get(fld):
+                for c in data[fld]:
+                    if c.get('source') == user_source and c.get('roles'):
+                        for r in c['roles']:
+                            roles.append(r.get('label').get(lang))
+        if roles:
+            return ', '.join(sorted(set(roles)))
 
     def year_display(self, data):
         return None

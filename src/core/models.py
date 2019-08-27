@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
 
@@ -82,41 +82,11 @@ class Entry(AbstractBaseModel):
 
     @property
     def owner_role_display(self):
-        data = self.data
-        lang = get_language() or 'en'
-        # TODO define in schemas
-        fields_to_check = [
-            'architecture',
-            'authors',
-            'artists',
-            'winners',
-            'granted_by',
-            'jury',
-            'music',
-            'conductors',
-            'composition',
-            'organisers',
-            'lecturers',
-            'editors',
-            'publishers',
-            'curators',
-            'project_lead',
-            'project_partnership',
-            'funding',
-            'software_developers',
-            'directors',
-            'contributors',
-        ]
-        roles = []
-        for fld in fields_to_check:
-            if data.get(fld):
-                for c in data[fld]:
-                    if c.get('source') == self.owner.username and c.get('roles'):
-                        for r in c['roles']:
-                            roles.append(r.get('label').get(lang))
-
-        if roles:
-            return ', '.join(sorted(set(roles)))
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().role_display(data, self.owner.username)
 
     @property
     def year_display(self):
