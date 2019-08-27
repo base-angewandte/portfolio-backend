@@ -1,3 +1,5 @@
+import json
+
 from marshmallow import Schema, post_load
 
 from django.utils.translation import get_language
@@ -18,19 +20,24 @@ class GenericModel:
                 setattr(self, k, v)
 
     def __repr__(self):
-        return str(self.to_json())
+        return self.to_json()
 
-    def to_json(self):
+    def to_dict(self):
         out = {}
         for key in self.__schema__.declared_fields:
             v = getattr(self, key)
             if isinstance(v, GenericModel):
-                out[key] = str(v)
+                out[key] = v.to_dict()
+            elif isinstance(v, list):
+                out[key] = [x.to_dict() for x in v] if v and isinstance(v[0], GenericModel) else v
             elif isinstance(v, (int, float)) or v is None:
                 out[key] = v
             else:
                 out[key] = str(v)
         return out
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
 
 class BaseSchema(Schema):
