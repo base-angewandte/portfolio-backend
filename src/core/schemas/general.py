@@ -1,6 +1,8 @@
 from marshmallow import Schema, fields, validate
 
 from django.urls import reverse_lazy
+from django.utils.text import format_lazy
+from django.utils.translation import ugettext_lazy as _
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
@@ -85,8 +87,15 @@ def get_date_field(additional_attributes=None, pattern=r'^\d{4}(-(0[1-9]|1[0-2])
 def get_date_location_group_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
+    label = format_lazy(
+        '{date} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
     return fields.List(
         fields.Nested(DateLocationSchema, additionalProperties=False),
+        title=label,
         **{'x-attrs': {
             'field_type': 'group',
             'show_label': False,
@@ -101,6 +110,7 @@ def get_date_range_field(additional_attributes=None):
     label = get_preflabel_lazy('date')
     return fields.Nested(
         DateRangeSchema,
+        title=label,
         additionalProperties=False,
         **{'x-attrs': {
             'field_format': 'half',
@@ -117,8 +127,15 @@ def get_date_range_time_range_field(additional_attributes=None):
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
+    label = format_lazy(
+        '{date} {conjunction} {time}',
+        date=label_date,
+        conjunction=_('and'),
+        time=label_time,
+    )
     return fields.Nested(
         DateRangeTimeRangeSchema,
+        title=label,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
@@ -132,8 +149,16 @@ def get_date_range_time_range_field(additional_attributes=None):
 def get_date_range_time_range_location_group_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
+    label = format_lazy(
+        '{date}, {time} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        time=get_preflabel_lazy('time'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
     return fields.List(
         fields.Nested(DateRangeTimeRangeLocationSchema, additionalProperties=False),
+        title=label,
         **{'x-attrs': {
             'field_type': 'group',
             'show_label': False,
@@ -147,8 +172,15 @@ def get_date_time_field(additional_attributes=None):
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
+    label = format_lazy(
+        '{date} {conjunction} {time}',
+        date=label_date,
+        conjunction=_('and'),
+        time=label_time,
+    )
     return fields.Nested(
         DateTimeSchema,
+        title=label,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
@@ -163,8 +195,15 @@ def get_date_time_range_field(additional_attributes=None):
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
+    label = format_lazy(
+        '{date} {conjunction} {time}',
+        date=label_date,
+        conjunction=_('and'),
+        time=label_time,
+    )
     return fields.Nested(
         DateTimeRangeSchema,
+        title=label,
         additionalProperties=False,
         **{'x-attrs': {
             'field_type': 'date',
@@ -177,8 +216,16 @@ def get_date_time_range_field(additional_attributes=None):
 def get_date_time_range_location_group_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
+    label = format_lazy(
+        '{date}, {time} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        time=get_preflabel_lazy('time'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
     return fields.List(
         fields.Nested(DateTimeRangeLocationSchema, additionalProperties=False),
+        title=label,
         **{'x-attrs': {
             'field_type': 'group',
             'show_label': False,
@@ -284,8 +331,10 @@ def get_location_description_field(additional_attributes=None):
 def get_location_group_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
+    label = get_preflabel_lazy('location')
     return fields.List(
         fields.Nested(LocationSchema, additionalProperties=False),
+        title=label,
         **{'x-attrs': {
             'field_type': 'group',
             'show_label': False,
