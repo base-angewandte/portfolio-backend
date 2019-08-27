@@ -290,6 +290,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
         for e in qs:
             ret['data'].append({
+                'id': e.pk,
                 'title': e.title,
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
