@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-22 18:35+0200\n"
+"POT-Creation-Date: 2019-08-27 17:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,103 +17,116 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/serializers/entry.py:74
+#: api/serializers/entry.py:94
 msgid "will not be published"
 msgstr "Werden nicht veröffentlicht"
 
-#: api/serializers/relation.py:18
+#: api/serializers/relation.py:20
 msgid "Relation already exists"
 msgstr "Verknüpfung existiert bereits"
 
-#: api/serializers/relation.py:25 api/views.py:125
+#: api/serializers/relation.py:27 api/views.py:163
 msgid "Current user is not the owner of this entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: api/views.py:129 media_server/serializers.py:17
+#: api/views.py:167 api/views.py:692 media_server/serializers.py:30
 msgid "Entry does not exist"
 msgstr "Eintrag existiert nicht"
 
-#: api/views.py:191
+#: api/views.py:240
 msgid "Schema not found for the given query."
 msgstr "Kein Schemata gefunden"
 
-#: core/models.py:61
+#: api/views.py:274 api/views.py:687
+msgid "User does not exist"
+msgstr "Benutzer existiert nicht"
+
+#: core/models.py:118
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr "Ungültige Daten: %(error)s"
 
-#: core/models.py:64
+#: core/models.py:121
 msgid "Data without type"
 msgstr "Daten ohne Typ"
 
-#: core/models.py:97
+#: core/models.py:154
 msgid "Both entries must belong to the same user"
 msgstr "Beide Einträge müssen demselben Benutzer gehören"
 
-#: core/schemas/__init__.py:14
+#: core/schemas/__init__.py:26
 msgid "Schemas improperly configured"
 msgstr "Schemata ungenügend konfiguriert"
 
-#: core/schemas/__init__.py:39
+#: core/schemas/__init__.py:60
 msgid "Active schemas contain duplicate types"
 msgstr "Aktive Schemata enthalten Duplikate"
 
-#: core/schemas/general.py:20
-msgid "Invalid date entry (expected dd.mm.yyyy or yyyy)"
-msgstr ""
+#: core/schemas/general.py:93 core/schemas/general.py:133
+#: core/schemas/general.py:156 core/schemas/general.py:178
+#: core/schemas/general.py:201 core/schemas/general.py:223
+msgid "and"
+msgstr "und"
 
-#: core/schemas/general.py:27
-msgid "Invalid date entry (expected dd.mm.yyyy)"
-msgstr ""
-
-#: core/schemas/general.py:34
-msgid "Invalid date entry (expected yyyy)"
-msgstr ""
-
-#: core/utils.py:4
+#: core/utils.py:6
 #, python-format
 msgid "Enter %(label)s"
 msgstr "%(label)s eintragen"
 
-#: core/validators.py:14
+#: core/validators.py:15
+#, python-format
+msgid "Invalid type: %(error)s"
+msgstr "Ungültiger Typ: %(error)s"
+
+#: core/validators.py:23
 msgid "Keywords contains duplicate entries"
 msgstr "Schlagwörter enthalten Duplikate"
 
-#: core/validators.py:16
+#: core/validators.py:25
 #, python-format
 msgid "Invalid keywords: %(error)s"
 msgstr "Ungültige Schlagwörter: %(error)s"
 
-#: core/validators.py:30
+#: core/validators.py:39
 msgid "Same language is defined multiple times"
 msgstr "Dieselbe Sprache wird mehrmals definiert"
 
-#: core/validators.py:32
+#: core/validators.py:41
 #, python-format
 msgid "Invalid texts: %(error)s"
 msgstr "Ungültige Texte: %(error)s"
 
-#: media_server/serializers.py:20
+#: media_server/serializers.py:33
 msgid "Current user is not the owner of entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: media_server/views.py:90 media_server/views.py:169 media_server/views.py:212
+#: media_server/validators.py:17
+#, python-format
+msgid "Invalid license: %(error)s"
+msgstr "Ungültige Lizenz: %(error)s"
+
+#: media_server/validators.py:22
+msgid "Invalid license"
+msgstr "Ungültige Lizenz"
+
+#: media_server/views.py:106 media_server/views.py:182
+#: media_server/views.py:225
 msgid "Current user is not the owner of this media object"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
 
-#: media_server/views.py:104 media_server/views.py:180
-#: media_server/views.py:220
+#: media_server/views.py:119 media_server/views.py:193
+#: media_server/views.py:233
 msgid "Media object does not exist"
 msgstr "Medienobjekt existiert nicht"
 
-#: media_server/views.py:119
+#: media_server/views.py:134
 msgid "No space left for user"
 msgstr "Kein Speicherplatz mehr für diesen Benutzer"
 
-#: portfolio/settings.py:244
+#: portfolio/settings.py:241
 msgid "German"
 msgstr "Deutsch"
 
-#: portfolio/settings.py:245
+#: portfolio/settings.py:242
 msgid "English"
 msgstr "Englisch"
