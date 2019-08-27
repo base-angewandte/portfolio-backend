@@ -64,7 +64,7 @@ def get_contributors_field_for_role(role, additional_attributes=None):
     )
 
 
-def get_date_field(additional_attributes=None, pattern=r'^\d{4}(-\d{2})?(-\d{2})?$'):
+def get_date_field(additional_attributes=None, pattern=r'^\d{4}(-(0[1-9]|1[0-2]))?(-(0[1-9]|[12]\d|3[01]))?$'):
     if additional_attributes is None:
         additional_attributes = {}
     label = get_preflabel_lazy('date')
