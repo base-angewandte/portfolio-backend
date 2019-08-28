@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import fields, validate
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
@@ -429,24 +429,24 @@ class GEOReferenceSchema(BaseSchema):
     geometry = fields.Nested(GeometrySchema, additionalProperties=False)
 
 
-class DateRangeSchema(Schema):
+class DateRangeSchema(BaseSchema):
     date_from = fields.Date()
     date_to = fields.Date()
 
 
-class DateRangeTimeRangeSchema(Schema):
+class DateRangeTimeRangeSchema(BaseSchema):
     date_from = fields.Date()
     date_to = fields.Date()
     time_from = fields.Time()
     time_to = fields.Time()
 
 
-class DateTimeSchema(Schema):
+class DateTimeSchema(BaseSchema):
     date = fields.Date()
     time = fields.Time()
 
 
-class DateTimeRangeSchema(Schema):
+class DateTimeRangeSchema(BaseSchema):
     date = fields.Date()
     time_from = fields.Time()
     time_to = fields.Time()
