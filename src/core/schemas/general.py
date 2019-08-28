@@ -449,8 +449,8 @@ class DateTimeSchema(BaseSchema):
 
 class DateTimeRangeSchema(BaseSchema):
     date = fields.Date()
-    time_from = fields.Time()
-    time_to = fields.Time()
+    time_from = fields.Time(title=get_preflabel_lazy('time'))
+    time_to = fields.Time(title=get_preflabel_lazy('time'))
 
 
 class LocationSchema(BaseSchema):
