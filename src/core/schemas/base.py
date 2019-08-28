@@ -51,10 +51,7 @@ class BaseSchema(Schema):
                 or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
             ):
                 self.contributors_fields.append(fld)
-            elif (
-                'location' in fld
-                or self.declared_fields[fld].metadata.get('x-attrs', {}).get('locations_info')
-            ):
+            elif 'location' in fld:
                 self.locations_fields.append(fld)
 
     @post_load

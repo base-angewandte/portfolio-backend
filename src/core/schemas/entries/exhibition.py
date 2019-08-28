@@ -46,7 +46,6 @@ class ExhibitionSchema(BaseSchema):
             'field_type': 'group',
             'order': 4,
             'show_label': False,
-            'locations_info': True,
         }},
     )
     url = get_url_field({'order': 5})
