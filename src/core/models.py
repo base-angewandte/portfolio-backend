@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import get_language, ugettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
 
@@ -72,6 +72,43 @@ class Entry(AbstractBaseModel):
             data = self.data
             if schema and data:
                 return schema().year_display(data)
+
+    @property
+    def data_display(self):
+        ret = {
+            'id': self.id,
+            str(self._meta.get_field('title').verbose_name): self.title,
+        }
+        lang = get_language() or 'en'
+        if self.subtitle:
+            ret[str(self._meta.get_field('subtitle').verbose_name)] = self.title
+        if self.type:
+            ret[str(self._meta.get_field('type').verbose_name)] = self.type.get('label', {}).get(lang)
+        if self.keywords:
+            ret[str(self._meta.get_field('keywords').verbose_name)] = [
+                x.get('label', {}).get(lang) for x in self.keywords
+            ]
+        if self.texts:
+            texts = []
+            language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
+            for text in self.texts:
+                key = text.get('type', {}).get('label', {}).get(lang) or None
+                if text.get('data'):
+                    if len(text['data']) > 1:
+                        for t in text['data']:
+                            if t.get('language', {}).get('source') == language_source:
+                                texts.append({key: t.get('text')} if key else t.get('text'))
+                    else:
+                        t = text['data'][0]
+                        texts.append({key: t.get('text')} if key else t.get('text'))
+            if texts:
+                ret[str(self._meta.get_field('texts').verbose_name)] = texts
+
+        schema = get_schema(self.type.get('source'))
+        data = self.data
+        if schema and data:
+            ret.update(schema().data_display(data))
+        return ret
 
     def clean(self):
         if self.type:

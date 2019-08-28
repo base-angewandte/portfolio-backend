@@ -61,6 +61,13 @@ class BaseSchema(Schema):
     def create_object(self, data):
         return GenericModel(self, **data)
 
+    def get_model(self, data):
+        return self.load(data).data
+
+    def data_display(self, data):
+        m = self.get_model(data)
+        return m.to_dict()
+
     def role_display(self, data, user_source):
         lang = get_language() or 'en'
         roles = []
