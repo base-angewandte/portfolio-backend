@@ -668,3 +668,27 @@ def user_data(request, pk=None, *args, **kwargs):
         usr_data['data'].append(d)
 
     return Response(usr_data if usr_data['data'] else {'data': []})
+
+
+@swagger_auto_schema(methods=['get'], operation_id='api_v1_user_entry_data', responses={
+    200: openapi.Response(''),
+    403: openapi.Response('Access not allowed'),
+    404: openapi.Response('User or entry not found'),
+}, manual_parameters=[authorization_header_paramter, language_header_parameter])
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
+def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
+    UserModel = get_user_model()
+
+    try:
+        user = UserModel.objects.get(username=pk)
+    except UserModel.DoesNotExist:
+        raise exceptions.NotFound(_('User does not exist'))
+
+    try:
+        entry = Entry.objects.get(pk=entry, owner=user, published=True)
+    except Entry.DoesNotExist:
+        raise exceptions.NotFound(_('Entry does not exist'))
+
+    return Response(entry.data_display)
