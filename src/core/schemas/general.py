@@ -391,6 +391,13 @@ def get_url_field(additional_attributes=None):
 
 # shared schema definitions
 
+class SourceMultilingualLabelModel(GenericModel):
+    def to_display(self, roles=False):
+        if self.label:
+            lang = get_language()
+            return getattr(self.label, lang)
+
+
 class MultilingualStringSchema(BaseSchema):
     de = fields.Str()
     en = fields.Str()
@@ -400,6 +407,8 @@ class MultilingualStringSchema(BaseSchema):
 class SourceMultilingualLabelSchema(BaseSchema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+    __model__ = SourceMultilingualLabelModel
 
 
 class LanguageDataSchema(BaseSchema):
@@ -411,6 +420,8 @@ class LanguageDataSchema(BaseSchema):
         **{'x-attrs': {'hidden': True}}
     )
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
+
+    __model__ = SourceMultilingualLabelModel
 
 
 class GEOReferenceModel(GenericModel):
