@@ -13,7 +13,7 @@ from general.models import AbstractBaseModel, ShortUUIDField
 
 from .managers import EntryManager
 from .schemas import ICON_DEFAULT, get_icon, get_jsonschema, get_schema
-from .skosmos import get_preflabel_lazy
+from .skosmos import get_altlabel_lazy, get_preflabel_lazy
 from .validators import validate_keywords, validate_texts, validate_type
 
 
@@ -75,35 +75,45 @@ class Entry(AbstractBaseModel):
 
     @property
     def data_display(self):
-        ret = {
-            'id': self.id,
-            str(self._meta.get_field('title').verbose_name): self.title,
-        }
+        ret = {'id': self.id}
         lang = get_language() or 'en'
-        if self.subtitle:
-            ret[str(self._meta.get_field('subtitle').verbose_name)] = self.title
-        if self.type:
-            ret[str(self._meta.get_field('type').verbose_name)] = self.type.get('label', {}).get(lang)
-        if self.keywords:
-            ret[str(self._meta.get_field('keywords').verbose_name)] = [
-                x.get('label', {}).get(lang) for x in self.keywords
-            ]
+        for field in ['title', 'subtitle', 'type', 'keywords']:
+            value = getattr(self, field)
+            if value:
+                if isinstance(value, dict):
+                    value = value.get('label', {}).get(lang)
+                elif isinstance(value, list):
+                    value = [
+                        x.get('label', {}).get(lang) for x in value
+                    ]
+                ret[field] = {
+                    'label': self._meta.get_field(field).verbose_name,
+                    'value': value,
+                }
         if self.texts:
             texts = []
             language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
             for text in self.texts:
-                key = text.get('type', {}).get('label', {}).get(lang) or None
+                text_type = text.get('type', {}).get('label', {}).get(lang) or None
                 if text.get('data'):
                     if len(text['data']) > 1:
                         for t in text['data']:
                             if t.get('language', {}).get('source') == language_source:
-                                texts.append({key: t.get('text')} if key else t.get('text'))
+                                texts.append({
+                                    'label': text_type,
+                                    'value': t.get('text'),
+                                })
                     else:
                         t = text['data'][0]
-                        texts.append({key: t.get('text')} if key else t.get('text'))
+                        texts.append({
+                            'label': text_type,
+                            'value': t.get('text'),
+                        })
             if texts:
-                ret[str(self._meta.get_field('texts').verbose_name)] = texts
-
+                ret['texts'] = {
+                    'label': get_altlabel_lazy('text'),
+                    'value': texts,
+                }
         schema = get_schema(self.type.get('source'))
         data = self.data
         if schema and data:
