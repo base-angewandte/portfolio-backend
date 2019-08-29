@@ -2,11 +2,11 @@ from marshmallow import fields, validate
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import get_language, ugettext_lazy as _
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
-from .base import BaseSchema
+from .base import BaseSchema, GenericModel
 
 # shared fields
 
@@ -413,6 +413,12 @@ class LanguageDataSchema(BaseSchema):
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
 
 
+class GEOReferenceModel(GenericModel):
+    def to_display_dict(self):
+        if self.label:
+            return self.label
+
+
 class GeometrySchema(BaseSchema):
     type = fields.Str()
     coordinates = fields.List(fields.Float())
@@ -429,10 +435,48 @@ class GEOReferenceSchema(BaseSchema):
     country = fields.Str()
     geometry = fields.Nested(GeometrySchema, additionalProperties=False)
 
+    __model__ = GEOReferenceModel
+
+
+class DateRangeModel(GenericModel):
+    def to_display_dict(self):
+        if self.date_from or self.date_to:
+            return {
+                'label': get_preflabel_lazy('date'),
+                'value': {
+                    'from': self.date_from,
+                    'to': self.date_to,
+                }
+            }
+
 
 class DateRangeSchema(BaseSchema):
     date_from = fields.Date()
     date_to = fields.Date()
+
+    __model__ = DateRangeModel
+
+
+class DateRangeTimeRangeModel(GenericModel):
+    def to_display_dict(self):
+        ret = []
+        if self.date_from or self.date_to:
+            ret.append({
+                'label': get_preflabel_lazy('date'),
+                'value': {
+                    'from': self.date_from,
+                    'to': self.date_to,
+                }
+            })
+        if self.time_from or self.time_to:
+            ret.append({
+                'label': get_preflabel_lazy('time'),
+                'value': {
+                    'from': self.time_from,
+                    'to': self.time_to,
+                }
+            })
+        return ret or None
 
 
 class DateRangeTimeRangeSchema(BaseSchema):
@@ -441,16 +485,39 @@ class DateRangeTimeRangeSchema(BaseSchema):
     time_from = fields.Time(title=get_preflabel_lazy('time'))
     time_to = fields.Time(title=get_preflabel_lazy('time'))
 
+    __model__ = DateRangeTimeRangeModel
+
 
 class DateTimeSchema(BaseSchema):
-    date = fields.Date()
-    time = fields.Time()
+    date = fields.Date(title=get_preflabel_lazy('date'))
+    time = fields.Time(title=get_preflabel_lazy('time'))
+
+
+class DateTimeRangeModel(GenericModel):
+    def to_display_dict(self):
+        ret = []
+        if self.date:
+            ret.append({
+                'label': get_preflabel_lazy('date'),
+                'value': self.date
+            })
+        if self.time_from or self.time_to:
+            ret.append({
+                'label': get_preflabel_lazy('time'),
+                'value': {
+                    'from': self.time_from,
+                    'to': self.time_to,
+                }
+            })
+        return ret or None
 
 
 class DateTimeRangeSchema(BaseSchema):
-    date = fields.Date()
+    date = fields.Date(title=get_preflabel_lazy('date'))
     time_from = fields.Time(title=get_preflabel_lazy('time'))
     time_to = fields.Time(title=get_preflabel_lazy('time'))
+
+    __model__ = DateTimeRangeModel
 
 
 class LocationSchema(BaseSchema):
@@ -482,7 +549,23 @@ class DateTimeRangeLocationSchema(BaseSchema):
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
 
+class ContributorModel(GenericModel):
+    def to_display_dict(self, roles=False):
+        if self.label:
+            if roles:
+                lang = get_language()
+                return {
+                    'label': self.label,
+                    'value': [
+                        getattr(x.label, lang) for x in self.roles
+                    ] if self.roles else None
+                }
+            return self.label
+
+
 class ContributorSchema(BaseSchema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Str()
     roles = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
+
+    __model__ = ContributorModel
