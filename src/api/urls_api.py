@@ -17,6 +17,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('user/', views.user_information, name='user'),
     path('user/<str:pk>/data/', views.user_data, name='user_data'),
+    path('user/<str:pk>/data/<str:entry>/', views.user_entry_data, name='user_entry_data'),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', views.no_ui_view, name='schema-json'),
     path('swagger/', views.swagger_view, name='schema-swagger-ui'),
