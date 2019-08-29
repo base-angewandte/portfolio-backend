@@ -41,6 +41,8 @@ class GenericModel:
 
 
 class BaseSchema(Schema):
+    __model__ = GenericModel
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contributors_fields = []
@@ -56,7 +58,7 @@ class BaseSchema(Schema):
 
     @post_load
     def create_object(self, data):
-        return GenericModel(self, **data)
+        return self.__model__(self, **data)
 
     def get_model(self, data):
         return self.load(data).data
