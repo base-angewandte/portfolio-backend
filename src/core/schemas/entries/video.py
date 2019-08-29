@@ -1,6 +1,5 @@
-from marshmallow import Schema
-
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
 from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
@@ -13,11 +12,12 @@ from ..general import (
     get_string_field,
     get_url_field,
 )
+from ..utils import years_from_date_location_group_field
 
 TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video', use_cache=False)
 
 
-class VideoSchema(Schema):
+class VideoSchema(BaseSchema):
     directors = get_contributors_field_for_role('director', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     published_in = get_published_in_field({'order': 3})
@@ -28,3 +28,7 @@ class VideoSchema(Schema):
     language = get_language_list_field({'order': 8})
     material = get_material_field({'order': 9, 'field_format': 'half'})
     format = get_format_field({'order': 10})
+
+    def year_display(self, data):
+        if data.get('date_location'):
+            return years_from_date_location_group_field(data['date_location'])

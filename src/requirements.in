@@ -21,7 +21,7 @@ djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 hashids==1.2.0
 jsonfield2==3.0.2  # for django-exiffield
-jsonschema==3.0.1
+jsonschema[format]==3.0.1
 markdown==3.1.1  # for djangorestframework
 marshmallow==2.19.2
 pip-tools==3.9.0

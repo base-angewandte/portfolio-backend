@@ -283,7 +283,7 @@ def user_data(request, pk=None, *args, **kwargs):
             'data': [],
         }
 
-        qs = Entry.objects.filter(published=True, **kw_filters)
+        qs = Entry.objects.filter(owner=user, published=True, **kw_filters)
 
         if q_filters:
             qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
@@ -292,6 +292,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
         for e in qs:
             ret['data'].append({
+                'id': e.pk,
                 'title': e.title,
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
@@ -355,7 +356,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_monograph', lang=lang),
             dict(
-                owner=user,
                 type__source__in=monographs_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -365,7 +365,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_composite_volume', lang=lang),
             dict(
-                owner=user,
                 type__source__in=composite_volumes_types,
                 data__contains={'editors': [{'source': user.username}]},
             ),
@@ -375,7 +374,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_article', lang=lang),
             dict(
-                owner=user,
                 type__source__in=articles_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -385,7 +383,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_chapter', lang=lang),
             dict(
-                owner=user,
                 type__source__in=chapters_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -395,7 +392,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_review', lang=lang),
             dict(
-                owner=user,
                 type__source__in=reviews_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -408,7 +404,6 @@ def user_data(request, pk=None, *args, **kwargs):
                 get_altlabel_collection('collection_document_publication', lang=lang)
             ),
             dict(
-                owner=user,
                 type__source__in=general_publications_types,
             ),
             [
@@ -477,7 +472,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_research_project', lang=lang),
             dict(
-                owner=user,
                 type__source__in=research_projects_types,
             ),
             [
@@ -490,7 +484,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_awards_and_grants', lang=lang),
             dict(
-                owner=user,
                 type__source__in=awards_and_grants_types,
             ),
             [
@@ -504,7 +497,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_exhibition', lang=lang),
             dict(
-                owner=user,
                 type__source__in=exhibitions_types,
             ),
             [
@@ -517,7 +509,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_conference', lang=lang),
             dict(
-                owner=user,
                 type__source__in=conferences_types,
             ),
             [
@@ -530,7 +521,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_conference_contribution', lang=lang),
             dict(
-                owner=user,
                 type__source__in=conference_contributions_types,
             ),
             [
@@ -543,7 +533,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_architecture', lang=lang),
             dict(
-                owner=user,
                 type__source__in=architectures_types,
             ),
             [
@@ -555,7 +544,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_audio', lang=lang),
             dict(
-                owner=user,
                 type__source__in=audios_types,
             ),
             [
@@ -568,7 +556,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_concert', lang=lang),
             dict(
-                owner=user,
                 type__source__in=concerts_types,
             ),
             [
@@ -582,7 +569,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_event', lang=lang),
             dict(
-                owner=user,
                 type__source__in=events_types,
             ),
             [
@@ -593,7 +579,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_festival', lang=lang),
             dict(
-                owner=user,
                 type__source__in=festivals_types,
             ),
             [
@@ -607,7 +592,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_image', lang=lang),
             dict(
-                owner=user,
                 type__source__in=images_types,
             ),
             [
@@ -619,7 +603,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_performance', lang=lang),
             dict(
-                owner=user,
                 type__source__in=performances_types,
             ),
             [
@@ -631,7 +614,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_sculpture', lang=lang),
             dict(
-                owner=user,
                 type__source__in=sculptures_types,
             ),
             [
@@ -643,7 +625,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_software', lang=lang),
             dict(
-                owner=user,
                 type__source__in=softwares_types,
             ),
             [
@@ -655,7 +636,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_film_video', lang=lang),
             dict(
-                owner=user,
                 type__source__in=videos_types,
             ),
             [
@@ -682,7 +662,6 @@ def user_data(request, pk=None, *args, **kwargs):
     d = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
         dict(
-            owner=user,
             type__source__in=general_publications_types,
         ),
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
@@ -691,6 +670,30 @@ def user_data(request, pk=None, *args, **kwargs):
         usr_data['data'].append(d)
 
     return Response(usr_data if usr_data['data'] else {'data': []})
+
+
+@swagger_auto_schema(methods=['get'], operation_id='api_v1_user_entry_data', responses={
+    200: openapi.Response(''),
+    403: openapi.Response('Access not allowed'),
+    404: openapi.Response('User or entry not found'),
+}, manual_parameters=[authorization_header_paramter, language_header_parameter])
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
+def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
+    UserModel = get_user_model()
+
+    try:
+        user = UserModel.objects.get(username=pk)
+    except UserModel.DoesNotExist:
+        raise exceptions.NotFound(_('User does not exist'))
+
+    try:
+        entry = Entry.objects.get(pk=entry, owner=user, published=True)
+    except Entry.DoesNotExist:
+        raise exceptions.NotFound(_('Entry does not exist'))
+
+    return Response(entry.data_display)
 
 
 @swagger_auto_schema(

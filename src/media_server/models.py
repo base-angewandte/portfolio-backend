@@ -160,14 +160,21 @@ class Media(models.Model):
                         self.status = STATUS_CONVERTED
                         self.save()
                     else:
+                        logger.error(
+                            'Error while converting {}:\n{}'.format(
+                                dict(TYPE_CHOICES).get(self.type),
+                                err.decode('utf-8'),
+                            )
+                        )
                         self.status = STATUS_ERROR
                         self.save()
 
                 except OSError:
+                    logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+            logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
             self.status = STATUS_ERROR
             self.save()
 

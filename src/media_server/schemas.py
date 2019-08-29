@@ -1,11 +1,12 @@
-from marshmallow import Schema, fields
+from marshmallow import fields
 
 from core.schemas import schema2jsonschema
+from core.schemas.base import BaseSchema
 from core.schemas.general import SourceMultilingualLabelSchema
 
 
 # license
-class LicenseModelSchema(Schema):
+class LicenseModelSchema(BaseSchema):
     license = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False)
 
 
