@@ -449,45 +449,49 @@ class GEOReferenceSchema(BaseSchema):
     __model__ = GEOReferenceModel
 
 
-class DateRangeModel(GenericModel):
-    def to_display(self):
-        if self.date_from or self.date_to:
+class DateTimeLocationModel(GenericModel):
+    def _value_dict(self, attribute, label=None, is_range=False):
+        if label is None:
+            label = self.metadata.get(attribute, {}).get('title')
+        if is_range:
             return {
-                'label': get_preflabel_lazy('date'),
+                'label': label,
                 'value': {
-                    'from': self.date_from,
-                    'to': self.date_to,
+                    x: getattr(self, '{}_{}'.format(attribute, x)) for x in ['from', 'to']
                 }
             }
+        else:
+            return {
+                'label': label,
+                'value': getattr(self, attribute),
+            }
+
+    def to_display(self):
+        ret = []
+        if hasattr(self, 'date') and self.date:
+            if isinstance(self.date, GenericModel):
+                ret += self.date.to_display()
+            else:
+                ret.append(self._value_dict('date'))
+        elif hasattr(self, 'date_from') and (self.date_from or self.date_to):
+            ret.append(self._value_dict('date', label=get_preflabel_lazy('date'), is_range=True))
+        if hasattr(self, 'time_from') and (self.time_from or self.time_to):
+            ret.append(self._value_dict('time', label=get_preflabel_lazy('time'), is_range=True))
+        if hasattr(self, 'location') and self.location:
+            ret.append({
+                'label': self.metadata.get('location', {}).get('title'),
+                'value': [x.to_display() for x in self.location]
+            })
+        if hasattr(self, 'location_description') and self.location_description:
+            ret.append(self._value_dict('location_description'))
+        return ret
 
 
 class DateRangeSchema(BaseSchema):
     date_from = fields.Date()
     date_to = fields.Date()
 
-    __model__ = DateRangeModel
-
-
-class DateRangeTimeRangeModel(GenericModel):
-    def to_display(self):
-        ret = []
-        if self.date_from or self.date_to:
-            ret.append({
-                'label': get_preflabel_lazy('date'),
-                'value': {
-                    'from': self.date_from,
-                    'to': self.date_to,
-                }
-            })
-        if self.time_from or self.time_to:
-            ret.append({
-                'label': get_preflabel_lazy('time'),
-                'value': {
-                    'from': self.time_from,
-                    'to': self.time_to,
-                }
-            })
-        return ret or None
+    __model__ = DateTimeLocationModel
 
 
 class DateRangeTimeRangeSchema(BaseSchema):
@@ -496,31 +500,14 @@ class DateRangeTimeRangeSchema(BaseSchema):
     time_from = fields.Time(title=get_preflabel_lazy('time'))
     time_to = fields.Time(title=get_preflabel_lazy('time'))
 
-    __model__ = DateRangeTimeRangeModel
+    __model__ = DateTimeLocationModel
 
 
 class DateTimeSchema(BaseSchema):
     date = fields.Date(title=get_preflabel_lazy('date'))
     time = fields.Time(title=get_preflabel_lazy('time'))
 
-
-class DateTimeRangeModel(GenericModel):
-    def to_display(self):
-        ret = []
-        if self.date:
-            ret.append({
-                'label': get_preflabel_lazy('date'),
-                'value': self.date
-            })
-        if self.time_from or self.time_to:
-            ret.append({
-                'label': get_preflabel_lazy('time'),
-                'value': {
-                    'from': self.time_from,
-                    'to': self.time_to,
-                }
-            })
-        return ret or None
+    __model__ = DateTimeLocationModel
 
 
 class DateTimeRangeSchema(BaseSchema):
@@ -528,12 +515,14 @@ class DateTimeRangeSchema(BaseSchema):
     time_from = fields.Time(title=get_preflabel_lazy('time'))
     time_to = fields.Time(title=get_preflabel_lazy('time'))
 
-    __model__ = DateTimeRangeModel
+    __model__ = DateTimeLocationModel
 
 
 class LocationSchema(BaseSchema):
     location = get_location_field({'order': 1})
     location_description = get_location_description_field({'field_format': 'half', 'order': 2})
+
+    __model__ = DateTimeLocationModel
 
 
 class DateLocationSchema(BaseSchema):
@@ -541,11 +530,15 @@ class DateLocationSchema(BaseSchema):
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'order': 3})
 
+    __model__ = DateTimeLocationModel
+
 
 class DateRangeLocationSchema(BaseSchema):
     date = get_date_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+
+    __model__ = DateTimeLocationModel
 
 
 class DateRangeTimeRangeLocationSchema(BaseSchema):
@@ -553,11 +546,15 @@ class DateRangeTimeRangeLocationSchema(BaseSchema):
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
 
+    __model__ = DateTimeLocationModel
+
 
 class DateTimeRangeLocationSchema(BaseSchema):
     date = get_date_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
     location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+
+    __model__ = DateTimeLocationModel
 
 
 class ContributorModel(GenericModel):
