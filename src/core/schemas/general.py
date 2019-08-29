@@ -477,6 +477,11 @@ class DateTimeLocationModel(GenericModel):
             ret.append(self._value_dict('date', label=get_preflabel_lazy('date'), is_range=True))
         if hasattr(self, 'time_from') and (self.time_from or self.time_to):
             ret.append(self._value_dict('time', label=get_preflabel_lazy('time'), is_range=True))
+        if hasattr(self, 'opening') and self.opening:
+            ret.append({
+                'label': self.metadata.get('opening', {}).get('title'),
+                'value': self.opening.to_display(),
+            })
         if hasattr(self, 'location') and self.location:
             ret.append({
                 'label': self.metadata.get('location', {}).get('title'),

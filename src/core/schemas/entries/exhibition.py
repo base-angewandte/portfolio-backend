@@ -7,6 +7,7 @@ from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members, get_preflabel_lazy
 from ..base import BaseSchema
 from ..general import (
+    DateTimeLocationModel,
     get_contributors_field,
     get_contributors_field_for_role,
     get_date_range_field,
@@ -27,6 +28,8 @@ class DateOpeningLocationSchema(BaseSchema):
     opening = get_date_time_range_field({'order': 2}, label=get_preflabel_lazy('opening'))
     location = get_location_field({'order': 3})
     location_description = get_location_description_field({'field_format': 'half', 'order': 4})
+
+    __model__ = DateTimeLocationModel
 
 
 class ExhibitionSchema(BaseSchema):
