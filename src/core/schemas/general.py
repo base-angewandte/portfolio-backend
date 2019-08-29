@@ -414,7 +414,7 @@ class LanguageDataSchema(BaseSchema):
 
 
 class GEOReferenceModel(GenericModel):
-    def to_display_dict(self):
+    def to_display(self):
         if self.label:
             return self.label
 
@@ -439,7 +439,7 @@ class GEOReferenceSchema(BaseSchema):
 
 
 class DateRangeModel(GenericModel):
-    def to_display_dict(self):
+    def to_display(self):
         if self.date_from or self.date_to:
             return {
                 'label': get_preflabel_lazy('date'),
@@ -458,7 +458,7 @@ class DateRangeSchema(BaseSchema):
 
 
 class DateRangeTimeRangeModel(GenericModel):
-    def to_display_dict(self):
+    def to_display(self):
         ret = []
         if self.date_from or self.date_to:
             ret.append({
@@ -494,7 +494,7 @@ class DateTimeSchema(BaseSchema):
 
 
 class DateTimeRangeModel(GenericModel):
-    def to_display_dict(self):
+    def to_display(self):
         ret = []
         if self.date:
             ret.append({
@@ -550,7 +550,7 @@ class DateTimeRangeLocationSchema(BaseSchema):
 
 
 class ContributorModel(GenericModel):
-    def to_display_dict(self, roles=False):
+    def to_display(self, roles=False):
         if self.label:
             if roles:
                 lang = get_language()

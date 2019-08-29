@@ -39,7 +39,7 @@ class GenericModel:
     def to_json(self):
         return json.dumps(self.to_dict())
 
-    def to_display_dict(self):
+    def to_display(self):
         out = {}
         for key in self.__schema__.declared_fields:
             v = getattr(self, key)
@@ -47,10 +47,10 @@ class GenericModel:
                 metadata = getattr(self, 'metadata').get(key)
                 label = metadata.get('title')
                 if isinstance(v, GenericModel):
-                    value = v.to_display_dict()
+                    value = v.to_display()
                 elif isinstance(v, list):
                     kwargs = {'roles': True} if key == 'contributors' else {}
-                    value = [x.to_display_dict(**kwargs) for x in v] if v and isinstance(v[0], GenericModel) else v
+                    value = [x.to_display(**kwargs) for x in v] if v and isinstance(v[0], GenericModel) else v
                 elif isinstance(v, (int, float)):
                     value = v
                 else:
@@ -88,7 +88,7 @@ class BaseSchema(Schema):
 
     def data_display(self, data):
         m = self.get_model(data)
-        return m.to_display_dict()
+        return m.to_display()
 
     def role_display(self, data, user_source):
         lang = get_language() or 'en'

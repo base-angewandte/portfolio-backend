@@ -75,7 +75,10 @@ class Entry(AbstractBaseModel):
 
     @property
     def data_display(self):
-        ret = {'id': self.id}
+        ret = {
+            'id': self.id,
+            'data': [],
+        }
         lang = get_language() or 'en'
         for field in ['title', 'subtitle', 'type', 'keywords']:
             value = getattr(self, field)
@@ -86,10 +89,10 @@ class Entry(AbstractBaseModel):
                     value = [
                         x.get('label', {}).get(lang) for x in value
                     ]
-                ret[field] = {
+                ret['data'].append({
                     'label': self._meta.get_field(field).verbose_name,
                     'value': value,
-                }
+                })
         if self.texts:
             texts = []
             language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
@@ -110,14 +113,15 @@ class Entry(AbstractBaseModel):
                             'value': t.get('text'),
                         })
             if texts:
-                ret['texts'] = {
+                ret['data'].append({
                     'label': get_altlabel_lazy('text'),
                     'value': texts,
-                }
+                })
         schema = get_schema(self.type.get('source'))
         data = self.data
         if schema and data:
-            ret.update(schema().data_display(data))
+            for k, v in schema().data_display(data).items():
+                ret['data'].append(v)
         return ret
 
     def clean(self):
