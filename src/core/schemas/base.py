@@ -40,7 +40,7 @@ class GenericModel:
         return json.dumps(self.to_dict())
 
     def to_display(self):
-        out = {}
+        out = []
         for key in self.__schema__.declared_fields:
             v = getattr(self, key)
             if v:
@@ -56,10 +56,10 @@ class GenericModel:
                 else:
                     value = str(v)
                 if value:
-                    out[key] = {
+                    out.append({
                         'label': label,
                         'value': value,
-                    }
+                    })
         return out
 
 

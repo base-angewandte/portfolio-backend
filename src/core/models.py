@@ -120,8 +120,7 @@ class Entry(AbstractBaseModel):
         schema = get_schema(self.type.get('source'))
         data = self.data
         if schema and data:
-            for k, v in schema().data_display(data).items():
-                ret['data'].append(v)
+            ret['data'] += schema().data_display(data)
         return ret
 
     def clean(self):
