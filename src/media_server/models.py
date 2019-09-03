@@ -192,6 +192,15 @@ class Media(models.Model):
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
 
+    def get_previews(self):
+        ret = []
+        if self.check_file('preview.txt'):
+            with open(self.get_file_path('preview.txt')) as f:
+                for line in f:
+                    k, v = line.rstrip('\n').split(',')
+                    ret.append({'{}w'.format(k): self.get_url(v)})
+        return ret
+
     def get_data(self):
         data = {
             'id': self.pk,
@@ -213,6 +222,7 @@ class Media(models.Model):
         elif self.type == IMAGE_TYPE:
             data.update({
                 'thumbnail': self.get_image(),
+                'previews': self.get_previews(),
             })
         elif self.type == VIDEO_TYPE:
             data.update({
@@ -225,8 +235,11 @@ class Media(models.Model):
 
         return data
 
+    def get_file_path(self, filename):
+        return os.path.join(self.get_protected_assets_path(), filename)
+
     def check_file(self, filename):
-        path = os.path.join(self.get_protected_assets_path(), filename)
+        path = self.get_file_path(filename)
         return os.path.isfile(path)
 
     def get_url(self, filename):
