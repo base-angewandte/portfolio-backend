@@ -81,7 +81,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
                 ('prefetch', ['source']),
                 ('order', 5),
-                ('allow_unkown_entries', True),
+                ('allow_unknown_entries', True),
                 ('dynamic_autosuggest', True,),
                 ('set_label_language', True,),
                 ('placeholder', placeholder_lazy(get_preflabel_lazy('keywords'))),

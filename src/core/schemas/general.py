@@ -38,7 +38,7 @@ def get_contributors_field(additional_attributes=None):
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
             'source_role': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'roles'}),
             'prefetch': ['source_role'],
-            'allow_unkown_entries': True,
+            'allow_unknown_entries': True,
             'dynamic_autosuggest': True,
             **additional_attributes
         }}
@@ -59,7 +59,7 @@ def get_contributors_field_for_role(role, additional_attributes=None):
             'placeholder': placeholder_lazy(label),
             'sortable': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
-            'allow_unkown_entries': True,
+            'allow_unknown_entries': True,
             'dynamic_autosuggest': True,
             **additional_attributes
         }}
@@ -270,7 +270,7 @@ def get_format_field(additional_attributes=None):
             'field_format': 'half',
             'field_type': 'chips',
             'sortable': True,
-            'allow_unkown_entries': True,
+            'allow_unknown_entries': True,
             'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
             'prefetch': ['source'],
@@ -354,7 +354,7 @@ def get_material_field(additional_attributes=None):
         **{'x-attrs': {
             'field_type': 'chips',
             'sortable': True,
-            'allow_unkown_entries': True,
+            'allow_unknown_entries': True,
             'set_label_language': True,
             'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
             'prefetch': ['source'],
