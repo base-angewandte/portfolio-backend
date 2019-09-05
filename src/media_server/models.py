@@ -151,26 +151,18 @@ class Media(models.Model):
                 self.status = STATUS_IN_PROGRESS
                 self.save()
 
-                try:
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.run(command, stderr=subprocess.PIPE)
 
-                    out, err = process.communicate()
-
-                    if process.returncode == 0:
-                        self.status = STATUS_CONVERTED
-                        self.save()
-                    else:
-                        logger.error(
-                            'Error while converting {}:\n{}'.format(
-                                dict(TYPE_CHOICES).get(self.type),
-                                err.decode('utf-8'),
-                            )
+                if process.returncode == 0:
+                    self.status = STATUS_CONVERTED
+                    self.save()
+                else:
+                    logger.error(
+                        'Error while converting {}:\n{}'.format(
+                            dict(TYPE_CHOICES).get(self.type),
+                            process.stderr.decode('utf-8'),
                         )
-                        self.status = STATUS_ERROR
-                        self.save()
-
-                except OSError:
-                    logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
+                    )
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
@@ -188,9 +180,18 @@ class Media(models.Model):
         if self.type == DOCUMENT_TYPE:
             return self.get_url('preview.jpg')
         elif self.type == IMAGE_TYPE:
-            return self.get_url(['tn.jpg', 'tn-0.jpg'])
+            return self.get_url('tn.jpg')
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
+
+    def get_previews(self):
+        ret = []
+        if self.check_file('preview.txt'):
+            with open(self.get_file_path('preview.txt')) as f:
+                for line in f:
+                    k, v = line.rstrip('\n').split(',')
+                    ret.append({'{}w'.format(k): self.get_url(v)})
+        return ret
 
     def get_data(self):
         data = {
@@ -213,6 +214,7 @@ class Media(models.Model):
         elif self.type == IMAGE_TYPE:
             data.update({
                 'thumbnail': self.get_image(),
+                'previews': self.get_previews(),
             })
         elif self.type == VIDEO_TYPE:
             data.update({
@@ -225,8 +227,11 @@ class Media(models.Model):
 
         return data
 
+    def get_file_path(self, filename):
+        return os.path.join(self.get_protected_assets_path(), filename)
+
     def check_file(self, filename):
-        path = os.path.join(self.get_protected_assets_path(), filename)
+        path = self.get_file_path(filename)
         return os.path.isfile(path)
 
     def get_url(self, filename):
