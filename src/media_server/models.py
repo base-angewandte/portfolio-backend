@@ -180,7 +180,7 @@ class Media(models.Model):
         if self.type == DOCUMENT_TYPE:
             return self.get_url('preview.jpg')
         elif self.type == IMAGE_TYPE:
-            return self.get_url(['tn.jpg', 'tn-0.jpg'])
+            return self.get_url('tn.jpg')
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
 
