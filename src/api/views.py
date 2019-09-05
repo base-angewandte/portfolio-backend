@@ -170,8 +170,7 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     @action(detail=False, filter_backends=[], pagination_class=None)
     def types(self, request, *args, **kwargs):
         language = get_language() or 'en'
-        content = self.get_queryset().exclude(
-            type__isnull=True).exclude(type__exact='').values_list('type', flat=True).distinct().order_by()
+        content = self.get_queryset().exclude(type__isnull=True).values_list('type', flat=True).distinct().order_by()
         return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
     def get_queryset(self):

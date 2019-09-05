@@ -22,6 +22,8 @@ if [[ ! "${target}" ]]; then
 fi
 mkdir -p ${target}
 
+source="${source}[0]"
+
 convert "${source}" -auto-orient -background white -alpha remove -alpha off -thumbnail 400x300^ -gravity center -extent 400x300 "${target}/tn.jpg"
 
 width=$(identify -format "%[fx:w]" "${source}")

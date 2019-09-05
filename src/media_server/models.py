@@ -151,26 +151,18 @@ class Media(models.Model):
                 self.status = STATUS_IN_PROGRESS
                 self.save()
 
-                try:
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.run(command, stderr=subprocess.PIPE)
 
-                    out, err = process.communicate()
-
-                    if process.returncode == 0:
-                        self.status = STATUS_CONVERTED
-                        self.save()
-                    else:
-                        logger.error(
-                            'Error while converting {}:\n{}'.format(
-                                dict(TYPE_CHOICES).get(self.type),
-                                err.decode('utf-8'),
-                            )
+                if process.returncode == 0:
+                    self.status = STATUS_CONVERTED
+                    self.save()
+                else:
+                    logger.error(
+                        'Error while converting {}:\n{}'.format(
+                            dict(TYPE_CHOICES).get(self.type),
+                            process.stderr.decode('utf-8'),
                         )
-                        self.status = STATUS_ERROR
-                        self.save()
-
-                except OSError:
-                    logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
+                    )
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
@@ -188,7 +180,7 @@ class Media(models.Model):
         if self.type == DOCUMENT_TYPE:
             return self.get_url('preview.jpg')
         elif self.type == IMAGE_TYPE:
-            return self.get_url(['tn.jpg', 'tn-0.jpg'])
+            return self.get_url('tn.jpg')
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
 
