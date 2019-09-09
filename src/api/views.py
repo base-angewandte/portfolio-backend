@@ -732,11 +732,10 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 @permission_classes((permissions.IsAuthenticated, ))
 def wb_data(request, *args, **kwargs):
     users = request.POST.getlist('users') or []
-    collection = request.POST.get('collection') or None
-    types = get_collection_members(collection) if collection else None
+    types = get_collection_members(request.POST.get('types')) if request.POST.get('types') else None
     roles = request.POST.getlist('roles') or []
 
-    if not users or not collection or not types or not roles:
+    if not users or not types or not roles:
         raise exceptions.ParseError()
 
     q_filters = []
