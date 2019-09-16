@@ -23,7 +23,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
+from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema, get_schema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
@@ -734,11 +734,28 @@ def wb_data(request, *args, **kwargs):
     users = request.POST.getlist('users') or []
     types = get_collection_members(request.POST.get('types')) if request.POST.get('types') else None
     roles = request.POST.getlist('roles') or []
+    year = request.POST.get('year') or None
 
-    if not users or not types or not roles:
+    if not users or not types or not roles or not year:
         raise exceptions.ParseError()
 
+    date_filters = []
     q_filters = []
+
+    schemas = []
+
+    for t in types:
+        schemas.append(get_schema(t))
+
+    date_fields = []
+
+    for s in list(set(schemas)):
+        date_fields += s().date_fields
+
+    for df in list(set(date_fields)):
+        date_filters.append({
+            'data__{}__icontains'.format(df): year
+        })
 
     for user in users:
         for role in roles:
@@ -747,6 +764,8 @@ def wb_data(request, *args, **kwargs):
     qs = Entry.objects.filter(
         published=True,
         type__source__in=types,
+    ).filter(
+        reduce(operator.or_, (Q(**x) for x in date_filters))
     ).filter(
         reduce(operator.or_, (Q(**x) for x in q_filters))
     ).annotate(
