@@ -3,7 +3,12 @@ from typing import List
 
 
 def years_to_string(years: List[str]) -> str:
-    return ', '.join(y for y in sorted(set(years)))
+    sorted_years = sorted(set(years))
+    first_year = sorted_years[0]
+    last_year = sorted_years[-1]
+    if sorted_years == [str(y) for y in range(int(first_year), int(last_year)+1)]:
+        return '{}-{}'.format(first_year, last_year)
+    return ', '.join(y for y in sorted_years)
 
 
 def year_from_date_string(dt: str) -> str:
