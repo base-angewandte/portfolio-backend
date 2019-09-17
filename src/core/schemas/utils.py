@@ -41,9 +41,14 @@ def years_from_date_time_range_location_group_field(dtrlg) -> str:
 
 def years_list_from_date_range(dr) -> List[str]:
     years = []
-    if dr.get('date_from'):
+    if dr.get('date_from') and dr.get('date_to'):
+        date_from = year_from_date(dr['date_from'])
+        date_to = year_from_date(dr['date_to'])
+        for y in range(int(date_from), int(date_to)+1):
+            years.append(str(y))
+    elif dr.get('date_from'):
         years.append(year_from_date(dr['date_from']))
-    if dr.get('date_to'):
+    elif dr.get('date_to'):
         years.append(year_from_date(dr['date_to']))
     return years
 
