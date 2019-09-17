@@ -11,7 +11,7 @@ def years_to_string(years: List[str]) -> str:
         for k, g in groupby(enumerate(sorted_years), lambda x: int(x[0])-int(x[1])):
             lst = list(map(operator.itemgetter(1), g))
             if len(lst) > 1:
-                out.append('{}-{}'.format(lst[0], lst[-1]))
+                out.append('{}–{}'.format(lst[0], lst[-1]))
             else:
                 out.append(lst[0])
         sorted_years = out
