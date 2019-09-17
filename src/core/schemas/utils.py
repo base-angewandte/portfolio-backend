@@ -1,14 +1,20 @@
+import operator
 from datetime import date, datetime
+from itertools import groupby
 from typing import List
 
 
 def years_to_string(years: List[str]) -> str:
     sorted_years = sorted(set(years))
     if len(sorted_years) > 1:
-        first_year = sorted_years[0]
-        last_year = sorted_years[-1]
-        if sorted_years == [str(y) for y in range(int(first_year), int(last_year)+1)]:
-            return '{}-{}'.format(first_year, last_year)
+        out = []
+        for k, g in groupby(enumerate(sorted_years), lambda x: int(x[0])-int(x[1])):
+            lst = list(map(operator.itemgetter(1), g))
+            if len(lst) > 1:
+                out.append('{}-{}'.format(lst[0], lst[-1]))
+            else:
+                out.append(lst[0])
+        sorted_years = out
     return ', '.join(y for y in sorted_years)
 
 
