@@ -54,9 +54,9 @@ class ExhibitionSchema(BaseSchema):
     url = get_url_field({'order': 5})
 
     def year_display(self, data):
-        if data.get('date'):
+        if data.get('date_opening_location'):
             years = []
-            for dol in data['date']:
+            for dol in data['date_opening_location']:
                 if dol.get('date'):
                     years += years_list_from_date_range(dol['date'])
             if years:

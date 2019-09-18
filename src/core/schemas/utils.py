@@ -1,9 +1,21 @@
+import operator
 from datetime import date, datetime
+from itertools import groupby
 from typing import List
 
 
 def years_to_string(years: List[str]) -> str:
-    return ', '.join(y for y in sorted(set(years)))
+    sorted_years = sorted(set(years))
+    if len(sorted_years) > 1:
+        out = []
+        for k, g in groupby(enumerate(sorted_years), lambda x: int(x[0])-int(x[1])):
+            lst = list(map(operator.itemgetter(1), g))
+            if len(lst) > 1:
+                out.append('{}–{}'.format(lst[0], lst[-1]))
+            else:
+                out.append(lst[0])
+        sorted_years = out
+    return ', '.join(y for y in sorted_years)
 
 
 def year_from_date_string(dt: str) -> str:
@@ -41,9 +53,14 @@ def years_from_date_time_range_location_group_field(dtrlg) -> str:
 
 def years_list_from_date_range(dr) -> List[str]:
     years = []
-    if dr.get('date_from'):
+    if dr.get('date_from') and dr.get('date_to'):
+        date_from = year_from_date(dr['date_from'])
+        date_to = year_from_date(dr['date_to'])
+        for y in range(int(date_from), int(date_to)+1):
+            years.append(str(y))
+    elif dr.get('date_from'):
         years.append(year_from_date(dr['date_from']))
-    if dr.get('date_to'):
+    elif dr.get('date_to'):
         years.append(year_from_date(dr['date_to']))
     return years
 
