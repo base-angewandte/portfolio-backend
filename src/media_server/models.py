@@ -5,6 +5,7 @@ import subprocess
 
 import django_rq
 import magic
+
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
@@ -13,6 +14,7 @@ from django.dispatch import receiver
 
 from core.models import Entry
 from general.models import ShortUUIDField
+
 from .apps import MediaServerConfig
 from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
@@ -149,23 +151,22 @@ class Media(models.Model):
                 self.status = STATUS_IN_PROGRESS
                 self.save()
 
-                try:
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.run(command, stderr=subprocess.PIPE)
 
-                    out, err = process.communicate()
-
-                    if process.returncode == 0:
-                        self.status = STATUS_CONVERTED
-                        self.save()
-                    else:
-                        self.status = STATUS_ERROR
-                        self.save()
-
-                except OSError:
+                if process.returncode == 0:
+                    self.status = STATUS_CONVERTED
+                    self.save()
+                else:
+                    logger.error(
+                        'Error while converting {}:\n{}'.format(
+                            dict(TYPE_CHOICES).get(self.type),
+                            process.stderr.decode('utf-8'),
+                        )
+                    )
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception('Error while converting {}'.format(self.__class__.__name__.lower()))
+            logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
             self.status = STATUS_ERROR
             self.save()
 
@@ -182,6 +183,15 @@ class Media(models.Model):
             return self.get_url('tn.jpg')
         elif self.type == VIDEO_TYPE:
             return self.get_url('cover.jpg')
+
+    def get_previews(self):
+        ret = []
+        if self.check_file('preview.txt'):
+            with open(self.get_file_path('preview.txt')) as f:
+                for line in f:
+                    k, v = line.rstrip('\n').split(',')
+                    ret.append({'{}w'.format(k): self.get_url(v)})
+        return ret
 
     def get_data(self):
         data = {
@@ -204,6 +214,7 @@ class Media(models.Model):
         elif self.type == IMAGE_TYPE:
             data.update({
                 'thumbnail': self.get_image(),
+                'previews': self.get_previews(),
             })
         elif self.type == VIDEO_TYPE:
             data.update({
@@ -216,16 +227,23 @@ class Media(models.Model):
 
         return data
 
+    def get_file_path(self, filename):
+        return os.path.join(self.get_protected_assets_path(), filename)
+
     def check_file(self, filename):
-        path = os.path.join(self.get_protected_assets_path(), filename)
+        path = self.get_file_path(filename)
         return os.path.isfile(path)
 
     def get_url(self, filename):
-        if self.check_file(filename):
-            return '{}/{}'.format(self.get_protected_assets_url(), filename)
-        else:
-            logger.error('File {} does not exist for {}'.format(filename, self.id))
-            return None
+        if isinstance(filename, str):
+            filename = [filename]
+
+        for f in filename:
+            if self.check_file(f):
+                return '{}/{}'.format(self.get_protected_assets_url(), f)
+
+        logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
+        return None
 
     def media_info_and_convert(self):
         # media info
@@ -258,7 +276,7 @@ class Media(models.Model):
 
     def set_mime_type(self):
         self.file.open()
-        mime_type = magic.from_buffer(self.file.read(1024000), mime=True)
+        mime_type = magic.from_buffer(self.file.read(1048576), mime=True)
         self.file.close()
         self.mime_type = mime_type
         self.save()

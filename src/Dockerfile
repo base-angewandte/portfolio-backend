@@ -22,7 +22,7 @@ WORKDIR /django
 
 RUN pip install --upgrade pip==19.1.1
 ADD requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --disable-pip-version-check -r requirements.txt
 ADD . .
 
 CMD rainbow-saddle --pid /var/run/django.pid --gunicorn-pidfile /var/run/gunicorn.pid gunicorn portfolio.wsgi -w 3 -b :8200 -t 300 --max-requests 1000 --log-level=info --access-logfile=/logs/gunicorn.access.log --error-logfile=/logs/gunicorn.error.log

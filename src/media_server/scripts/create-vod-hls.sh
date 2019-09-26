@@ -18,6 +18,9 @@ renditions=(
   "1920x1080  5000k    192k"
 )
 
+cover_filter="scale=-1:300,crop=400:300"
+cover_filter_portrait="scale=400:-1,crop=400:300"
+
 segment_target_duration=4       # try to create a new segment every X seconds
 max_bitrate_ratio=1.07          # maximum accepted bitrate fluctuations
 rate_monitor_buffer_ratio=1.5   # maximum buffer size between bitrate conformance checks
@@ -44,6 +47,13 @@ source_height_with_prefix=${dimensions[1]}
 source_width=${source_width_with_prefix#${width_prefix}}
 source_height=${source_height_with_prefix#${height_prefix}}
 
+rotation=$(ffprobe -loglevel error -select_streams v:0 -show_entries stream_tags=rotate -of default=nw=1:nk=1 -i "${source}")
+
+if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]]; then
+  # portrait video
+  cover_filter=${cover_filter_portrait}
+fi
+
 duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${source}")
 # round to second
 duration=$(printf "%.0f" ${duration})
@@ -51,8 +61,8 @@ duration=$(printf "%.0f" ${duration})
 cover_time=$(($duration/20))
 cover_gif_len=$(($duration < 10 ? $duration : 10))
 
-ffmpeg -ss ${cover_time} -i ${source} -hide_banner -y -vframes 1 -filter "scale=-1:300,crop=400:300" "${target}/cover.jpg"
-ffmpeg -ss 0 -t ${cover_gif_len} -i ${source} -hide_banner -y -filter_complex "[0:v] fps=4,scale=-1:300,crop=400:300,split [a][b];[a] palettegen [p];[b][p] paletteuse" "${target}/cover.gif"
+ffmpeg -ss ${cover_time} -i ${source} -hide_banner -y -vframes 1 -filter "${cover_filter}" "${target}/cover.jpg"
+ffmpeg -ss 0 -t ${cover_gif_len} -i ${source} -hide_banner -y -filter_complex "[0:v] fps=4,${cover_filter},split [a][b];[a] palettegen [p];[b][p] paletteuse" "${target}/cover.gif"
 
 key_frames_interval="$(echo `ffprobe ${source} 2>&1 | grep -oE '[[:digit:]]+(.[[:digit:]]+)? fps' | grep -oE '[[:digit:]]+(.[[:digit:]]+)?'`*2 | bc || echo '')"
 key_frames_interval=${key_frames_interval:-50}
@@ -81,16 +91,25 @@ for rendition in "${renditions[@]}"; do
   audiorate="$(echo ${rendition} | cut -d ' ' -f 3)"
 
   # calculated fields
-  width="$(echo ${resolution} | grep -oE '^[[:digit:]]+')"
-  height="$(echo ${resolution} | grep -oE '[[:digit:]]+$')"
+  if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]]; then
+    # portrait video
+    height="$(echo ${resolution} | grep -oE '^[[:digit:]]+')"
+    width="$(echo ${resolution} | grep -oE '[[:digit:]]+$')"
+    compare_width=${source_height}
+    compare_height=${source_width}
+  else
+    width="$(echo ${resolution} | grep -oE '^[[:digit:]]+')"
+    height="$(echo ${resolution} | grep -oE '[[:digit:]]+$')"
+    compare_width=${source_width}
+    compare_height=${source_height}
+  fi
   maxrate="$(echo "`echo ${bitrate} | grep -oE '[[:digit:]]+'`*${max_bitrate_ratio}" | bc)"
   bufsize="$(echo "`echo ${bitrate} | grep -oE '[[:digit:]]+'`*${rate_monitor_buffer_ratio}" | bc)"
   bandwidth="$(echo ${bitrate} | grep -oE '[[:digit:]]+')000"
   name="${height}p"
 
-
   # do not upscale, but ensure there is at least one version
-  if { [[ "$height" -le "$source_height" ]] && [[ "$width" -le "$source_width" ]]; } || [[ "$cmd" -eq "" ]] ; then
+  if { [[ "${height}" -le "${compare_height}" ]] && [[ "${width}" -le "${compare_width}" ]]; } || [[ "$cmd" -eq "" ]] ; then
     cmd+=" ${static_params} -vf scale=w=${width}:h=${height}:force_original_aspect_ratio=decrease"
     cmd+=" -b:v ${bitrate} -maxrate ${maxrate%.*}k -bufsize ${bufsize%.*}k -b:a ${audiorate}"
     cmd+=" -hls_segment_filename ${target}/${name}_%03d.ts ${target}/${name}.m3u8"

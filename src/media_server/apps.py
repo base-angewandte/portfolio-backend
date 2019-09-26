@@ -1,4 +1,5 @@
 import django_rq
+
 from django.apps import AppConfig
 
 

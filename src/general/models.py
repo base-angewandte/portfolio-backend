@@ -1,5 +1,6 @@
 # coding: utf-8
 import shortuuid
+
 from django.db import models
 
 

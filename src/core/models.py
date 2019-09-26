@@ -1,17 +1,20 @@
+from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
+
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.translation import ugettext_lazy as _
-from jsonschema import validate, ValidationError as SchemaValidationError
+from django.utils.translation import get_language, ugettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
+
 from .managers import EntryManager
-from .schemas import ICON_DEFAULT, get_jsonschema, get_icon
-from .skosmos import get_preflabel_lazy
-from .validators import validate_texts, validate_keywords, validate_type
+from .schemas import ICON_DEFAULT, get_icon, get_jsonschema, get_schema
+from .skosmos import get_altlabel_lazy, get_preflabel_lazy
+from .validators import validate_keywords, validate_texts, validate_type
 
 
 class Entry(AbstractBaseModel):
@@ -34,18 +37,98 @@ class Entry(AbstractBaseModel):
 
     objects = EntryManager()
 
+    class Meta:
+        indexes = [
+            GinIndex(fields=['type']),
+            GinIndex(fields=['data']),
+        ]
+
     @property
     def icon(self):
         if self.type:
             return get_icon(self.type.get('source'))
         return ICON_DEFAULT
 
+    @property
+    def location_display(self):
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().location_display(data)
+
+    @property
+    def owner_role_display(self):
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().role_display(data, self.owner.username)
+
+    @property
+    def year_display(self):
+        if self.type.get('source'):
+            schema = get_schema(self.type['source'])
+            data = self.data
+            if schema and data:
+                return schema().year_display(data)
+
+    @property
+    def data_display(self):
+        ret = {
+            'id': self.id,
+            'data': [],
+        }
+        lang = get_language() or 'en'
+        for field in ['title', 'subtitle', 'type', 'keywords']:
+            value = getattr(self, field)
+            if value:
+                if isinstance(value, dict):
+                    value = value.get('label', {}).get(lang)
+                elif isinstance(value, list):
+                    value = [
+                        x.get('label', {}).get(lang) for x in value
+                    ]
+                ret['data'].append({
+                    'label': self._meta.get_field(field).verbose_name,
+                    'value': value,
+                })
+        if self.texts:
+            texts = []
+            language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
+            for text in self.texts:
+                text_type = text.get('type', {}).get('label', {}).get(lang) or None
+                if text.get('data'):
+                    if len(text['data']) > 1:
+                        for t in text['data']:
+                            if t.get('language', {}).get('source') == language_source:
+                                texts.append({
+                                    'label': text_type,
+                                    'value': t.get('text'),
+                                })
+                    else:
+                        t = text['data'][0]
+                        texts.append({
+                            'label': text_type,
+                            'value': t.get('text'),
+                        })
+            if texts:
+                ret['data'].append({
+                    'label': get_altlabel_lazy('text'),
+                    'value': texts,
+                })
+        schema = get_schema(self.type.get('source'))
+        data = self.data
+        if schema and data:
+            ret['data'] += schema().data_display(data)
+        return ret
+
     def clean(self):
         if self.type:
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
                 try:
-                    validate(self.data, schema)
+                    validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
                 except SchemaValidationError as e:
                     msg = _('Invalid data: %(error)s') % {'error': e.message}
                     raise ValidationError(msg)

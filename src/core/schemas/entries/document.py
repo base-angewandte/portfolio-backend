@@ -1,8 +1,19 @@
-from marshmallow import Schema, fields
+from marshmallow import fields
 
-from ..general import get_format_field, get_material_field, get_contributors_field, get_contributors_field_for_role, \
-    get_date_field, get_location_field, get_url_field, get_language_list_field, get_string_field
 from ...skosmos import get_collection_members, get_preflabel_lazy
+from ..base import BaseSchema
+from ..general import (
+    get_contributors_field,
+    get_contributors_field_for_role,
+    get_date_field,
+    get_format_field,
+    get_language_list_field,
+    get_location_field,
+    get_material_field,
+    get_string_field,
+    get_url_field,
+)
+from ..utils import year_from_date
 
 TYPES = get_collection_members(
     'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication',
@@ -10,7 +21,7 @@ TYPES = get_collection_members(
 )
 
 
-class PublishedInSchema(Schema):
+class PublishedInSchema(BaseSchema):
     title = get_string_field(
         get_preflabel_lazy('title'),
         {
@@ -29,7 +40,7 @@ class PublishedInSchema(Schema):
     publisher = get_contributors_field_for_role('publisher', {'order': 4})
 
 
-class DocumentSchema(Schema):
+class DocumentSchema(BaseSchema):
     authors = get_contributors_field_for_role('author', {'order': 1})
     editors = get_contributors_field_for_role('editor', {'order': 2})
     publishers = get_contributors_field_for_role('publisher', {'order': 3})
@@ -84,3 +95,7 @@ class DocumentSchema(Schema):
             'order': 16,
         }
     )
+
+    def year_display(self, data):
+        if data.get('date'):
+            return year_from_date(data['date'])

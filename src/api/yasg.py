@@ -1,6 +1,5 @@
 import json
 
-from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.app_settings import swagger_settings
 from drf_yasg.codecs import OpenAPICodecJson
@@ -9,7 +8,9 @@ from drf_yasg.utils import force_real_str, swagger_auto_schema
 from rest_framework import serializers
 from rest_framework.utils.encoders import JSONEncoder
 
-from core.schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
+from django.conf import settings
+
+from core.schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 
 authorization_header_paramter = openapi.Parameter(
     'Authorization',

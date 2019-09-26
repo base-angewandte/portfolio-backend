@@ -19,10 +19,11 @@ from email.utils import getaddresses
 from urllib.parse import urlparse
 
 import environ
+from apimapper import config as apiconfig
+from hashids import Hashids
+
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
-from hashids import Hashids
-from apimapper import config as apiconfig
 
 from general.utils import get_language_lazy
 
@@ -319,6 +320,16 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple_with_time',
         },
+        'rq_file': {
+            'level': 'DEBUG',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'rq.log'),
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 1000,
+            'use_gzip': True,
+            'delay': True,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         '': {
@@ -337,7 +348,7 @@ LOGGING = {
             'propagate': True,
         },
         'rq.worker': {
-            'handlers': ['rq_console', 'mail_admins'],
+            'handlers': ['rq_console', 'rq_file', 'mail_admins'],
             'level': 'DEBUG',
             'propagate': False,
         }
@@ -457,15 +468,22 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 LANGUAGES_VOCID = 'languages'
 
+ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
+GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
+
+ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
-        apiconfig.URL: '{}api/persons'.format(SITE_URL),
-        apiconfig.QUERY_FIELD: 'searchstring',
+        apiconfig.URL: '{}autosuggest/v1/persons/'.format(SITE_URL),
+        apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: None,
         apiconfig.TIMEOUT: 10,
+        apiconfig.HEADER: {
+            'Authorization': 'Bearer {}'.format(ANGEWANDTE_API_KEY)
+        },
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -473,7 +491,8 @@ SOURCES = {
         apiconfig.PAYLOAD: {
             'format': 'json:suggest',
             'filter': 'type:Person',
-        }
+        },
+        apiconfig.HEADER: ACCEPT_LANGUAGE_HEADER,
     },
     'GND_INSTITUTION': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -512,7 +531,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: {
             'maxRows': 10,
-            'username': '_'.join([urlparse(SITE_URL).hostname.replace('.', '_'), PROJECT_NAME]),
+            'username': GEONAMES_USER,
             'type': 'json',
         }
     },
@@ -543,9 +562,10 @@ SOURCES = {
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
+
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
             'unique': True,
-            'fields': 'prefLabel'            
+            'fields': 'prefLabel'
         }
     },
     'VOC_FORMATS': {
@@ -606,8 +626,8 @@ SOURCES = {
 }
 
 ANGEWANDTE_MAPPING = {
-    'source': 'id',
-    'label': 'name',
+    'source': 'uuid',
+    'label': 'label',
 }
 GND_MAPPING = {
     'source': 'id',  # common_schema: GND schema
@@ -648,7 +668,6 @@ PELIAS_MAPPING = {
 
 RESPONSE_MAPS = {
     'ANGEWANDTE_PERSON': {
-        apiconfig.RESULT: 'users',
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
@@ -754,7 +773,7 @@ RESPONSE_MAPS = {
                 apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
-        }     
+        }
     }
 }
 
@@ -763,10 +782,18 @@ CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTIO
 if 'uni-ak.ac.at' in SITE_URL:
     CONTRIBUTORS = tuple(x for x in ['ANGEWANDTE_PERSON', *CONTRIBUTORS])
 
+if PELIAS_API_KEY:
+    PLACES = ('PELIAS', )
+elif GEONAMES_USER:
+    PLACES = ('GND_PLACE', 'GEONAMES_PLACE', )
+else:
+    PLACES = ('GND_PLACE', )
+
+
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': CONTRIBUTORS,
-    'places': ('PELIAS', ) if PELIAS_API_KEY else ('GND_PLACE', 'GEONAMES_PLACE', ),
+    'places': PLACES,
     'keywords': {
         'all': 'core.skosmos.get_base_keywords',
         'search': 'core.skosmos.get_keywords',

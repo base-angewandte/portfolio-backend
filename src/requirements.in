@@ -2,7 +2,7 @@
 # sync environment with 'pip-sync'
 # to update all packages run 'pip-compile --upgrade'
 
-apimapper==0.7.5
+apimapper==0.7.7
 apispec==0.39.0
 choicesenum==0.5.3  # for django-exiffield
 concurrent-log-handler==0.9.16
@@ -21,10 +21,11 @@ djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 hashids==1.2.0
 jsonfield2==3.0.2  # for django-exiffield
-jsonschema==3.0.1
+jsonschema[format]==3.0.1
 markdown==3.1.1  # for djangorestframework
 marshmallow==2.19.2
-pip-tools==3.7.0
+pip-tools==3.9.0
+progressbar2==3.42.0
 psycopg2-binary==2.8.2
 python-magic==0.4.15
 rq-scheduler==0.9

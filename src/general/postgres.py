@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.search import SearchVector
 from django.db.models.expressions import Value
-from django.db.models.functions import Coalesce, Cast
+from django.db.models.functions import Cast, Coalesce
 
 
 class SearchVectorJSON(SearchVector):

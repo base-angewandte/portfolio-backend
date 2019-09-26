@@ -1,8 +1,10 @@
-from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
+
 from core.models import Entry
+
 from .validators import validate_license as vl
 
 

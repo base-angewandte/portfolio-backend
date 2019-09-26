@@ -12,7 +12,7 @@ services:
     command: redis-server --appendonly yes
 
   portfolio-postgres:
-    image: postgres:11.1-alpine
+    image: postgres:11-alpine
     container_name: portfolio-postgres
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -99,7 +99,7 @@ services:
     command: python manage.py rqscheduler
 
   portfolio-lool:
-    image: collabora/code:4.0.0.2
+    image: collabora/code:4.0.5.2
     container_name: portfolio-lool
     volumes:
       - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
@@ -113,8 +113,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./docker/cron/crontab:/tmp/crontab
-    networks:
-      - portfolionet
+    network_mode: "none"
     restart: always
 
 

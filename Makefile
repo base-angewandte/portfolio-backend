@@ -39,3 +39,7 @@ start-dev:
 		portfolio-redis \
 		portfolio-postgres \
 		portfolio-lool
+
+pip-compile:
+	pip-compile src/requirements.in --output-file src/requirements.txt
+	pip-compile src/requirements.in src/requirements-dev.in --output-file src/requirements-dev.txt

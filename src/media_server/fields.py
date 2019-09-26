@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from django.db import models
+
 from exiffield.fields import ExifField as DjangoExifField, get_exif
 
 from .utils import humanize_size

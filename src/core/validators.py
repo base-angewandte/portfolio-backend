@@ -1,15 +1,16 @@
 import json
 
+from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from jsonschema import validate, ValidationError as SchemaValidationError
 
-from .schemas import get_texts_jsonschema, get_keywords_jsonschema, get_type_jsonschema
+from .schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 
 
 def validate_type(value):
     try:
-        validate(value, get_type_jsonschema())
+        validate(value, get_type_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
     except SchemaValidationError as e:
         msg = _('Invalid type: %(error)s') % {'error': e.message}
         raise ValidationError(msg)
@@ -17,7 +18,7 @@ def validate_type(value):
 
 def validate_keywords(value):
     try:
-        validate(value, get_keywords_jsonschema())
+        validate(value, get_keywords_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
         if len(value) > len(set(json.dumps(d, sort_keys=True) for d in value)):
             raise ValidationError(_('Keywords contains duplicate entries'))
     except SchemaValidationError as e:
@@ -27,7 +28,7 @@ def validate_keywords(value):
 
 def validate_texts(value):
     try:
-        validate(value, get_texts_jsonschema())
+        validate(value, get_texts_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
         for i in value:
             data = i.get('data')
             if data:

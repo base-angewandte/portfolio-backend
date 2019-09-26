@@ -3,6 +3,12 @@ import mimetypes
 from os.path import basename, join
 
 import magic
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status, viewsets
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.response import Response
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
@@ -10,14 +16,9 @@ from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.response import Response
 
 from .decorators import is_allowed
-from .models import Media, get_type_for_mime_type
+from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -134,11 +135,24 @@ class MediaViewSet(viewsets.GenericViewSet):
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1024000), mime=True)
+            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
+            media_type = get_type_for_mime_type(mime_type)
+
+            if mime_type in ['application/octet-stream', 'application/zip']:
+                # check for office document
+                serializer.validated_data['file'].seek(0)
+                magic_type = magic.from_buffer(serializer.validated_data['file'].read(1048576))
+                if magic_type in [
+                    'Microsoft Word 2007+',
+                    'Microsoft PowerPoint 2007+',
+                    'Microsoft Excel 2007+',
+                    'Microsoft OOXML',
+                ]:
+                    media_type = DOCUMENT_TYPE
 
             m = Media(
                 file=serializer.validated_data['file'],
-                type=get_type_for_mime_type(mime_type),
+                type=media_type,
                 owner=request.user,
                 entry_id=serializer.validated_data['entry'],
                 mime_type=mime_type,

@@ -2,36 +2,42 @@ import json
 import operator
 from functools import reduce
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models import Q
-from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext_lazy as _, get_language
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
+from django_filters.rest_framework import CharFilter, DjangoFilterBackend, FilterSet
 from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import exceptions, viewsets, permissions
+from rest_framework import exceptions, permissions, viewsets
 from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.utils.translation import get_language, ugettext_lazy as _
+
 from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
-from core.skosmos import get_preflabel, get_altlabel_collection, get_collection_members
+from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
-from general.utils import get_year_from_javascript_datetime
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
+
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
-from .yasg import JSONAutoSchema, OpenAPICodecDRFJson, language_header_decorator, language_header_parameter, \
-    authorization_header_paramter
+from .yasg import (
+    JSONAutoSchema,
+    OpenAPICodecDRFJson,
+    authorization_header_paramter,
+    language_header_decorator,
+    language_header_parameter,
+)
 
 SchemaView = get_schema_view(
     openapi.Info(
@@ -164,8 +170,7 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     @action(detail=False, filter_backends=[], pagination_class=None)
     def types(self, request, *args, **kwargs):
         language = get_language() or 'en'
-        content = self.get_queryset().exclude(
-            type__isnull=True).exclude(type__exact='').values_list('type', flat=True).distinct().order_by()
+        content = self.get_queryset().exclude(type__isnull=True).values_list('type', flat=True).distinct().order_by()
         return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
     def get_queryset(self):
@@ -179,7 +184,11 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
         if self.action == 'list':
             q = self.request.query_params.get('q', None)
             if q:
-                qs = Entry.objects.search(q).filter(owner=user)
+                qs = Entry.objects.search(q).filter(owner=user).annotate(
+                    type_source=KeyTextTransform('source', 'type'),
+                    type_de=KeyTextTransform('de', KeyTextTransform('label', 'type')),
+                    type_en=KeyTextTransform('en', KeyTextTransform('label', 'type')),
+                )
 
             entry_pk = self.request.query_params.get('link_selection_for', None)
             if entry_pk:
@@ -265,123 +274,33 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    def get_role(data):
-        fields_to_check = [
-            'architecture',
-            'authors',
-            'artists',
-            'winners',
-            'granted_by',
-            'jury',
-            'music',
-            'conductors',
-            'composition',
-            'organisers',
-            'lecturers',
-            'editors',
-            'publishers',
-            'curators',
-            'project_lead',
-            'project_partnership',
-            'funding',
-            'software_developers',
-            'directors',
-            'contributors',
-        ]
-        roles = []
-        for fld in fields_to_check:
-            if data.get(fld):
-                for c in data[fld]:
-                    if c.get('source') == user.username and c.get('roles'):
-                        for r in c['roles']:
-                            roles.append(r.get('label').get(lang))
-
-        if roles:
-            return ', '.join(sorted(set(roles)))
-
-    def get_location(data):
-        locations = []
-        i = []
-        if data.get('location', {}).get('label'):
-            locations.append(data['location']['label'])
-        elif data.get('date_location'):
-            i = data['date_location']
-        elif data.get('date_time_range_location'):
-            i = data['date_time_range_location']
-        elif data.get('date_range_time_range_location'):
-            i = data['date_range_time_range_location']
-        elif isinstance(data.get('date'), list):
-            i = data['date']
-
-        if i:
-            for o in i:
-                if o.get('location'):
-                    for l in o['location']:
-                        if l.get('label'):
-                            locations.append(l['label'])
-                # elif o.get('location_description'):
-                #    locations.append(o['location_description'])
-
-        if locations:
-            return ', '.join(sorted(set(locations)))
-
-    def get_year(data):
-        years = []
-        if data.get('date'):
-            if isinstance(data['date'], dict):
-                if data['date'].get('date_from'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_from']))
-                elif data['date'].get('date_to'):
-                    years.append(get_year_from_javascript_datetime(data['date']['date_to']))
-            elif isinstance(data['date'], list):
-                for dols in data['date']:
-                    if dols.get('date', {}).get('date_from'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_from']))
-                    elif dols.get('date', {}).get('date_to'):
-                        years.append(get_year_from_javascript_datetime(dols['date']['date_to']))
-            years.append(get_year_from_javascript_datetime(data['date']))
-        elif data.get('date_location'):
-            for dl in data['date_location']:
-                if dl.get('date'):
-                    years.append(get_year_from_javascript_datetime(dl['date']))
-        elif data.get('date_time_range_location'):
-            for dtrl in data['date_time_range_location']:
-                if dtrl.get('date', {}).get('date'):
-                    years.append(get_year_from_javascript_datetime(dtrl['date']['date']))
-        elif data.get('date_range_time_range_location'):
-            for drtrl in data['date_range_time_range_location']:
-                if drtrl.get('date', {}).get('date_from'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_from']))
-                elif drtrl.get('date', {}).get('date_to'):
-                    years.append(get_year_from_javascript_datetime(drtrl['date']['date_to']))
-
-        if years:
-            return ', '.join(sorted(set(years)))
-
     def get_data(label, kw_filters, q_filters=None):
-        d = {
+        ret = {
             'label': label,
             'data': [],
         }
 
-        qs = Entry.objects.filter(**kw_filters)
+        qs = Entry.objects.filter(owner=user, published=True, **kw_filters)
 
         if q_filters:
-            qs = qs.filter(reduce(operator.or_, (Q(**d) for d in q_filters)))
+            qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
 
-        qs = qs.annotate(data_date=KeyTextTransform('date', 'data')).order_by('-data_date', 'title')
+        qs = qs.order_by('title')
 
         for e in qs:
-            d['data'].append({
+            ret['data'].append({
+                'id': e.pk,
                 'title': e.title,
                 'subtitle': e.subtitle or None,
                 'type': e.type.get('label').get(lang),
-                'role': get_role(e.data),
-                'location': get_location(e.data),
-                'year': get_year(e.data),
+                'role': e.owner_role_display,
+                'location': e.location_display,
+                'year': e.year_display,
             })
 
-        return d
+        ret['data'] = sorted(ret['data'], key=lambda x: x['year'] or '0000', reverse=True)
+
+        return ret
 
     general_publications_q_filters = []
 
@@ -392,7 +311,7 @@ def user_data(request, pk=None, *args, **kwargs):
     location_key = 'location'
     year_key = 'year'
 
-    data = {
+    usr_data = {
         'entry_labels': {
             title_key: get_preflabel('title'),
             subtitle_key: get_preflabel('subtitle'),
@@ -434,7 +353,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_monograph', lang=lang),
             dict(
-                owner=user,
                 type__source__in=monographs_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -444,7 +362,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_composite_volume', lang=lang),
             dict(
-                owner=user,
                 type__source__in=composite_volumes_types,
                 data__contains={'editors': [{'source': user.username}]},
             ),
@@ -454,7 +371,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_article', lang=lang),
             dict(
-                owner=user,
                 type__source__in=articles_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -464,7 +380,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_chapter', lang=lang),
             dict(
-                owner=user,
                 type__source__in=chapters_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -474,7 +389,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_review', lang=lang),
             dict(
-                owner=user,
                 type__source__in=reviews_types,
                 data__contains={'authors': [{'source': user.username}]},
             ),
@@ -487,7 +401,6 @@ def user_data(request, pk=None, *args, **kwargs):
                 get_altlabel_collection('collection_document_publication', lang=lang)
             ),
             dict(
-                owner=user,
                 type__source__in=general_publications_types,
             ),
             [
@@ -498,9 +411,12 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        pub_data['data'].append(get_data(l, f, qf))
+        d = get_data(l, f, qf)
+        if d['data']:
+            pub_data['data'].append(d)
 
-    data['data'].append(pub_data)
+    if pub_data['data']:
+        usr_data['data'].append(pub_data)
 
     research_projects_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_research_project'
@@ -553,7 +469,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_research_project', lang=lang),
             dict(
-                owner=user,
                 type__source__in=research_projects_types,
             ),
             [
@@ -566,7 +481,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_awards_and_grants', lang=lang),
             dict(
-                owner=user,
                 type__source__in=awards_and_grants_types,
             ),
             [
@@ -580,7 +494,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_exhibition', lang=lang),
             dict(
-                owner=user,
                 type__source__in=exhibitions_types,
             ),
             [
@@ -593,7 +506,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_conference', lang=lang),
             dict(
-                owner=user,
                 type__source__in=conferences_types,
             ),
             [
@@ -606,7 +518,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_conference_contribution', lang=lang),
             dict(
-                owner=user,
                 type__source__in=conference_contributions_types,
             ),
             [
@@ -619,7 +530,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_architecture', lang=lang),
             dict(
-                owner=user,
                 type__source__in=architectures_types,
             ),
             [
@@ -631,7 +541,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_audio', lang=lang),
             dict(
-                owner=user,
                 type__source__in=audios_types,
             ),
             [
@@ -644,7 +553,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_concert', lang=lang),
             dict(
-                owner=user,
                 type__source__in=concerts_types,
             ),
             [
@@ -658,7 +566,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_event', lang=lang),
             dict(
-                owner=user,
                 type__source__in=events_types,
             ),
             [
@@ -669,7 +576,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_festival', lang=lang),
             dict(
-                owner=user,
                 type__source__in=festivals_types,
             ),
             [
@@ -683,7 +589,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_image', lang=lang),
             dict(
-                owner=user,
                 type__source__in=images_types,
             ),
             [
@@ -695,7 +600,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_performance', lang=lang),
             dict(
-                owner=user,
                 type__source__in=performances_types,
             ),
             [
@@ -707,7 +611,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_sculpture', lang=lang),
             dict(
-                owner=user,
                 type__source__in=sculptures_types,
             ),
             [
@@ -719,7 +622,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_software', lang=lang),
             dict(
-                owner=user,
                 type__source__in=softwares_types,
             ),
             [
@@ -731,7 +633,6 @@ def user_data(request, pk=None, *args, **kwargs):
         (
             get_altlabel_collection('collection_film_video', lang=lang),
             dict(
-                owner=user,
                 type__source__in=videos_types,
             ),
             [
@@ -742,7 +643,9 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        data['data'].append(get_data(l, f, qf))
+        d = get_data(l, f, qf)
+        if d['data']:
+            usr_data['data'].append(d)
 
     # General Publications
     general_publications_types = list(set(ACTIVE_TYPES) - set(
@@ -753,13 +656,38 @@ def user_data(request, pk=None, *args, **kwargs):
         sculptures_types + softwares_types + videos_types
     ))
 
-    data['data'].append(get_data(
+    d = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
         dict(
-            owner=user,
             type__source__in=general_publications_types,
         ),
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
-    ))
+    )
+    if d['data']:
+        usr_data['data'].append(d)
 
-    return Response(data)
+    return Response(usr_data if usr_data['data'] else {'data': []})
+
+
+@swagger_auto_schema(methods=['get'], operation_id='api_v1_user_entry_data', responses={
+    200: openapi.Response(''),
+    403: openapi.Response('Access not allowed'),
+    404: openapi.Response('User or entry not found'),
+}, manual_parameters=[authorization_header_paramter, language_header_parameter])
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
+def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
+    UserModel = get_user_model()
+
+    try:
+        user = UserModel.objects.get(username=pk)
+    except UserModel.DoesNotExist:
+        raise exceptions.NotFound(_('User does not exist'))
+
+    try:
+        entry = Entry.objects.get(pk=entry, owner=user, published=True)
+    except Entry.DoesNotExist:
+        raise exceptions.NotFound(_('Entry does not exist'))
+
+    return Response(entry.data_display)

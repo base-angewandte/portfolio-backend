@@ -1,15 +1,17 @@
 from collections import OrderedDict
 
+from drf_yasg.utils import swagger_serializer_method
+from rest_framework import serializers
+
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import ugettext_lazy as _
-from drf_yasg.utils import swagger_serializer_method
-from rest_framework import serializers
 
 from core.models import Entry, Relation
 from core.skosmos import get_preflabel_lazy
 from core.utils import placeholder_lazy
 from media_server.models import get_image_for_entry, has_entry_media
+
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
@@ -79,7 +81,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
                 ('prefetch', ['source']),
                 ('order', 5),
-                ('allow_unkown_entries', True),
+                ('allow_unknown_entries', True),
                 ('dynamic_autosuggest', True,),
                 ('set_label_language', True,),
                 ('placeholder', placeholder_lazy(get_preflabel_lazy('keywords'))),

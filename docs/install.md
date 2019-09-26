@@ -36,8 +36,14 @@
     ```bash
     pip install pip-tools
     cd src
-    pip-sync
+    pip-sync requirements-dev.txt
     cd ..
+    ```
+
+* Install pre-commit hooks:
+
+    ```bash
+    pre-commit install
     ```
 
 * Start required services:
