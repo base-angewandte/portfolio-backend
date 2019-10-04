@@ -8,20 +8,22 @@ from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, permissions, viewsets
-from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
+from rest_framework.decorators import action, api_view, authentication_classes, parser_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema
+from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema, get_schema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
@@ -691,3 +693,96 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
         raise exceptions.NotFound(_('Entry does not exist'))
 
     return Response(entry.data_display)
+
+
+@swagger_auto_schema(
+    methods=['post'],
+    operation_id='api_v1_wb_data',
+    responses={
+        200: openapi.Response(''),
+        400: openapi.Response('Bad Request'),
+        403: openapi.Response('Access not allowed'),
+    },
+    manual_parameters=[
+        authorization_header_paramter,
+        language_header_parameter,
+        openapi.Parameter(
+            'collection',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'roles',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'users',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+    ]
+)
+@api_view(['POST'])
+@parser_classes([FormParser, MultiPartParser])
+@authentication_classes((TokenAuthentication, ))
+@permission_classes((permissions.IsAuthenticated, ))
+def wb_data(request, *args, **kwargs):
+    users = request.POST.getlist('users') or []
+    types = get_collection_members(request.POST.get('types')) if request.POST.get('types') else None
+    roles = request.POST.getlist('roles') or []
+    year = request.POST.get('year') or None
+
+    if not users or not types or not roles or not year:
+        raise exceptions.ParseError()
+
+    date_filters = []
+    q_filters = []
+
+    schemas = []
+
+    for t in types:
+        schemas.append(get_schema(t))
+
+    date_fields = []
+
+    for s in list(set(schemas)):
+        date_fields += s().date_fields
+
+    for df in list(set(date_fields)):
+        date_filters.append({
+            'data__{}__icontains'.format(df): year
+        })
+
+    for user in users:
+        for role in roles:
+            q_filters.append(dict(data__contains={role: [{'source': user}]}))
+
+    qs = Entry.objects.filter(
+        published=True,
+        type__source__in=types,
+    ).filter(
+        reduce(operator.or_, (Q(**x) for x in date_filters))
+    ).filter(
+        reduce(operator.or_, (Q(**x) for x in q_filters))
+    ).annotate(
+        rel=ArrayAgg('relations__id')
+    ).values(
+        'id',
+        'date_created',
+        'date_changed',
+        'owner__username',
+        'title',
+        'subtitle',
+        'type',
+        'reference',
+        'keywords',
+        'texts',
+        'data',
+        'rel',
+    )
+
+    return Response(qs)

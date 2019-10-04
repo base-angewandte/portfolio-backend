@@ -69,6 +69,7 @@ class BaseSchema(Schema):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contributors_fields = []
+        self.date_fields = []
         self.locations_fields = []
         for fld in self.declared_fields:
             if (
@@ -76,8 +77,11 @@ class BaseSchema(Schema):
                 or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
             ):
                 self.contributors_fields.append(fld)
-            elif 'location' in fld:
-                self.locations_fields.append(fld)
+            else:
+                if 'location' in fld:
+                    self.locations_fields.append(fld)
+                if 'date' in fld:
+                    self.date_fields.append(fld)
 
     @post_load
     def create_object(self, data):
