@@ -1,0 +1,131 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-27 17:46+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: api/serializers/entry.py:94
+msgid "will not be published"
+msgstr ""
+
+#: api/serializers/relation.py:20
+msgid "Relation already exists"
+msgstr ""
+
+#: api/serializers/relation.py:27 api/views.py:163
+msgid "Current user is not the owner of this entry"
+msgstr ""
+
+#: api/views.py:167 api/views.py:692 media_server/serializers.py:30
+msgid "Entry does not exist"
+msgstr ""
+
+#: api/views.py:240
+msgid "Schema not found for the given query."
+msgstr ""
+
+#: api/views.py:274 api/views.py:687
+msgid "User does not exist"
+msgstr ""
+
+#: core/models.py:118
+#, python-format
+msgid "Invalid data: %(error)s"
+msgstr ""
+
+#: core/models.py:121
+msgid "Data without type"
+msgstr ""
+
+#: core/models.py:154
+msgid "Both entries must belong to the same user"
+msgstr ""
+
+#: core/schemas/__init__.py:26
+msgid "Schemas improperly configured"
+msgstr ""
+
+#: core/schemas/__init__.py:60
+msgid "Active schemas contain duplicate types"
+msgstr ""
+
+#: core/schemas/general.py:93 core/schemas/general.py:133
+#: core/schemas/general.py:156 core/schemas/general.py:178
+#: core/schemas/general.py:201 core/schemas/general.py:223
+msgid "and"
+msgstr ""
+
+#: core/utils.py:6
+#, python-format
+msgid "Enter %(label)s"
+msgstr ""
+
+#: core/validators.py:15
+#, python-format
+msgid "Invalid type: %(error)s"
+msgstr ""
+
+#: core/validators.py:23
+msgid "Keywords contains duplicate entries"
+msgstr ""
+
+#: core/validators.py:25
+#, python-format
+msgid "Invalid keywords: %(error)s"
+msgstr ""
+
+#: core/validators.py:39
+msgid "Same language is defined multiple times"
+msgstr ""
+
+#: core/validators.py:41
+#, python-format
+msgid "Invalid texts: %(error)s"
+msgstr ""
+
+#: media_server/serializers.py:33
+msgid "Current user is not the owner of entry"
+msgstr ""
+
+#: media_server/validators.py:17
+#, python-format
+msgid "Invalid license: %(error)s"
+msgstr ""
+
+#: media_server/validators.py:22
+msgid "Invalid license"
+msgstr ""
+
+#: media_server/views.py:106 media_server/views.py:182
+#: media_server/views.py:225
+msgid "Current user is not the owner of this media object"
+msgstr ""
+
+#: media_server/views.py:119 media_server/views.py:193
+#: media_server/views.py:233
+msgid "Media object does not exist"
+msgstr ""
+
+#: media_server/views.py:134
+msgid "No space left for user"
+msgstr ""
+
+#: portfolio/settings.py:241
+msgid "German"
+msgstr ""
+
+#: portfolio/settings.py:242
+msgid "English"
+msgstr ""

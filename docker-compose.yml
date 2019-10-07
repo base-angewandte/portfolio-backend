@@ -1,0 +1,121 @@
+version: '2'
+services:
+
+  portfolio-redis:
+    image: redis:5.0-alpine
+    container_name: portfolio-redis
+    volumes:
+      - ./dockerdata/redis/data:/data
+    networks:
+      - portfolionet
+    restart: always
+    command: redis-server --appendonly yes
+
+  portfolio-postgres:
+    image: postgres:11-alpine
+    container_name: portfolio-postgres
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./dockerdata/postgres/11/data:/var/lib/postgresql/data/pgdata
+    networks:
+      - portfolionet
+    restart: always
+
+  portfolio-django:
+    build: ./src
+    container_name: portfolio-django
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    expose:
+      - 8200
+    volumes:
+      - ./src:/django
+      - ./logs:/logs
+      - $PORTFOLIO_ASSETS:/django/assets
+    networks:
+      - portfolionet
+    restart: always
+
+  portfolio-rq-worker-1:
+    build: ./src
+    container_name: portfolio-rq-worker-1
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker default
+
+  portfolio-rq-worker-2:
+    build: ./src
+    container_name: portfolio-rq-worker-2
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker high default
+
+  portfolio-rq-worker-3:
+    build: ./src
+    container_name: portfolio-rq-worker-3
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqworker high video default
+
+  portfolio-rq-scheduler:
+    build: ./src
+    container_name: portfolio-rq-scheduler
+    environment:
+      - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
+      - POSTGRES_USER=$PORTFOLIO_DB_USER
+      - POSTGRES_DB=$PORTFOLIO_DB_NAME
+    volumes_from:
+      - portfolio-django
+    networks:
+      - portfolionet
+    restart: always
+    command: python manage.py rqscheduler
+
+  portfolio-lool:
+    image: collabora/code:4.0.5.2
+    container_name: portfolio-lool
+    volumes:
+      - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
+    networks:
+      - portfolionet
+    restart: always
+
+  portfolio-cron:
+    image: paradoxon/alpine-cron
+    container_name: portfolio-cron
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/cron/crontab:/tmp/crontab
+    network_mode: "none"
+    restart: always
+
+
+networks:
+  portfolionet:

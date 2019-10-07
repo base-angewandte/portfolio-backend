@@ -74,10 +74,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
-*.mo
-*.pot
-
 # Django stuff:
 *.log
 local_settings.py
@@ -137,5 +133,27 @@ venv.bak/
 dmypy.json
 
 ## PyCharm
-.idea/*
+.idea/
 
+## Visual Studio Code
+.vscode/
+
+## Project
+logs/
+src/assets/
+src/fixtures/vcr_cassettes/
+tmp/
+
+dockerdata/
+docker-compose.override.yml
+hashids_salt.py
+secret_key.py
+
+# editor artefacts
+*~
+\#*
+*\#
+
+# system files
+systemctl
+enable
