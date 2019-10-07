@@ -167,17 +167,18 @@ def get_date_range_time_range_location_group_field(additional_attributes=None):
     )
 
 
-def get_date_time_field(additional_attributes=None):
+def get_date_time_field(additional_attributes=None, label=None):
     if additional_attributes is None:
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
-    label = format_lazy(
-        '{date} {conjunction} {time}',
-        date=label_date,
-        conjunction=_('and'),
-        time=label_time,
-    )
+    if label is None:
+        label = format_lazy(
+            '{date} {conjunction} {time}',
+            date=label_date,
+            conjunction=_('and'),
+            time=label_time,
+        )
     return fields.Nested(
         DateTimeSchema,
         title=label,
