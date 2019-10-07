@@ -26,7 +26,10 @@ class AwardSchema(BaseSchema):
     jury = get_contributors_field_for_role('jury', {'order': 4})
     contributors = get_contributors_field({'order': 5})
     date_location = get_date_location_group_field({'order': 6})
-    award_ceremony = get_date_time_field({'field_format': 'half', 'order': 7})
+    award_ceremony = get_date_time_field(
+        {'field_format': 'half', 'order': 7},
+        label=get_preflabel_lazy('award_ceremony'),
+    )
     url = get_url_field({'order': 9, 'field_format': 'half'})
 
     def year_display(self, data):
