@@ -475,6 +475,7 @@ def user_data(request, pk=None, *args, **kwargs):
             ),
             [
                 dict(data__contains={'project_lead': [{'source': user.username}]}),
+                dict(data__contains={'project_partnership': [{'source': user.username}]}),
                 dict(data__contains={'funding': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
             ],
