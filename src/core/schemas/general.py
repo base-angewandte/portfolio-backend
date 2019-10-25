@@ -583,7 +583,7 @@ class ContributorModel(GenericModel):
                             value.append(getattr(r.label, lang))
                         except AttributeError:
                             logger.error('Missing label for role {}'.format(r))
-                            role_label = get_preflabel(r.get('source').split('/')[-1])
+                            role_label = get_preflabel(r.source.split('/')[-1])
                             if role_label:
                                 value.append(role_label)
                     value = value or None
