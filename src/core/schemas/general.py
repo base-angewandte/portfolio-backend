@@ -1,12 +1,16 @@
+import logging
+
 from marshmallow import fields, validate
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import get_language, ugettext_lazy as _
 
-from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel_lazy, get_uri
+from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
 from .base import BaseSchema, GenericModel
+
+logger = logging.getLogger(__name__)
 
 # shared fields
 
@@ -568,11 +572,24 @@ class ContributorModel(GenericModel):
         if self.label:
             if roles:
                 lang = get_language()
-                return {
-                    'label': self.label,
-                    'value': [
+                try:
+                    value = [
                         getattr(x.label, lang) for x in self.roles
                     ] if self.roles else None
+                except AttributeError:
+                    value = []
+                    for r in self.roles:
+                        try:
+                            value.append(getattr(r.label, lang))
+                        except AttributeError:
+                            logger.error('Missing label for role {}'.format(r))
+                            role_label = get_preflabel(r.get('source').split('/')[-1])
+                            if role_label:
+                                value.append(role_label)
+                    value = value or None
+                return {
+                    'label': self.label,
+                    'value': value,
                 }
             return self.label
 
