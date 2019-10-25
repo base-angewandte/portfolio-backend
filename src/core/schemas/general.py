@@ -572,24 +572,12 @@ class ContributorModel(GenericModel):
         if self.label:
             if roles:
                 lang = get_language()
-                try:
-                    value = [
-                        getattr(x.label, lang) for x in self.roles
-                    ] if self.roles else None
-                except AttributeError:
-                    value = []
-                    for r in self.roles:
-                        try:
-                            value.append(getattr(r.label, lang))
-                        except AttributeError:
-                            logger.error('Missing label for role {}'.format(r))
-                            role_label = get_preflabel(r.source.split('/')[-1])
-                            if role_label:
-                                value.append(role_label)
-                    value = value or None
                 return {
                     'label': self.label,
-                    'value': value,
+                    'value': [
+                        getattr(x.label, lang) if x.label else get_preflabel(x.source.split('/')[-1])
+                        for x in self.roles
+                    ] if self.roles else None
                 }
             return self.label
 
