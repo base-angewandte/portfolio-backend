@@ -1,8 +1,13 @@
 import json
+import logging
 
 from marshmallow import Schema, post_load
 
 from django.utils.translation import get_language
+
+from ..skosmos import get_preflabel
+
+logger = logging.getLogger(__name__)
 
 
 class GenericModel:
@@ -102,7 +107,13 @@ class BaseSchema(Schema):
                 for c in data[fld]:
                     if c.get('source') == user_source and c.get('roles'):
                         for r in c['roles']:
-                            roles.append(r.get('label').get(lang))
+                            try:
+                                roles.append(r.get('label').get(lang))
+                            except AttributeError:
+                                logger.error('Missing label for role {}'.format(r))
+                                label = get_preflabel(r.get('source').split('/')[-1])
+                                if label:
+                                    roles.append(label)
         if roles:
             return ', '.join(sorted(set(roles)))
 
