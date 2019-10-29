@@ -9,6 +9,7 @@ import magic
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
+from django.db.models import IntegerField, Value
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -294,8 +295,28 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id):
-    return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
+def get_media_for_entry(entry_id, flat=True):
+    if flat:
+        return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
+
+    ret = []
+    exclude = []
+
+    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED):
+        exclude.append(m.pk)
+        data = m.get_data()
+        data.update({'response_code': 200})
+        ret.append(data)
+
+    ret += list(
+        Media.objects
+        .filter(entry_id=entry_id)
+        .exclude(id__in=exclude)
+        .annotate(response_code=Value(202, IntegerField()))
+        .values('id', 'response_code')
+    )
+
+    return ret
 
 
 def get_image_for_entry(entry_id):

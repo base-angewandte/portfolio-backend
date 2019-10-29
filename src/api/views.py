@@ -152,18 +152,29 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 
-    @swagger_auto_schema(responses={
-        200: openapi.Response(''),
-        403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Entry not found'),
-    })
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'detailed',
+                openapi.IN_QUERY,
+                required=False,
+                description='Get a detailed response',
+                default=False,
+                type=openapi.TYPE_BOOLEAN),
+        ],
+        responses={
+            200: openapi.Response(''),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Entry not found'),
+        },
+    )
     @action(detail=True, filter_backends=[], pagination_class=None)
     def media(self, request, pk=None, *args, **kwargs):
         try:
             entry = Entry.objects.get(pk=pk)
             if entry.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
-            ret = get_media_for_entry(entry.pk)
+            ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
             return Response(ret)
         except Entry.DoesNotExist:
             raise exceptions.NotFound(_('Entry does not exist'))
