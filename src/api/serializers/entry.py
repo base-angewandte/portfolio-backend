@@ -47,6 +47,7 @@ class RelationSerializer(serializers.Serializer):
 
 class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    parents = serializers.SerializerMethodField()
     relations = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
     has_media = serializers.SerializerMethodField()
@@ -110,6 +111,21 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'icon': OrderedDict([('hidden', True)]),
             'has_media': OrderedDict([('hidden', True)]),
         }
+
+    @swagger_serializer_method(serializer_or_field=ParentSerializer)
+    def get_parents(self, obj):
+        ret = []
+        for relation in Relation.objects.select_related('from_entry').filter(to_entry=obj):
+            ret.append({
+                'id': relation.pk,
+                'parent': {
+                    'id': relation.from_entry.pk,
+                    'title': relation.from_entry.title,
+                    'type': relation.from_entry.type,
+                },
+                'date_created': relation.date_created,
+            })
+        return ret
 
     @swagger_serializer_method(serializer_or_field=RelationSerializer)
     def get_relations(self, obj):
