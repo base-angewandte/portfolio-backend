@@ -15,6 +15,19 @@ from media_server.models import get_image_for_entry, has_entry_media
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
+class ParentEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
+        fields = ('id', 'title', 'type',)
+        read_only_fields = fields
+
+
+class ParentSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    date_created = serializers.DateField(read_only=True)
+    parent = ParentEntrySerializer(read_only=True)
+
+
 class RelatedEntrySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -27,13 +40,14 @@ class RelatedEntrySerializer(serializers.ModelSerializer):
         return get_image_for_entry(obj.pk)
 
 
-class RelationsSerializer(serializers.Serializer):
+class RelationSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     to = RelatedEntrySerializer(read_only=True)
 
 
 class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    parents = serializers.SerializerMethodField()
     relations = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
     has_media = serializers.SerializerMethodField()
@@ -98,7 +112,22 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'has_media': OrderedDict([('hidden', True)]),
         }
 
-    @swagger_serializer_method(serializer_or_field=RelationsSerializer)
+    @swagger_serializer_method(serializer_or_field=ParentSerializer)
+    def get_parents(self, obj):
+        ret = []
+        for relation in Relation.objects.select_related('from_entry').filter(to_entry=obj):
+            ret.append({
+                'id': relation.pk,
+                'parent': {
+                    'id': relation.from_entry.pk,
+                    'title': relation.from_entry.title,
+                    'type': relation.from_entry.type,
+                },
+                'date_created': relation.date_created,
+            })
+        return ret
+
+    @swagger_serializer_method(serializer_or_field=RelationSerializer)
     def get_relations(self, obj):
         ret = []
         for relation in Relation.objects.select_related('to_entry').filter(from_entry=obj):
