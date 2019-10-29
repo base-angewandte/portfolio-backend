@@ -13,7 +13,7 @@ from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema
 
 ICON_DEFAULT = static('img/sheet-empty.svg')
-ICON_EVENT = static('img/calendar-number.svg')
+ICON_EVENT = static('img/calendar-many.svg')
 
 ACTIVE_TUPLES = []
 ACTIVE_TYPES = []
