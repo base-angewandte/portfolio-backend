@@ -40,7 +40,7 @@ class RelatedEntrySerializer(serializers.ModelSerializer):
         return get_image_for_entry(obj.pk)
 
 
-class RelationSerializer(serializers.Serializer):
+class RelationsSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     to = RelatedEntrySerializer(read_only=True)
 
@@ -127,7 +127,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             })
         return ret
 
-    @swagger_serializer_method(serializer_or_field=RelationSerializer)
+    @swagger_serializer_method(serializer_or_field=RelationsSerializer)
     def get_relations(self, obj):
         ret = []
         for relation in Relation.objects.select_related('to_entry').filter(from_entry=obj):
