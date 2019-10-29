@@ -15,6 +15,19 @@ from media_server.models import get_image_for_entry, has_entry_media
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
+class ParentEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
+        fields = ('id', 'title', 'type',)
+        read_only_fields = fields
+
+
+class ParentSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    date_created = serializers.DateField(read_only=True)
+    parent = ParentEntrySerializer(read_only=True)
+
+
 class RelatedEntrySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
