@@ -110,7 +110,7 @@ class BaseSchema(Schema):
                             try:
                                 roles.append(r.get('label').get(lang))
                             except AttributeError:
-                                logger.error('Missing label for role {}'.format(r))
+                                logger.warning('Missing label for role {}'.format(r))
                                 label = get_preflabel(r.get('source').split('/')[-1])
                                 if label:
                                     roles.append(label)
