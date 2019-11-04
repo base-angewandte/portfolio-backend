@@ -15,23 +15,6 @@ from media_server.models import get_image_for_entry, has_entry_media
 from . import CleanModelSerializer, SwaggerMetaModelSerializer
 
 
-class ParentEntrySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entry
-        fields = (
-            'id',
-            'title',
-            'type',
-        )
-        read_only_fields = fields
-
-
-class ParentSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    date_created = serializers.DateField(read_only=True)
-    parent = ParentEntrySerializer(read_only=True)
-
-
 class RelatedEntrySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -49,8 +32,15 @@ class RelatedEntrySerializer(serializers.ModelSerializer):
         return get_image_for_entry(obj.pk)
 
 
+class ParentSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    date_created = serializers.DateField(read_only=True)
+    parent = RelatedEntrySerializer(read_only=True)
+
+
 class RelationsSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
+    date_created = serializers.DateField(read_only=True)
     to = RelatedEntrySerializer(read_only=True)
 
 
@@ -142,12 +132,13 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             ret.append(
                 {
                     'id': relation.pk,
+                    'date_created': relation.date_created,
                     'parent': {
                         'id': relation.from_entry.pk,
                         'title': relation.from_entry.title,
                         'type': relation.from_entry.type,
+                        'image': get_image_for_entry(relation.from_entry.pk),
                     },
-                    'date_created': relation.date_created,
                 }
             )
         return ret
@@ -159,6 +150,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             ret.append(
                 {
                     'id': relation.pk,
+                    'date_created': relation.date_created,
                     'to': {
                         'id': relation.to_entry.pk,
                         'title': relation.to_entry.title,
