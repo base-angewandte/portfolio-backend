@@ -160,8 +160,7 @@ class Media(models.Model):
                 else:
                     logger.error(
                         'Error while converting {}:\n{}'.format(
-                            dict(TYPE_CHOICES).get(self.type),
-                            process.stderr.decode('utf-8'),
+                            dict(TYPE_CHOICES).get(self.type), process.stderr.decode('utf-8'),
                         )
                     )
                     self.status = STATUS_ERROR
@@ -204,27 +203,18 @@ class Media(models.Model):
             'license': self.license,
         }
         if self.type == AUDIO_TYPE:
-            data.update({
-                'mp3': self.get_url('listen.mp3'),
-            })
+            data.update({'mp3': self.get_url('listen.mp3')})
         elif self.type == DOCUMENT_TYPE:
-            data.update({
-                'thumbnail': self.get_image(),
-                'pdf': self.get_url('preview.pdf'),
-            })
+            data.update({'thumbnail': self.get_image(), 'pdf': self.get_url('preview.pdf')})
         elif self.type == IMAGE_TYPE:
-            data.update({
-                'thumbnail': self.get_image(),
-                'previews': self.get_previews(),
-            })
+            data.update({'thumbnail': self.get_image(), 'previews': self.get_previews()})
         elif self.type == VIDEO_TYPE:
-            data.update({
-                'cover': {
-                    'gif': self.get_url('cover.gif'),
-                    'jpg': self.get_image(),
-                },
-                'playlist': self.get_url('playlist.m3u8'),
-            })
+            data.update(
+                {
+                    'cover': {'gif': self.get_url('cover.gif'), 'jpg': self.get_image()},
+                    'playlist': self.get_url('playlist.m3u8'),
+                }
+            )
 
         return data
 
@@ -309,8 +299,7 @@ def get_media_for_entry(entry_id, flat=True):
         ret.append(data)
 
     ret += list(
-        Media.objects
-        .filter(entry_id=entry_id)
+        Media.objects.filter(entry_id=entry_id)
         .exclude(id__in=exclude)
         .annotate(response_code=Value(202, IntegerField()))
         .values('id', 'response_code')
@@ -340,6 +329,7 @@ def repair():
 
 
 # Signal handling
+
 
 @receiver(post_save, sender=Media)
 def media_post_save(sender, instance, created, *args, **kwargs):

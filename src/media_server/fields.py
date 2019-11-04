@@ -12,13 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExifField(DjangoExifField):
-    def update_exif(
-            self,
-            instance: models.Model,
-            force: bool = False,
-            commit: bool = False,
-            **kwargs,
-    ) -> None:
+    def update_exif(self, instance: models.Model, force: bool = False, commit: bool = False, **kwargs,) -> None:
         """
         Load exif data from file.
         """
@@ -44,17 +38,14 @@ class ExifField(DjangoExifField):
             # modified by Philipp Mayer
             logger.warning('Could not read metainformation from file: %s', file_.path)
             # create fallback data
-            exif_json = json.dumps([{
-                'FileSize': {
-                    'desc': 'File Size',
-                    'num': file_.size,
-                    'val': humanize_size(file_.size),
-                },
-                'MIMEType': {
-                    'desc': 'MIME Type',
-                    'val': instance.mime_type,
-                },
-            }])
+            exif_json = json.dumps(
+                [
+                    {
+                        'FileSize': {'desc': 'File Size', 'num': file_.size, 'val': humanize_size(file_.size)},
+                        'MIMEType': {'desc': 'MIME Type', 'val': instance.mime_type},
+                    }
+                ]
+            )
 
         try:
             exif_data = json.loads(exif_json)[0]

@@ -11,7 +11,10 @@ from . import CleanModelSerializer
 class RelationSerializer(CleanModelSerializer):
     class Meta:
         model = Relation
-        fields = ('from_entry', 'to_entry', )
+        fields = (
+            'from_entry',
+            'to_entry',
+        )
 
         validators = [
             UniqueTogetherValidator(

@@ -14,8 +14,7 @@ from ..utils import years_from_date_location_group_field
 ICON = ICON_EVENT
 
 TYPES = get_collection_members(
-    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants',
-    use_cache=False,
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants', use_cache=False,
 )
 
 
@@ -27,8 +26,7 @@ class AwardSchema(BaseSchema):
     contributors = get_contributors_field({'order': 5})
     date_location = get_date_location_group_field({'order': 6})
     award_ceremony = get_date_time_field(
-        {'field_format': 'half', 'order': 7},
-        label=get_preflabel_lazy('award_ceremony'),
+        {'field_format': 'half', 'order': 7}, label=get_preflabel_lazy('award_ceremony'),
     )
     url = get_url_field({'order': 9, 'field_format': 'half'})
 

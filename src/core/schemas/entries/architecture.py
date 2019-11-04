@@ -17,10 +17,7 @@ class ArchitectureSchema(BaseSchema):
     architecture = get_contributors_field_for_role('architecture', {'order': 1})
     contributors = get_contributors_field({'order': 2})
     date_location = get_date_location_group_field({'order': 3})
-    material = get_material_field({
-        'field_format': 'half',
-        'order': 4,
-    })
+    material = get_material_field({'field_format': 'half', 'order': 4})
     format = get_format_field({'order': 5})
     url = get_url_field({'order': 6})
 

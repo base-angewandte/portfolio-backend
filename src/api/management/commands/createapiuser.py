@@ -20,6 +20,6 @@ class Command(BaseCommand):
                 user.save()
 
             token = Token.objects.create(user=user)
-            self.stdout.write(self.style.SUCCESS(
-                'Successfully created token for user "{}": {}'.format(user.username, token.key))
+            self.stdout.write(
+                self.style.SUCCESS('Successfully created token for user "{}": {}'.format(user.username, token.key))
             )

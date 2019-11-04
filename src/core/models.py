@@ -21,9 +21,7 @@ class Entry(AbstractBaseModel):
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)
-    subtitle = models.CharField(
-        verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True,
-    )
+    subtitle = models.CharField(verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True,)
     type = JSONField(verbose_name=get_preflabel_lazy('type'), validators=[validate_type], blank=True, null=True)
     notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
@@ -86,13 +84,8 @@ class Entry(AbstractBaseModel):
                 if isinstance(value, dict):
                     value = value.get('label', {}).get(lang)
                 elif isinstance(value, list):
-                    value = [
-                        x.get('label', {}).get(lang) for x in value
-                    ]
-                ret['data'].append({
-                    'label': self._meta.get_field(field).verbose_name,
-                    'value': value,
-                })
+                    value = [x.get('label', {}).get(lang) for x in value]
+                ret['data'].append({'label': self._meta.get_field(field).verbose_name, 'value': value})
         if self.texts:
             texts = []
             language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
@@ -102,21 +95,12 @@ class Entry(AbstractBaseModel):
                     if len(text['data']) > 1:
                         for t in text['data']:
                             if t.get('language', {}).get('source') == language_source:
-                                texts.append({
-                                    'label': text_type,
-                                    'value': t.get('text'),
-                                })
+                                texts.append({'label': text_type, 'value': t.get('text')})
                     else:
                         t = text['data'][0]
-                        texts.append({
-                            'label': text_type,
-                            'value': t.get('text'),
-                        })
+                        texts.append({'label': text_type, 'value': t.get('text')})
             if texts:
-                ret['data'].append({
-                    'label': get_altlabel_lazy('text'),
-                    'value': texts,
-                })
+                ret['data'].append({'label': get_altlabel_lazy('text'), 'value': texts})
         schema = get_schema(self.type.get('source'))
         data = self.data
         if schema and data:
@@ -136,17 +120,11 @@ class Entry(AbstractBaseModel):
             raise ValidationError(_('Data without type'))
 
     def add_relation(self, entry):
-        relation, created = Relation.objects.get_or_create(
-            from_entry=self,
-            to_entry=entry,
-        )
+        relation, created = Relation.objects.get_or_create(from_entry=self, to_entry=entry,)
         return relation
 
     def remove_relation(self, entry):
-        Relation.objects.filter(
-            from_entry=self,
-            to_entry=entry,
-        ).delete()
+        Relation.objects.filter(from_entry=self, to_entry=entry,).delete()
         return True
 
     def get_relations(self):
@@ -162,7 +140,10 @@ class Relation(AbstractBaseModel):
     to_entry = models.ForeignKey(Entry, related_name='to_entries', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('from_entry', 'to_entry',)
+        unique_together = (
+            'from_entry',
+            'to_entry',
+        )
 
     def clean(self):
         if self.from_entry.owner != self.to_entry.owner:

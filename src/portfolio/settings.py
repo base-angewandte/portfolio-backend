@@ -39,6 +39,7 @@ try:
     from .secret_key import SECRET_KEY
 except ImportError:
     from django.core.management.utils import get_random_secret_key
+
     with open(os.path.join(BASE_DIR, PROJECT_NAME, 'secret_key.py'), 'w+') as f:
         SECRET_KEY = get_random_secret_key()
         f.write("SECRET_KEY = '%s'\n" % SECRET_KEY)
@@ -47,6 +48,7 @@ try:
     from .hashids_salt import HASHIDS_SALT
 except ImportError:
     from django.core.management.utils import get_random_secret_key
+
     with open(os.path.join(BASE_DIR, PROJECT_NAME, 'hashids_salt.py'), 'w+') as f:
         HASHIDS_SALT = get_random_secret_key()
         f.write("HASHIDS_SALT = '%s'\n" % HASHIDS_SALT)
@@ -57,11 +59,21 @@ HASHIDS = Hashids(salt=HASHIDS_SALT, min_length=16)
 DEBUG = env.bool('DEBUG', default=False)
 
 # Detect if executed under test
-TESTING = any(test in sys.argv for test in (
-    'test', 'csslint', 'jenkins', 'jslint',
-    'jtest', 'lettuce', 'pep8', 'pyflakes',
-    'pylint', 'sloccount',
-))
+TESTING = any(
+    test in sys.argv
+    for test in (
+        'test',
+        'csslint',
+        'jenkins',
+        'jslint',
+        'jtest',
+        'lettuce',
+        'pep8',
+        'pyflakes',
+        'pylint',
+        'sloccount',
+    )
+)
 
 DOCKER = env.bool('DOCKER', default=True)
 
@@ -91,7 +103,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
@@ -102,7 +113,6 @@ INSTALLED_APPS = [
     'django_rq',
     'django_cleanup.apps.CleanupConfig',
     'corsheaders',
-
     # Project apps
     'general',
     'core',
@@ -168,7 +178,9 @@ MIDDLEWARE = [
 ]
 
 if BEHIND_PROXY:
-    MIDDLEWARE += ['general.middleware.SetRemoteAddrFromForwardedFor', ]
+    MIDDLEWARE += [
+        'general.middleware.SetRemoteAddrFromForwardedFor',
+    ]
     USE_X_FORWARDED_HOST = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -213,18 +225,10 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -251,9 +255,7 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATICFILES_DIRS = (
-    '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'static')), os.sep),
-)
+STATICFILES_DIRS = ('{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'static')), os.sep),)
 STATIC_URL = '{}/s/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
 STATIC_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'static')), os.sep)
 
@@ -277,54 +279,31 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-        'simple_with_time': {
-            'format': '%(levelname)s %(asctime)s %(message)s',
-        },
+        'verbose': {'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'},
+        'simple': {'format': '%(levelname)s %(message)s'},
+        'simple_with_time': {'format': '%(levelname)s %(asctime)s %(message)s'},
     },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
+        'null': {'level': 'DEBUG', 'class': 'logging.NullHandler'},
+        'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'simple'},
         'file': {
             'level': 'DEBUG',
             'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'application.log'),
-            'maxBytes': 1024*1024*5,  # 5 MB
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 1000,
             'use_gzip': True,
             'delay': True,
             'formatter': 'verbose',
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-        },
-        'stream_to_console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
-        'rq_console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple_with_time',
-        },
+        'mail_admins': {'level': 'ERROR', 'class': 'django.utils.log.AdminEmailHandler'},
+        'stream_to_console': {'level': 'DEBUG', 'class': 'logging.StreamHandler'},
+        'rq_console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'simple_with_time'},
         'rq_file': {
             'level': 'DEBUG',
             'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'rq.log'),
-            'maxBytes': 1024*1024*5,  # 5 MB
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 1000,
             'use_gzip': True,
             'delay': True,
@@ -332,27 +311,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {
-            'handlers': ['console', 'file', 'mail_admins'],
-            'propagate': True,
-            'level': 'INFO',
-        },
-        'django': {
-            'handlers': ['console', 'file', 'mail_admins'],
-            'propagate': True,
-            'level': 'INFO',
-        },
-        'django.request': {
-            'handlers': ['console', 'file', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-        'rq.worker': {
-            'handlers': ['rq_console', 'rq_file', 'mail_admins'],
-            'level': 'DEBUG',
-            'propagate': False,
-        }
-    }
+        '': {'handlers': ['console', 'file', 'mail_admins'], 'propagate': True, 'level': 'INFO'},
+        'django': {'handlers': ['console', 'file', 'mail_admins'], 'propagate': True, 'level': 'INFO'},
+        'django.request': {'handlers': ['console', 'file', 'mail_admins'], 'level': 'ERROR', 'propagate': True},
+        'rq.worker': {'handlers': ['rq_console', 'rq_file', 'mail_admins'], 'level': 'DEBUG', 'propagate': False},
+    },
 }
 
 """ Cache settings """
@@ -360,25 +323,14 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://{}:6379/0'.format('{}-redis'.format(PROJECT_NAME) if DOCKER else 'localhost'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
     }
 }
 
 RQ_QUEUES = {
-    'default': {
-        'USE_REDIS_CACHE': 'default',
-        'DEFAULT_TIMEOUT': 500,
-    },
-    'video': {
-        'USE_REDIS_CACHE': 'default',
-        'DEFAULT_TIMEOUT': 7200,
-    },
-    'high': {
-        'USE_REDIS_CACHE': 'default',
-        'DEFAULT_TIMEOUT': 7200,
-    },
+    'default': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 500},
+    'video': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
+    'high': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
 }
 
 if DEBUG or TESTING:
@@ -405,12 +357,8 @@ CORS_ORIGIN_WHITELIST = env.list('CORS_ORIGIN_WHITELIST', default=[])
 CORS_URLS_REGEX = r'^/(api|autosuggest)/.*$'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         # 'rest_framework.renderers.BrowsableAPIRenderer',
@@ -426,9 +374,7 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'sort',
 }
 
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {}
-}
+SWAGGER_SETTINGS = {'SECURITY_DEFINITIONS': {}}
 
 OPEN_API_VERSION = env.str('OPEN_API_VERSION', default='2.0')
 ACTIVE_SCHEMAS = env.list(
@@ -450,16 +396,16 @@ ACTIVE_SCHEMAS = env.list(
         'sculpture',
         'software',
         'video',
-    ]
+    ],
 )
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE.insert(
         MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
-        'debug_toolbar.middleware.DebugToolbarMiddleware'
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
-    INTERNAL_IPS = ('127.0.0.1', )
+    INTERNAL_IPS = ('127.0.0.1',)
 
 SKOSMOS_API = 'https://voc.uni-ak.ac.at/skosmos/rest/v1/'
 TAX_ID = 'potax'
@@ -481,26 +427,18 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: None,
         apiconfig.TIMEOUT: 10,
-        apiconfig.HEADER: {
-            'Authorization': 'Bearer {}'.format(ANGEWANDTE_API_KEY)
-        },
+        apiconfig.HEADER: {'Authorization': 'Bearer {}'.format(ANGEWANDTE_API_KEY)},
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {
-            'format': 'json:suggest',
-            'filter': 'type:Person',
-        },
+        apiconfig.PAYLOAD: {'format': 'json:suggest', 'filter': 'type:Person'},
         apiconfig.HEADER: ACCEPT_LANGUAGE_HEADER,
     },
     'GND_INSTITUTION': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {
-            'format': 'json:suggest',
-            'filter': 'type:CorporateBody',
-        }
+        apiconfig.PAYLOAD: {'format': 'json:suggest', 'filter': 'type:CorporateBody'},
     },
     'VIAF_PERSON': {
         apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
@@ -512,14 +450,10 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: None,
     },
-
     'GND_PLACE': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {
-            'format': 'json:suggest',
-            'filter': 'type:PlaceOrGeographicName',
-        }
+        apiconfig.PAYLOAD: {'format': 'json:suggest', 'filter': 'type:PlaceOrGeographicName'},
     },
     'VIAF_PLACE': {
         apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
@@ -529,11 +463,7 @@ SOURCES = {
     'GEONAMES_PLACE': {
         apiconfig.URL: 'http://api.geonames.org/search',
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {
-            'maxRows': 10,
-            'username': GEONAMES_USER,
-            'type': 'json',
-        }
+        apiconfig.PAYLOAD: {'maxRows': 10, 'username': GEONAMES_USER, 'type': 'json'},
     },
     'BASE_KEYWORDS': {
         apiconfig.URL: '{}basekw/search'.format(SKOSMOS_API),
@@ -542,7 +472,7 @@ SOURCES = {
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
             'group': 'http://base.uni-ak.ac.at/recherche/keywords/collection_base',
-            'fields': 'prefLabel'
+            'fields': 'prefLabel',
         },
     },
     'VOC_KEYWORDS': {
@@ -550,11 +480,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         # NOTE: SKOSMOS API does not return anything if the query string is simply a wildward
-        apiconfig.PAYLOAD: {
-            'lang': get_language_lazy(),
-            'fields': 'prefLabel'
-
-        },
+        apiconfig.PAYLOAD: {'lang': get_language_lazy(), 'fields': 'prefLabel'},
     },
     'VOC_ROLES': {
         apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
@@ -562,11 +488,10 @@ SOURCES = {
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
             'lang': get_language_lazy(),
-
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/role',
             'unique': True,
-            'fields': 'prefLabel'
-        }
+            'fields': 'prefLabel',
+        },
     },
     'VOC_FORMATS': {
         apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
@@ -576,8 +501,8 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/format_type',
             'unique': True,
-            'fields': 'prefLabel'
-        }
+            'fields': 'prefLabel',
+        },
     },
     'VOC_MATERIALS': {
         apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
@@ -587,18 +512,14 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/material_type',
             'unique': True,
-            'fields': 'prefLabel'
-        }
+            'fields': 'prefLabel',
+        },
     },
     'VOC_LANGUAGES': {
         apiconfig.URL: '{}languages/search'.format(SKOSMOS_API),
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
-        apiconfig.PAYLOAD: {
-            'lang': get_language_lazy(),
-            'unique': True,
-            'fields': 'prefLabel'
-        }
+        apiconfig.PAYLOAD: {'lang': get_language_lazy(), 'unique': True, 'fields': 'prefLabel'},
     },
     'VOC_TEXTTYPES': {
         apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
@@ -608,8 +529,8 @@ SOURCES = {
             'lang': get_language_lazy(),
             'parent': 'http://base.uni-ak.ac.at/portfolio/vocabulary/text_type',
             'unique': True,
-            'fields': 'prefLabel'
-        }
+            'fields': 'prefLabel',
+        },
     },
     'PELIAS': {
         apiconfig.URL: 'https://api.geocode.earth/v1/autocomplete',
@@ -620,9 +541,8 @@ SOURCES = {
             'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
             'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
             'lang': get_language_lazy(),
-        }
-    }
-
+        },
+    },
 }
 
 ANGEWANDTE_MAPPING = {
@@ -662,7 +582,7 @@ PELIAS_MAPPING = {
     'locality': ('properties', 'locality'),
     'region': ('properties', 'region'),
     'country': ('properties', 'country'),
-    'geometry': ('geometry', ),
+    'geometry': ('geometry',),
 }
 
 
@@ -671,25 +591,16 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
-    'GND_PERSON': {
-        apiconfig.DIRECT: GND_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
-    },
-    'GND_INSTITUTION': {
-        apiconfig.DIRECT: GND_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
-    },
+    'GND_PERSON': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
+    'GND_INSTITUTION': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
     'VIAF_PERSON': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'personal'},
         apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {
-                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
-                apiconfig.FIELDS: {'p1': 'viafid'},
-            },
-        }
+            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+        },
     },
     'VIAF_INSTITUTION': {
         apiconfig.RESULT: 'result',
@@ -697,28 +608,18 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {
-                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
-                apiconfig.FIELDS: {'p1': 'viafid'},
-            },
-        }
+            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+        },
     },
-
-    'GND_PLACE': {
-        apiconfig.DIRECT: GND_MAPPING,
-        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
-    },
+    'GND_PLACE': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
     'VIAF_PLACE': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'geographic'},
         apiconfig.DIRECT: VIAF_PLACES_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {
-                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
-                apiconfig.FIELDS: {'p1': 'viafid'},
-            },
-        }
+            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+        },
     },
     'GEONAMES_PLACE': {
         apiconfig.RESULT: 'geonames',
@@ -729,7 +630,7 @@ RESPONSE_MAPS = {
                 apiconfig.RULE: '"http://api.geonames.org/get?geonameId={p1}"',
                 apiconfig.FIELDS: {'p1': 'geonameId'},
             },
-        }
+        },
     },
     'BASE_KEYWORDS': {
         apiconfig.RESULT: 'results',
@@ -741,10 +642,7 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: VOC_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
-    'VOC_ROLES': {
-        apiconfig.RESULT: 'results',
-        apiconfig.DIRECT: VOC_MAPPING,
-    },
+    'VOC_ROLES': {apiconfig.RESULT: 'results', apiconfig.DIRECT: VOC_MAPPING},
     'VOC_FORMATS': {
         apiconfig.RESULT: 'results',
         apiconfig.DIRECT: VOC_MAPPING,
@@ -760,10 +658,7 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: VOC_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"voc"'}},
     },
-    'VOC_TEXTTYPES': {
-        apiconfig.RESULT: 'results',
-        apiconfig.DIRECT: VOC_MAPPING,
-    },
+    'VOC_TEXTTYPES': {apiconfig.RESULT: 'results', apiconfig.DIRECT: VOC_MAPPING},
     'PELIAS': {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
@@ -773,8 +668,8 @@ RESPONSE_MAPS = {
                 apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
-        }
-    }
+        },
+    },
 }
 
 CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION')
@@ -783,21 +678,21 @@ if 'uni-ak.ac.at' in SITE_URL:
     CONTRIBUTORS = tuple(x for x in ['ANGEWANDTE_PERSON', *CONTRIBUTORS])
 
 if PELIAS_API_KEY:
-    PLACES = ('PELIAS', )
+    PLACES = ('PELIAS',)
 elif GEONAMES_USER:
-    PLACES = ('GND_PLACE', 'GEONAMES_PLACE', )
+    PLACES = (
+        'GND_PLACE',
+        'GEONAMES_PLACE',
+    )
 else:
-    PLACES = ('GND_PLACE', )
+    PLACES = ('GND_PLACE',)
 
 
 # if an autosuggest endpoint is not a key in this dict then the response of the API will be empty
 ACTIVE_SOURCES = {
     'contributors': CONTRIBUTORS,
     'places': PLACES,
-    'keywords': {
-        'all': 'core.skosmos.get_base_keywords',
-        'search': 'core.skosmos.get_keywords',
-    },
+    'keywords': {'all': 'core.skosmos.get_base_keywords', 'search': 'core.skosmos.get_keywords'},
     'roles': 'core.skosmos.get_roles',
     'formats': 'core.skosmos.get_formats',
     'materials': 'core.skosmos.get_materials',

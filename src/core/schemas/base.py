@@ -61,10 +61,7 @@ class GenericModel:
                 else:
                     value = str(v)
                 if value:
-                    out.append({
-                        'label': label,
-                        'value': value,
-                    })
+                    out.append({'label': label, 'value': value})
         return out
 
 

@@ -46,12 +46,7 @@ def protected_view(request, path, server, as_download=False):
         return response
 
     elif server == 'django':
-        return serve(
-            request,
-            path,
-            document_root=settings.PROTECTED_MEDIA_ROOT,
-            show_indexes=False,
-        )
+        return serve(request, path, document_root=settings.PROTECTED_MEDIA_ROOT, show_indexes=False,)
 
     return HttpResponseServerError()
 
@@ -64,9 +59,7 @@ license_param = openapi.Parameter(
     description='media license json object',
     required=False,
     type=openapi.TYPE_STRING,
-    **{'x-attrs': {
-        'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})
-    }}
+    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}}
 )
 
 
@@ -103,8 +96,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'),
-                        status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
                     )
 
                 serializer = self.get_serializer(data=request.data, partial=partial)
@@ -118,22 +110,22 @@ class MediaViewSet(viewsets.GenericViewSet):
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={
-        200: openapi.Response(''),
-        400: openapi.Response('Bad request'),
-        415: openapi.Response('Unsupported media type'),
-        422: openapi.Response('User quota exceeded'),
-    }, manual_parameters=[license_param])
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(''),
+            400: openapi.Response('Bad request'),
+            415: openapi.Response('Unsupported media type'),
+            422: openapi.Response('User quota exceeded'),
+        },
+        manual_parameters=[license_param],
+    )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
 
             if not check_quota(request.user, serializer.validated_data['file'].size):
-                return Response(
-                    _('No space left for user'),
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
+                return Response(_('No space left for user'), status=status.HTTP_422_UNPROCESSABLE_ENTITY,)
 
             mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
             media_type = get_type_for_mime_type(mime_type)
@@ -166,12 +158,14 @@ class MediaViewSet(viewsets.GenericViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(responses={
-        200: openapi.Response(''),
-        202: openapi.Response('Media object is still converting'),
-        403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Media object not found'),
-    })
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(''),
+            202: openapi.Response('Media object is still converting'),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Media object not found'),
+        }
+    )
     def retrieve(self, request, pk=None, *args, **kwargs):
         if pk:
             m = self._get_media_object(pk)
@@ -179,14 +173,10 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'),
-                        status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
                     )
                 elif m.status != 2:
-                    return Response(
-                        {'id': pk},
-                        status=status.HTTP_202_ACCEPTED
-                    )
+                    return Response({'id': pk}, status=status.HTTP_202_ACCEPTED)
 
                 return Response(m.get_data())
 
@@ -201,20 +191,25 @@ class MediaViewSet(viewsets.GenericViewSet):
     # def update(self, request, pk=None, *args, **kwargs):
     #     return self._update(request, pk=pk, partial=False, *args, **kwargs)
 
-    @swagger_auto_schema(responses={
-        204: openapi.Response(''),
-        400: openapi.Response('Bad request'),
-        403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Media object not found'),
-    }, manual_parameters=[license_param])
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response(''),
+            400: openapi.Response('Bad request'),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Media object not found'),
+        },
+        manual_parameters=[license_param],
+    )
     def partial_update(self, request, pk=None, *args, **kwargs):
         return self._update(request, pk=pk, partial=True, *args, **kwargs)
 
-    @swagger_auto_schema(responses={
-        204: openapi.Response(''),
-        403: openapi.Response('Access not allowed'),
-        404: openapi.Response('Media object not found'),
-    })
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response(''),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Media object not found'),
+        }
+    )
     def destroy(self, request, pk=None, *args, **kwargs):
         if pk:
             m = self._get_media_object(pk)
@@ -222,8 +217,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'),
-                        status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
                     )
 
                 m.delete()

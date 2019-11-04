@@ -23,7 +23,9 @@ def autosuggest(data, query, language=None):
 
     query = unaccent(query.lower())
 
-    result = list(filter(lambda d: query in unaccent(d['label'].get(language, d['label'].get('en', '')).lower()), data))
+    result = list(
+        filter(lambda d: query in unaccent(d['label'].get(language, d['label'].get('en', '')).lower()), data)
+    )
 
     return result
 
@@ -73,13 +75,9 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
             if i.get('type') == 'skos:Concept' and i['uri'] != uri:
                 md = {'source': i['uri']}
                 if isinstance(i['prefLabel'], list):
-                    md['label'] = {
-                        d['lang']: d['value'] for d in i['prefLabel']
-                    }
+                    md['label'] = {d['lang']: d['value'] for d in i['prefLabel']}
                 else:
-                    md['label'] = {
-                        i['prefLabel']['lang']: i['prefLabel']['value']
-                    }
+                    md['label'] = {i['prefLabel']['lang']: i['prefLabel']['value']}
                 if source_name:
                     md['source_name'] = source_name
                 data.append(md)
@@ -87,18 +85,14 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
                 if fetch_children:
                     cd = get_search_data(i['uri'])
                     for ci in cd:
-                        cmd = {
-                            'source': ci['uri'],
-                            'label': ci['prefLabels']
-                        }
+                        cmd = {'source': ci['uri'], 'label': ci['prefLabels']}
                         if source_name:
                             cmd['source_name'] = source_name
                         data.append(cmd)
 
         if data:
             data = sorted(
-                data,
-                key=lambda x: x.get('label', {}).get(language, x.get('label', {}).get('en', 'zzz')).lower()
+                data, key=lambda x: x.get('label', {}).get(language, x.get('label', {}).get('en', 'zzz')).lower()
             )
             cache.set(cache_key, data, CACHE_TIME)
 
@@ -115,10 +109,14 @@ def get_disciplines():
     data = cache.get(cache_key, [])
 
     if not data:
-        data = list(filter(
-            lambda x: len(x['source'].split('/')[-1]) % 3 == 0,
-            fetch_data('http://base.uni-ak.ac.at/portfolio/disciplines/oefos', fetch_children=True, source_name='voc')
-        ))
+        data = list(
+            filter(
+                lambda x: len(x['source'].split('/')[-1]) % 3 == 0,
+                fetch_data(
+                    'http://base.uni-ak.ac.at/portfolio/disciplines/oefos', fetch_children=True, source_name='voc'
+                ),
+            )
+        )
 
         if data:
             cache.set(cache_key, data, CACHE_TIME)
@@ -193,10 +191,13 @@ def get_entry_types():
 
     if not data:
         from .schemas import ACTIVE_TYPES
-        data = list(filter(
-            lambda x: x['source'] in ACTIVE_TYPES,
-            fetch_data('http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy')
-        ))
+
+        data = list(
+            filter(
+                lambda x: x['source'] in ACTIVE_TYPES,
+                fetch_data('http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy'),
+            )
+        )
 
         if data:
             cache.set(cache_key, data, CACHE_TIME)

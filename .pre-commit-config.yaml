@@ -12,14 +12,13 @@ repos:
         language_version: python3.7
         types: [python]
         exclude: (/migrations/|/exiffield/)
-# Use black as soon as https://github.com/python/black/pull/826 is merged
-#  - repo: https://github.com/psf/black
-#    rev: stable
-#    hooks:
-#      - id: black
-#        language_version: python3.7
-#        types: [python]
-#        exclude: (/migrations/|/exiffield/)
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+        language_version: python3.7
+        types: [python]
+        exclude: (/migrations/|/exiffield/)
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.8
     hooks:

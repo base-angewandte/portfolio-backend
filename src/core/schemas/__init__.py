@@ -50,9 +50,13 @@ def init():
             {
                 'source': i,
                 'label': {
-                    'de': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'),
-                    'en': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'),
-                }
+                    'de': get_preflabel(
+                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'
+                    ),
+                    'en': get_preflabel(
+                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'
+                    ),
+                },
             }
         )
 
