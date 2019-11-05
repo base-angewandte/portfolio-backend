@@ -114,7 +114,7 @@ class Entry(AbstractBaseModel):
                 try:
                     validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
                 except SchemaValidationError as e:
-                    msg = _('Invalid data: %(error)s') % {'error': e.message}
+                    msg = _('Invalid data: %(error)s') % {'error': e.message}  # noqa: B306
                     raise ValidationError(msg)
         elif self.data:
             raise ValidationError(_('Data without type'))

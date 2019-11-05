@@ -8,7 +8,7 @@ def years_to_string(years: List[str]) -> str:
     sorted_years = sorted(set(years))
     if len(sorted_years) > 1:
         out = []
-        for k, g in groupby(enumerate(sorted_years), lambda x: int(x[0]) - int(x[1])):
+        for _k, g in groupby(enumerate(sorted_years), lambda x: int(x[0]) - int(x[1])):
             lst = list(map(operator.itemgetter(1), g))
             if len(lst) > 1:
                 out.append('{}–{}'.format(lst[0], lst[-1]))

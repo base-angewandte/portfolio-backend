@@ -220,7 +220,7 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
     if not label:
         try:
             g = skosmos.data('{}{}'.format(graph, concept))
-            for uri, l in g.subject_objects(SKOS.altLabel):
+            for _uri, l in g.subject_objects(SKOS.altLabel):
                 if l.language == language:
                     label = l
                     break

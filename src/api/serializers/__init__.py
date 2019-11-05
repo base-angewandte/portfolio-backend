@@ -24,6 +24,6 @@ class SwaggerMetaModelSerializer(serializers.ModelSerializer):
                 field = self.fields.get(f)
                 if field and attrs:
                     if hasattr(field, 'Meta'):
-                        setattr(field.Meta, 'swagger_schema_fields', {'x-attrs': attrs})
+                        field.Meta.swagger_schema_fields = {'x-attrs': attrs}
                     else:
-                        setattr(field, 'Meta', self._swagger_meta(attrs=attrs))
+                        field.Meta = self._swagger_meta(attrs=attrs)
