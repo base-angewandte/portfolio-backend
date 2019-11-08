@@ -117,10 +117,11 @@ class Entry(AbstractBaseModel):
                     'label': get_altlabel_lazy('text'),
                     'value': texts,
                 })
-        schema = get_schema(self.type.get('source'))
-        data = self.data
-        if schema and data:
-            ret['data'] += schema().data_display(data)
+        if self.type:
+            schema = get_schema(self.type.get('source'))
+            data = self.data
+            if schema and data:
+                ret['data'] += schema().data_display(data)
         return ret
 
     def clean(self):
