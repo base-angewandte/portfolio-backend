@@ -233,7 +233,13 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
 
 
 def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None):
-    return get_altlabel(collection, project, graph, lang).replace('Sammlung', '').replace('Collection', '').strip()
+    return (
+        get_altlabel(collection, project, graph, lang)
+        .replace('Sammlung', '')
+        .replace('Collection', '')
+        .replace('JART', '')
+        .strip()
+    )
 
 
 def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
