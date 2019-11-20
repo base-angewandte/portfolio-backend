@@ -8,6 +8,7 @@ search_vectors = (
     + SearchVector('subtitle', weight='B')
     + SearchVectorJSON('texts', weight='B')
     + SearchVectorJSON('data', weight='B')
+    + SearchVectorJSON('keywords', weight='B')
     + SearchVector('notes', weight='C')
 )
 
