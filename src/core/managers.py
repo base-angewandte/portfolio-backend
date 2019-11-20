@@ -4,11 +4,12 @@ from django.db import models
 from general.postgres import SearchVectorJSON
 
 search_vectors = (
-    SearchVector('title', weight='A') +
-    SearchVector('subtitle', weight='B') +
-    SearchVectorJSON('texts', weight='B') +
-    SearchVectorJSON('data', weight='B') +
-    SearchVector('notes', weight='C')
+    SearchVector('title', weight='A')
+    + SearchVector('subtitle', weight='B')
+    + SearchVectorJSON('texts', weight='B')
+    + SearchVectorJSON('data', weight='B')
+    + SearchVectorJSON('keywords', weight='B')
+    + SearchVector('notes', weight='C')
 )
 
 
