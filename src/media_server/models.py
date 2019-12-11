@@ -240,6 +240,7 @@ class Media(models.Model):
         # media info
         self.set_mime_type()
         self.set_exif()
+        self.check_mime_type()
 
         # convert
         path = self.file.path
@@ -265,6 +266,18 @@ class Media(models.Model):
 
             if script_path:
                 self.convert(['/bin/bash', script_path, path, destination])
+
+    def check_mime_type(self):
+        exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
+        if exiftool_mime_type and self.mime_type != exiftool_mime_type:
+            logger.warning('MIMEType mismatch: {} != {}'.format(self.mime_type, exiftool_mime_type))
+            # correct some mime types
+            if self.mime_type in [
+                'application/zip',
+                'video/x-ms-asf',
+            ]:
+                self.mime_type = exiftool_mime_type
+                self.type = get_type_for_mime_type(self.mime_type)
 
     def set_mime_type(self):
         self.file.open()
