@@ -254,8 +254,6 @@ class Media(models.Model):
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
             elif self.type == IMAGE_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-tn.sh')
-                if self.mime_type == 'image/vnd.adobe.photoshop':
-                    path += '[0]'
             elif self.type == VIDEO_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
             else:
