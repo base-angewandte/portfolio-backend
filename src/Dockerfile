@@ -1,16 +1,25 @@
 FROM python:3.7
 
 ENV PYTHONUNBUFFERED 1
+ENV EXIFTOOL_VERSION=11.78
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
         ffmpeg \
         ghostscript \
         imagemagick \
-        libimage-exiftool-perl \
         libmagic-dev \
         webp \
     && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
+    && tar xvf Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
+    && cd Image-ExifTool-${EXIFTOOL_VERSION}/ \
+    && perl Makefile.PL \
+    && make test \
+	&& make install \
+	&& cd .. \
+	&& rm -rf Image-ExifTool-${EXIFTOOL_VERSION}*
 
 RUN mkdir /logs
 VOLUME /logs
