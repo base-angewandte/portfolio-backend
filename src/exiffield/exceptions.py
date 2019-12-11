@@ -1,2 +1,0 @@
-class ExifError(Exception):
-    pass

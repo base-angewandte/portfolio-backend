@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -17,9 +18,8 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
-from .utils import user_hash
+from .utils import humanize_size, user_hash
 from .validators import validate_license
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
@@ -86,6 +86,7 @@ IMAGE_MIME_TYPES = [
     'image/x-icon',
     'image/vnd.adobe.photoshop',
     'image/tiff',
+    'image/svg+xml',
 ]
 VIDEO_MIME_TYPES = [
     'video/3gpp2',
@@ -120,7 +121,7 @@ class Media(models.Model):
     entry_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
-    exif = ExifField(source='file')
+    exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license], blank=True, null=True)
 
@@ -239,6 +240,8 @@ class Media(models.Model):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+        self.set_exif()
+        self.check_mime_type()
 
         # convert
         path = self.file.path
@@ -252,8 +255,6 @@ class Media(models.Model):
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
             elif self.type == IMAGE_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-tn.sh')
-                if self.mime_type == 'image/vnd.adobe.photoshop':
-                    path += '[0]'
             elif self.type == VIDEO_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
             else:
@@ -265,11 +266,39 @@ class Media(models.Model):
             if script_path:
                 self.convert(['/bin/bash', script_path, path, destination])
 
+    def check_mime_type(self):
+        exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
+        if exiftool_mime_type and self.mime_type != exiftool_mime_type:
+            logger.warning('MIMEType mismatch: {} != {}'.format(self.mime_type, exiftool_mime_type))
+            # correct some mime types
+            if self.mime_type in [
+                'application/zip',
+                'video/x-ms-asf',
+            ]:
+                self.mime_type = exiftool_mime_type
+                self.type = get_type_for_mime_type(self.mime_type)
+
     def set_mime_type(self):
         self.file.open()
         mime_type = magic.from_buffer(self.file.read(1048576), mime=True)
         self.file.close()
         self.mime_type = mime_type
+        self.save()
+
+    def set_exif(self):
+        try:
+            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path],))[0]
+        except Exception:
+            logger.warning('Could not read metainformation from file: %s', self.file.path)
+            # create fallback data
+            self.exif = json.dumps(
+                [
+                    {
+                        'FileSize': {'desc': 'File Size', 'num': self.file.size, 'val': humanize_size(self.file.size)},
+                        'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
+                    }
+                ]
+            )
         self.save()
 
 
