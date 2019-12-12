@@ -541,6 +541,10 @@ SOURCES = {
             'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
             'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
             'lang': get_language_lazy(),
+            'layers': (
+                'address,venue,neighbourhood,locality,borough,localadmin,county,macrocounty,region,macroregion,country,'
+                'coarse,postalcode'
+            ),
         },
     },
 }
