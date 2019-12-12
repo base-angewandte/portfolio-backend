@@ -440,7 +440,13 @@ def user_data(request, pk=None, *args, **kwargs):
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants'
     )
     exhibitions_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition')
-    conferences_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference')
+    teaching_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_teaching')
+    educations_qualifications_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_education_qualification'
+    )
+    conferences_symposiums_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_symposium'
+    )
     conference_contributions_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution'
     )
@@ -488,10 +494,30 @@ def user_data(request, pk=None, *args, **kwargs):
                 dict(data__contains={'contributors': [{'source': user.username}]}),
             ],
         ),
-        # Conferences
+        # Teaching
         (
-            get_altlabel_collection('collection_conference', lang=lang),
-            dict(type__source__in=conferences_types,),
+            get_altlabel_collection('collection_teaching', lang=lang),
+            dict(type__source__in=teaching_types,),
+            [
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'lecturers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Educations & Qualifications
+        (
+            get_altlabel_collection('collection_education_qualification', lang=lang),
+            dict(type__source__in=educations_qualifications_types,),
+            [
+                dict(data__contains={'organisers': [{'source': user.username}]}),
+                dict(data__contains={'lecturers': [{'source': user.username}]}),
+                dict(data__contains={'contributors': [{'source': user.username}]}),
+            ],
+        ),
+        # Conferences & Symposiums
+        (
+            get_altlabel_collection('collection_conference_symposium', lang=lang),
+            dict(type__source__in=conferences_symposiums_types,),
             [
                 dict(data__contains={'organisers': [{'source': user.username}]}),
                 dict(data__contains={'lecturers': [{'source': user.username}]}),
@@ -620,7 +646,9 @@ def user_data(request, pk=None, *args, **kwargs):
             + research_projects_types
             + awards_and_grants_types
             + exhibitions_types
-            + conferences_types
+            + teaching_types
+            + educations_qualifications_types
+            + conferences_symposiums_types
             + conference_contributions_types
             + architectures_types
             + audios_types
