@@ -86,7 +86,6 @@ IMAGE_MIME_TYPES = [
     'image/x-icon',
     'image/vnd.adobe.photoshop',
     'image/tiff',
-    'image/svg+xml',
 ]
 VIDEO_MIME_TYPES = [
     'video/3gpp2',
