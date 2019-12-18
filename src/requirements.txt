@@ -7,7 +7,7 @@
 apimapper==0.7.7
 apispec==0.39.0
 attrs==19.3.0             # via jsonschema
-certifi==2019.9.11        # via requests
+certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via pip-tools, rq
 concurrent-log-handler==0.9.16
@@ -23,7 +23,7 @@ django-extensions==2.1.7
 django-filter==2.1.0
 django-redis==4.10.0
 django-rq==2.0
-django==2.2.7
+django==2.2.9
 djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 gunicorn==20.0.0
@@ -35,23 +35,23 @@ itypes==1.1.0             # via coreapi
 jinja2==2.10.3            # via coreschema
 jsonpointer==2.0          # via jsonschema
 jsonschema[format]==3.0.1
-lxml==4.4.1               # via python-cas
+lxml==4.4.2               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
 pip-tools==4.2.0
-portalocker==1.5.1        # via concurrent-log-handler
+portalocker==1.5.2        # via concurrent-log-handler
 progressbar2==3.42.0
-psutil==5.6.4             # via rainbow-saddle
+psutil==5.6.7             # via rainbow-saddle
 psycopg2-binary==2.8.2
-pyparsing==2.4.2          # via rdflib
-pyrsistent==0.15.5        # via jsonschema
+pyparsing==2.4.5          # via rdflib
+pyrsistent==0.15.6        # via jsonschema
 python-cas==1.4.0         # via django-cas-ng
 python-dateutil==2.8.1    # via croniter
 python-magic==0.4.15
 python-utils==2.3.0       # via progressbar2
 pytz==2019.3              # via django
-pyyaml==5.1.2             # via apispec, swagger-spec-validator
+pyyaml==5.2               # via apispec, swagger-spec-validator
 rainbow-saddle==0.4.0
 rdflib==4.2.2             # via skosmos-client
 redis==3.3.11             # via django-redis, django-rq, rq
@@ -62,13 +62,13 @@ rq==1.1.0                 # via django-rq, rq-scheduler
 ruamel.yaml.clib==0.2.0   # via ruamel.yaml
 ruamel.yaml==0.16.5       # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, webcolors
+six==1.13.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, webcolors
 skosmos-client==0.3.0
 sqlparse==0.3.0           # via django, django-debug-toolbar
 strict-rfc3339==0.7       # via jsonschema
 swagger-spec-validator==2.4.3  # via drf-yasg
 uritemplate==3.0.0        # via coreapi, drf-yasg
-urllib3==1.25.6           # via requests
+urllib3==1.25.7           # via requests
 webcolors==1.10           # via jsonschema
 werkzeug==0.15.4
 xmltodict==0.12.0
