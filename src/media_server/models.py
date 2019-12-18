@@ -291,14 +291,12 @@ class Media(models.Model):
         except Exception:
             logger.warning('Could not read metainformation from file: %s', self.file.path)
             # create fallback data
-            self.exif = json.dumps(
-                [
-                    {
-                        'FileSize': {'desc': 'File Size', 'num': self.file.size, 'val': humanize_size(self.file.size)},
-                        'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
-                    }
-                ]
-            )
+            self.exif = [
+                {
+                    'FileSize': {'desc': 'File Size', 'num': self.file.size, 'val': humanize_size(self.file.size)},
+                    'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
+                }
+            ]
         self.save()
 
 
