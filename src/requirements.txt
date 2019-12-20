@@ -6,6 +6,7 @@
 #
 apimapper==0.7.7
 apispec==0.39.0
+asgiref==3.2.3            # via django
 attrs==19.3.0             # via jsonschema
 certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
@@ -23,7 +24,7 @@ django-extensions==2.1.7
 django-filter==2.1.0
 django-redis==4.10.0
 django-rq==2.0
-django==2.2.9
+django==3.0.1
 djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 gunicorn==20.0.0
@@ -59,7 +60,6 @@ requests==2.22.0          # via apimapper, coreapi, python-cas, skosmos-client
 rfc3987==1.3.8            # via jsonschema
 rq-scheduler==0.9
 rq==1.1.0                 # via django-rq, rq-scheduler
-ruamel.yaml.clib==0.2.0   # via ruamel.yaml
 ruamel.yaml==0.16.5       # via drf-yasg
 shortuuid==0.5.0
 six==1.13.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, webcolors
@@ -74,4 +74,4 @@ werkzeug==0.15.4
 xmltodict==0.12.0
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==42.0.2        # via gunicorn, jsonschema, markdown
+# setuptools
