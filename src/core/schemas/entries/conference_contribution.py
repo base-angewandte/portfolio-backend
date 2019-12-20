@@ -13,8 +13,7 @@ from ..utils import years_from_date_range_time_range_location_group_field
 ICON = ICON_EVENT
 
 TYPES = get_collection_members(
-    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution',
-    use_cache=False,
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution', use_cache=False,
 )
 
 

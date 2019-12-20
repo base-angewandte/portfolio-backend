@@ -13,7 +13,7 @@ from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema
 
 ICON_DEFAULT = static('img/sheet-empty.svg')
-ICON_EVENT = static('img/calendar-number.svg')
+ICON_EVENT = static('img/calendar-many.svg')
 
 ACTIVE_TUPLES = []
 ACTIVE_TYPES = []
@@ -50,9 +50,13 @@ def init():
             {
                 'source': i,
                 'label': {
-                    'de': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'),
-                    'en': get_preflabel(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'),
-                }
+                    'de': get_preflabel(
+                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'
+                    ),
+                    'en': get_preflabel(
+                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'
+                    ),
+                },
             }
         )
 
@@ -76,19 +80,19 @@ def schema2jsonschema(schema, force_text=False):
 
 
 def get_jsonschema(entry_type, force_text=False):
-    for t, s, i in ACTIVE_TUPLES:
+    for t, s, _i in ACTIVE_TUPLES:
         if entry_type in t:
             return schema2jsonschema(s, force_text)
 
 
 def get_schema(entry_type):
-    for t, s, i in ACTIVE_TUPLES:
+    for t, s, _i in ACTIVE_TUPLES:
         if entry_type in t:
             return s
 
 
 def get_icon(entry_type):
-    for t, s, i in ACTIVE_TUPLES:
+    for t, _s, i in ACTIVE_TUPLES:
         if entry_type in t:
             return i
 

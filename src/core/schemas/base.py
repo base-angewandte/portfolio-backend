@@ -1,8 +1,13 @@
 import json
+import logging
 
 from marshmallow import Schema, post_load
 
 from django.utils.translation import get_language
+
+from ..skosmos import get_preflabel
+
+logger = logging.getLogger(__name__)
 
 
 class GenericModel:
@@ -56,10 +61,7 @@ class GenericModel:
                 else:
                     value = str(v)
                 if value:
-                    out.append({
-                        'label': label,
-                        'value': value,
-                    })
+                    out.append({'label': label, 'value': value})
         return out
 
 
@@ -69,6 +71,7 @@ class BaseSchema(Schema):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contributors_fields = []
+        self.date_fields = []
         self.locations_fields = []
         for fld in self.declared_fields:
             if (
@@ -76,8 +79,11 @@ class BaseSchema(Schema):
                 or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
             ):
                 self.contributors_fields.append(fld)
-            elif 'location' in fld:
-                self.locations_fields.append(fld)
+            else:
+                if 'location' in fld:
+                    self.locations_fields.append(fld)
+                if 'date' in fld:
+                    self.date_fields.append(fld)
 
     @post_load
     def create_object(self, data):
@@ -98,7 +104,13 @@ class BaseSchema(Schema):
                 for c in data[fld]:
                     if c.get('source') == user_source and c.get('roles'):
                         for r in c['roles']:
-                            roles.append(r.get('label').get(lang))
+                            try:
+                                roles.append(r.get('label').get(lang))
+                            except AttributeError:
+                                logger.warning('Missing label for role {}'.format(r))
+                                label = get_preflabel(r.get('source').split('/')[-1])
+                                if label:
+                                    roles.append(label)
         if roles:
             return ', '.join(sorted(set(roles)))
 

@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -9,6 +10,7 @@ import magic
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
+from django.db.models import IntegerField, Value
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -16,9 +18,8 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .fields import ExifField
 from .storages import ProtectedFileSystemStorage
-from .utils import user_hash
+from .utils import humanize_size, user_hash
 from .validators import validate_license
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
@@ -119,7 +120,7 @@ class Media(models.Model):
     entry_id = models.CharField(max_length=22)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     mime_type = models.CharField(blank=True, default='', max_length=255)
-    exif = ExifField(source='file')
+    exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license], blank=True, null=True)
 
@@ -159,8 +160,7 @@ class Media(models.Model):
                 else:
                     logger.error(
                         'Error while converting {}:\n{}'.format(
-                            dict(TYPE_CHOICES).get(self.type),
-                            process.stderr.decode('utf-8'),
+                            dict(TYPE_CHOICES).get(self.type), process.stderr.decode('utf-8'),
                         )
                     )
                     self.status = STATUS_ERROR
@@ -203,27 +203,18 @@ class Media(models.Model):
             'license': self.license,
         }
         if self.type == AUDIO_TYPE:
-            data.update({
-                'mp3': self.get_url('listen.mp3'),
-            })
+            data.update({'mp3': self.get_url('listen.mp3')})
         elif self.type == DOCUMENT_TYPE:
-            data.update({
-                'thumbnail': self.get_image(),
-                'pdf': self.get_url('preview.pdf'),
-            })
+            data.update({'thumbnail': self.get_image(), 'pdf': self.get_url('preview.pdf')})
         elif self.type == IMAGE_TYPE:
-            data.update({
-                'thumbnail': self.get_image(),
-                'previews': self.get_previews(),
-            })
+            data.update({'thumbnail': self.get_image(), 'previews': self.get_previews()})
         elif self.type == VIDEO_TYPE:
-            data.update({
-                'cover': {
-                    'gif': self.get_url('cover.gif'),
-                    'jpg': self.get_image(),
-                },
-                'playlist': self.get_url('playlist.m3u8'),
-            })
+            data.update(
+                {
+                    'cover': {'gif': self.get_url('cover.gif'), 'jpg': self.get_image()},
+                    'playlist': self.get_url('playlist.m3u8'),
+                }
+            )
 
         return data
 
@@ -248,6 +239,8 @@ class Media(models.Model):
     def media_info_and_convert(self):
         # media info
         self.set_mime_type()
+        self.set_exif()
+        self.check_mime_type()
 
         # convert
         path = self.file.path
@@ -261,8 +254,6 @@ class Media(models.Model):
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
             elif self.type == IMAGE_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-tn.sh')
-                if self.mime_type == 'image/vnd.adobe.photoshop':
-                    path += '[0]'
             elif self.type == VIDEO_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-vod-hls.sh')
             else:
@@ -274,11 +265,35 @@ class Media(models.Model):
             if script_path:
                 self.convert(['/bin/bash', script_path, path, destination])
 
+    def check_mime_type(self):
+        exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
+        if exiftool_mime_type and self.mime_type != exiftool_mime_type:
+            logger.warning('MIMEType mismatch: {} != {}'.format(self.mime_type, exiftool_mime_type))
+            # correct some mime types
+            if self.mime_type in [
+                'application/zip',
+                'video/x-ms-asf',
+            ]:
+                self.mime_type = exiftool_mime_type
+                self.type = get_type_for_mime_type(self.mime_type)
+
     def set_mime_type(self):
         self.file.open()
         mime_type = magic.from_buffer(self.file.read(1048576), mime=True)
         self.file.close()
         self.mime_type = mime_type
+        self.save()
+
+    def set_exif(self):
+        try:
+            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path],))[0]
+        except Exception:
+            logger.warning('Could not read metainformation from file: %s', self.file.path)
+            # create fallback data
+            self.exif = {
+                'FileSize': {'desc': 'File Size', 'num': self.file.size, 'val': humanize_size(self.file.size)},
+                'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
+            }
         self.save()
 
 
@@ -294,8 +309,27 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id):
-    return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
+def get_media_for_entry(entry_id, flat=True):
+    if flat:
+        return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
+
+    ret = []
+    exclude = []
+
+    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED):
+        exclude.append(m.pk)
+        data = m.get_data()
+        data.update({'response_code': 200})
+        ret.append(data)
+
+    ret += list(
+        Media.objects.filter(entry_id=entry_id)
+        .exclude(id__in=exclude)
+        .annotate(response_code=Value(202, IntegerField()))
+        .values('id', 'response_code')
+    )
+
+    return ret
 
 
 def get_image_for_entry(entry_id):
@@ -319,6 +353,7 @@ def repair():
 
 
 # Signal handling
+
 
 @receiver(post_save, sender=Media)
 def media_post_save(sender, instance, created, *args, **kwargs):

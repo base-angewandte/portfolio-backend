@@ -13,10 +13,7 @@ from django.conf import settings
 from core.schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 
 authorization_header_paramter = openapi.Parameter(
-    'Authorization',
-    openapi.IN_HEADER,
-    required=True,
-    type=openapi.TYPE_STRING,
+    'Authorization', openapi.IN_HEADER, required=True, type=openapi.TYPE_STRING,
 )
 
 language_header_parameter = openapi.Parameter(
@@ -31,9 +28,7 @@ language_header_decorator = swagger_auto_schema(manual_parameters=[language_head
 
 
 class JSONFieldInspector(FieldInspector):
-    def field_to_swagger_object(
-            self, field, swagger_object_type, use_references, **kwargs
-    ):
+    def field_to_swagger_object(self, field, swagger_object_type, use_references, **kwargs):
         SwaggerType, ChildSwaggerType = self._get_partial_types(field, swagger_object_type, use_references, **kwargs)
 
         if isinstance(field, serializers.JSONField):
@@ -56,9 +51,7 @@ class JSONFieldInspector(FieldInspector):
                     type=openapi.TYPE_ARRAY,
                     items=get_texts_jsonschema()['items'],
                 )
-            return SwaggerType(
-                type=openapi.TYPE_OBJECT,
-            )
+            return SwaggerType(type=openapi.TYPE_OBJECT,)
 
         return NotHandled
 

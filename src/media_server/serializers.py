@@ -13,7 +13,7 @@ def validate_license(value):
         try:
             vl(value)
         except ValidationError as e:
-            raise serializers.ValidationError(e.message)
+            raise serializers.ValidationError(e.message)  # noqa: B306
     return value
 
 

@@ -12,4 +12,5 @@ def is_allowed(view_func):
         except IndexError:
             pass
         return HttpResponseForbidden()
+
     return _wrapped_view_func

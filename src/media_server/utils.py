@@ -33,7 +33,7 @@ def get_free_space_for_user(user):
 def get_used_space_for_user(user):
     path = os.path.join(settings.PROTECTED_MEDIA_ROOT, user_hash(user.username))
     size = 0
-    for root, dirs, files in os.walk(path):
+    for root, _dirs, files in os.walk(path):
         size += sum(os.path.getsize(os.path.join(root, name)) for name in files)
     return size
 

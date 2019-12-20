@@ -45,11 +45,7 @@ class ExhibitionSchema(BaseSchema):
             conjunction=_('and'),
             location=get_preflabel_lazy('location'),
         ),
-        **{'x-attrs': {
-            'field_type': 'group',
-            'order': 4,
-            'show_label': False,
-        }},
+        **{'x-attrs': {'field_type': 'group', 'order': 4, 'show_label': False}},
     )
     url = get_url_field({'order': 5})
 

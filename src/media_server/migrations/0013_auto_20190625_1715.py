@@ -8,8 +8,6 @@ from django.core.files.base import ContentFile
 from django.db import migrations, models
 import django.db.models.deletion
 import general.models
-import jsonfield.encoder
-import jsonfield.fields
 import media_server.models
 import media_server.storages
 import media_server.validators
@@ -79,7 +77,7 @@ class Migration(migrations.Migration):
                 ('entry_id', models.CharField(max_length=22)),
                 ('status', models.IntegerField(choices=[(0, 'not converted'), (1, 'in progress'), (2, 'converted'), (3, 'error')], default=0)),
                 ('mime_type', models.CharField(blank=True, default='', max_length=255)),
-                ('exif', jsonfield.fields.JSONField(default={}, dump_kwargs={'cls': jsonfield.encoder.JSONEncoder, 'separators': (',', ':')}, load_kwargs={})),
+                ('exif', models.TextField()),
                 ('published', models.BooleanField(default=False)),
                 ('license', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True, validators=[media_server.validators.validate_license])),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),

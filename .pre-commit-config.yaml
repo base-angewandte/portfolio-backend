@@ -11,19 +11,19 @@ repos:
       - id: isort
         language_version: python3.7
         types: [python]
-        exclude: (/migrations/|/exiffield/)
-# Use black as soon as https://github.com/python/black/pull/826 is merged
-#  - repo: https://github.com/psf/black
-#    rev: stable
-#    hooks:
-#      - id: black
-#        language_version: python3.7
-#        types: [python]
-#        exclude: (/migrations/|/exiffield/)
+        exclude: (/migrations/)
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+        language_version: python3.7
+        types: [python]
+        exclude: (/migrations/)
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.8
     hooks:
       - id: flake8
+        additional_dependencies: [flake8-bugbear==19.8.0]
         language_version: python3.7
         types: [python]
-        exclude: (/migrations/|/exiffield/|manage.py|migrate_4d_.*\.py)
+        exclude: (/migrations/|manage.py|migrate_4d_.*\.py)

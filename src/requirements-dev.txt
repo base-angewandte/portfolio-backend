@@ -7,11 +7,10 @@
 apimapper==0.7.7
 apispec==0.39.0
 aspy.yaml==1.3.0          # via pre-commit
-attrs==19.1.0             # via jsonschema
-certifi==2019.9.11        # via requests
+attrs==19.3.0             # via jsonschema
+certifi==2019.11.28       # via requests
 cfgv==2.0.1               # via pre-commit
 chardet==3.0.4            # via requests
-choicesenum==0.5.3
 click==7.0                # via pip-tools, rq
 concurrent-log-handler==0.9.16
 coreapi==2.3.3            # via drf-yasg
@@ -26,69 +25,67 @@ django-extensions==2.1.7
 django-filter==2.1.0
 django-redis==4.10.0
 django-rq==2.0
-django==2.2.5
+django==2.2.9
 djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
-gunicorn==19.9.0
+gunicorn==20.0.0
 hashids==1.2.0
-identify==1.4.7           # via pre-commit
+identify==1.4.8           # via pre-commit
 idna==2.8                 # via jsonschema, requests, yarl
-importlib-metadata==0.23  # via pre-commit
-importlib-resources==1.0.2  # via pre-commit
+importlib-metadata==1.3.0  # via pre-commit
 inflection==0.3.1         # via drf-yasg
 isodate==0.6.0            # via rdflib
 itypes==1.1.0             # via coreapi
-jinja2==2.10.1            # via coreschema
-jsonfield2==3.0.2
+jinja2==2.10.3            # via coreschema
 jsonpointer==2.0          # via jsonschema
-jsonschema==3.0.1
-lxml==4.4.1               # via python-cas
+jsonschema[format]==3.0.1
+lxml==4.4.2               # via python-cas
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 marshmallow==2.19.2
-more-itertools==7.2.0     # via zipp
-multidict==4.5.2          # via yarl
+more-itertools==8.0.2     # via zipp
+multidict==4.7.1          # via yarl
 nodeenv==1.3.3            # via pre-commit
-pip-tools==3.9.0
-portalocker==1.5.1        # via concurrent-log-handler
+pip-tools==4.2.0
+portalocker==1.5.2        # via concurrent-log-handler
 pre-commit==1.17.0
 progressbar2==3.42.0
-psutil==5.6.3             # via rainbow-saddle
+psutil==5.6.7             # via rainbow-saddle
 psycopg2-binary==2.8.2
-pyparsing==2.4.2          # via rdflib
-pyrsistent==0.15.4        # via jsonschema
+pyparsing==2.4.5          # via rdflib
+pyrsistent==0.15.6        # via jsonschema
 python-cas==1.4.0         # via django-cas-ng
-python-dateutil==2.8.0    # via croniter
+python-dateutil==2.8.1    # via croniter
 python-magic==0.4.15
 python-utils==2.3.0       # via progressbar2
-pytz==2019.2              # via django
-pyyaml==5.1.2             # via apispec, aspy.yaml, pre-commit, swagger-spec-validator, vcrpy
+pytz==2019.3              # via django
+pyyaml==5.2               # via apispec, aspy.yaml, pre-commit, swagger-spec-validator, vcrpy
 rainbow-saddle==0.4.0
 rdflib==4.2.2             # via skosmos-client
-redis==3.3.8              # via django-redis, django-rq, rq
+redis==3.3.11             # via django-redis, django-rq, rq
 requests==2.22.0          # via apimapper, coreapi, python-cas, skosmos-client
 rfc3987==1.3.8            # via jsonschema
 rq-scheduler==0.9
 rq==1.1.0                 # via django-rq, rq-scheduler
-ruamel.yaml.clib==0.1.2   # via ruamel.yaml
+ruamel.yaml.clib==0.2.0   # via ruamel.yaml
 ruamel.yaml==0.16.5       # via drf-yasg
 shortuuid==0.5.0
-six==1.12.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, vcrpy, webcolors
+six==1.13.0               # via cfgv, django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, vcrpy, webcolors
 skosmos-client==0.3.0
 sqlparse==0.3.0           # via django, django-debug-toolbar
 strict-rfc3339==0.7       # via jsonschema
 swagger-spec-validator==2.4.3  # via drf-yasg
 toml==0.10.0              # via pre-commit
 uritemplate==3.0.0        # via coreapi, drf-yasg
-urllib3==1.25.6           # via requests
+urllib3==1.25.7           # via requests
 vcrpy==2.0.1
-virtualenv==16.7.5        # via pre-commit
+virtualenv==16.7.9        # via pre-commit
 webcolors==1.10           # via jsonschema
 werkzeug==0.15.4
 wrapt==1.11.2             # via vcrpy
 xmltodict==0.12.0
-yarl==1.3.0               # via vcrpy
+yarl==1.4.2               # via vcrpy
 zipp==0.6.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.2.0        # via jsonschema, markdown
+# setuptools==42.0.2        # via gunicorn, jsonschema, markdown

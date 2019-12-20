@@ -5,7 +5,6 @@ from django.db.models.functions import Lower
 
 # from https://github.com/encode/django-rest-framework/issues/3280
 class CaseInsensitiveOrderingFilter(OrderingFilter):
-
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
 
