@@ -349,7 +349,8 @@ def repair():
     for m in Media.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR]):
         m.status = STATUS_NOT_CONVERTED
         m.save()
-        django_rq.enqueue(m.media_info_and_convert)
+        queue = django_rq.get_queue('high')
+        queue.enqueue(m.media_info_and_convert)
 
 
 # Signal handling
