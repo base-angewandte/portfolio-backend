@@ -330,7 +330,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 500},
     'video': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
-    'high': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
+    'high': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 14400},
 }
 
 if DEBUG or TESTING:
