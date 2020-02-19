@@ -316,6 +316,7 @@ def user_data(request, pk=None, *args, **kwargs):
             'label': label,
             'data': [],
         }
+        ret_keys = []
 
         qs = Entry.objects.filter(owner=user, published=True, **kw_filters)
 
@@ -328,6 +329,7 @@ def user_data(request, pk=None, *args, **kwargs):
         qs = qs.order_by('title')
 
         for e in qs:
+            ret_keys.append(e.pk)
             ret['data'].append(
                 {
                     'id': e.pk,
@@ -342,7 +344,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
         ret['data'] = sorted(ret['data'], key=lambda x: x['year'] or '0000', reverse=True)
 
-        return ret
+        return ret, ret_keys
 
     general_publications_q_filters = []
 
@@ -429,7 +431,7 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        d = get_data(l, f, qf)
+        d, k = get_data(l, f, qf)
         if d['data']:
             pub_data['data'].append(d)
 
@@ -632,7 +634,7 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        d = get_data(l, f, qf)
+        d, k = get_data(l, f, qf)
         if d['data']:
             usr_data['data'].append(d)
 
@@ -668,7 +670,7 @@ def user_data(request, pk=None, *args, **kwargs):
         )
     )
 
-    d = get_data(
+    d, k = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
         dict(type__source__in=general_publications_types,),
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
