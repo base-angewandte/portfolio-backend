@@ -311,7 +311,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    def get_data(label, kw_filters, q_filters=None):
+    def get_data(label, kw_filters, q_filters=None, exclude_filters=None):
         ret = {
             'label': label,
             'data': [],
@@ -321,6 +321,9 @@ def user_data(request, pk=None, *args, **kwargs):
 
         if q_filters:
             qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
+
+        if exclude_filters:
+            qs = qs.exclude(**exclude_filters)
 
         qs = qs.order_by('title')
 
