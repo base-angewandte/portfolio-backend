@@ -18,7 +18,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models import Q
+from django.core.cache import cache
+from django.db.models import Max, Q
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, ugettext_lazy as _
 
@@ -310,6 +312,17 @@ def user_data(request, pk=None, *args, **kwargs):
         raise exceptions.NotFound(_('User does not exist'))
 
     lang = get_language() or 'en'
+
+    cache_key = 'user_data_{}_{}'.format(pk, lang)
+
+    cache_time, usr_data = cache.get(cache_key, (None, None))
+
+    if cache_time:
+        last_modified = Entry.objects.filter(owner=user, published=True).aggregate(Max('date_changed'))[
+            'date_changed__max'
+        ]
+        if last_modified and last_modified < cache_time:
+            return Response(usr_data)
 
     def get_data(label, kw_filters, q_filters=None, exclude_filters=None):
         ret = {
@@ -658,7 +671,11 @@ def user_data(request, pk=None, *args, **kwargs):
     if d['data']:
         usr_data['data'].append(d)
 
-    return Response(usr_data if usr_data['data'] else {'data': []})
+    usr_data = usr_data if usr_data['data'] else {'data': []}
+
+    cache.set(cache_key, (timezone.now(), usr_data), 86400)
+
+    return Response(usr_data)
 
 
 @swagger_auto_schema(
