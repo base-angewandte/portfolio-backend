@@ -25,7 +25,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema, get_schema
+from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema, get_schema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
@@ -664,7 +664,7 @@ def user_data(request, pk=None, *args, **kwargs):
     # General Publications
     d, k = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
-        dict(type__source__in=ACTIVE_TYPES),
+        {},
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
         dict(pk__in=exclude),
     )
