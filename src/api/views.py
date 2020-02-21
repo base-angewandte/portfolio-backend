@@ -18,12 +18,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models import Q
+from django.core.cache import cache
+from django.db.models import Max, Q
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, ugettext_lazy as _
 
 from core.models import Entry, Relation
-from core.schemas import ACTIVE_TYPES, ACTIVE_TYPES_LIST, get_jsonschema, get_schema
+from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema, get_schema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
@@ -311,20 +313,36 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    def get_data(label, kw_filters, q_filters=None):
+    cache_key = 'user_data_{}_{}'.format(pk, lang)
+
+    cache_time, usr_data = cache.get(cache_key, (None, None))
+
+    if cache_time:
+        last_modified = Entry.objects.filter(owner=user, published=True).aggregate(Max('date_changed'))[
+            'date_changed__max'
+        ]
+        if last_modified and last_modified < cache_time:
+            return Response(usr_data)
+
+    def get_data(label, kw_filters, q_filters=None, exclude_filters=None):
         ret = {
             'label': label,
             'data': [],
         }
+        ret_keys = []
 
         qs = Entry.objects.filter(owner=user, published=True, **kw_filters)
 
         if q_filters:
             qs = qs.filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
 
+        if exclude_filters:
+            qs = qs.exclude(**exclude_filters)
+
         qs = qs.order_by('title')
 
         for e in qs:
+            ret_keys.append(e.pk)
             ret['data'].append(
                 {
                     'id': e.pk,
@@ -339,7 +357,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
         ret['data'] = sorted(ret['data'], key=lambda x: x['year'] or '0000', reverse=True)
 
-        return ret
+        return ret, ret_keys
 
     general_publications_q_filters = []
 
@@ -362,6 +380,8 @@ def user_data(request, pk=None, *args, **kwargs):
         'data': [],
     }
 
+    exclude = []
+
     # Publications collected
     pub_data = {
         'label': get_altlabel_collection('collection_document_publication', lang=lang),
@@ -375,12 +395,8 @@ def user_data(request, pk=None, *args, **kwargs):
     articles_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_article')
     chapters_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_chapter')
     reviews_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_review')
-    general_publications_types = list(
-        set(DOCUMENT_TYPES)
-        - set(monographs_types + composite_volumes_types + articles_types + chapters_types + reviews_types)
-    )
 
-    for l, f, qf in (
+    for lbl, f, qf in (
         # Monographs
         (
             get_altlabel_collection('collection_monograph', lang=lang),
@@ -411,24 +427,34 @@ def user_data(request, pk=None, *args, **kwargs):
             dict(type__source__in=reviews_types, data__contains={'authors': [{'source': user.username}]},),
             None,
         ),
-        # General Publications
-        (
-            '{} {}'.format(
-                'Sonstige' if lang == 'de' else 'General',
-                get_altlabel_collection('collection_document_publication', lang=lang),
-            ),
-            dict(type__source__in=general_publications_types,),
-            [
-                dict(data__contains={'authors': [{'source': user.username}]}),
-                dict(data__contains={'contributors': [{'source': user.username}]}),
-            ],
-        ),
     ):
         if qf:
             general_publications_q_filters += qf
-        d = get_data(l, f, qf)
+        d, k = get_data(lbl, f, qf)
         if d['data']:
             pub_data['data'].append(d)
+        if k:
+            exclude += k
+
+    # General Documents/Publications
+    lbl = '{} {}'.format(
+        'Sonstige' if lang == 'de' else 'General',
+        get_altlabel_collection('collection_document_publication', lang=lang),
+    )
+    f = dict(type__source__in=DOCUMENT_TYPES)
+    qf = [
+        dict(data__contains={'authors': [{'source': user.username}]}),
+        dict(data__contains={'editors': [{'source': user.username}]}),
+        dict(data__contains={'publishers': [{'source': user.username}]}),
+        dict(data__contains={'contributors': [{'source': user.username}]}),
+    ]
+    e = dict(pk__in=exclude)
+    general_publications_q_filters += qf
+    d, k = get_data(lbl, f, qf, e)
+    if d['data']:
+        pub_data['data'].append(d)
+    if k:
+        exclude += k
 
     if pub_data['data']:
         usr_data['data'].append(pub_data)
@@ -461,7 +487,7 @@ def user_data(request, pk=None, *args, **kwargs):
     softwares_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software')
     videos_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video')
 
-    for l, f, qf in (
+    for lbl, f, qf in (
         # Research Projects
         (
             get_altlabel_collection('collection_research_project', lang=lang),
@@ -629,51 +655,27 @@ def user_data(request, pk=None, *args, **kwargs):
     ):
         if qf:
             general_publications_q_filters += qf
-        d = get_data(l, f, qf)
+        d, k = get_data(lbl, f, qf)
         if d['data']:
             usr_data['data'].append(d)
+        if k:
+            exclude += k
 
     # General Publications
-    general_publications_types = list(
-        set(ACTIVE_TYPES)
-        - set(
-            monographs_types
-            + composite_volumes_types
-            + articles_types
-            + chapters_types
-            + reviews_types
-            + general_publications_types
-            + research_projects_types
-            + awards_and_grants_types
-            + exhibitions_types
-            + teaching_types
-            + educations_qualifications_types
-            + conferences_symposiums_types
-            + conference_contributions_types
-            + architectures_types
-            + audios_types
-            + architectures_types
-            + audios_types
-            + concerts_types
-            + events_types
-            + festivals_types
-            + images_types
-            + performances_types
-            + sculptures_types
-            + softwares_types
-            + videos_types
-        )
-    )
-
-    d = get_data(
+    d, k = get_data(
         'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications',
-        dict(type__source__in=general_publications_types,),
+        {},
         [json.loads(s) for s in {json.dumps(d, sort_keys=True) for d in general_publications_q_filters}],
+        dict(pk__in=exclude),
     )
     if d['data']:
         usr_data['data'].append(d)
 
-    return Response(usr_data if usr_data['data'] else {'data': []})
+    usr_data = usr_data if usr_data['data'] else {'data': []}
+
+    cache.set(cache_key, (timezone.now(), usr_data), 86400)
+
+    return Response(usr_data)
 
 
 @swagger_auto_schema(
