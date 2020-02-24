@@ -110,7 +110,7 @@ for rendition in "${renditions[@]}"; do
 
   # do not upscale, but ensure there is at least one version
   if { [[ "${height}" -le "${compare_height}" ]] && [[ "${width}" -le "${compare_width}" ]]; } || [[ "$cmd" -eq "" ]] ; then
-    cmd+=" ${static_params} -vf scale=w=${width}:h=${height}:force_original_aspect_ratio=decrease"
+    cmd+=" ${static_params} -vf scale=w=${width}:h=${height}:force_original_aspect_ratio=decrease,crop=floor(iw/2)*2:floor(ih/2)*2"
     cmd+=" -b:v ${bitrate} -maxrate ${maxrate%.*}k -bufsize ${bufsize%.*}k -b:a ${audiorate}"
     cmd+=" -hls_segment_filename ${target}/${name}_%03d.ts ${target}/${name}.m3u8"
 
