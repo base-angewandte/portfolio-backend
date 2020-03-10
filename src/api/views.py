@@ -729,7 +729,11 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 @permission_classes((permissions.IsAuthenticated,))
 def wb_data(request, *args, **kwargs):
     users = request.POST.getlist('users') or []
-    types = get_collection_members(request.POST.get('types')) if request.POST.get('types') else None
+    types = (
+        (get_collection_members(request.POST.get('types')) or request.POST.get('types').split(','))
+        if request.POST.get('types')
+        else None
+    )
     roles = request.POST.getlist('roles') or []
     year = request.POST.get('year') or None
 
