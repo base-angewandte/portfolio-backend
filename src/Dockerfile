@@ -1,7 +1,6 @@
 FROM python:3.7
 
 ENV PYTHONUNBUFFERED 1
-ENV EXIFTOOL_VERSION=11.78
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
@@ -12,7 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         webp \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
+RUN EXIFTOOL_VERSION=$(wget -qO- https://exiftool.org/ver.txt) \
+    && wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
     && tar xvf Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
     && cd Image-ExifTool-${EXIFTOOL_VERSION}/ \
     && perl Makefile.PL \
