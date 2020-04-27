@@ -679,9 +679,12 @@ def user_data(request, pk=None, *args, **kwargs):
 
 
 def get_media_for_entry_public(entry):
+    lang = get_language() or 'en'
     media = get_media_for_entry(entry, flat=False, published=True)
     for m in media:
         del m['metadata']
+        if m.get('license'):
+            m['license'] = m.get('license', {}).get('label', {}).get(lang)
     return media
 
 
