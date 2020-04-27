@@ -718,6 +718,31 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 
 
 @swagger_auto_schema(
+    methods=['get'],
+    operation_id='api_v1_entry_data',
+    responses={
+        200: openapi.Response(''),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Entry not found'),
+    },
+    manual_parameters=[authorization_header_paramter, language_header_parameter],
+)
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+@permission_classes((permissions.IsAuthenticated,))
+def entry_data(request, pk=None, *args, **kwargs):
+    try:
+        e = Entry.objects.get(pk=pk, published=True)
+    except Entry.DoesNotExist:
+        raise exceptions.NotFound(_('Entry does not exist'))
+
+    ret = e.data_display
+    ret['media'] = get_media_for_entry_public(pk)
+
+    return Response(ret)
+
+
+@swagger_auto_schema(
     methods=['post'],
     operation_id='api_v1_wb_data',
     responses={
