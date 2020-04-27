@@ -10,7 +10,6 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
@@ -25,7 +24,6 @@ from .utils import check_quota
 logger = logging.getLogger(__name__)
 
 
-@login_required
 @is_allowed
 @xframe_options_sameorigin
 def protected_view(request, path, server, as_download=False):
