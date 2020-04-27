@@ -678,6 +678,13 @@ def user_data(request, pk=None, *args, **kwargs):
     return Response(usr_data)
 
 
+def get_media_for_entry_public(entry):
+    media = get_media_for_entry(entry, flat=False, published=True)
+    for m in media:
+        del m['metadata']
+    return media
+
+
 @swagger_auto_schema(
     methods=['get'],
     operation_id='api_v1_user_entry_data',
