@@ -707,11 +707,14 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
         raise exceptions.NotFound(_('User does not exist'))
 
     try:
-        entry = Entry.objects.get(pk=entry, owner=user, published=True)
+        e = Entry.objects.get(pk=entry, owner=user, published=True)
     except Entry.DoesNotExist:
         raise exceptions.NotFound(_('Entry does not exist'))
 
-    return Response(entry.data_display)
+    ret = e.data_display
+    ret['media'] = get_media_for_entry_public(entry)
+
+    return Response(ret)
 
 
 @swagger_auto_schema(
