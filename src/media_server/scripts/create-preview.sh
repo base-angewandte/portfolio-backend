@@ -20,6 +20,6 @@ else
     curl -F "data=@${source}" "${host}/lool/convert-to/pdf" > "${target}/preview.pdf"
 fi
 
-convert -density 300 -resize 20% -alpha remove "${target}/preview.pdf[0]" "${target}/preview.jpg"
+convert -density 270 -resize 20% -alpha remove "${target}/preview.pdf[0]" "${target}/preview.jpg"
 
 echo "Done - preview is at ${target}/"
