@@ -128,6 +128,7 @@ class Media(models.Model):
         indexes = [
             models.Index(fields=['entry_id']),
         ]
+        ordering = ['-created']
 
     @property
     def metadata(self):
