@@ -678,6 +678,19 @@ def user_data(request, pk=None, *args, **kwargs):
     return Response(usr_data)
 
 
+def get_media_for_entry_public(entry):
+    lang = get_language() or 'en'
+    media = get_media_for_entry(entry, flat=False, published=True)
+    for m in media:
+        try:
+            del m['metadata']
+        except KeyError:
+            pass
+        if m.get('license'):
+            m['license'] = m.get('license', {}).get('label', {}).get(lang)
+    return media
+
+
 @swagger_auto_schema(
     methods=['get'],
     operation_id='api_v1_user_entry_data',
@@ -700,11 +713,39 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
         raise exceptions.NotFound(_('User does not exist'))
 
     try:
-        entry = Entry.objects.get(pk=entry, owner=user, published=True)
+        e = Entry.objects.get(pk=entry, owner=user, published=True)
     except Entry.DoesNotExist:
         raise exceptions.NotFound(_('Entry does not exist'))
 
-    return Response(entry.data_display)
+    ret = e.data_display
+    ret['media'] = get_media_for_entry_public(entry)
+
+    return Response(ret)
+
+
+@swagger_auto_schema(
+    methods=['get'],
+    operation_id='api_v1_entry_data',
+    responses={
+        200: openapi.Response(''),
+        403: openapi.Response('Access not allowed'),
+        404: openapi.Response('Entry not found'),
+    },
+    manual_parameters=[authorization_header_paramter, language_header_parameter],
+)
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+@permission_classes((permissions.IsAuthenticated,))
+def entry_data(request, pk=None, *args, **kwargs):
+    try:
+        e = Entry.objects.get(pk=pk, published=True)
+    except Entry.DoesNotExist:
+        raise exceptions.NotFound(_('Entry does not exist'))
+
+    ret = e.data_display
+    ret['media'] = get_media_for_entry_public(pk)
+
+    return Response(ret)
 
 
 @swagger_auto_schema(
