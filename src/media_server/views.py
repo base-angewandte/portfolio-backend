@@ -32,15 +32,13 @@ def protected_view(request, path, server, as_download=False):
 
         response = HttpResponse()
 
-        response['Access-Control-Allow-Origin'] = '*'
-
         response['Content-Type'] = mimetype
 
         if encoding:
             response['Content-Encoding'] = encoding
 
         if as_download:
-            response['Content-Disposition'] = 'attachment; filename={}'.format(basename(path))
+            response['Content-Disposition'] = "attachment; filename={}".format(basename(path))
 
         response['X-Accel-Redirect'] = join(settings.PROTECTED_MEDIA_LOCATION, path).encode('utf8')
         return response
