@@ -49,7 +49,7 @@ source_height=${source_height_with_prefix#${height_prefix}}
 
 rotation=$(ffprobe -loglevel error -select_streams v:0 -show_entries stream_tags=rotate -of default=nw=1:nk=1 -i "${source}")
 
-if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]]; then
+if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]] || [[ $source_width -lt $source_height ]]; then
   # portrait video
   cover_filter=${cover_filter_portrait}
 fi
