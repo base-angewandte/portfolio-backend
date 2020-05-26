@@ -315,13 +315,17 @@ def user_data(request, pk=None, *args, **kwargs):
 
     cache_key = 'user_data_{}_{}'.format(pk, lang)
 
-    cache_time, usr_data = cache.get(cache_key, (None, None))
+    cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
     if cache_time:
         last_modified = Entry.objects.filter(owner=user, published=True).aggregate(Max('date_changed'))[
             'date_changed__max'
         ]
-        if last_modified and last_modified < cache_time:
+        if (
+            last_modified
+            and last_modified < cache_time
+            and entries_count == Entry.objects.filter(owner=user, published=True).count()
+        ):
             return Response(usr_data)
 
     def get_data(label, kw_filters, q_filters=None, exclude_filters=None):
@@ -673,7 +677,9 @@ def user_data(request, pk=None, *args, **kwargs):
 
     usr_data = usr_data if usr_data['data'] else {'data': []}
 
-    cache.set(cache_key, (timezone.now(), usr_data), 86400)
+    entries_count = Entry.objects.filter(owner=user, published=True).count()
+
+    cache.set(cache_key, (timezone.now(), entries_count, usr_data), 86400)
 
     return Response(usr_data)
 
