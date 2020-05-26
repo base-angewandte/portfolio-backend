@@ -313,7 +313,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    cache_key = 'user_data_{}_{}'.format(pk, lang)
+    cache_key = 'user_data__{}_{}'.format(pk, lang)
 
     cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
