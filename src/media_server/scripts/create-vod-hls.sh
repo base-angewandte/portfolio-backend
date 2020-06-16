@@ -70,7 +70,7 @@ key_frames_interval=$(echo `printf "%.1f\n" $(bc -l <<<"$key_frames_interval/10"
 key_frames_interval=${key_frames_interval%.*} # truncate to integer
 
 # static parameters that are similar for all renditions
-static_params="-c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0"
+static_params="-c:a aac -ar 48000 -c:v h264 -profile:v main -pix_fmt yuv420p -crf 20 -sc_threshold 0"
 static_params+=" -g ${key_frames_interval} -keyint_min ${key_frames_interval} -hls_time ${segment_target_duration}"
 static_params+=" -hls_playlist_type vod"
 
