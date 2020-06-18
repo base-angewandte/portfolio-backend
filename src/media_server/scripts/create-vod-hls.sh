@@ -18,8 +18,7 @@ renditions=(
   "1920x1080  5000k    192k"
 )
 
-cover_filter="scale=-1:300,crop=400:300"
-cover_filter_portrait="scale=400:-1,crop=400:300"
+cover_filter="scale=400:300:force_original_aspect_ratio=increase,crop=400:300"
 
 segment_target_duration=4       # try to create a new segment every X seconds
 max_bitrate_ratio=1.07          # maximum accepted bitrate fluctuations
@@ -48,11 +47,6 @@ source_width=${source_width_with_prefix#${width_prefix}}
 source_height=${source_height_with_prefix#${height_prefix}}
 
 rotation=$(ffprobe -loglevel error -select_streams v:0 -show_entries stream_tags=rotate -of default=nw=1:nk=1 -i "${source}")
-
-if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]] || [[ $source_width -le $source_height ]]; then
-  # portrait (or square) video
-  cover_filter=${cover_filter_portrait}
-fi
 
 duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${source}")
 # round to second
