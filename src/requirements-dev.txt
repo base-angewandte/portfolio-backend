@@ -27,7 +27,7 @@ django-extensions==2.1.7  # via -r src/requirements.in (line 14)
 django-filter==2.1.0      # via -r src/requirements.in (line 15)
 django-redis==4.10.0      # via -r src/requirements.in (line 16)
 django-rq==2.0            # via -r src/requirements.in (line 17)
-django==2.2.11            # via -r src/requirements.in (line 8), django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
+django==2.2.13            # via -r src/requirements.in (line 8), django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
 djangorestframework==3.9.4  # via -r src/requirements.in (line 18), drf-yasg
 drf-yasg[validation]==1.15.0  # via -r src/requirements.in (line 19)
 filelock==3.0.12          # via virtualenv
