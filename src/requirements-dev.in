@@ -1,6 +1,8 @@
-# compile this file with 'pip-compile requirements.in requirements-dev.in --output-file requirements-dev.txt'
+# compile this file with 'pip-compile requirements-dev.in'
 # sync environment with 'pip-sync requirements-dev.txt'
-# to update all packages run 'pip-compile --upgrade requirements.in requirements-dev.in --output-file requirements-dev.txt'
+# to update all packages run 'pip-compile --upgrade requirements-dev.in'
+
+-r requirements.in
 
 pre-commit==1.17.0
 vcrpy==2.0.1

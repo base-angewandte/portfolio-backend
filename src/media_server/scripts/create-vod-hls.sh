@@ -18,8 +18,7 @@ renditions=(
   "1920x1080  5000k    192k"
 )
 
-cover_filter="scale=-1:300,crop=400:300"
-cover_filter_portrait="scale=400:-1,crop=400:300"
+cover_filter="scale=400:300:force_original_aspect_ratio=increase,crop=400:300"
 
 segment_target_duration=4       # try to create a new segment every X seconds
 max_bitrate_ratio=1.07          # maximum accepted bitrate fluctuations
@@ -49,11 +48,6 @@ source_height=${source_height_with_prefix#${height_prefix}}
 
 rotation=$(ffprobe -loglevel error -select_streams v:0 -show_entries stream_tags=rotate -of default=nw=1:nk=1 -i "${source}")
 
-if [[ $rotation -eq 90 ]] || [[ $rotation -eq 270 ]]; then
-  # portrait video
-  cover_filter=${cover_filter_portrait}
-fi
-
 duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${source}")
 # round to second
 duration=$(printf "%.0f" ${duration})
@@ -70,7 +64,7 @@ key_frames_interval=$(echo `printf "%.1f\n" $(bc -l <<<"$key_frames_interval/10"
 key_frames_interval=${key_frames_interval%.*} # truncate to integer
 
 # static parameters that are similar for all renditions
-static_params="-c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0"
+static_params="-c:a aac -ar 48000 -c:v h264 -profile:v main -pix_fmt yuv420p -crf 20 -sc_threshold 0"
 static_params+=" -g ${key_frames_interval} -keyint_min ${key_frames_interval} -hls_time ${segment_target_duration}"
 static_params+=" -hls_playlist_type vod"
 
@@ -110,7 +104,7 @@ for rendition in "${renditions[@]}"; do
 
   # do not upscale, but ensure there is at least one version
   if { [[ "${height}" -le "${compare_height}" ]] && [[ "${width}" -le "${compare_width}" ]]; } || [[ "$cmd" -eq "" ]] ; then
-    cmd+=" ${static_params} -vf scale=w=${width}:h=${height}:force_original_aspect_ratio=decrease"
+    cmd+=" ${static_params} -vf scale=w=${width}:h=${height}:force_original_aspect_ratio=decrease,crop=floor(iw/2)*2:floor(ih/2)*2"
     cmd+=" -b:v ${bitrate} -maxrate ${maxrate%.*}k -bufsize ${bufsize%.*}k -b:a ${audiorate}"
     cmd+=" -hls_segment_filename ${target}/${name}_%03d.ts ${target}/${name}.m3u8"
 

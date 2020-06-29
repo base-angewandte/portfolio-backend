@@ -128,6 +128,7 @@ class Media(models.Model):
         indexes = [
             models.Index(fields=['entry_id']),
         ]
+        ordering = ['-created']
 
     @property
     def metadata(self):
@@ -309,25 +310,28 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id, flat=True):
+def get_media_for_entry(entry_id, flat=True, published=None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
     exclude = []
 
-    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED):
+    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+    if published is not None:
+        query = query.filter(published=published)
+
+    for m in query:
         exclude.append(m.pk)
         data = m.get_data()
         data.update({'response_code': 200})
         ret.append(data)
 
-    ret += list(
-        Media.objects.filter(entry_id=entry_id)
-        .exclude(id__in=exclude)
-        .annotate(response_code=Value(202, IntegerField()))
-        .values('id', 'response_code')
-    )
+    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
+    if published is not None:
+        query = query.filter(published=published)
+
+    ret += list(query.annotate(response_code=Value(202, IntegerField())).values('id', 'response_code'))
 
     return ret
 
@@ -349,7 +353,8 @@ def repair():
     for m in Media.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR]):
         m.status = STATUS_NOT_CONVERTED
         m.save()
-        django_rq.enqueue(m.media_info_and_convert)
+        queue = django_rq.get_queue('high')
+        queue.enqueue(m.media_info_and_convert)
 
 
 # Signal handling

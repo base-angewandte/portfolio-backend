@@ -137,6 +137,7 @@ CAS_RETRY_LOGIN = True
 CAS_VERSION = '3'
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
+CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
 
 """ Email settings """
 SERVER_EMAIL = 'error@%s' % urlparse(SITE_URL).hostname
@@ -330,7 +331,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 500},
     'video': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
-    'high': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 7200},
+    'high': {'USE_REDIS_CACHE': 'default', 'DEFAULT_TIMEOUT': 14400},
 }
 
 if DEBUG or TESTING:
