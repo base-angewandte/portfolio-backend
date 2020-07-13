@@ -152,9 +152,9 @@ def get_languages_choices():
 
         r = sorted(r, key=lambda k: k['label'].lower())
 
-        for l in r:
-            languages.append(l['uri'])
-            languages_labels.append(l['label'])
+        for lang in r:
+            languages.append(lang['uri'])
+            languages_labels.append(lang['label'])
 
         if languages:
             cache.set(cache_key_languages, languages, CACHE_TIME)
