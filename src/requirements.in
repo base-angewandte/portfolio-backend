@@ -14,14 +14,14 @@ django-environ==0.4.5
 django-extensions==3.0.2
 django-filter==2.1.0
 django-redis==4.10.0
-django-rq==2.0
+django-rq==2.3.2
 djangorestframework==3.9.4
 drf-yasg[validation]==1.15.0
 hashids==1.2.0
 jsonschema[format]==3.0.1
 markdown==3.1.1  # for djangorestframework
 marshmallow==2.19.2
-pip-tools==4.2.0
+pip-tools==5.2.1
 progressbar2==3.42.0
 psycopg2-binary==2.8.2
 python-magic==0.4.15

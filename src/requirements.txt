@@ -4,75 +4,76 @@
 #
 #    pip-compile src/requirements.in
 #
-apimapper==0.7.7          # via -r src/requirements.in (line 5)
-apispec==0.39.0           # via -r src/requirements.in (line 6)
+apimapper==0.7.7          # via -r src/requirements.in
+apispec==0.39.0           # via -r src/requirements.in
 attrs==19.3.0             # via jsonschema
 certifi==2020.6.20        # via requests
 chardet==3.0.4            # via requests
 click==7.1.2              # via pip-tools, rq
-concurrent-log-handler==0.9.16  # via -r src/requirements.in (line 7)
+concurrent-log-handler==0.9.16  # via -r src/requirements.in
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 croniter==0.3.34          # via rq-scheduler
-django-cas-ng==3.6.0      # via -r src/requirements.in (line 9)
-django-cleanup==3.2.0     # via -r src/requirements.in (line 10)
-django-cors-headers==3.0.2  # via -r src/requirements.in (line 11)
-django-debug-toolbar==1.11  # via -r src/requirements.in (line 12)
-django-environ==0.4.5     # via -r src/requirements.in (line 13)
-django-extensions==3.0.2  # via -r src/requirements.in (line 14)
-django-filter==2.1.0      # via -r src/requirements.in (line 15)
-django-redis==4.10.0      # via -r src/requirements.in (line 16)
-django-rq==2.0            # via -r src/requirements.in (line 17)
-django==2.2.14            # via -r src/requirements.in (line 8), django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
-djangorestframework==3.9.4  # via -r src/requirements.in (line 18), drf-yasg
-drf-yasg[validation]==1.15.0  # via -r src/requirements.in (line 19)
-gunicorn==20.0.0          # via -r src/requirements.in (line 35)
-hashids==1.2.0            # via -r src/requirements.in (line 20)
+django-cas-ng==3.6.0      # via -r src/requirements.in
+django-cleanup==3.2.0     # via -r src/requirements.in
+django-cors-headers==3.0.2  # via -r src/requirements.in
+django-debug-toolbar==1.11  # via -r src/requirements.in
+django-environ==0.4.5     # via -r src/requirements.in
+django-extensions==3.0.2  # via -r src/requirements.in
+django-filter==2.1.0      # via -r src/requirements.in
+django-redis==4.10.0      # via -r src/requirements.in
+django-rq==2.3.2          # via -r src/requirements.in
+django==2.2.14            # via -r src/requirements.in, django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
+djangorestframework==3.9.4  # via -r src/requirements.in, drf-yasg
+drf-yasg[validation]==1.15.0  # via -r src/requirements.in
+gunicorn==20.0.0          # via -r src/requirements.in
+hashids==1.2.0            # via -r src/requirements.in
 idna==2.10                # via jsonschema, requests
 inflection==0.5.0         # via drf-yasg
 isodate==0.6.0            # via rdflib
 itypes==1.2.0             # via coreapi
 jinja2==2.11.2            # via coreschema
 jsonpointer==2.0          # via jsonschema
-jsonschema[format]==3.0.1  # via -r src/requirements.in (line 21), swagger-spec-validator
+jsonschema[format]==3.0.1  # via -r src/requirements.in, swagger-spec-validator
 lxml==4.5.2               # via python-cas
-markdown==3.1.1           # via -r src/requirements.in (line 22), apimapper
+markdown==3.1.1           # via -r src/requirements.in, apimapper
 markupsafe==1.1.1         # via jinja2
-marshmallow==2.19.2       # via -r src/requirements.in (line 23)
+marshmallow==2.19.2       # via -r src/requirements.in
 natsort==7.0.1            # via croniter
-pip-tools==4.2.0          # via -r src/requirements.in (line 24)
+pip-tools==5.2.1          # via -r src/requirements.in
 portalocker==1.7.0        # via concurrent-log-handler
-progressbar2==3.42.0      # via -r src/requirements.in (line 25)
+progressbar2==3.42.0      # via -r src/requirements.in
 psutil==5.7.0             # via rainbow-saddle
-psycopg2-binary==2.8.2    # via -r src/requirements.in (line 26)
+psycopg2-binary==2.8.2    # via -r src/requirements.in
 pyparsing==2.4.7          # via rdflib
 pyrsistent==0.16.0        # via jsonschema
 python-cas==1.5.0         # via django-cas-ng
 python-dateutil==2.8.1    # via croniter
-python-magic==0.4.15      # via -r src/requirements.in (line 27)
+python-magic==0.4.15      # via -r src/requirements.in
 python-utils==2.4.0       # via progressbar2
 pytz==2020.1              # via django
 pyyaml==5.3.1             # via apispec, swagger-spec-validator
-rainbow-saddle==0.4.0     # via -r src/requirements.in (line 36)
+rainbow-saddle==0.4.0     # via -r src/requirements.in
 rdflib==5.0.0             # via skosmos-client
 redis==3.5.3              # via django-redis, django-rq, rq
 requests==2.24.0          # via apimapper, coreapi, python-cas, skosmos-client
 rfc3987==1.3.8            # via jsonschema
-rq-scheduler==0.9         # via -r src/requirements.in (line 28)
+rq-scheduler==0.9         # via -r src/requirements.in
 rq==1.4.3                 # via django-rq, rq-scheduler
 ruamel.yaml.clib==0.2.0   # via ruamel.yaml
 ruamel.yaml==0.16.10      # via drf-yasg
-shortuuid==0.5.0          # via -r src/requirements.in (line 29)
+shortuuid==0.5.0          # via -r src/requirements.in
 six==1.15.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, rdflib, swagger-spec-validator
-skosmos-client==0.3.0     # via -r src/requirements.in (line 30)
+skosmos-client==0.3.0     # via -r src/requirements.in
 sqlparse==0.3.1           # via django, django-debug-toolbar
 strict-rfc3339==0.7       # via jsonschema
 swagger-spec-validator==2.7.3  # via drf-yasg
 uritemplate==3.0.1        # via coreapi, drf-yasg
 urllib3==1.25.9           # via requests
 webcolors==1.11.1         # via jsonschema
-werkzeug==1.0.1           # via -r src/requirements.in (line 31)
-xmltodict==0.12.0         # via -r src/requirements.in (line 32)
+werkzeug==1.0.1           # via -r src/requirements.in
+xmltodict==0.12.0         # via -r src/requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
+# pip
 # setuptools
