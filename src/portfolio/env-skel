@@ -4,6 +4,7 @@ SITE_URL=https://url/
 # FORCE_SCRIPT_NAME=/portfolio
 # ALLOWED_HOSTS=
 # BEHIND_PROXY=True
+# DJANGO_ADMIN_PATH=admin
 # DJANGO_ADMINS=Full Name <email-with-name@example.com>,anotheremailwithoutname@example.com
 # DJANGO_SUPERUSERS=(username1,username2)
 # CAS_SERVER=

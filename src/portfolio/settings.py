@@ -85,6 +85,8 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[urlparse(SITE_URL).hostname])
 
 BEHIND_PROXY = env.bool('BEHIND_PROXY', default=True)
 
+DJANGO_ADMIN_PATH = env.str('DJANGO_ADMIN_PATH', default='admin')
+
 DJANGO_ADMINS = env('DJANGO_ADMINS', default=None)
 
 if DJANGO_ADMINS:
