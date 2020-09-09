@@ -26,7 +26,7 @@ django-rq==2.3.2          # via -r src/requirements.in
 django==2.2.14            # via -r src/requirements.in, django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
 djangorestframework==3.9.4  # via -r src/requirements.in, drf-yasg
 drf-yasg[validation]==1.15.0  # via -r src/requirements.in
-gunicorn==20.0.0          # via -r src/requirements.in
+gunicorn==20.0.4          # via -r src/requirements.in
 hashids==1.2.0            # via -r src/requirements.in
 idna==2.10                # via jsonschema, requests
 inflection==0.5.0         # via drf-yasg

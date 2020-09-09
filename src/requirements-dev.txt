@@ -31,7 +31,7 @@ django==2.2.14            # via -r src/requirements.in, django-cas-ng, django-co
 djangorestframework==3.9.4  # via -r src/requirements.in, drf-yasg
 drf-yasg[validation]==1.15.0  # via -r src/requirements.in
 filelock==3.0.12          # via virtualenv
-gunicorn==20.0.0          # via -r src/requirements.in
+gunicorn==20.0.4          # via -r src/requirements.in
 hashids==1.2.0            # via -r src/requirements.in
 identify==1.4.23          # via pre-commit
 idna==2.10                # via jsonschema, requests, yarl
