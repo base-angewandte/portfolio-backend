@@ -3,7 +3,7 @@ default_language_version:
 exclude: (/migrations/|manage.py)
 repos:
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.4.2
+    rev: 5.5.1
     hooks:
       - id: isort
   - repo: https://github.com/psf/black
