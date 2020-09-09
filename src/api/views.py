@@ -78,9 +78,7 @@ class StandardLimitOffsetPagination(LimitOffsetPagination):
 
 
 class CountModelMixin(object):
-    """
-    Count a queryset.
-    """
+    """Count a queryset."""
 
     @swagger_auto_schema(manual_parameters=[], responses={200: openapi.Response('')})
     @action(detail=False, filter_backends=[], pagination_class=None)
@@ -404,31 +402,46 @@ def user_data(request, pk=None, *args, **kwargs):
         # Monographs
         (
             get_altlabel_collection('collection_monograph', lang=lang),
-            dict(type__source__in=monographs_types, data__contains={'authors': [{'source': user.username}]},),
+            dict(
+                type__source__in=monographs_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
             None,
         ),
         # Composite Volumes
         (
             get_altlabel_collection('collection_composite_volume', lang=lang),
-            dict(type__source__in=composite_volumes_types, data__contains={'editors': [{'source': user.username}]},),
+            dict(
+                type__source__in=composite_volumes_types,
+                data__contains={'editors': [{'source': user.username}]},
+            ),
             None,
         ),
         # Articles
         (
             get_altlabel_collection('collection_article', lang=lang),
-            dict(type__source__in=articles_types, data__contains={'authors': [{'source': user.username}]},),
+            dict(
+                type__source__in=articles_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
             None,
         ),
         # Chapters
         (
             get_altlabel_collection('collection_chapter', lang=lang),
-            dict(type__source__in=chapters_types, data__contains={'authors': [{'source': user.username}]},),
+            dict(
+                type__source__in=chapters_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
             None,
         ),
         # Reviews
         (
             get_altlabel_collection('collection_review', lang=lang),
-            dict(type__source__in=reviews_types, data__contains={'authors': [{'source': user.username}]},),
+            dict(
+                type__source__in=reviews_types,
+                data__contains={'authors': [{'source': user.username}]},
+            ),
             None,
         ),
     ):
@@ -495,7 +508,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Research Projects
         (
             get_altlabel_collection('collection_research_project', lang=lang),
-            dict(type__source__in=research_projects_types,),
+            dict(
+                type__source__in=research_projects_types,
+            ),
             [
                 dict(data__contains={'project_lead': [{'source': user.username}]}),
                 dict(data__contains={'project_partnership': [{'source': user.username}]}),
@@ -506,7 +521,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Awards and Grants
         (
             get_altlabel_collection('collection_awards_and_grants', lang=lang),
-            dict(type__source__in=awards_and_grants_types,),
+            dict(
+                type__source__in=awards_and_grants_types,
+            ),
             [
                 dict(data__contains={'winners': [{'source': user.username}]}),
                 dict(data__contains={'granted_by': [{'source': user.username}]}),
@@ -517,7 +534,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Exhibitions
         (
             get_altlabel_collection('collection_exhibition', lang=lang),
-            dict(type__source__in=exhibitions_types,),
+            dict(
+                type__source__in=exhibitions_types,
+            ),
             [
                 dict(data__contains={'artists': [{'source': user.username}]}),
                 dict(data__contains={'curators': [{'source': user.username}]}),
@@ -527,7 +546,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Teaching
         (
             get_altlabel_collection('collection_teaching', lang=lang),
-            dict(type__source__in=teaching_types,),
+            dict(
+                type__source__in=teaching_types,
+            ),
             [
                 dict(data__contains={'organisers': [{'source': user.username}]}),
                 dict(data__contains={'lecturers': [{'source': user.username}]}),
@@ -537,7 +558,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Educations & Qualifications
         (
             get_altlabel_collection('collection_education_qualification', lang=lang),
-            dict(type__source__in=educations_qualifications_types,),
+            dict(
+                type__source__in=educations_qualifications_types,
+            ),
             [
                 dict(data__contains={'organisers': [{'source': user.username}]}),
                 dict(data__contains={'lecturers': [{'source': user.username}]}),
@@ -547,7 +570,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Conferences & Symposiums
         (
             get_altlabel_collection('collection_conference_symposium', lang=lang),
-            dict(type__source__in=conferences_symposiums_types,),
+            dict(
+                type__source__in=conferences_symposiums_types,
+            ),
             [
                 dict(data__contains={'organisers': [{'source': user.username}]}),
                 dict(data__contains={'lecturers': [{'source': user.username}]}),
@@ -557,7 +582,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Conference contributons
         (
             get_altlabel_collection('collection_conference_contribution', lang=lang),
-            dict(type__source__in=conference_contributions_types,),
+            dict(
+                type__source__in=conference_contributions_types,
+            ),
             [
                 dict(data__contains={'lecturers': [{'source': user.username}]}),
                 dict(data__contains={'organisers': [{'source': user.username}]}),
@@ -567,7 +594,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Architectures
         (
             get_altlabel_collection('collection_architecture', lang=lang),
-            dict(type__source__in=architectures_types,),
+            dict(
+                type__source__in=architectures_types,
+            ),
             [
                 dict(data__contains={'architecture': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -576,7 +605,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Audios
         (
             get_altlabel_collection('collection_audio', lang=lang),
-            dict(type__source__in=audios_types,),
+            dict(
+                type__source__in=audios_types,
+            ),
             [
                 dict(data__contains={'authors': [{'source': user.username}]}),
                 dict(data__contains={'artists': [{'source': user.username}]}),
@@ -586,7 +617,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Concerts
         (
             get_altlabel_collection('collection_concert', lang=lang),
-            dict(type__source__in=concerts_types,),
+            dict(
+                type__source__in=concerts_types,
+            ),
             [
                 dict(data__contains={'music': [{'source': user.username}]}),
                 dict(data__contains={'conductors': [{'source': user.username}]}),
@@ -597,13 +630,17 @@ def user_data(request, pk=None, *args, **kwargs):
         # Events
         (
             get_altlabel_collection('collection_event', lang=lang),
-            dict(type__source__in=events_types,),
+            dict(
+                type__source__in=events_types,
+            ),
             [dict(data__contains={'contributors': [{'source': user.username}]})],
         ),
         # Festivals
         (
             get_altlabel_collection('collection_festival', lang=lang),
-            dict(type__source__in=festivals_types,),
+            dict(
+                type__source__in=festivals_types,
+            ),
             [
                 dict(data__contains={'organisers': [{'source': user.username}]}),
                 dict(data__contains={'artists': [{'source': user.username}]}),
@@ -614,7 +651,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Images
         (
             get_altlabel_collection('collection_image', lang=lang),
-            dict(type__source__in=images_types,),
+            dict(
+                type__source__in=images_types,
+            ),
             [
                 dict(data__contains={'artists': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -623,7 +662,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Performances
         (
             get_altlabel_collection('collection_performance', lang=lang),
-            dict(type__source__in=performances_types,),
+            dict(
+                type__source__in=performances_types,
+            ),
             [
                 dict(data__contains={'artists': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -632,7 +673,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Sculptures
         (
             get_altlabel_collection('collection_sculpture', lang=lang),
-            dict(type__source__in=sculptures_types,),
+            dict(
+                type__source__in=sculptures_types,
+            ),
             [
                 dict(data__contains={'artists': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -641,7 +684,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Softwares
         (
             get_altlabel_collection('collection_software', lang=lang),
-            dict(type__source__in=softwares_types,),
+            dict(
+                type__source__in=softwares_types,
+            ),
             [
                 dict(data__contains={'software_developers': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -650,7 +695,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Videos
         (
             get_altlabel_collection('collection_film_video', lang=lang),
-            dict(type__source__in=videos_types,),
+            dict(
+                type__source__in=videos_types,
+            ),
             [
                 dict(data__contains={'directors': [{'source': user.username}]}),
                 dict(data__contains={'contributors': [{'source': user.username}]}),
@@ -765,9 +812,9 @@ def entry_data(request, pk=None, *args, **kwargs):
     manual_parameters=[
         authorization_header_paramter,
         language_header_parameter,
-        openapi.Parameter('collection', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING,),
-        openapi.Parameter('roles', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING,),
-        openapi.Parameter('users', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING,),
+        openapi.Parameter('collection', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
+        openapi.Parameter('roles', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
+        openapi.Parameter('users', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
     ],
 )
 @api_view(['POST'])
@@ -808,7 +855,10 @@ def wb_data(request, *args, **kwargs):
             q_filters.append(dict(data__contains={role: [{'source': user}]}))
 
     qs = (
-        Entry.objects.filter(published=True, type__source__in=types,)
+        Entry.objects.filter(
+            published=True,
+            type__source__in=types,
+        )
         .filter(reduce(operator.or_, (Q(**x) for x in date_filters)))
         .filter(reduce(operator.or_, (Q(**x) for x in q_filters)))
         .annotate(rel=ArrayAgg('relations__id'))

@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.ERROR)
 
 
 class AutoSuggestTestCase(TestCase):
-    """
-    tests based on current settings configured.
+    """tests based on current settings configured.
+
     TODO:
     very repetitive, make it better with decorators
     """
@@ -134,7 +134,9 @@ class AutoSuggestTestCase(TestCase):
         return
 
     @vcr.use_cassette(
-        'fixtures/vcr_cassettes/autosuggest.yaml', filter_query_parameters=['api_key'], record_mode='new_episodes',
+        'fixtures/vcr_cassettes/autosuggest.yaml',
+        filter_query_parameters=['api_key'],
+        record_mode='new_episodes',
     )
     def test_pelias(self):
         res = fetch_responses('wien', ('PELIAS',))

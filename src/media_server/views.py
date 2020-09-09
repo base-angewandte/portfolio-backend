@@ -44,7 +44,7 @@ def protected_view(request, path, server, as_download=False):
         return response
 
     elif server == 'django':
-        return serve(request, path, document_root=settings.PROTECTED_MEDIA_ROOT, show_indexes=False,)
+        return serve(request, path, document_root=settings.PROTECTED_MEDIA_ROOT, show_indexes=False)
 
     return HttpResponseServerError()
 
@@ -94,7 +94,8 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
                     )
 
                 serializer = self.get_serializer(data=request.data, partial=partial)
@@ -123,7 +124,10 @@ class MediaViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
 
             if not check_quota(request.user, serializer.validated_data['file'].size):
-                return Response(_('No space left for user'), status=status.HTTP_422_UNPROCESSABLE_ENTITY,)
+                return Response(
+                    _('No space left for user'),
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
 
             mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
             media_type = get_type_for_mime_type(mime_type)
@@ -171,7 +175,8 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
                     )
                 elif m.status != 2:
                     return Response({'id': pk}, status=status.HTTP_202_ACCEPTED)
@@ -215,7 +220,8 @@ class MediaViewSet(viewsets.GenericViewSet):
             if m:
                 if m.owner != request.user:
                     return Response(
-                        _('Current user is not the owner of this media object'), status=status.HTTP_403_FORBIDDEN,
+                        _('Current user is not the owner of this media object'),
+                        status=status.HTTP_403_FORBIDDEN,
                     )
 
                 m.delete()

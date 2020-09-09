@@ -4,7 +4,7 @@ from django.conf import settings
 from django.dispatch import receiver
 
 
-@receiver(cas_user_authenticated, dispatch_uid="process_user_attributes")
+@receiver(cas_user_authenticated, dispatch_uid='process_user_attributes')
 def process_user_attributes(sender, user, created, attributes, *args, **kwargs):
     if not user:
         return

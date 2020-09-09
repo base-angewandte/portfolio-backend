@@ -16,7 +16,8 @@ from ..general import (
 from ..utils import year_from_date
 
 TYPES = get_collection_members(
-    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication', use_cache=False,
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_document_publication',
+    use_cache=False,
 )
 
 

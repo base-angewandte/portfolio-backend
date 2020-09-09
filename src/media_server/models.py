@@ -161,7 +161,8 @@ class Media(models.Model):
                 else:
                     logger.error(
                         'Error while converting {}:\n{}'.format(
-                            dict(TYPE_CHOICES).get(self.type), process.stderr.decode('utf-8'),
+                            dict(TYPE_CHOICES).get(self.type),
+                            process.stderr.decode('utf-8'),
                         )
                     )
                     self.status = STATUS_ERROR
@@ -287,7 +288,7 @@ class Media(models.Model):
 
     def set_exif(self):
         try:
-            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path],))[0]
+            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path]))[0]
         except Exception:
             logger.warning('Could not read metainformation from file: %s', self.file.path)
             # create fallback data

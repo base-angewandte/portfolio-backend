@@ -85,13 +85,13 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                     ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
                     ('order', 3),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('type'))),
-                    ('set_label_language', True,),
+                    ('set_label_language', True),
                 ]
             ),
             'texts': OrderedDict(
                 [
                     ('field_type', 'multiline'),
-                    ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'}),),
+                    ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'})),
                     ('prefetch', ['source_type']),
                     ('order', 4),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('text'))),
@@ -100,12 +100,12 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'keywords': OrderedDict(
                 [
                     ('field_type', 'chips'),
-                    ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'}),),
+                    ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'})),
                     ('prefetch', ['source']),
                     ('order', 5),
                     ('allow_unknown_entries', True),
-                    ('dynamic_autosuggest', True,),
-                    ('set_label_language', True,),
+                    ('dynamic_autosuggest', True),
+                    ('set_label_language', True),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('keywords'))),
                 ]
             ),

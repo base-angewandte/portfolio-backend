@@ -3,10 +3,11 @@ from django.core.files.storage import FileSystemStorage
 
 
 class ProtectedFileSystemStorage(FileSystemStorage):
-    """
-    A class to manage protected files.
+    """A class to manage protected files.
+
     We have to override the methods in the FileSystemStorage class which
-    are decorated with cached_property for this class to work as intended.
+    are decorated with cached_property for this class to work as
+    intended.
     """
 
     def __init__(self, *args, **kwargs):
