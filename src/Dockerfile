@@ -11,15 +11,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         webp \
     && rm -rf /var/lib/apt/lists/*
 
-RUN EXIFTOOL_VERSION=$(wget -qO- https://exiftool.org/ver.txt) \
-    && wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
-    && tar xvf Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
-    && cd Image-ExifTool-${EXIFTOOL_VERSION}/ \
+# hadolint ignore=DL3003
+RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
+    && wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
+    && tar xvf Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
+    && cd Image-ExifTool-"${EXIFTOOL_VERSION}"/ \
     && perl Makefile.PL \
     && make test \
 	&& make install \
 	&& cd .. \
-	&& rm -rf Image-ExifTool-${EXIFTOOL_VERSION}*
+	&& rm -rf Image-ExifTool-"${EXIFTOOL_VERSION}"*
 
 RUN mkdir /logs
 VOLUME /logs
@@ -30,10 +31,10 @@ VOLUME /logs
 WORKDIR /django
 
 RUN pip install --upgrade pip==19.1.1
-ADD requirements.txt .
+COPY requirements.txt .
 RUN pip install --disable-pip-version-check -r requirements.txt
-ADD . .
+COPY . .
 
-CMD rainbow-saddle --pid /var/run/django.pid --gunicorn-pidfile /var/run/gunicorn.pid gunicorn portfolio.wsgi -c /django/gunicorn-conf.py
+CMD ["rainbow-saddle", "--pid", "/var/run/django.pid", "--gunicorn-pidfile", "/var/run/gunicorn.pid", "gunicorn", "portfolio.wsgi", "-c", "/django/gunicorn-conf.py"]
 
 EXPOSE 8200
