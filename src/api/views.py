@@ -30,6 +30,7 @@ from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
+from media_server.archiver import Archiver
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 
@@ -149,6 +150,9 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     media:
     Return list of media objects for a certain entry.
+
+    archive:
+    Archive the media objects (e.g.in a Phaidra container).
     """
 
     serializer_class = EntrySerializer
@@ -160,6 +164,27 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     ordering_fields = entry_ordering_fields
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(''),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Entry not found'),
+        },
+    )
+    @action(detail=True, filter_backends=[], pagination_class=None)
+    def archive(self, request, pk=None, *args, **kwargs):
+        try:
+            entry = Entry.objects.get(pk=pk)
+            if entry.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+            archiver = Archiver()
+            ret = archiver.archive(entry)
+            # ret = get_media_for_entry(entry.pk, flat=True)
+            return Response(ret)
+        except Entry.DoesNotExist:
+            raise exceptions.NotFound(_('Entry does not exist'))
+
 
     @swagger_auto_schema(
         manual_parameters=[

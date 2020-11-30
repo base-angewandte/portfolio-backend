@@ -32,6 +32,7 @@ env.read_env()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 PROJECT_NAME = '.'.join(__name__.split('.')[:-1])
 
 try:
@@ -191,6 +192,9 @@ ROOT_URLCONF = f'{PROJECT_NAME}.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            BASE_DIR + '/portfolio/templates/',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -712,3 +716,9 @@ ACTIVE_SOURCES = {
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
 
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
+
+ARCHIVE_TYPE = env.str('ARCHIVE_TYPE')
+ARCHIVE_SETTINGS = {'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
+                    'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
+                    'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
+                    'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI')}
