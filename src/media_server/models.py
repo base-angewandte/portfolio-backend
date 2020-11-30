@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import shutil
-import subprocess
+import subprocess  # nosec
 
 import django_rq
 import magic
@@ -153,7 +153,7 @@ class Media(models.Model):
                 self.status = STATUS_IN_PROGRESS
                 self.save()
 
-                process = subprocess.run(command, stderr=subprocess.PIPE)
+                process = subprocess.run(command, stderr=subprocess.PIPE)  # nosec
 
                 if process.returncode == 0:
                     self.status = STATUS_CONVERTED
@@ -192,7 +192,7 @@ class Media(models.Model):
             with open(self.get_file_path('preview.txt')) as f:
                 for line in f:
                     k, v = line.rstrip('\n').split(',')
-                    ret.append({'{}w'.format(k): self.get_url(v)})
+                    ret.append({f'{k}w': self.get_url(v)})
         return ret
 
     def get_data(self):
@@ -233,7 +233,7 @@ class Media(models.Model):
 
         for f in filename:
             if self.check_file(f):
-                return '{}/{}'.format(self.get_protected_assets_url(), f)
+                return f'{self.get_protected_assets_url()}/{f}'
 
         logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
         return None
@@ -270,7 +270,7 @@ class Media(models.Model):
     def check_mime_type(self):
         exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
         if exiftool_mime_type and self.mime_type != exiftool_mime_type:
-            logger.warning('MIMEType mismatch: {} != {}'.format(self.mime_type, exiftool_mime_type))
+            logger.warning(f'MIMEType mismatch: {self.mime_type} != {exiftool_mime_type}')
             # correct some mime types
             if self.mime_type in [
                 'application/zip',
@@ -288,7 +288,7 @@ class Media(models.Model):
 
     def set_exif(self):
         try:
-            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path]))[0]
+            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path]))[0]  # nosec
         except Exception:
             logger.warning('Could not read metainformation from file: %s', self.file.path)
             # create fallback data

@@ -10,4 +10,4 @@ class Command(BaseCommand):
         scheduler = django_rq.get_scheduler()
 
         for job in scheduler.get_jobs():
-            self.stdout.write('{}'.format(job))
+            self.stdout.write(f'{job}')

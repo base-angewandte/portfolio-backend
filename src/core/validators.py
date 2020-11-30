@@ -19,7 +19,7 @@ def validate_type(value):
 def validate_keywords(value):
     try:
         validate(value, get_keywords_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
-        if len(value) > len(set(json.dumps(d, sort_keys=True) for d in value)):
+        if len(value) > len({json.dumps(d, sort_keys=True) for d in value}):
             raise ValidationError(_('Keywords contains duplicate entries'))
     except SchemaValidationError as e:
         msg = _('Invalid keywords: %(error)s') % {'error': e.message}  # noqa: B306

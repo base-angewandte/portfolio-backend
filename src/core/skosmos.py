@@ -62,7 +62,7 @@ def get_search_data(uri):
 def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
     language = get_language() or 'en'
 
-    cache_key = hashlib.md5(
+    cache_key = hashlib.md5(  # nosec
         '_'.join([uri, vocid or '', str(fetch_children), source_name or '', language]).encode('utf-8')
     ).hexdigest()
 
@@ -141,8 +141,8 @@ def get_languages():
 
 def get_languages_choices():
     language = get_language() or 'en'
-    cache_key_languages = 'get_languages_{}'.format(language)
-    cache_key_languages_labels = 'get_languages_labels_{}'.format(language)
+    cache_key_languages = f'get_languages_{language}'
+    cache_key_languages_labels = f'get_languages_labels_{language}'
 
     languages = cache.get(cache_key_languages, [])
     languages_labels = cache.get(cache_key_languages_labels, [])
@@ -206,7 +206,7 @@ def get_entry_types():
 
 
 def get_uri(concept, graph=settings.VOC_GRAPH):
-    return '{}{}'.format(graph, concept)
+    return f'{graph}{concept}'
 
 
 def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
@@ -214,12 +214,12 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
         language = lang
     else:
         language = get_language() or 'en'
-    cache_key = 'get_altlabel_{}_{}'.format(language, concept)
+    cache_key = f'get_altlabel_{language}_{concept}'
 
     label = cache.get(cache_key)
     if not label:
         try:
-            g = skosmos.data('{}{}'.format(graph, concept))
+            g = skosmos.data(f'{graph}{concept}')
             for _uri, l in g.subject_objects(SKOS.altLabel):
                 if l.language == language:
                     label = l
@@ -248,11 +248,11 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
         language = lang
     else:
         language = get_language() or 'en'
-    cache_key = 'get_preflabel_{}_{}'.format(language, concept)
+    cache_key = f'get_preflabel_{language}_{concept}'
 
     label = cache.get(cache_key)
     if not label:
-        c = skosmos.get_concept(project, '{}{}'.format(graph, concept))
+        c = skosmos.get_concept(project, f'{graph}{concept}')
         try:
             label = c.label(language)
         except KeyError:
@@ -270,7 +270,7 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
 
 
 def get_collection_members(collection, maxhits=1000, use_cache=True):
-    cache_key = 'get_collection_members_{}'.format(collection)
+    cache_key = f'get_collection_members_{collection}'
 
     members = cache.get(cache_key) if use_cache else None
     if not members:

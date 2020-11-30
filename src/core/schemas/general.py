@@ -430,7 +430,7 @@ class DateTimeLocationModel(GenericModel):
         if label is None:
             label = self.metadata.get(attribute, {}).get('title')
         if is_range:
-            return {'label': label, 'value': {x: getattr(self, '{}_{}'.format(attribute, x)) for x in ['from', 'to']}}
+            return {'label': label, 'value': {x: getattr(self, f'{attribute}_{x}') for x in ['from', 'to']}}
         else:
             return {
                 'label': label,

@@ -31,7 +31,7 @@ def init():
     global ACTIVE_TYPES_LIST
 
     for schema in settings.ACTIVE_SCHEMAS:
-        s = importlib.import_module('.entries.{}'.format(schema), __name__)
+        s = importlib.import_module(f'.entries.{schema}', __name__)
         ACTIVE_TUPLES.append(
             (
                 s.TYPES,

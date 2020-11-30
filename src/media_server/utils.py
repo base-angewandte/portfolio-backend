@@ -15,7 +15,7 @@ def decode_user_hash(hash):
 
 
 def get_quota_for_user(user):
-    cache_key = '{}_quota'.format(user.username)
+    cache_key = f'{user.username}_quota'
     quota = cache.get(cache_key)
     if not quota:
         joined = user.date_joined

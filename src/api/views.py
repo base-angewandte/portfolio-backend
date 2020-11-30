@@ -60,7 +60,7 @@ SchemaView = get_schema_view(
 
 class PortfolioSchemaView(SchemaView):
     def __init__(self, **kwargs):
-        super(PortfolioSchemaView, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         for r in self.renderer_classes:
             if hasattr(r, 'codec_class') and r.codec_class is OpenAPICodecJson:
                 r.codec_class = OpenAPICodecDRFJson
@@ -77,7 +77,7 @@ class StandardLimitOffsetPagination(LimitOffsetPagination):
     # offset_query_param = 'skip'
 
 
-class CountModelMixin(object):
+class CountModelMixin:
     """Count a queryset."""
 
     @swagger_auto_schema(manual_parameters=[], responses={200: openapi.Response('')})
@@ -108,7 +108,7 @@ entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', '
                 required=False,
                 description='Which field to use when ordering the results.',
                 type=openapi.TYPE_STRING,
-                enum=list(entry_ordering_fields) + ['-{}'.format(i) for i in entry_ordering_fields],
+                enum=list(entry_ordering_fields) + [f'-{i}' for i in entry_ordering_fields],
             ),
             openapi.Parameter(
                 'q', openapi.IN_QUERY, required=False, description='Search query', type=openapi.TYPE_STRING
@@ -311,7 +311,7 @@ def user_data(request, pk=None, *args, **kwargs):
 
     lang = get_language() or 'en'
 
-    cache_key = 'user_data__{}_{}'.format(pk, lang)
+    cache_key = f'user_data__{pk}_{lang}'
 
     cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
@@ -848,7 +848,7 @@ def wb_data(request, *args, **kwargs):
         date_fields += s().date_fields
 
     for df in list(set(date_fields)):
-        date_filters.append({'data__{}__icontains'.format(df): year})
+        date_filters.append({f'data__{df}__icontains': year})
 
     for user in users:
         for role in roles:

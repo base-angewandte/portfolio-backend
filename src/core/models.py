@@ -91,7 +91,7 @@ class Entry(AbstractBaseModel):
                 ret['data'].append({'label': self._meta.get_field(field).verbose_name, 'value': value})
         if self.texts:
             texts = []
-            language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
+            language_source = f'http://base.uni-ak.ac.at/portfolio/languages/{lang}'
             for text in self.texts:
                 text_type = text.get('type', {}).get('label', {}).get(lang) or None
                 if text.get('data'):

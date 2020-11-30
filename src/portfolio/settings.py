@@ -129,7 +129,7 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = reverse_lazy('cas_ng_login')
 LOGOUT_URL = reverse_lazy('cas_ng_logout')
 
-CAS_SERVER_URL = env.str('CAS_SERVER', default='{}cas/'.format(SITE_URL))
+CAS_SERVER_URL = env.str('CAS_SERVER', default=f'{SITE_URL}cas/')
 CAS_LOGIN_MSG = None
 CAS_LOGGED_MSG = None
 CAS_RENEW = False
@@ -186,7 +186,7 @@ if BEHIND_PROXY:
     USE_X_FORWARDED_HOST = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-ROOT_URLCONF = '{}.urls'.format(PROJECT_NAME)
+ROOT_URLCONF = f'{PROJECT_NAME}.urls'
 
 TEMPLATES = [
     {
@@ -205,7 +205,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = '{}.wsgi.application'.format(PROJECT_NAME)
+WSGI_APPLICATION = f'{PROJECT_NAME}.wsgi.application'
 
 
 # Database
@@ -214,10 +214,10 @@ WSGI_APPLICATION = '{}.wsgi.application'.format(PROJECT_NAME)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('POSTGRES_DB', 'django_{}'.format(PROJECT_NAME)),
-        'USER': os.environ.get('POSTGRES_USER', 'django_{}'.format(PROJECT_NAME)),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password_{}'.format(PROJECT_NAME)),
-        'HOST': '{}-postgres'.format(PROJECT_NAME) if DOCKER else 'localhost',
+        'NAME': os.environ.get('POSTGRES_DB', f'django_{PROJECT_NAME}'),
+        'USER': os.environ.get('POSTGRES_USER', f'django_{PROJECT_NAME}'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', f'password_{PROJECT_NAME}'),
+        'HOST': f'{PROJECT_NAME}-postgres' if DOCKER else 'localhost',
         'PORT': '5432',
     }
 }
@@ -324,7 +324,7 @@ LOGGING = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://{}:6379/0'.format('{}-redis'.format(PROJECT_NAME) if DOCKER else 'localhost'),
+        'LOCATION': 'redis://{}:6379/0'.format(f'{PROJECT_NAME}-redis' if DOCKER else 'localhost'),
         'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
     }
 }
@@ -345,11 +345,11 @@ RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
-SESSION_COOKIE_NAME = 'sessionid_{}'.format(PROJECT_NAME)
+SESSION_COOKIE_NAME = f'sessionid_{PROJECT_NAME}'
 SESSION_COOKIE_DOMAIN = env.str('SESSION_COOKIE_DOMAIN', default=None)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-CSRF_COOKIE_NAME = 'csrftoken_{}'.format(PROJECT_NAME)
+CSRF_COOKIE_NAME = f'csrftoken_{PROJECT_NAME}'
 CSRF_COOKIE_DOMAIN = env.str('CSRF_COOKIE_DOMAIN', default=None)
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
@@ -425,11 +425,11 @@ ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 # Autosuggest
 SOURCES = {
     'ANGEWANDTE_PERSON': {
-        apiconfig.URL: '{}autosuggest/v1/persons/'.format(SITE_URL),
+        apiconfig.URL: f'{SITE_URL}autosuggest/v1/persons/',
         apiconfig.QUERY_FIELD: 'q',
         apiconfig.PAYLOAD: None,
         apiconfig.TIMEOUT: 10,
-        apiconfig.HEADER: {'Authorization': 'Bearer {}'.format(ANGEWANDTE_API_KEY)},
+        apiconfig.HEADER: {'Authorization': f'Bearer {ANGEWANDTE_API_KEY}'},
     },
     'GND_PERSON': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
@@ -468,7 +468,7 @@ SOURCES = {
         apiconfig.PAYLOAD: {'maxRows': 10, 'username': GEONAMES_USER, 'type': 'json'},
     },
     'BASE_KEYWORDS': {
-        apiconfig.URL: '{}basekw/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}basekw/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -478,14 +478,14 @@ SOURCES = {
         },
     },
     'VOC_KEYWORDS': {
-        apiconfig.URL: '{}disciplines/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}disciplines/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         # NOTE: SKOSMOS API does not return anything if the query string is simply a wildward
         apiconfig.PAYLOAD: {'lang': get_language_lazy(), 'fields': 'prefLabel'},
     },
     'VOC_ROLES': {
-        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}povoc/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -496,7 +496,7 @@ SOURCES = {
         },
     },
     'VOC_FORMATS': {
-        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}povoc/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -507,7 +507,7 @@ SOURCES = {
         },
     },
     'VOC_MATERIALS': {
-        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}povoc/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -518,13 +518,13 @@ SOURCES = {
         },
     },
     'VOC_LANGUAGES': {
-        apiconfig.URL: '{}languages/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}languages/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {'lang': get_language_lazy(), 'unique': True, 'fields': 'prefLabel'},
     },
     'VOC_TEXTTYPES': {
-        apiconfig.URL: '{}povoc/search'.format(SKOSMOS_API),
+        apiconfig.URL: f'{SKOSMOS_API}povoc/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -711,4 +711,4 @@ ACTIVE_SOURCES = {
 
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
 
-LOOL_HOST = 'http://{}:9980'.format('{}-lool'.format(PROJECT_NAME) if DOCKER else 'localhost')
+LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')

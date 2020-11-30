@@ -79,7 +79,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             if self.action in self.action_serializers:
                 return self.action_serializers[self.action]
 
-        return super(MediaViewSet, self).get_serializer_class()
+        return super().get_serializer_class()
 
     def _get_media_object(self, pk):
         try:

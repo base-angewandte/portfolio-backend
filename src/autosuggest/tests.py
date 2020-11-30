@@ -125,9 +125,9 @@ class AutoSuggestTestCase(TestCase):
         VOC_SOURCES = ('VOC_LANGUAGES', 'VOC_MATERIALS', 'VOC_FORMATS', 'VOC_ROLES', 'VOC_KEYWORDS', 'VOC_TEXTTYPES')
         for voc_source in VOC_SOURCES:
             res = fetch_responses('a', (voc_source,))
-            assert len(res) > 0, '{} is empty'.format(voc_source)
+            assert len(res) > 0, f'{voc_source} is empty'
             for rec in res:
-                assert 'label' in rec, '{}: no prefLabels'.format(voc_source)
+                assert 'label' in rec, f'{voc_source}: no prefLabels'
                 assert 'en' in rec.get('prefLabels')
                 assert 'de' in rec.get('prefLabels')
 
