@@ -218,7 +218,7 @@ DATABASES = {
         'USER': os.environ.get('POSTGRES_USER', f'django_{PROJECT_NAME}'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', f'password_{PROJECT_NAME}'),
         'HOST': f'{PROJECT_NAME}-postgres' if DOCKER else 'localhost',
-        'PORT': '5432',
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 

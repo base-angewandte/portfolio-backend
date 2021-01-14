@@ -31,3 +31,12 @@ SITE_URL=https://url/
 # PELIAS_FOCUS_POINT_LAT=48.208126
 # PELIAS_FOCUS_POINT_LON=16.382464
 # USER_QUOTA=1073741824
+
+## The database port only needs to be changed, if you are running portfolio
+## locally in combination with e.g. showroom also running locally. Then at
+## least one of the database container ports needs to be mapped to a different
+## value. So use whatever you set in your docker-compose.override.yml for
+## portfolio-postgres or leave the comment to use the default:
+# POSTGRES_PORT=5432
+## The database password has to be the same as the one set in ../../.env
+POSTGRES_PASSWORD=password
