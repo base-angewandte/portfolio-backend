@@ -1,3 +1,4 @@
+{% load langmapper %}
 {
     "metadata": {
         "json-ld": {
@@ -23,7 +24,7 @@
                             {% for label, lang in entry.type.label.items %}
                             {
                                 "@value": "{{ label }}",
-                                "@language": "{{ lang }}"
+                                "@language": "{{ lang | three_letter_lang}}"
                             },
                             {% endfor %}
                         ],
@@ -52,7 +53,7 @@
                             {% for lang, label in sub.label.items %}
                             {
                                 "@value": "{{ label }}",
-                                "@language": "{{ lang }}"
+                                "@language": "{{ lang | three_letter_lang}}"
                             },
                             {% endfor %}
                         ]
@@ -69,7 +70,7 @@
                             {% for lang, label in fmt.label.items %}
                             {
                                 "@value": "{{ label }}",
-                                "@language": "{{ lang }}"
+                                "@language": "{{ lang | three_letter_lang}}"
                             },
                             {% endfor %}
                         ]
@@ -86,7 +87,7 @@
                             {% for lang, label in fmt.label.items %}
                             {
                                 "@value": "{{ label }}",
-                                "@language": "{{ lang }}"
+                                "@language": "{{ lang | three_letter_lang}}"
                             },
                             {% endfor %}
                         ]
@@ -107,7 +108,7 @@
                          {% for item in text.data %}
                          {
                              "@value": "{{item.text}}",
-                             "@language": "{{item.language.source}}"
+                             "@language": "{{item.language.source | three_letter_lang}}"
                          },
                          {% endfor %}
                      ]

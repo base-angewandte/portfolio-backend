@@ -1,4 +1,5 @@
 import json
+import logging
 import operator
 from functools import reduce
 
@@ -179,9 +180,10 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
             if entry.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
             archiver = Archiver()
-            ret = archiver.archive(entry)
-            # ret = get_media_for_entry(entry.pk, flat=True)
-            return Response(ret)
+            res = archiver.archive(entry)
+
+
+            return Response(res)
         except Entry.DoesNotExist:
             raise exceptions.NotFound(_('Entry does not exist'))
 
