@@ -41,9 +41,58 @@
                         "@language": "und"
                     }]
                 }],
-                "dcterms:subject": [{}],
-                "rdau:P60048": [{}],
-                "dce:format": [{}],
+                "dcterms:subject":
+                [
+                    {% for sub in entry.keywords %}
+                    {
+                        "@type": "skos:Concept",
+                        "skos:exactMatch": ["{{ sub.source }}"],
+                        "skos:prefLabel":
+                        [
+                            {% for lang, label in sub.label.items %}
+                            {
+                                "@value": "{{ label }}",
+                                "@language": "{{ lang }}"
+                            },
+                            {% endfor %}
+                        ]
+                    },
+                    {% endfor %}
+                ],
+                "rdau:P60048":
+                [
+                    {% for fmt in entry.data.format %}
+                    {
+                        "@type": "skos:Concept",
+                        "skos:exactMatch": ["{{fmt.source}}"],
+                        "skos:prefLabel": [
+                            {% for lang, label in fmt.label.items %}
+                            {
+                                "@value": "{{ label }}",
+                                "@language": "{{ lang }}"
+                            },
+                            {% endfor %}
+                        ]
+                    },
+                    {% endfor %}
+                ],
+                "dce:format":
+                [
+                    {% for fmt in entry.data.format %}
+                    {
+                        "@type": "skos:Concept",
+                        "skos:exactMatch": ["{{fmt.source}}"],
+                        "skos:prefLabel": [
+                            {% for lang, label in fmt.label.items %}
+                            {
+                                "@value": "{{ label }}",
+                                "@language": "{{ lang }}"
+                            },
+                            {% endfor %}
+                        ]
+                    },
+                    {% endfor %}
+                ],
                 "bf:note":
                 [{% for text in entry.texts %}
                  {% if text.type.source  == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' or 'type' not in text %}
@@ -57,8 +106,8 @@
                      [
                          {% for item in text.data %}
                          {
-                         "@value": "{{item.text}}",
-                         "@language": "{{item.language.source}}"
+                             "@value": "{{item.text}}",
+                             "@language": "{{item.language.source}}"
                          },
                          {% endfor %}
                      ]
