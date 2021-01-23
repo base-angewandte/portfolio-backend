@@ -716,8 +716,10 @@ USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quot
 
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
 
-ARCHIVE_TYPE = env.str('ARCHIVE_TYPE')
-ARCHIVE_SETTINGS = {'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
-                    'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
-                    'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
-                    'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI')}
+ARCHIVE_TYPE = env.str('ARCHIVE_TYPE', '')
+ARCHIVE_SETTINGS = None
+if ARCHIVE_TYPE:
+    ARCHIVE_SETTINGS = {'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
+                        'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
+                        'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
+                        'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI')}

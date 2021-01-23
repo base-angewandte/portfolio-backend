@@ -179,6 +179,10 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
             entry = Entry.objects.get(pk=pk)
             if entry.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+            if not settings.ARCHIVE_TYPE:
+                # No archival configured, abort
+                raise exceptions.PermissionDenied(_('No archival system configured.'))
+
             archiver = Archiver()
             res = archiver.archive(entry)
 

@@ -22,11 +22,11 @@ class Archiver:
         if settings.ARCHIVE_TYPE == 'PHAIDRA':
             return self.phaidra_archive(entry)
 
+
     def phaidra_archive(self, entry):
-        print("Hitting ", self.create_uri)
         media = get_media_for_entry(entry.pk, flat=True)
         # print(media)
-        template = loader.get_template('./phaidra_container.json')
+        template = loader.get_template('phaidra_container.json')
 
         context = {
             'entry': entry,
