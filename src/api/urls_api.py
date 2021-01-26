@@ -11,7 +11,6 @@ router.register(r'entry', views.EntryViewSet, basename='entry')
 router.register(r'relation', views.RelationViewSet, basename='relation')
 router.register(r'jsonschema', views.JsonSchemaViewSet, basename='jsonschema')
 router.register(r'media', MediaViewSet, basename='media')
-router.register('archive', MediaViewSet, basename='archive')
 
 
 urlpatterns = [

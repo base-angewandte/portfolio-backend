@@ -123,6 +123,8 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license], blank=True, null=True)
+    archive_id = models.CharField(max_length=255, default='')
+    archive_URI = models.CharField(max_length=255, default='')
 
     class Meta:
         indexes = [
