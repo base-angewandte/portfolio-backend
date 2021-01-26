@@ -256,6 +256,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             return Response(ret)
         except Media.DoesNotExist:
             raise exceptions.NotFound(_('Media does not exist'))
-        except Exception:
+        except Exception as e:
             # Show where it failed? i.e. in the container creation or member creation?
+            logging.warning("Encountered %s", repr(e))
             raise exceptions.APIException(_('Error archiving media asset'))

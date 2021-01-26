@@ -2,6 +2,14 @@
 {
     "metadata": {
         "json-ld": {
+            "ebucore:hasMimeType": [
+                "{{media.mime_type}}"
+            ],
+            "ebucore:filename": ["{{media.file}}"],
+            "edm:rights": [
+                "http://rightsstatements.org/vocab/InC/1.0/"
+            ]
+
         }
     }
 }

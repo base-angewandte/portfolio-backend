@@ -151,9 +151,6 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
 
     media:
     Return list of media objects for a certain entry.
-
-    archive:
-    Archive the media objects (e.g.in a Phaidra container).
     """
 
     serializer_class = EntrySerializer
@@ -165,31 +162,6 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     ordering_fields = entry_ordering_fields
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
-
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response(''),
-            403: openapi.Response('Access not allowed'),
-            404: openapi.Response('Entry not found'),
-        },
-    )
-    @action(detail=True, filter_backends=[], pagination_class=None)
-    def archive(self, request, pk=None, *args, **kwargs):
-        try:
-            entry = Entry.objects.get(pk=pk)
-            if entry.owner != request.user:
-                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
-            if not settings.ARCHIVE_TYPE:
-                # No archival configured, abort
-                raise exceptions.PermissionDenied(_('No archival system configured.'))
-
-            archiver = Archiver()
-
-            res = archiver.archive(entry)
-
-            return Response(res)
-        except Entry.DoesNotExist:
-            raise exceptions.NotFound(_('Entry does not exist'))
 
     @swagger_auto_schema(
         manual_parameters=[
