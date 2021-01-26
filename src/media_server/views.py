@@ -249,13 +249,13 @@ class MediaViewSet(viewsets.GenericViewSet):
                 raise Media.DoesNotExist
             if media.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this media'))
-            ret = archive_media(media)
-            pid = ret.get('pid', '')
-            if pid.strip():
-                # Save PID in database
-                media.archive_URI = settings.PHAIDRA_IDENTIFIER_BASE + pid
-                media.archive_id = pid
-                media.save()
+
+            archiver = Archiver()
+            ret = archiver.archive(media)
+
             return Response(ret)
         except Media.DoesNotExist:
             raise exceptions.NotFound(_('Media does not exist'))
+        except Exception:
+            # Show where it failed? i.e. in the container creation or member creation?
+            raise exceptions.APIException(_('Error archiving media asset'))

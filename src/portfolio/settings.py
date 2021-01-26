@@ -192,8 +192,7 @@ ROOT_URLCONF = f'{PROJECT_NAME}.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-        ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -719,7 +718,17 @@ LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'local
 ARCHIVE_TYPE = env.str('ARCHIVE_TYPE', '')
 ARCHIVE_SETTINGS = None
 if ARCHIVE_TYPE:
-    ARCHIVE_SETTINGS = {'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
-                        'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
-                        'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
-                        'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI')}
+    ARCHIVE_CREDENTIALS = {
+        'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
+        'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
+    }
+    ARCHIVE_URIS = {
+        'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
+        'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI'),
+        'BASE_URI': env.str(f'{ARCHIVE_TYPE}_BASE_URI'),
+        'PICTURE_CREATE': f'{ARCHIVE_TYPE}_BASE_URI/' + env.str(f'{ARCHIVE_TYPE}_PICTURE_CREATE'),
+        'VIDEO_CREATE': f'{ARCHIVE_TYPE}_BASE_URI/' + env.str(f'{ARCHIVE_TYPE}_VIDEO_CREATE'),
+        'AUDIO_CREATE': f'{ARCHIVE_TYPE}_BASE_URI/' + env.str(f'{ARCHIVE_TYPE}_AUDIO_CREATE'),
+        'DOCUMENT_CREATE': f'{ARCHIVE_TYPE}_BASE_URI/' + env.str(f'{ARCHIVE_TYPE}_DOCUMENT_CREATE'),
+        'OBJECT_CREATE': f'{ARCHIVE_TYPE}_BASE_URI/' + env.str(f'{ARCHIVE_TYPE}_OBJECT_CREATE'),
+    }

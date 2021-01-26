@@ -184,6 +184,7 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.PermissionDenied(_('No archival system configured.'))
 
             archiver = Archiver()
+
             res = archiver.archive(entry)
 
             return Response(res)

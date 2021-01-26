@@ -1,0 +1,7 @@
+{% load langmapper %}
+{
+    "metadata": {
+        "json-ld": {
+        }
+    }
+}

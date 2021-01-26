@@ -197,17 +197,6 @@
                 ],
             }, # end of container metadata
 
-            {% for m in media %}
-            "member_{{m.pk }}":{
-                "ebucore:hasMimeType": [
-                    "{{m.mime_type}}"
-                ],
-                "ebucore:filename": ["{{m.file}}"],
-                "edm:rights": [
-                    "http://rightsstatements.org/vocab/InC/1.0/"
-                ]
-            }
-            {% endfor %}
         }
     }
 }
