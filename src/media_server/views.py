@@ -5,7 +5,8 @@ from os.path import basename, join
 import magic
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import exceptions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -16,9 +17,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
+from .archiver import Archiver
 from .decorators import is_allowed
 from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
-from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
+from .serializers import ArchiveSerializer, MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
 logger = logging.getLogger(__name__)
@@ -69,6 +71,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         'create': MediaCreateSerializer,
         # 'update': MediaUpdateSerializer,
         'partial_update': MediaPartialUpdateSerializer,
+        'archive': ArchiveSerializer,
     }
 
     def get_queryset(self):
@@ -229,3 +232,30 @@ class MediaViewSet(viewsets.GenericViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        responses={
+            204: openapi.Response(''),
+            400: openapi.Response('Error archiving to Phaidra'),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Media object not found'),
+        }
+    )
+    @action(detail=True, filter_backends=[], pagination_class=None)
+    def archive(self, request, pk=None, *args, **kwargs):
+        try:
+            media = Media.objects.get(pk=pk)
+            if not media.file:
+                raise Media.DoesNotExist
+            if media.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this media'))
+            ret = archive_media(media)
+            pid = ret.get('pid', '')
+            if pid.strip():
+                # Save PID in database
+                media.archive_URI = settings.PHAIDRA_IDENTIFIER_BASE + pid
+                media.archive_id = pid
+                media.save()
+            return Response(ret)
+        except Media.DoesNotExist:
+            raise exceptions.NotFound(_('Media does not exist'))

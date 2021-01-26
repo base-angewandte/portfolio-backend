@@ -186,11 +186,9 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
             archiver = Archiver()
             res = archiver.archive(entry)
 
-
             return Response(res)
         except Entry.DoesNotExist:
             raise exceptions.NotFound(_('Entry does not exist'))
-
 
     @swagger_auto_schema(
         manual_parameters=[
