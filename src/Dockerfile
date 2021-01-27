@@ -40,9 +40,8 @@ EXPOSE 8200
 
 FROM base as dev
 
-# TODO: discuss if we want to do this here as a general provision (or should it be only used locally, and is it therefore in the .dockerignore file?)
-#COPY requirements-dev.txt .
-#RUN pip install --disable-pip-version-check --no-cache-dir -r requirements-dev.txt
+COPY requirements-dev.txt .
+RUN pip install --disable-pip-version-check --no-cache-dir -r requirements-dev.txt
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
 
