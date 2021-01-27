@@ -1,5 +1,4 @@
 import json
-import logging
 import operator
 from functools import reduce
 
@@ -31,7 +30,6 @@ from core.schemas.entries.document import TYPES as DOCUMENT_TYPES
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
-from media_server.archiver import Archiver
 from media_server.models import get_media_for_entry
 from media_server.utils import get_free_space_for_user
 

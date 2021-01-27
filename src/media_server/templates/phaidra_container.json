@@ -21,7 +21,7 @@
                     {
                         "@type": "skos:Concept",
                         "skos:prefLabel": [
-                            {% for label, lang in entry.type.label.items %}
+                            {% for lang, label in entry.type.label.items %}
                             {
                                 "@value": "{{ label }}",
                                 "@language": "{{ lang | three_letter_lang}}"
