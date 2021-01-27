@@ -58,13 +58,25 @@ SITE_URL=https://url/
 ## The version number of the generated Open API specification
 # OPEN_API_VERSION=2.0
 
-## TODO: clarify and then document the following properties
+## If you only want to use a subset of the provided schemas (defined in
+## ./core/schemas/entries), provide a list here. Default is to use all.
 # ACTIVE_SCHEMAS=
+
+## The API key for the active directory of die angewandte (used to suggest contributors)
 # ANGEWANDTE_API_KEY=
+
+## The following settings are for geocoding locations/addresses.
+## By default GND and VIAF are used to look up places. You can additionally use
+## the GeoNames database at geonames.org, if you provide your username for it.
+## Or you can use only the the Pelias cloud service on geocode.earth by providing
+## your API key. For Pelias you can also set a focus point from where to search.
 # GEONAMES_USER=
 # PELIAS_API_KEY=
 # PELIAS_FOCUS_POINT_LAT=48.208126
 # PELIAS_FOCUS_POINT_LON=16.382464
+
+## The base quota a user has for their uploads (gets multiplied by the number of
+## years an account already exists (1 in the first year)). Defaults to 10 GB.
 # USER_QUOTA=1073741824
 
 ## The database port only needs to be changed, if you are running portfolio
