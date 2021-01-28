@@ -1,4 +1,4 @@
-## This is the path to the (static/built) frontend files that Django will serve
+## This is the path to the (static/built) frontend files that nginx will serve
 PORTFOLIO_FRONTEND=/opt/base/portfolio-frontend/dist
 ## Folder for djangos additional asset files (static and (protected) media files)
 PORTFOLIO_ASSETS=./dockerdata/django/assets
