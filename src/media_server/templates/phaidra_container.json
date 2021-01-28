@@ -1,202 +1,195 @@
 {% load langmapper %}
 {
-    "metadata": {
-        "json-ld": {
-            "container":{
-                "dcterms:type": [
-                    {
-                        "@type": "skos:Concept",
-                        "skos:exactMatch": [
-                            "https://pid.phaidra.org/vocabulary/8MY0-BQDQ"
-                        ],
-                        "skos:prefLabel": [
-                            {
-                                "@language": "eng",
-                                "@value": "container"
-                            }
-                        ]
-                    }
-                ],
-                "edm:hasType": [
-                    {
-                        "@type": "skos:Concept",
-                        "skos:prefLabel": [
-                            {% for lang, label in entry.type.label.items %}
-                            {
-                                "@value": "{{ label }}",
-                                "@language": "{{ lang | three_letter_lang}}"
-                            },
-                            {% endfor %}
-                        ],
-                        "skos:exactMatch":["{{entry.type.source}}"]
-                    }
-                ],
-                "dce:title": [{
-                    "@type": "bf:Title",
-                    "bf:mainTitle": [{
-                        "@value": "{{entry.title}}",
-                        "@language": "und"
-                    }],
-                    "bf:subtitle": [{
-                        "@value": "{{entry.subtitle}}",
-                        "@language": "und"
-                    }]
-                }],
-                "dcterms:subject":
-                [
-                    {% for sub in entry.keywords %}
-                    {
-                        "@type": "skos:Concept",
-                        "skos:exactMatch": ["{{ sub.source }}"],
-                        "skos:prefLabel":
-                        [
-                            {% for lang, label in sub.label.items %}
-                            {
-                                "@value": "{{ label }}",
-                                "@language": "{{ lang | three_letter_lang}}"
-                            },
-                            {% endfor %}
-                        ]
-                    },
-                    {% endfor %}
-                ],
-                "rdau:P60048":
-                [
-                    {% for fmt in entry.data.format %}
-                    {
-                        "@type": "skos:Concept",
-                        "skos:exactMatch": ["{{fmt.source}}"],
-                        "skos:prefLabel": [
-                            {% for lang, label in fmt.label.items %}
-                            {
-                                "@value": "{{ label }}",
-                                "@language": "{{ lang | three_letter_lang}}"
-                            },
-                            {% endfor %}
-                        ]
-                    },
-                    {% endfor %}
-                ],
-                "dce:format":
-                [
-                    {% for fmt in entry.data.format %}
-                    {
-                        "@type": "skos:Concept",
-                        "skos:exactMatch": ["{{fmt.source}}"],
-                        "skos:prefLabel": [
-                            {% for lang, label in fmt.label.items %}
-                            {
-                                "@value": "{{ label }}",
-                                "@language": "{{ lang | three_letter_lang}}"
-                            },
-                            {% endfor %}
-                        ]
-                    },
-                    {% endfor %}
-                ],
-                "bf:note":
-                [{% for text in entry.texts %}
-                 {% if text.type.source  == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' or 'type' not in text %}
-                 {
-                     "@type":{% if text.type.source  == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' %}
-                     "bf:Summary"
-                     {% else %}
-                     "bf:Note"
-                     {% endif %},
-                     "skos:prefLabel":
-                     [
-                         {% for item in text.data %}
-                         {
-                             "@value": "{{item.text}}",
-                             "@language": "{{item.language.source | three_letter_lang}}"
-                         },
-                         {% endfor %}
-                     ]
-
-                 },
-                 {% endif %}
-                 {% endfor %}
-                ],
-                "role:arc":[
-                    {% for arc in entry.data.contributors %}
-                    {% for role in arc.roles %}
-                    {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/architecture" %}
-                    {
-                        "skos:exactMatch" : [
-                            {
-                                "@value" : "{{role.source}}",
-                                "@type" : "ids:uri"
-                            }
-                        ],
-                        "schema:name" : [
-                            {
-                                "@value" : "{{arc.label}}"
-                            }
-                        ],
-                        "@type" : "schema:Person"
-                    },
-                    {% endif %}
-                    {% endfor %}
-                    {% endfor %}
-                ],
-                "role:edt":
-                [{% for edt in entry.data.editors %}
-                 {
-                     "skos:exactMatch" : [
-                         {
-                             "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/editing",
-                             "@type" : "ids:uri"
-                         }
-                     ],
-                     "schema:name" : [
-                         {
-                             "@value" : "{{edt.label}}"
-                         }
-                     ],
-                     "@type" : "schema:Person"
-                 },
-                 {% endfor %}
-                 {% for edt in entry.data.contributors %}
-                 {% for role in edt.roles %}
-                 {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/editing" %}
-                 {
-                     "skos:exactMatch" : [
-                         {
-                             "@value" : "{{role.source}}",
-                             "@type" : "ids:uri"
-                         }
-                     ],
-                     "schema:name" : [
-                         {
-                             "@value" : "{{edt.label}}"
-                         }
-                     ],
-                     "@type" : "schema:Person"
-                 },
-                 {% endif %}
-                 {% endfor %}
-                 {% endfor %}
-                ],
-                "role:aut":
-                [{% for aut in entry.data.authors %}
-                 {
-                     "skos:exactMatch" : [
-                         {
-                             "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/author",
-                             "@type" : "ids:uri"
-                         }
-                     ],
-                     "schema:name" : [
-                         {
-                             "@value" : "{{aut.label}}"
-                         }
-                     ],
-                     "@type" : "schema:Person"
-                 },
-                 {% endfor %}
-                ],
-            }, # end of container metadata
-
+    "dcterms:type": [
+        {
+            "@type": "skos:Concept",
+            "skos:exactMatch": [
+                "https://pid.phaidra.org/vocabulary/8MY0-BQDQ"
+            ],
+            "skos:prefLabel": [
+                {
+                    "@language": "eng",
+                    "@value": "container"
+                }
+            ]
         }
-    }
-}
+    ],
+    "edm:hasType": [
+        {
+            "@type": "skos:Concept",
+            "skos:prefLabel": [
+                {% for lang, label in entry.type.label.items %}
+                {
+                    "@value": "{{ label }}",
+                    "@language": "{{ lang | three_letter_lang}}"
+                },
+                {% endfor %}
+            ],
+            "skos:exactMatch":["{{entry.type.source}}"]
+        }
+    ],
+    "dce:title": [{
+        "@type": "bf:Title",
+        "bf:mainTitle": [{
+            "@value": "{{entry.title}}",
+            "@language": "und"
+        }],
+        "bf:subtitle": [{
+            "@value": "{{entry.subtitle}}",
+            "@language": "und"
+        }]
+    }],
+    "dcterms:subject":
+    [
+        {% for sub in entry.keywords %}
+        {
+            "@type": "skos:Concept",
+            "skos:exactMatch": ["{{ sub.source }}"],
+            "skos:prefLabel":
+            [
+                {% for lang, label in sub.label.items %}
+                {
+                    "@value": "{{ label }}",
+                    "@language": "{{ lang | three_letter_lang}}"
+                },
+                {% endfor %}
+            ]
+        },
+        {% endfor %}
+    ],
+    "rdau:P60048":
+    [
+        {% for fmt in entry.data.format %}
+        {
+            "@type": "skos:Concept",
+            "skos:exactMatch": ["{{fmt.source}}"],
+            "skos:prefLabel": [
+                {% for lang, label in fmt.label.items %}
+                {
+                    "@value": "{{ label }}",
+                    "@language": "{{ lang | three_letter_lang}}"
+                },
+                {% endfor %}
+            ]
+        },
+        {% endfor %}
+    ],
+    "dce:format":
+    [
+        {% for fmt in entry.data.format %}
+        {
+            "@type": "skos:Concept",
+            "skos:exactMatch": ["{{fmt.source}}"],
+            "skos:prefLabel": [
+                {% for lang, label in fmt.label.items %}
+                {
+                    "@value": "{{ label }}",
+                    "@language": "{{ lang | three_letter_lang}}"
+                },
+                {% endfor %}
+            ]
+        },
+        {% endfor %}
+    ],
+    "bf:note":
+    [{% for text in entry.texts %}
+     {% if text.type.source  == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' or 'type' not in text %}
+     {
+         "@type":{% if text.type.source  == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' %}
+         "bf:Summary"
+         {% else %}
+         "bf:Note"
+         {% endif %},
+         "skos:prefLabel":
+         [
+             {% for item in text.data %}
+             {
+                 "@value": "{{item.text}}",
+                 "@language": "{{item.language.source | three_letter_lang}}"
+             },
+             {% endfor %}
+         ]
+
+     },
+     {% endif %}
+     {% endfor %}
+    ],
+    "role:arc":[
+        {% for arc in entry.data.contributors %}
+        {% for role in arc.roles %}
+        {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/architecture" %}
+        {
+            "skos:exactMatch" : [
+                {
+                    "@value" : "{{role.source}}",
+                    "@type" : "ids:uri"
+                }
+            ],
+            "schema:name" : [
+                {
+                    "@value" : "{{arc.label}}"
+                }
+            ],
+            "@type" : "schema:Person"
+        },
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    ],
+    "role:edt":
+    [{% for edt in entry.data.editors %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/editing",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{edt.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     },
+     {% endfor %}
+     {% for edt in entry.data.contributors %}
+     {% for role in edt.roles %}
+     {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/editing" %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "{{role.source}}",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{edt.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     },
+     {% endif %}
+     {% endfor %}
+     {% endfor %}
+    ],
+    "role:aut":
+    [{% for aut in entry.data.authors %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/author",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{aut.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     },
+     {% endfor %}
+    ],
+} # end of container metadata
