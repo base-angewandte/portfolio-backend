@@ -86,7 +86,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                     ('field_type', 'chips'),
                     ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
                     ('form_group', 1),
-                    ('order', 3),
+                    ('order', 4),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('type'))),
                     ('set_label_language', True),
                 ]
@@ -97,7 +97,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                     ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'})),
                     ('prefetch', ['source']),
                     ('form_group', 1),
-                    ('order', 4),
+                    ('order', 3),
                     ('allow_unknown_entries', True),
                     ('dynamic_autosuggest', True),
                     ('set_label_language', True),
