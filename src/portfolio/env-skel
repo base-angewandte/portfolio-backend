@@ -1,33 +1,94 @@
+## For development this can be set to True
 # DEBUG=False
+
+## If you are developing locally (with Django not running inside a container),
+## set this to False
 # DOCKER=True
+
+## The base URL of the Django site, for local development http://127.0.0.1:8200/
 SITE_URL=https://url/
+
+## In a production deployment with other base components, this base path should
+## be set for portfolio. Can stay empty in local standalone development.
 # FORCE_SCRIPT_NAME=/portfolio
+
+## The accepted HTTP Host headers, Django will serve. Defaults to urlparse(SITE_URL).hostname
 # ALLOWED_HOSTS=
+
+## In a production environment Django will be deployed behind a nginx proxy.
+## For local development, set this to False
 # BEHIND_PROXY=True
+
+## The relative path for the Django admin interface
 # DJANGO_ADMIN_PATH=admin
+
+## Set up admin notifications and CAS based superusers here
 # DJANGO_ADMINS=Full Name <email-with-name@example.com>,anotheremailwithoutname@example.com
 # DJANGO_SUPERUSERS=(username1,username2)
+
+## The base url for the CAS server, e.g. https://your.base.domain/cas
 # CAS_SERVER=
+## Wherever the CAS server should redirect to after successful auth, e.g. /api/v1/swagger
 # CAS_REDIRECT_URL=
+## Whether to allow only CA-signed certificates. Only set this to False for a local
+## dev environment if your (local) CAS server is using a self-signed certificate
 # CAS_VERIFY_CERTIFICATE=True
+
+## In a production setup you should set up SMTP account to get notifications
 # EMAIL_HOST_USER=
 # EMAIL_HOST_PASSWORD=
 # EMAIL_HOST=
 # EMAIL_PORT=
 # EMAIL_USE_TLS=
 # EMAIL_USE_LOCALTIME=
-# EMAIL_SUBJECT_PREFIX=[Portfolio]
+# EMAIL_SUBJECT_PREFIX=[portfolio]
+
+## The domain that should be used for session cookies. Leave empty for a
+## standard domain cookie
 # SESSION_COOKIE_DOMAIN=
+
+## Set up CSRF and CORS settings here. For a local development server you
+## might want to set CSRF_TRUSTED_ORIGINS to localhost
 # CSRF_COOKIE_DOMAIN=
 # CSRF_TRUSTED_ORIGINS=
 # CORS_ALLOW_CREDENTIALS=False
 # CORS_ORIGIN_ALLOW_ALL=False
 # CORS_ORIGIN_WHITELIST=
+
+## The version number of the generated Open API specification
 # OPEN_API_VERSION=2.0
+
+## If you only want to use a subset of the provided schemas (defined in
+## ./core/schemas/entries), provide a list here. Default is to use all.
 # ACTIVE_SCHEMAS=
+
+## The API key for the base API of Angewandte
 # ANGEWANDTE_API_KEY=
+
+## The following settings are for geocoding locations/addresses.
+## By default GND is used to look up places. You can additionally use
+## the GeoNames database at geonames.org, if you provide your username for it.
+## Or you can instead use only the Pelias cloud service on geocode.earth or a
+## self-hosted Pelias service by providing your API key (and in the self-hosted
+## case the API URI). For Pelias you can also set a focus point from where to search.
+## Our suggestion is to use Pelias for highest accuracy. The PELIAS_SOURCE_NAME
+## is used to provide a label for the source.
 # GEONAMES_USER=
 # PELIAS_API_KEY=
+# PELIAS_API_URL=https://api.geocode.earth/v1
+# PELIAS_SOURCE_NAME=geocode.earth
 # PELIAS_FOCUS_POINT_LAT=48.208126
 # PELIAS_FOCUS_POINT_LON=16.382464
+
+## The base quota a user has for their uploads (gets multiplied by the number of
+## years an account already exists (1 in the first year)). Defaults to 10 GB.
 # USER_QUOTA=1073741824
+
+## The database port only needs to be changed, if you are running portfolio
+## locally in combination with e.g. showroom also running locally. Then at
+## least one of the database container ports needs to be mapped to a different
+## value. So use whatever you set in your docker-compose.override.yml for
+## portfolio-postgres or leave the comment to use the default:
+# POSTGRES_PORT=5432
+## The database password has to be the same as the one set in ../../.env
+POSTGRES_PASSWORD=password

@@ -40,6 +40,14 @@ start-dev:
 		portfolio-postgres \
 		portfolio-lool
 
+start-dev-docker:
+	docker-compose up -d --build \
+		portfolio-redis \
+		portfolio-postgres \
+		portfolio-lool \
+		portfolio-django
+	docker logs -f portfolio-django-dev
+
 clear-entries:
 	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
 

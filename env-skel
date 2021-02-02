@@ -1,5 +1,13 @@
+## This is the path to the (static/built) frontend files that nginx will serve
 PORTFOLIO_FRONTEND=/opt/base/portfolio-frontend/dist
+## Folder for djangos additional asset files (static and (protected) media files)
 PORTFOLIO_ASSETS=./dockerdata/django/assets
+
+## These settings are used to set up the DB in the portfolio-postgres container.
 PORTFOLIO_DB_NAME=django_portfolio
 PORTFOLIO_DB_USER=django_portfolio
+## The password can be used as is for a local dev server.
+## Make sure to change this to a strong password on any production/public server.
+## If you change it here, make sure to also set the POSTGRES_PASSWORD in
+## src/portfolio/.env accordingly
 PORTFOLIO_DB_PASSWORD=password

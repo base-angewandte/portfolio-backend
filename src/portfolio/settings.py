@@ -218,7 +218,7 @@ DATABASES = {
         'USER': os.environ.get('POSTGRES_USER', f'django_{PROJECT_NAME}'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', f'password_{PROJECT_NAME}'),
         'HOST': f'{PROJECT_NAME}-postgres' if DOCKER else 'localhost',
-        'PORT': '5432',
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -419,6 +419,8 @@ LANGUAGES_VOCID = 'languages'
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
+PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
+PELIAS_SOURCE_NAME = env.str('PELIAS_SOURCE_NAME', default='geocode.earth')
 
 ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 
@@ -535,7 +537,7 @@ SOURCES = {
         },
     },
     'PELIAS': {
-        apiconfig.URL: 'https://api.geocode.earth/v1/autocomplete',
+        apiconfig.URL: f'{PELIAS_API_URL}/autocomplete',
         apiconfig.QUERY_FIELD: 'text',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -669,9 +671,9 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
         apiconfig.RULES: {
-            'source_name': {apiconfig.RULE: '"geocode.earth"'},
+            'source_name': {apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'},
             'source': {
-                apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
+                apiconfig.RULE: f'"{PELIAS_API_URL}/place?ids={{p1}}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
         },
