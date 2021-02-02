@@ -420,7 +420,7 @@ ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
-PELIAS_SOURCE_NAME = urlparse(PELIAS_API_URL).hostname
+PELIAS_SOURCE_NAME = env.str('PELIAS_SOURCE_NAME', default='geocode.earth')
 
 ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 

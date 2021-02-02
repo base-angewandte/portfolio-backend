@@ -62,7 +62,7 @@ SITE_URL=https://url/
 ## ./core/schemas/entries), provide a list here. Default is to use all.
 # ACTIVE_SCHEMAS=
 
-## The API key for the base API of die angewandte
+## The API key for the base API of Angewandte
 # ANGEWANDTE_API_KEY=
 
 ## The following settings are for geocoding locations/addresses.
@@ -71,10 +71,12 @@ SITE_URL=https://url/
 ## Or you can instead use only the Pelias cloud service on geocode.earth or a
 ## self-hosted Pelias service by providing your API key (and in the self-hosted
 ## case the API URI). For Pelias you can also set a focus point from where to search.
-## Our suggestion is to use Pelias for highest accuracy.
+## Our suggestion is to use Pelias for highest accuracy. The PELIAS_SOURCE_NAME
+## is used to provide a label for the source.
 # GEONAMES_USER=
 # PELIAS_API_KEY=
 # PELIAS_API_URL=https://api.geocode.earth/v1
+# PELIAS_SOURCE_NAME=geocode.earth
 # PELIAS_FOCUS_POINT_LAT=48.208126
 # PELIAS_FOCUS_POINT_LON=16.382464
 
