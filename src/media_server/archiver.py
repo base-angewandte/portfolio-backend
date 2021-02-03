@@ -43,7 +43,6 @@ def _phaidra_update_container(entry):
     """
     template = loader.get_template('phaidra_container.json')
     context = {'entry': entry}
-    print(template.render(context))
     container_metadata = {"metadata": {"json-ld": eval(template.render(context))}}
     res = requests.post(
         uris.get('BASE_URI') + f'object/{entry.archive_id}/metadata',
