@@ -107,6 +107,7 @@ def phaidra_archive(media):
         template = loader.get_template('phaidra_member.json')
         context = {'media': media}
         member_metadata = eval(template.render(context))
+
         res = requests.post(
             post_url,
             files={

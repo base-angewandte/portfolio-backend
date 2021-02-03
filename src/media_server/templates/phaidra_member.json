@@ -7,7 +7,7 @@
             ],
             "ebucore:filename": ["{{media.file}}"],
             "edm:rights": [
-                "http://rightsstatements.org/vocab/InC/1.0/"
+                "{{media.license.source}}"
             ]
 
         }
