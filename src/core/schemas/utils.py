@@ -71,10 +71,14 @@ def years_from_date_range(dr) -> str:
         return years_to_string(years)
 
 
-def years_from_date_range_time_range_location_group_field(drtrlg) -> str:
+def years_from_date_range_location_group_field(drlg) -> str:
     years = []
-    for drtrl in drtrlg:
-        if drtrl.get('date'):
-            years += years_list_from_date_range(drtrl['date'])
+    for drl in drlg:
+        if drl.get('date'):
+            years += years_list_from_date_range(drl['date'])
     if years:
         return years_to_string(years)
+
+
+def years_from_date_range_time_range_location_group_field(drtrlg) -> str:
+    return years_from_date_range_location_group_field(drtrlg)
