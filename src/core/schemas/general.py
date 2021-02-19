@@ -107,6 +107,22 @@ def get_date_location_group_field(additional_attributes=None):
     )
 
 
+def get_date_range_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
+    label = format_lazy(
+        '{date} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
+    return fields.List(
+        fields.Nested(DateRangeLocationSchema, additionalProperties=False),
+        title=label,
+        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+    )
+
+
 def get_date_range_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
