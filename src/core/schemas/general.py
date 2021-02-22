@@ -133,7 +133,6 @@ def get_date_range_field(additional_attributes=None):
         additionalProperties=False,
         **{
             'x-attrs': {
-                'field_format': 'half',
                 'field_type': 'date',
                 'date_format': 'day',
                 'placeholder': {'date': placeholder_lazy(label)},
