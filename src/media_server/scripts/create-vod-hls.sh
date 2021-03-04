@@ -55,6 +55,7 @@ duration=$(printf "%.0f" ${duration})
 cover_time=$(($duration/20))
 cover_gif_len=$(($duration < 10 ? $duration : 10))
 
+ffmpeg -ss ${cover_time} -i ${source} -hide_banner -y -vframes 1 "${target}/cover-orig.jpg"
 ffmpeg -ss ${cover_time} -i ${source} -hide_banner -y -vframes 1 -filter "${cover_filter}" "${target}/cover.jpg"
 ffmpeg -ss 0 -t ${cover_gif_len} -i ${source} -hide_banner -y -filter_complex "[0:v] fps=4,${cover_filter},split [a][b];[a] palettegen [p];[b][p] paletteuse" "${target}/cover.gif"
 
