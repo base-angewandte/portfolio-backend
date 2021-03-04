@@ -26,7 +26,8 @@ logger = logging.getLogger(__name__)
 
 @is_allowed
 @xframe_options_sameorigin
-def protected_view(request, path, server, as_download=False):
+def protected_view(request, path, server):
+    as_download = 'download' in request.GET.keys()
     if server == 'nginx':
         mimetype, encoding = mimetypes.guess_type(path)
 
