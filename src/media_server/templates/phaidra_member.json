@@ -1,4 +1,4 @@
-{% load langmapper %}
+{% load licensemapper %}
 {
     "metadata": {
         "json-ld": {
@@ -7,7 +7,7 @@
             ],
             "ebucore:filename": ["{{media.file}}"],
             "edm:rights": [
-                "{{media.license.source}}"
+                "{{media.license.source | phaidra_eq_license}}"
             ]
 
         }

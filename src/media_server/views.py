@@ -242,7 +242,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         }
     )
     @action(detail=True, filter_backends=[], pagination_class=None)
-    def archive(self, request, pk=None, *args, **kwargs):
+    def archive(self, request, pk=None, template_name='phaidra_container.json', *args, **kwargs):
         try:
             media = Media.objects.get(pk=pk)
             if not media.file:
@@ -250,7 +250,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             if media.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this media'))
 
-            ret = archive(media)
+            ret = archive(media, template_name)
 
             return Response(ret)
         except Media.DoesNotExist:

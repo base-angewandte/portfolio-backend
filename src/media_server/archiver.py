@@ -7,22 +7,23 @@ from django.conf import settings
 from django.template import loader
 
 from core.models import Entry
+from core.skosmos import get_equivalent_concepts
 from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
 
 uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
 
 
-def archive(media):
+def archive(media, template_name):
     """
     Calls the respective archival method as configured
     """
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive(media)
+        return phaidra_archive(media, template_name)
 
 
-def _phaidra_create_container(entry):
-    template = loader.get_template('phaidra_container.json')
+def _phaidra_create_container(entry, template_name):
+    template = loader.get_template(template_name)
     context = {'entry': entry}
 
     # Cannot use json.loads because there is a trailing comma after last element
@@ -33,16 +34,16 @@ def _phaidra_create_container(entry):
         files={'metadata': dumps(container_metadata)},
         auth=(credentials.get('USER'), credentials.get('PWD')),
     )
-
     return res
 
 
-def _phaidra_update_container(entry):
+def _phaidra_update_container(entry, template_name):
     """
     Updates the metadata of a container object in Phaidra
     """
-    template = loader.get_template('phaidra_container.json')
+    template = loader.get_template(template_name)
     context = {'entry': entry}
+
     container_metadata = {"metadata": {"json-ld": eval(template.render(context))}}
     res = requests.post(
         uris.get('BASE_URI') + f'object/{entry.archive_id}/metadata',
@@ -52,7 +53,7 @@ def _phaidra_update_container(entry):
     return res
 
 
-def phaidra_archive(media):
+def phaidra_archive(media, template_name):
     """
     Archives the given media in Phaidra and
     returns the persistent id for
@@ -66,7 +67,7 @@ def phaidra_archive(media):
 
     # if the entry is not already archived as a container, create a container object
     if not entry.archive_id:
-        res = _phaidra_create_container(entry)
+        res = _phaidra_create_container(entry, template_name)
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res
@@ -82,7 +83,7 @@ def phaidra_archive(media):
         # Assume that there is a metadata change and update the container metadata
         # FIXME: This should not be here;
         # instead update metadata should be called whenever the entry metadata is updated in Portfolio
-        res = _phaidra_update_container(entry)
+        res = _phaidra_update_container(entry, template_name)
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res
