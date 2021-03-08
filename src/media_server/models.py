@@ -336,7 +336,11 @@ def get_media_for_entry(entry_id, flat=True, published=None):
     if published is not None:
         query = query.filter(published=published)
 
-    ret += list(query.annotate(response_code=Value(202, IntegerField())).values('id', 'response_code'))
+    ret += list(
+        query.annotate(response_code=Value(202, IntegerField())).values(
+            'id', 'archive_id', 'archive_URI', 'response_code'
+        )
+    )
 
     return ret
 
