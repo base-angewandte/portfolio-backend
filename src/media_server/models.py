@@ -205,6 +205,8 @@ class Media(models.Model):
             'metadata': self.metadata,
             'published': self.published,
             'license': self.license,
+            'archive_id': self.archive_id,
+            'archive_URI': self.archive_URI,
         }
         if self.type == AUDIO_TYPE:
             data.update({'mp3': self.get_url('listen.mp3')})
