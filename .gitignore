@@ -144,7 +144,7 @@ src/assets/
 src/fixtures/vcr_cassettes/
 tmp/
 
-dockerdata/
+dockerdata*/
 docker-compose.override.yml
 hashids_salt.py
 secret_key.py
