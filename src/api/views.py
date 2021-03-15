@@ -550,7 +550,11 @@ def user_data(request, pk=None, *args, **kwargs):
                 and any(
                     i.source == user.username
                     and i.roles is not None
-                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing' for r in i.roles)
+                    and any(
+                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor'
+                        for r in i.roles
+                    )
                     for i in e_data.contributors
                 )
             ):
