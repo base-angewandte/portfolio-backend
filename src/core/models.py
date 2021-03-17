@@ -115,6 +115,11 @@ class Entry(AbstractBaseModel):
         if self.type:
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
+                if schema is None:
+                    msg = _('Type %(type_source)s does not belong to any active schema') % {
+                        'type_source': self.type.get('source')
+                    }
+                    raise ValidationError(msg)
                 try:
                     validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
                 except SchemaValidationError as e:
