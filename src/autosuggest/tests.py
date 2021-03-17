@@ -140,5 +140,5 @@ class AutoSuggestTestCase(TestCase):
     )
     def test_pelias(self):
         res = fetch_responses('wien', ('PELIAS',))
-        assert any(rec['label'] == 'Vienna, Austria' for rec in res)
+        assert any(rec['label'] == 'Vienna, WI, Austria' for rec in res)
         return
