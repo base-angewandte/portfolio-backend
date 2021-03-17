@@ -4,5 +4,5 @@
 
 -r requirements.in
 
-pre-commit==1.17.0
-vcrpy==2.0.1
+pre-commit==2.11.1
+vcrpy==4.1.1
