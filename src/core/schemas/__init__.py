@@ -7,7 +7,7 @@ from rest_framework.utils.encoders import JSONEncoder
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.templatetags.static import static
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema

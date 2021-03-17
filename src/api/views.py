@@ -21,7 +21,7 @@ from django.core.cache import cache
 from django.db.models import Max, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 
 from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema, get_schema

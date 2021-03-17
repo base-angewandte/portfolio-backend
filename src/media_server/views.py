@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 

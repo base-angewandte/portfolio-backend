@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry, Relation
 from core.skosmos import get_preflabel_lazy

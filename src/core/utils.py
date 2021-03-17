@@ -1,7 +1,7 @@
 import unicodedata
 
 from django.utils.functional import lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 placeholder_lazy = lazy(lambda label: _('Enter %(label)s') % {'label': label}, str)
 
