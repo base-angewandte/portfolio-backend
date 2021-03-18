@@ -58,6 +58,8 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'id': OrderedDict([('hidden', True)]),
             'date_created': OrderedDict([('hidden', True)]),
             'date_changed': OrderedDict([('hidden', True)]),
+            'archive_id': OrderedDict([('hidden', True)]),
+            'archive_URI': OrderedDict([('hidden', True)]),
             'reference': OrderedDict([('hidden', True)]),
             'published': OrderedDict([('hidden', True)]),
             'data': OrderedDict([('hidden', True)]),
