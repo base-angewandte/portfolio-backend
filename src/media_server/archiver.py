@@ -65,7 +65,6 @@ def phaidra_archive_entry(media, template_name):
     Archive the entry in Phaidra by creating or updating the container object
     """
     entry = Entry.objects.get(id=media.entry_id)
-    print("Archiving entry")
     try:
         container_metadata = _map_container_template_data(entry, template_name)
     except ValueError as ve:

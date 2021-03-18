@@ -2,8 +2,14 @@
 {% load  mandatory %}
 
 {
-    {% if entry.data.authors|must_have:"entry.data.authors" %}
+    {% if entry.title|must_have:"title" %}
     {%endif%}
+    {% if entry.data.authors|must_have:"data.authors" %}
+    {%endif%}
+
+    {% if entry.texts|any_must_match:"texts.type.source=http://base.uni-ak.ac.at/portfolio/vocabulary/description;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/en;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/de" %}
+    {%endif%}
+
 
     "dcterms:type": [
         {
