@@ -17,7 +17,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
-from .archiver import archive
+from .archiver import archive_entry, archive_media
 from .decorators import is_allowed
 from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
 from .serializers import ArchiveSerializer, MediaCreateSerializer, MediaPartialUpdateSerializer
@@ -261,8 +261,11 @@ class MediaViewSet(viewsets.GenericViewSet):
             if media.owner != request.user:
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this media'))
 
-            ret = archive(media, template_name)
+            ret = archive_entry(media, template_name)
+            if not ret.get('entry_pid'):
+                return Response(ret)
 
+            ret = archive_media(media, template_name)
             return Response(ret)
         except Media.DoesNotExist:
             raise exceptions.NotFound(_('Media does not exist'))

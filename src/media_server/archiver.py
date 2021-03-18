@@ -14,12 +14,20 @@ uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
 
 
-def archive(media, template_name):
+def archive_entry(media, template_name):
     """
     Calls the respective archival method as configured
     """
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive(media, template_name)
+        return phaidra_archive_entry(media, template_name)
+
+
+def archive_media(media, template_name):
+    """
+    Calls the respective archival method as configured
+    """
+    if settings.ARCHIVE_TYPE == 'PHAIDRA':
+        return phaidra_archive_media(media, template_name)
 
 
 def _map_container_template_data(entry, template_name):
@@ -52,21 +60,16 @@ def _phaidra_update_container(container_metadata, archive_id):
     return res
 
 
-def phaidra_archive(media, template_name):
+def phaidra_archive_entry(media, template_name):
     """
-    Archives the given media in Phaidra and
-    returns the persistent id for
-    - the container (entry_pid) and
-    - the media (media_pid)
-    TODO - PERFORMACE: What happens to the POST request when the file size of the media is too big
-    FIXME - Updating metadata in a container does not work as expected.
+    Archive the entry in Phaidra by creating or updating the container object
     """
-    # Find associated entry object for this asset
     entry = Entry.objects.get(id=media.entry_id)
+    print("Archiving entry")
     try:
         container_metadata = _map_container_template_data(entry, template_name)
-        # return container_metadata
     except ValueError as ve:
+        print(str(ve))
         return {'Error': str(ve)}
 
     # if the entry is not already archived as a container, create a container object
@@ -91,6 +94,21 @@ def phaidra_archive(media, template_name):
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res
+
+    return {'entry_pid': entry.archive_id}
+
+
+def phaidra_archive_media(media, template_name):
+    """
+    Archives the given media in Phaidra and
+    returns the persistent id for
+    - the container (entry_pid) and
+    - the media (media_pid)
+    TODO - PERFORMACE: What happens to the POST request when the file size of the media is too big
+    FIXME - Updating metadata in a container does not work as expected.
+    """
+    # Find associated entry object for this asset
+    entry = Entry.objects.get(id=media.entry_id)
 
     if not media.archive_id:
         # media already archived and linked to entry object
