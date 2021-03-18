@@ -50,8 +50,4 @@ class MediaPartialUpdateSerializer(serializers.Serializer):
 
 
 class ArchiveSerializer(serializers.Serializer):
-    published = serializers.BooleanField(required=False)
-    license = serializers.JSONField(required=False)
-
-    def validate_license(self, value):
-        return validate_license(value)
+    pass

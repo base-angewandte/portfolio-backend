@@ -239,10 +239,21 @@ class MediaViewSet(viewsets.GenericViewSet):
             400: openapi.Response('Error archiving to Phaidra'),
             403: openapi.Response('Access not allowed'),
             404: openapi.Response('Media object not found'),
-        }
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                'templatename',
+                openapi.IN_QUERY,
+                required=False,
+                description='template file name to map metadata to archival system',
+                default=settings.ARCHIVE_METADATA_TEMPLATE,
+                type=openapi.TYPE_STRING,
+            ),
+        ],
     )
-    @action(detail=True, filter_backends=[], pagination_class=None)
-    def archive(self, request, pk=None, template_name='phaidra_container.json', *args, **kwargs):
+    @action(detail=True)
+    def archive(self, request, pk=None, *args, **kwargs):
+        template_name = request.query_params.get('templatename', settings.ARCHIVE_METADATA_TEMPLATE)
         try:
             media = Media.objects.get(pk=pk)
             if not media.file:
