@@ -269,7 +269,7 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         schema = get_jsonschema(pk)
         if not schema:
-            raise exceptions.NotFound(_('Schema not found for the given query.'))
+            raise exceptions.NotFound(_('Schema not found for the given query'))
         return Response(schema)
 
 
