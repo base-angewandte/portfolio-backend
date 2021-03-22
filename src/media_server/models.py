@@ -18,12 +18,17 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
+from .archiver import archive_media
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
-
+STATUS_NOT_ARCHIVED = 0
+STATUS_TO_BE_ARCHIVED = 1
+STATUS_ARCHIVE_IN_PROGRESS = 2
+STATUS_ARCHIVED = 3
+STATUS_ARCHIVE_ERROR = 4
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
 STATUS_CONVERTED = 2
@@ -33,6 +38,13 @@ STATUS_CHOICES = (
     (STATUS_IN_PROGRESS, 'in progress'),
     (STATUS_CONVERTED, 'converted'),
     (STATUS_ERROR, 'error'),
+)
+ARCHIVE_STATUS_CHOICES = (
+    (STATUS_NOT_ARCHIVED, 'not archived'),
+    (STATUS_TO_BE_ARCHIVED, 'to be archived'),
+    (STATUS_ARCHIVE_IN_PROGRESS, 'archival in progress'),
+    (STATUS_ARCHIVED, 'archived'),
+    (STATUS_ARCHIVE_ERROR, 'error'),
 )
 
 AUDIO_TYPE = 'a'
@@ -125,6 +137,7 @@ class Media(models.Model):
     license = JSONField(validators=[validate_license], blank=True, null=True)
     archive_id = models.CharField(max_length=255, default='')
     archive_URI = models.CharField(max_length=255, default='')
+    archive_status = models.IntegerField(choices=ARCHIVE_STATUS_CHOICES, default=0)
 
     class Meta:
         indexes = [
@@ -383,6 +396,12 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 # ensure status is STATUS_NOT_CONVERTED
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
                 transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+
+    if instance.archive_status == STATUS_TO_BE_ARCHIVED:
+        queue = django_rq.get_queue('high')
+        with transaction.atomic():
+            sender.objects.filter(pk=instance.pk).update(archive_status=STATUS_ARCHIVE_IN_PROGRESS)
+            transaction.on_commit(lambda: django_rq.enqueue(archive_media, instance))
 
 
 @receiver(post_delete, sender=Media)

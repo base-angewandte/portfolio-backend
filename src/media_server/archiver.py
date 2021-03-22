@@ -7,27 +7,25 @@ from django.conf import settings
 from django.template import loader
 
 from core.models import Entry
-from core.skosmos import get_equivalent_concepts
-from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
 
 uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
 
 
-def archive_entry(media, template_name):
+def archive_entry(pk, template_name):
     """
     Calls the respective archival method as configured
     """
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive_entry(media, template_name)
+        return phaidra_archive_entry(pk, template_name)
 
 
-def archive_media(media, template_name):
+def archive_media(media):
     """
     Calls the respective archival method as configured
     """
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive_media(media, template_name)
+        return phaidra_archive_media(media)
 
 
 def _map_container_template_data(entry, template_name):
@@ -60,11 +58,11 @@ def _phaidra_update_container(container_metadata, archive_id):
     return res
 
 
-def phaidra_archive_entry(media, template_name):
+def phaidra_archive_entry(pk, template_name):
     """
     Archive the entry in Phaidra by creating or updating the container object
     """
-    entry = Entry.objects.get(id=media.entry_id)
+    entry = Entry.objects.get(id=pk)
     try:
         container_metadata = _map_container_template_data(entry, template_name)
     except ValueError as ve:
@@ -80,7 +78,7 @@ def phaidra_archive_entry(media, template_name):
 
         pid = loads(res.content).get('pid', '')
         if pid.strip():
-            entry.archive_URI = uris.get('BASE_URI') + pid
+            entry.archive_URI = uris.get('IDENTIFIER_BASE') + pid
             entry.archive_id = pid
             entry.save()
         else:
@@ -97,7 +95,7 @@ def phaidra_archive_entry(media, template_name):
     return {'entry_pid': entry.archive_id}
 
 
-def phaidra_archive_media(media, template_name):
+def phaidra_archive_media(media):
     """
     Archives the given media in Phaidra and
     returns the persistent id for
@@ -108,23 +106,17 @@ def phaidra_archive_media(media, template_name):
     """
     # Find associated entry object for this asset
     entry = Entry.objects.get(id=media.entry_id)
-
+    if not entry.archive_id:
+        logging.warning('Entry %s not yet archived, cannot archive media %s', entry.id, media, id)
+        return {'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'}
     if not media.archive_id:
         # media already archived and linked to entry object
         # TODO: Are we really sure that in PHAIDRA
         # this media asset linked to its respective container?
 
         # Create a media object separately
-        if media.type == IMAGE_TYPE:
-            post_url = uris.get('PICTURE_CREATE')
-        elif media.type == AUDIO_TYPE:
-            post_url = uris.get('AUDIO_CREATE')
-        elif media.type == VIDEO_TYPE:
-            post_url = uris.get('VIDEO_CREATE')
-        elif media.type == DOCUMENT_TYPE:
-            post_url = uris.get('DOCUMENT_CREATE')
-        else:
-            post_url = uris.get('OBJECT_CREATE')
+
+        post_url = uris.get(media.type, 'x')
 
         template = loader.get_template('phaidra_member.json')
         context = {'media': media}
@@ -145,7 +137,7 @@ def phaidra_archive_media(media, template_name):
 
         pid = loads(res.content).get('pid', '')
         if pid.strip():
-            media.archive_URI = uris.get('BASE_URI') + pid
+            media.archive_URI = uris.get('IDENTIFIER_BASE') + pid
             media.archive_id = pid
             media.save()
 

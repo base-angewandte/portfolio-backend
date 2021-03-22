@@ -723,13 +723,14 @@ if ARCHIVE_TYPE:
         'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
     }
     ARCHIVE_URIS = {
+        # end points created for media types with keys as mentioned in the media model
         'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
         'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI'),
         'BASE_URI': env.str(f'{ARCHIVE_TYPE}_BASE_URI'),
-        'PICTURE_CREATE': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_PICTURE_CREATE'),
-        'VIDEO_CREATE': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_VIDEO_CREATE'),
-        'AUDIO_CREATE': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_AUDIO_CREATE'),
-        'DOCUMENT_CREATE': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_DOCUMENT_CREATE'),
-        'OBJECT_CREATE': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_OBJECT_CREATE'),
+        'i': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_PICTURE_CREATE'),
+        'v': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_VIDEO_CREATE'),
+        'a': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_AUDIO_CREATE'),
+        'd': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_DOCUMENT_CREATE'),
+        'x': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_OBJECT_CREATE'),
     }
     ARCHIVE_METADATA_TEMPLATE = env.str(f'{ARCHIVE_TYPE}_METADATA_TEMPLATE')

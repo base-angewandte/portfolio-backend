@@ -2,7 +2,7 @@ from rest_framework import routers
 
 from django.urls import include, path, re_path
 
-from media_server.views import MediaViewSet
+from media_server.views import MediaViewSet, archive_assets
 
 from . import views
 
@@ -23,4 +23,9 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', views.no_ui_view, name='schema-json'),
     path('swagger/', views.swagger_view, name='schema-swagger-ui'),
     path('redoc/', views.redoc_view, name='schema-redoc'),
+    re_path(
+        r'^archive_assets/media/(?P<media_pks>[^/.]+)/$',
+        archive_assets,
+        name='archive_assets',
+    ),
 ]
