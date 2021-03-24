@@ -6,12 +6,15 @@ import subprocess  # nosec
 
 import django_rq
 import magic
+from rq.command import send_stop_job_command
+from rq.exceptions import InvalidJobOperation, NoSuchJobError
+from rq.job import Job
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models import IntegerField, Value
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from core.models import Entry
@@ -298,6 +301,9 @@ class Media(models.Model):
             }
         self.save()
 
+    def get_job_id(self):
+        return f'job_media_info_and_convert_{self.pk}'
+
 
 MIME_TYPE_TO_TYPE = {
     **{k: AUDIO_TYPE for k in AUDIO_MIME_TYPES},
@@ -355,7 +361,7 @@ def repair():
         m.status = STATUS_NOT_CONVERTED
         m.save()
         queue = django_rq.get_queue('high')
-        queue.enqueue(m.media_info_and_convert)
+        queue.enqueue(m.media_info_and_convert, job_id=m.get_job_id(), failure_ttl=settings.RQ_FAILURE_TTL)
 
 
 # Signal handling
@@ -369,12 +375,39 @@ def media_post_save(sender, instance, created, *args, **kwargs):
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-                transaction.on_commit(lambda: queue.enqueue(instance.media_info_and_convert))
+                transaction.on_commit(
+                    lambda: queue.enqueue(
+                        instance.media_info_and_convert,
+                        job_id=instance.get_job_id(),
+                        failure_ttl=settings.RQ_FAILURE_TTL,
+                    )
+                )
         else:
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-                transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+                transaction.on_commit(
+                    lambda: django_rq.enqueue(
+                        instance.media_info_and_convert,
+                        job_id=instance.get_job_id(),
+                        failure_ttl=settings.RQ_FAILURE_TTL,
+                    )
+                )
+
+
+@receiver(pre_delete, sender=Media)
+def media_pre_delete(sender, instance, *args, **kwargs):
+    try:
+        conn = django_rq.get_connection()
+        job = Job.fetch(instance.get_job_id(), connection=conn)
+        if job.get_status() == 'started':
+            try:
+                send_stop_job_command(conn, instance.get_job_id())
+            except InvalidJobOperation:
+                pass
+        job.delete()
+    except NoSuchJobError:
+        pass
 
 
 @receiver(post_delete, sender=Media)

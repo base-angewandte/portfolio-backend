@@ -341,6 +341,8 @@ if DEBUG or TESTING:
 
 RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
 
+RQ_FAILURE_TTL = 2628288  # approx. 3 month
+
 
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
