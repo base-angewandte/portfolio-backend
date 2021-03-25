@@ -2,6 +2,7 @@ import logging
 import mimetypes
 from os.path import basename, join
 
+import django_rq
 import magic
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -336,10 +337,11 @@ def archive_assets(request, media_pks, *args, **kwargs):
 
     # archive the media objects asynchronously
     # Media.objects.filter(pk__in=media_ids).update(archive_status=STATUS_TO_BE_ARCHIVED)
+    queue = django_rq.get_queue('high')
     for m in media_objects:
         # Trigger saving in the background
-        m.archive_status = STATUS_TO_BE_ARCHIVED
-        m.save()
+        queue.enqueue(archive_media, m)
+        # archive_media.delay(m)
 
     return Response(
         {

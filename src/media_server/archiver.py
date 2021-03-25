@@ -2,6 +2,7 @@ import logging
 from json import dumps, loads
 
 import requests
+from django_rq import job
 
 from django.conf import settings
 from django.template import loader
@@ -20,6 +21,7 @@ def archive_entry(pk, template_name):
         return phaidra_archive_entry(pk, template_name)
 
 
+@job
 def archive_media(media):
     """
     Calls the respective archival method as configured
@@ -66,7 +68,7 @@ def phaidra_archive_entry(pk, template_name):
     try:
         container_metadata = _map_container_template_data(entry, template_name)
     except ValueError as ve:
-        print(str(ve))
+        logging.info('Error mapping metadata using %s\n%s', template_name, str(ve))
         return {'Error': str(ve)}
 
     # if the entry is not already archived as a container, create a container object

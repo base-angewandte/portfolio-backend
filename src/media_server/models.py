@@ -397,11 +397,11 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
                 transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
 
-    if instance.archive_status == STATUS_TO_BE_ARCHIVED:
-        queue = django_rq.get_queue('high')
-        with transaction.atomic():
-            sender.objects.filter(pk=instance.pk).update(archive_status=STATUS_ARCHIVE_IN_PROGRESS)
-            transaction.on_commit(lambda: django_rq.enqueue(archive_media, instance))
+    # if instance.archive_status == STATUS_TO_BE_ARCHIVED:
+    #     queue = django_rq.get_queue('high')
+    #     with transaction.atomic():
+    #         sender.objects.filter(pk=instance.pk).update(archive_status=STATUS_ARCHIVE_IN_PROGRESS)
+    #         transaction.on_commit(lambda: django_rq.enqueue(archive_media, instance))
 
 
 @receiver(post_delete, sender=Media)
