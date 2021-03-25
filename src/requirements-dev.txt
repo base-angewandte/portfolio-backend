@@ -4,90 +4,47 @@
 #
 #    pip-compile --output-file=src/requirements-dev.txt src/requirements-dev.in src/requirements.in
 #
-apimapper==0.7.7          # via -r src/requirements.in (line 5)
-apispec==0.39.0           # via -r src/requirements.in (line 6)
-appdirs==1.4.3            # via virtualenv
-aspy.yaml==1.3.0          # via pre-commit
-attrs==19.3.0             # via jsonschema
-certifi==2019.11.28       # via requests
-cfgv==3.1.0               # via pre-commit
-chardet==3.0.4            # via requests
-click==7.1.1              # via pip-tools, rq
-concurrent-log-handler==0.9.16  # via -r src/requirements.in (line 7)
-coreapi==2.3.3            # via drf-yasg
-coreschema==0.0.4         # via coreapi, drf-yasg
-croniter==0.3.31          # via rq-scheduler
-distlib==0.3.0            # via virtualenv
-django-cas-ng==3.6.0      # via -r src/requirements.in (line 9)
-django-cleanup==3.2.0     # via -r src/requirements.in (line 10)
-django-cors-headers==3.0.2  # via -r src/requirements.in (line 11)
-django-debug-toolbar==1.11  # via -r src/requirements.in (line 12)
-django-environ==0.4.5     # via -r src/requirements.in (line 13)
-django-extensions==2.1.7  # via -r src/requirements.in (line 14)
-django-filter==2.1.0      # via -r src/requirements.in (line 15)
-django-redis==4.10.0      # via -r src/requirements.in (line 16)
-django-rq==2.0            # via -r src/requirements.in (line 17)
-django==2.2.11            # via -r src/requirements.in (line 8), django-cas-ng, django-cors-headers, django-debug-toolbar, django-filter, django-redis, django-rq, drf-yasg
-djangorestframework==3.9.4  # via -r src/requirements.in (line 18), drf-yasg
-drf-yasg[validation]==1.15.0  # via -r src/requirements.in (line 19)
-filelock==3.0.12          # via virtualenv
-gunicorn==20.0.0          # via -r src/requirements.in (line 35)
-hashids==1.2.0            # via -r src/requirements.in (line 20)
-identify==1.4.13          # via pre-commit
-idna==2.9                 # via jsonschema, requests, yarl
-importlib-metadata==1.6.0  # via pre-commit, virtualenv
-inflection==0.3.1         # via drf-yasg
-isodate==0.6.0            # via rdflib
-itypes==1.1.0             # via coreapi
-jinja2==2.11.1            # via coreschema
-jsonpointer==2.0          # via jsonschema
-jsonschema[format]==3.0.1  # via -r src/requirements.in (line 21), swagger-spec-validator
-lxml==4.5.0               # via python-cas
-markdown==3.1.1           # via -r src/requirements.in (line 22), apimapper
-markupsafe==1.1.1         # via jinja2
-marshmallow==2.19.2       # via -r src/requirements.in (line 23)
-multidict==4.7.5          # via yarl
-nodeenv==1.3.5            # via pre-commit
-pip-tools==4.2.0          # via -r src/requirements.in (line 24)
-portalocker==1.6.0        # via concurrent-log-handler
-pre-commit==1.17.0        # via -r src/requirements-dev.in (line 5)
-progressbar2==3.42.0      # via -r src/requirements.in (line 25)
-psutil==5.7.0             # via rainbow-saddle
-psycopg2-binary==2.8.2    # via -r src/requirements.in (line 26)
-pyparsing==2.4.6          # via rdflib
-pyrsistent==0.16.0        # via jsonschema
-python-cas==1.5.0         # via django-cas-ng
-python-dateutil==2.8.1    # via croniter
-python-magic==0.4.15      # via -r src/requirements.in (line 27)
-python-utils==2.4.0       # via progressbar2
-pytz==2019.3              # via django
-pyyaml==5.3.1             # via apispec, aspy.yaml, pre-commit, swagger-spec-validator, vcrpy
-rainbow-saddle==0.4.0     # via -r src/requirements.in (line 36)
-rdflib==4.2.2             # via skosmos-client
-redis==3.4.1              # via django-redis, django-rq, rq
-requests==2.23.0          # via apimapper, coreapi, python-cas, skosmos-client
-rfc3987==1.3.8            # via jsonschema
-rq-scheduler==0.9         # via -r src/requirements.in (line 28)
-rq==1.3.0                 # via django-rq, rq-scheduler
-ruamel.yaml.clib==0.2.0   # via ruamel.yaml
-ruamel.yaml==0.16.10      # via drf-yasg
-shortuuid==0.5.0          # via -r src/requirements.in (line 29)
-six==1.14.0               # via django-extensions, drf-yasg, isodate, jsonschema, pip-tools, pre-commit, progressbar2, pyrsistent, python-cas, python-dateutil, python-utils, swagger-spec-validator, vcrpy, virtualenv
-skosmos-client==0.3.0     # via -r src/requirements.in (line 30)
-sqlparse==0.3.1           # via django, django-debug-toolbar
-strict-rfc3339==0.7       # via jsonschema
-swagger-spec-validator==2.5.0  # via drf-yasg
-toml==0.10.0              # via pre-commit
-uritemplate==3.0.1        # via coreapi, drf-yasg
-urllib3==1.25.8           # via requests
-vcrpy==2.0.1              # via -r src/requirements-dev.in (line 6)
-virtualenv==20.0.14       # via pre-commit
-webcolors==1.11.1         # via jsonschema
-werkzeug==0.15.4          # via -r src/requirements.in (line 31)
-wrapt==1.12.1             # via vcrpy
-xmltodict==0.12.0         # via -r src/requirements.in (line 32)
-yarl==1.4.2               # via vcrpy
-zipp==3.1.0               # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
+appdirs==1.4.3
+    # via virtualenv
+aspy.yaml==1.3.0
+    # via pre-commit
+cfgv==3.1.0
+    # via pre-commit
+distlib==0.3.0
+    # via virtualenv
+filelock==3.0.12
+    # via virtualenv
+identify==1.4.13
+    # via pre-commit
+idna==2.9
+    # via yarl
+importlib-metadata==1.6.0
+    # via pre-commit
+multidict==4.7.5
+    # via yarl
+nodeenv==1.3.5
+    # via pre-commit
+pre-commit==1.17.0
+    # via -r requirements-dev.in
+pyyaml==5.4
+    # via
+    #   aspy.yaml
+    #   pre-commit
+    #   vcrpy
+six==1.14.0
+    # via
+    #   pre-commit
+    #   vcrpy
+    #   virtualenv
+toml==0.10.0
+    # via pre-commit
+vcrpy==2.0.1
+    # via -r requirements-dev.in
+virtualenv==20.0.14
+    # via pre-commit
+wrapt==1.12.1
+    # via vcrpy
+yarl==1.4.2
+    # via vcrpy
+zipp==3.1.0
+    # via importlib-metadata
