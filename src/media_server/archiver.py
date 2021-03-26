@@ -103,8 +103,6 @@ def phaidra_archive_media(media):
     returns the persistent id for
     - the container (entry_pid) and
     - the media (media_pid)
-    TODO - PERFORMACE: What happens to the POST request when the file size of the media is too big
-    FIXME - Updating metadata in a container does not work as expected.
     """
     # Find associated entry object for this asset
     entry = Entry.objects.get(id=media.entry_id)
