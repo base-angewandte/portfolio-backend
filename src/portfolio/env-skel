@@ -41,5 +41,5 @@ SITE_URL=https://url/
 # PHAIDRA_DOCUMENT_CREATE=document/create
 # PHAIDRA_VIDEO_CREATE=video/create
 # PHAIDRA_AUDIO_CREATE=audio/create
-# PHAIDRA_OBJECT_CREATE=object/create
+# PHAIDRA_OBJECT_CREATE=unknown/create
 # PHAIDRA_METADATA_TEMPLATE=phaidra_container.json
