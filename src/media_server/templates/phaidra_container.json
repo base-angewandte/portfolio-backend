@@ -141,7 +141,7 @@
      {
          "skos:exactMatch" : [
              {
-                 "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/editing",
+                 "@value" : "{{edt.source}}",
                  "@type" : "ids:uri"
              }
          ],
@@ -179,7 +179,7 @@
      {
          "skos:exactMatch" : [
              {
-                 "@value" : "http://base.uni-ak.ac.at/portfolio/vocabulary/author",
+                 "@value" : "{{aut.source}}",
                  "@type" : "ids:uri"
              }
          ],
