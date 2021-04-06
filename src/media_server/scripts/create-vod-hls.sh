@@ -55,8 +55,9 @@ duration=$(printf "%.0f" ${duration})
 cover_time=$(($duration/20))
 cover_gif_len=$(($duration < 10 ? $duration : 10))
 
-ffmpeg -ss ${cover_time} -i ${source} -hide_banner -y -vframes 1 -filter "${cover_filter}" "${target}/cover.jpg"
-ffmpeg -ss 0 -t ${cover_gif_len} -i ${source} -hide_banner -y -filter_complex "[0:v] fps=4,${cover_filter},split [a][b];[a] palettegen [p];[b][p] paletteuse" "${target}/cover.gif"
+ffmpeg -i ${source} -ss ${cover_time} -hide_banner -y -vframes 1 "${target}/cover-orig.jpg"
+ffmpeg -i ${source} -ss ${cover_time} -hide_banner -y -vframes 1 -filter "${cover_filter}" "${target}/cover.jpg"
+ffmpeg -i ${source} -ss 0 -t ${cover_gif_len} -hide_banner -y -filter_complex "[0:v] fps=4,${cover_filter},split [a][b];[a] palettegen [p];[b][p] paletteuse" "${target}/cover.gif"
 
 key_frames_interval="$(echo `ffprobe ${source} 2>&1 | grep -oE '[[:digit:]]+(.[[:digit:]]+)? fps' | grep -oE '[[:digit:]]+(.[[:digit:]]+)?'`*2 | bc || echo '')"
 key_frames_interval=${key_frames_interval:-50}
@@ -66,7 +67,7 @@ key_frames_interval=${key_frames_interval%.*} # truncate to integer
 # static parameters that are similar for all renditions
 static_params="-c:a aac -ar 48000 -c:v h264 -profile:v main -pix_fmt yuv420p -crf 20 -sc_threshold 0"
 static_params+=" -g ${key_frames_interval} -keyint_min ${key_frames_interval} -hls_time ${segment_target_duration}"
-static_params+=" -hls_playlist_type vod"
+static_params+=" -hls_playlist_type vod -dts_error_threshold 1"
 
 # misc params
 misc_params="-hide_banner -y"

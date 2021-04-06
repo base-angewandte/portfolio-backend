@@ -227,10 +227,12 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
         except RequestException:
             pass
 
-        if label:
-            cache.set(cache_key, label, CACHE_TIME)
+    label = label or get_preflabel(concept, project, graph)
 
-    return label or get_preflabel(concept, project, graph)
+    if label:
+        cache.set(cache_key, label, CACHE_TIME)
+
+    return label
 
 
 def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None):

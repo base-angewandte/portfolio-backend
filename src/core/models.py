@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
 
@@ -117,6 +117,11 @@ class Entry(AbstractBaseModel):
         if self.type:
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
+                if schema is None:
+                    msg = _('Type %(type_source)s does not belong to any active schema') % {
+                        'type_source': self.type.get('source')
+                    }
+                    raise ValidationError(msg)
                 try:
                     validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
                 except SchemaValidationError as e:

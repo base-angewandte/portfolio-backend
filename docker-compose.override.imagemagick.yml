@@ -1,6 +1,6 @@
-version: '2'
+version: '2.3'
 services:
 
   portfolio-django:
     volumes:
-      - ./docker/imagemagick/policy.xml:/etc/ImageMagick-6/policy.xml
+      - ./docker/imagemagick/policy-high.xml:/etc/ImageMagick-6/policy.xml

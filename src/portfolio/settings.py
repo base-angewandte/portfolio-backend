@@ -22,7 +22,7 @@ from apimapper import config as apiconfig
 from hashids import Hashids
 
 from django.urls import reverse_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from general.utils import get_language_lazy
 
@@ -220,7 +220,7 @@ DATABASES = {
         'USER': os.environ.get('POSTGRES_USER', f'django_{PROJECT_NAME}'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', f'password_{PROJECT_NAME}'),
         'HOST': f'{PROJECT_NAME}-postgres' if DOCKER else 'localhost',
-        'PORT': '5432',
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -343,6 +343,8 @@ if DEBUG or TESTING:
 
 RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
 
+RQ_FAILURE_TTL = 2628288  # approx. 3 month
+
 
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -356,8 +358,8 @@ CSRF_COOKIE_DOMAIN = env.str('CSRF_COOKIE_DOMAIN', default=None)
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
-CORS_ORIGIN_ALLOW_ALL = env.bool('CORS_ORIGIN_ALLOW_ALL', default=False)
-CORS_ORIGIN_WHITELIST = env.list('CORS_ORIGIN_WHITELIST', default=[])
+CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_URLS_REGEX = r'^/(api|autosuggest)/.*$'
 
 REST_FRAMEWORK = {
@@ -390,9 +392,11 @@ ACTIVE_SCHEMAS = env.list(
         'concert',
         'conference',
         'conference_contribution',
+        'design',
         'document',
         'event',
         'exhibition',
+        'fellowship_visiting_affiliation',
         'festival',
         'image',
         'performance',
@@ -421,6 +425,8 @@ LANGUAGES_VOCID = 'languages'
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
+PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
+PELIAS_SOURCE_NAME = env.str('PELIAS_SOURCE_NAME', default='geocode.earth')
 
 ACCEPT_LANGUAGE_HEADER = {'Accept-Language': get_language_lazy()}
 
@@ -537,7 +543,7 @@ SOURCES = {
         },
     },
     'PELIAS': {
-        apiconfig.URL: 'https://api.geocode.earth/v1/autocomplete',
+        apiconfig.URL: f'{PELIAS_API_URL}/autocomplete',
         apiconfig.QUERY_FIELD: 'text',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
@@ -671,9 +677,9 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
         apiconfig.RULES: {
-            'source_name': {apiconfig.RULE: '"geocode.earth"'},
+            'source_name': {apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'},
             'source': {
-                apiconfig.RULE: '"https://api.geocode.earth/v1/place?ids={p1}"',
+                apiconfig.RULE: f'"{PELIAS_API_URL}/place?ids={{p1}}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
             },
         },

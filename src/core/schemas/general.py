@@ -4,7 +4,7 @@ from marshmallow import fields, validate
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
@@ -107,6 +107,22 @@ def get_date_location_group_field(additional_attributes=None):
     )
 
 
+def get_date_range_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
+    label = format_lazy(
+        '{date} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
+    return fields.List(
+        fields.Nested(DateRangeLocationSchema, additionalProperties=False),
+        title=label,
+        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+    )
+
+
 def get_date_range_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
@@ -117,7 +133,6 @@ def get_date_range_field(additional_attributes=None):
         additionalProperties=False,
         **{
             'x-attrs': {
-                'field_format': 'half',
                 'field_type': 'date',
                 'date_format': 'day',
                 'placeholder': {'date': placeholder_lazy(label)},

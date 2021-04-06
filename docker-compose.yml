@@ -1,4 +1,4 @@
-version: '2'
+version: '2.3'
 services:
 
   portfolio-redis:
@@ -38,6 +38,7 @@ services:
       - ./src:/django
       - ./logs:/logs
       - $PORTFOLIO_ASSETS:/django/assets
+      - ./docker/imagemagick/policy.xml:/etc/ImageMagick-6/policy.xml
     networks:
       - portfolionet
     restart: always

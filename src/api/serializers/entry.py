@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry, Relation
 from core.skosmos import get_preflabel_lazy
@@ -69,6 +69,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 [
                     ('field_type', 'text'),
                     ('field_format', 'half'),
+                    ('form_group', 1),
                     ('order', 1),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('title'))),
                 ]
@@ -77,6 +78,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 [
                     ('field_type', 'text'),
                     ('field_format', 'half'),
+                    ('form_group', 1),
                     ('order', 2),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('subtitle'))),
                 ]
@@ -85,18 +87,10 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                 [
                     ('field_type', 'chips'),
                     ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
-                    ('order', 3),
+                    ('form_group', 1),
+                    ('order', 4),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('type'))),
                     ('set_label_language', True),
-                ]
-            ),
-            'texts': OrderedDict(
-                [
-                    ('field_type', 'multiline'),
-                    ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'})),
-                    ('prefetch', ['source_type']),
-                    ('order', 4),
-                    ('placeholder', placeholder_lazy(get_preflabel_lazy('text'))),
                 ]
             ),
             'keywords': OrderedDict(
@@ -104,16 +98,28 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                     ('field_type', 'chips'),
                     ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'})),
                     ('prefetch', ['source']),
-                    ('order', 5),
+                    ('form_group', 1),
+                    ('order', 3),
                     ('allow_unknown_entries', True),
                     ('dynamic_autosuggest', True),
                     ('set_label_language', True),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('keywords'))),
                 ]
             ),
+            'texts': OrderedDict(
+                [
+                    ('field_type', 'multiline'),
+                    ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'})),
+                    ('prefetch', ['source_type']),
+                    ('form_group', 2),
+                    ('order', 5),
+                    ('placeholder', placeholder_lazy(get_preflabel_lazy('text'))),
+                ]
+            ),
             'notes': OrderedDict(
                 [
                     ('field_type', 'multiline'),
+                    ('form_group', 2),
                     ('order', 6),
                     (
                         'placeholder',

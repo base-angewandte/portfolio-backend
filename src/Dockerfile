@@ -1,6 +1,7 @@
-FROM python:3.7
+FROM python:3.7 AS base
 
 ENV PYTHONUNBUFFERED 1
+ENV PIP_NO_CACHE_DIR 1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
@@ -30,11 +31,23 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==19.1.1
+RUN pip install --upgrade --no-cache-dir pip==21.0.1
 COPY requirements.txt .
-RUN pip install --disable-pip-version-check -r requirements.txt
+RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+
+EXPOSE 8200
+
+
+FROM base as dev
+
+COPY requirements-dev.txt .
+RUN pip install --disable-pip-version-check --no-cache-dir -r requirements-dev.txt
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
+
+
+FROM base as prod
+
 COPY . .
 
 CMD ["rainbow-saddle", "--pid", "/var/run/django.pid", "--gunicorn-pidfile", "/var/run/gunicorn.pid", "gunicorn", "portfolio.wsgi", "-c", "/django/gunicorn-conf.py"]
-
-EXPOSE 8200

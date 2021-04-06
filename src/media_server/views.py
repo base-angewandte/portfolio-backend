@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 
 @is_allowed
 @xframe_options_sameorigin
-def protected_view(request, path, server, as_download=False):
+def protected_view(request, path, server):
+    as_download = 'download' in request.GET.keys()
     if server == 'nginx':
         mimetype, encoding = mimetypes.guess_type(path)
 
