@@ -6,8 +6,8 @@ import django_rq
 import magic
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import exceptions, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -20,10 +20,10 @@ from django.views.static import serve
 
 from core.models import Entry
 
-from .archiver import archive_entry, archive_media
+from .archiver import STATUS_ARCHIVE_IN_PROGRESS, STATUS_ARCHIVED, STATUS_TO_BE_ARCHIVED, archive_entry, archive_media
 from .decorators import is_allowed
-from .models import DOCUMENT_TYPE, STATUS_TO_BE_ARCHIVED, Media, get_type_for_mime_type
-from .serializers import ArchiveSerializer, MediaCreateSerializer, MediaPartialUpdateSerializer
+from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
+from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
 logger = logging.getLogger(__name__)
@@ -299,8 +299,15 @@ def archive_assets(request, media_pks, *args, **kwargs):
     queue = django_rq.get_queue('high')
     for m in media_objects:
         # Trigger saving in the background
-        queue.enqueue(archive_media, m)
-        # archive_media.delay(m)
+        if m.archive_status not in (STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS):
+            m.archive_status = STATUS_TO_BE_ARCHIVED
+            m.save()
+            queue.enqueue(
+                archive_media,
+                m,
+                job_id=m.get_archive_job_id(),
+                failure_ttl=settings.RQ_FAILURE_TTL,
+            )
 
     return Response(
         {

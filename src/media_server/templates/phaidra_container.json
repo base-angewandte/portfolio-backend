@@ -22,7 +22,7 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ],
             "skos:exactMatch":["{{entry.type.source}}"]
@@ -51,10 +51,10 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ],
     "rdau:P60048":
@@ -68,10 +68,10 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ],
     "dce:format":
@@ -85,7 +85,7 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
         },
@@ -106,14 +106,14 @@
              {
                  "@value": "{{item.text}}",
                  "@language": "{{item.language.source | three_letter_lang}}"
-             },
+             }{% if not forloop.last %},{% endif %}
              {% endfor %}
          ]
 
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endif %}
      {% endfor %}
-    ],
+    ]{% if not forloop.last %},{% endif %}
     "role:arc":[
         {% for arc in entry.data.contributors %}
         {% for role in arc.roles %}
@@ -131,7 +131,7 @@
                 }
             ],
             "@type" : "schema:Person"
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endif %}
         {% endfor %}
         {% endfor %}
@@ -151,7 +151,7 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endfor %}
      {% for edt in entry.data.contributors %}
      {% for role in edt.roles %}
@@ -169,7 +169,7 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endif %}
      {% endfor %}
      {% endfor %}
@@ -189,7 +189,7 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endfor %}
-    ],
-} # end of container metadata
+    ]
+}

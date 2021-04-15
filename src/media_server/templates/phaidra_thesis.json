@@ -2,14 +2,10 @@
 {% load  mandatory %}
 
 {
-    {% if entry.title|must_have:"title" %}
-    {%endif%}
-    {% if entry.data.authors|must_have:"data.authors" %}
-    {%endif%}
+    {% must_have "entry.title" entry.title %}
+    {% must_have "entry.data.authors" entry.data.authors %}
 
-    {% if entry.texts|any_must_match:"texts.type.source=http://base.uni-ak.ac.at/portfolio/vocabulary/description;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/en;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/de" %}
-    {%endif%}
-
+    {% any_must_match entry.texts "texts.type.source=http://base.uni-ak.ac.at/portfolio/vocabulary/description;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/en;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/de" %}
 
     "dcterms:type": [
         {
@@ -33,7 +29,7 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ],
             "skos:exactMatch":["{{entry.type.source}}"]
@@ -42,7 +38,7 @@
     "dce:title": [{
         "@type": "bf:Title",
         "bf:mainTitle": [{
-            "@value": "{{entry.title }}",
+            "@value": "{{entry.title}}",
             "@language": "und"
         }],
         "bf:subtitle": [{
@@ -62,10 +58,10 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ],
     "rdau:P60048":
@@ -79,10 +75,10 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ],
     "dce:format":
@@ -96,7 +92,7 @@
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
-                },
+                }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
         },
@@ -117,14 +113,14 @@
              {
                  "@value": "{{item.text}}",
                  "@language": "{{item.language.source | three_letter_lang}}"
-             },
+             }{% if not forloop.last %},{% endif %}
              {% endfor %}
          ]
 
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endif %}
      {% endfor %}
-    ],
+    ]{% if not forloop.last %},{% endif %}
     "role:arc":[
         {% for arc in entry.data.contributors %}
         {% for role in arc.roles %}
@@ -142,7 +138,7 @@
                 }
             ],
             "@type" : "schema:Person"
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endif %}
         {% endfor %}
         {% endfor %}
@@ -162,7 +158,7 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endfor %}
      {% for edt in entry.data.contributors %}
      {% for role in edt.roles %}
@@ -180,14 +176,13 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endif %}
      {% endfor %}
      {% endfor %}
     ],
     "role:aut":
-    [
-     {% for aut in entry.data.authors %}
+    [{% for aut in entry.data.authors %}
      {
          "skos:exactMatch" : [
              {
@@ -201,7 +196,7 @@
              }
          ],
          "@type" : "schema:Person"
-     },
+     }{% if not forloop.last %},{% endif %}
      {% endfor %}
-    ],
-} # end of container metadata
+    ]
+}

@@ -3,18 +3,21 @@ from django import template
 register = template.Library()
 
 
-@register.filter
-def must_have(value, fieldname):
-    if not value:
+@register.simple_tag
+def must_have(fieldname, value):
+    if not value or (isinstance(value, str) and value.startswith('[invalid variable')):
+        # FIXME: Potentially opening a can of worms
+        # if the field's actual value starts with [invalid variable
+        # then it won't be archived (seems unlikely)
+        # Reason: [invalid variable 'entry.data.authors'!]
+        # is passed to this function when
+        # the corresponding JSON field is not yet initialised
         raise ValueError(f"Field '{fieldname}' is mandatory.")
-    return True
+    return ''
 
 
-@register.filter
+@register.simple_tag
 def any_must_match(list_value, args):
-    # print(len(list_value), list_value)
-    # print("ARGS", args)
-
     def get_nested_prop(arg, path: list):
         if len(path) == 1:
             # print("\tFOUND ", path[0], '=', arg.get(path[0]))
@@ -47,6 +50,6 @@ def any_must_match(list_value, args):
 
             # print(i, "CONDITIONS_MET", conditions_met)
             if all(conditions_met):
-                return True
+                return ''
 
     raise ValueError(args)
