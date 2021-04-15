@@ -66,12 +66,12 @@
     ],
     "rdau:P60048":
     [
-        {% for fmt in entry.data.format %}
+        {% for mat in entry.data.material %}
         {
             "@type": "skos:Concept",
-            "skos:exactMatch": ["{{fmt.source}}"],
+            "skos:exactMatch": ["{{mat.source}}"],
             "skos:prefLabel": [
-                {% for lang, label in fmt.label.items %}
+                {% for lang, label in mat.label.items %}
                 {
                     "@value": "{{ label }}",
                     "@language": "{{ lang | three_letter_lang}}"
@@ -95,7 +95,7 @@
                 }{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ]
-        },
+        }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ],
     "bf:note":

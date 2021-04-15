@@ -5,13 +5,7 @@ register = template.Library()
 
 @register.simple_tag
 def must_have(fieldname, value):
-    if not value or (isinstance(value, str) and value.startswith('[invalid variable')):
-        # FIXME: Potentially opening a can of worms
-        # if the field's actual value starts with [invalid variable
-        # then it won't be archived (seems unlikely)
-        # Reason: [invalid variable 'entry.data.authors'!]
-        # is passed to this function when
-        # the corresponding JSON field is not yet initialised
+    if not value:
         raise ValueError(f"Field '{fieldname}' is mandatory.")
     return ''
 

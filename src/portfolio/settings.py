@@ -202,7 +202,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'debug': DEBUG,
-            'string_if_invalid': "[invalid variable '%s'!]" if DEBUG else '',
         },
     },
 ]
