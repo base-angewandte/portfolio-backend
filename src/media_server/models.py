@@ -21,7 +21,7 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .archiver import archive_media
+from .archiver import archive_entry, archive_media
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
@@ -448,3 +448,19 @@ def media_post_delete(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=Entry)
 def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()
+
+
+@receiver(post_save, sender=Entry)
+def entry_post_save(sender, instance, created, update_fields, *args, **kwargs):
+    if created or (update_fields and 'archive_id' in update_fields):
+        # do nothing IF
+        ## Object just being created
+        ## pre_save triggered by archive method,
+        pass
+    elif instance.archive_id:
+        # Update the metadata in the archived asset
+        archive_entry(instance.id)
+    else:
+        # updating a (not yet archived) object
+        # do nothing
+        pass

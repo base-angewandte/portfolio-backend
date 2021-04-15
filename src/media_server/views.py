@@ -75,7 +75,6 @@ class MediaViewSet(viewsets.GenericViewSet):
         'create': MediaCreateSerializer,
         # 'update': MediaUpdateSerializer,
         'partial_update': MediaPartialUpdateSerializer,
-        'archive': ArchiveSerializer,
     }
 
     def get_queryset(self):
@@ -236,47 +235,6 @@ class MediaViewSet(viewsets.GenericViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
-
-    @swagger_auto_schema(
-        responses={
-            204: openapi.Response(''),
-            400: openapi.Response('Error archiving to Phaidra'),
-            403: openapi.Response('Access not allowed'),
-            404: openapi.Response('Media object not found'),
-        },
-        manual_parameters=[
-            openapi.Parameter(
-                'templatename',
-                openapi.IN_QUERY,
-                required=False,
-                description='template file name to map metadata to archival system',
-                default=settings.ARCHIVE_METADATA_TEMPLATE,
-                type=openapi.TYPE_STRING,
-            ),
-        ],
-    )
-    @action(detail=True)
-    def archive(self, request, pk=None, *args, **kwargs):
-        template_name = request.query_params.get('templatename', settings.ARCHIVE_METADATA_TEMPLATE)
-        try:
-            media = Media.objects.get(pk=pk)
-            if not media.file:
-                raise Media.DoesNotExist
-            if media.owner != request.user:
-                raise exceptions.PermissionDenied(_('Current user is not the owner of this media'))
-
-            ret = archive_entry(media.entry_id, template_name)
-            if not ret.get('entry_pid'):
-                return Response(ret)
-
-            ret = archive_media(media)
-            return Response(ret)
-        except Media.DoesNotExist:
-            raise exceptions.NotFound(_('Media does not exist'))
-        except Exception as e:
-            # Show where it failed? i.e. in the container creation or member creation?
-            logging.warning("Encountered %s", repr(e))
-            raise exceptions.APIException(_('Error archiving media asset'))
 
 
 @swagger_auto_schema(

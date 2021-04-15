@@ -13,7 +13,7 @@ uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
 
 
-def archive_entry(pk, template_name):
+def archive_entry(pk, template_name=settings.ARCHIVE_METADATA_TEMPLATE):
     """
     Calls the respective archival method as configured
     """
@@ -82,7 +82,7 @@ def phaidra_archive_entry(pk, template_name):
         if pid.strip():
             entry.archive_URI = uris.get('IDENTIFIER_BASE') + pid
             entry.archive_id = pid
-            entry.save()
+            entry.save(update_fields=['archive_URI', 'archive_id'])
         else:
             logging.warning('NO PID returned in response, %s', res.content)
     else:
