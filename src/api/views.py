@@ -806,6 +806,10 @@ def entry_data(request, pk=None, *args, **kwargs):
 
     ret = e.data_display
     ret['media'] = get_media_for_entry_public(pk)
+    ret['relations'] = {
+        'parents': [{'id': r.pk, 'title': r.title} for r in e.related_to.filter(published=True)],
+        'to': [{'id': r.pk, 'title': r.title} for r in e.relations.filter(published=True)],
+    }
 
     return Response(ret)
 
