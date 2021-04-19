@@ -119,6 +119,7 @@ INSTALLED_APPS = [
     'core',
     'api',
     'media_server',
+    'docs',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -718,3 +719,13 @@ ACTIVE_SOURCES = {
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
 
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
+
+DOCS_USER = env('DOCS_USER', default=None)
+DOCS_PASSWORD = env('DOCS_PASSWORD', default=None)
+
+DOCS_REALM = 'base Portfolio Backend\'s Documentation'
+DOCS_ROOT = os.path.join(BASE_DIR, '..', 'docs', 'build', 'html')  # noqa: F405
+DOCS_URL = env('DOCS_URL', default='docs/')
+
+if not os.path.exists(DOCS_ROOT):
+    os.makedirs(DOCS_ROOT)
