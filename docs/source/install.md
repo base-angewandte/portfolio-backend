@@ -101,6 +101,24 @@ subsections.
     pre-commit install
     ```
 
+* Install required packages for media conversion:
+    
+    * Linux
+        ```bash
+        apt-get install bc \
+          ffmpeg \
+          ghostscript \
+          imagemagick \
+          libmagic-dev \
+          webp \
+          exiftool
+        ```
+  
+    * Mac (Installation recommended via [homebrew](https://brew.sh/))
+        ```bash
+        brew install ffmpeg ghostscript imagemagick webp exiftool
+        ```
+
 * Start required services:
 
     ```bash
