@@ -96,6 +96,12 @@ Default: `True`
 
 Whether to allow only CA-signed certificates. Only set this to False for a local dev environment if your (local) CAS server is using a self-signed certificate.
 
+### `CAS_VERSION`
+
+Default: `3`
+
+The CAS protocol version to use. Recommended is to use Version 2 or 3.
+
 ### `CORS_ALLOWED_ORIGINS`
 
 Default: `[]`

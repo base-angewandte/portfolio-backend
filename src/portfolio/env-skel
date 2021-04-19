@@ -9,6 +9,7 @@ SITE_URL=https://url/
 # DJANGO_ADMIN_PATH=admin
 # DJANGO_ADMINS=Full Name <email-with-name@example.com>,anotheremailwithoutname@example.com
 # DJANGO_SUPERUSERS=(username1,username2)
+# CAS_VERSION=3
 # CAS_SERVER=
 # CAS_REDIRECT_URL=
 # CAS_VERIFY_CERTIFICATE=True
