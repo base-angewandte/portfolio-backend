@@ -84,6 +84,17 @@ Default: `FORCE_SCRIPT_NAME` if defined, else `/`
 
 Wherever the CAS server should redirect to after successful auth.
 
+### `CAS_RENAME_ATTRIBUTES`
+
+Default: `{}`
+
+A dict used to rename the attributes that the CAS server returns.
+
+For example, if `CAS_RENAME_ATTRIBUTES=fn=first_name,ln=last_name` the `fn` and `ln` attributes returned by the CAS 
+server will be renamed to `first_name` and `last_name`.
+
+Portfolio Backend expects the following attributes: `first_name`, `last_name`, `display_name` and `email`
+
 ### `CAS_SERVER`
 
 Default: `f'{SITE_URL}cas/`

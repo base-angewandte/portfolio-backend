@@ -140,6 +140,7 @@ CAS_VERSION = env.str('CAS_VERSION', default='3')
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
 CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
+CAS_RENAME_ATTRIBUTES = env.dict('CAS_RENAME_ATTRIBUTES', default={})
 
 """ Email settings """
 SERVER_EMAIL = 'error@%s' % urlparse(SITE_URL).hostname
