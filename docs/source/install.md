@@ -4,7 +4,7 @@
 
 There are two supported ways to start the development server:
 
-1. Start only the auxiliary servers (database, redis, etc.) in docker
+1. Start only the auxiliary services (database, redis, etc.) in docker
    but start the django dev server locally in your virtual env. This
    is the preferred way if you actively develop this application.
 
@@ -15,7 +15,7 @@ There are two supported ways to start the development server:
 In both cases there are some common steps to follow:
 
 * Make sure you have `make` installed (e.g. with `sudo apt install make`
-  for Debian based distributions use)
+  for Debian based distributions)
 
 * [Install docker and docker-compose](https://docs.docker.com/get-docker/)
   for your system
@@ -25,9 +25,10 @@ In both cases there are some common steps to follow:
     ```bash
     git clone https://github.com/base-angewandte/portfolio-backend.git
     cd portfolio-backend
+    git checkout develop
     ```
 
-* Check and adapt settings:
+* Check and adapt settings (see [Configuration](./configuration.md) for further details about the configuration possibilities):
 
     ```bash
     # env
@@ -84,7 +85,7 @@ subsections.
 
 ### The full developer setup
 
-* Install latest python 3 and create virtualenv e.g. via `pyenv` and `pyenv-virtualenv`
+* Install latest python 3.7 and create virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
 
 * Install pip-tools and requirements in your virtualenv:
 
@@ -103,9 +104,9 @@ subsections.
 
 * Install required packages for media conversion:
     
-    * Linux
+    * Debian based Linux distributions
         ```bash
-        apt-get install bc \
+        sudo apt install bc \
           ffmpeg \
           ghostscript \
           imagemagick \
@@ -114,7 +115,7 @@ subsections.
           exiftool
         ```
   
-    * Mac (Installation recommended via [homebrew](https://brew.sh/))
+    * macOS (Installation recommended via [homebrew](https://brew.sh/))
         ```bash
         brew install ffmpeg ghostscript imagemagick webp exiftool
         ```
@@ -153,18 +154,19 @@ subsections.
 
 * Install docker and docker-compose
 
-* Change to user `base`
+* Create and change to user `base`
 
-* Change to `/opt/base`
+* Create and change to `/opt/base`
 
-* Clone git repository:
+* Clone git repository and checkout branch `master`:
 
     ```bash
     git clone https://github.com/base-angewandte/portfolio-backend.git
     cd portfolio-backend
+    git checkout master
     ```
 
-* Check and adapt settings:
+* Check and adapt settings (see [Configuration](./configuration.md) for further details about the configuration possibilities):
 
     ```bash
     # env

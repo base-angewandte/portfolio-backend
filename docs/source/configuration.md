@@ -36,7 +36,7 @@ If you are running the development server locally ensure it has the same value a
 
 ### Nginx Development Settings
 
-If you are running nginx in development mode via the configuration of `docker-compose.override.dev.nginx.yml` you have to set the following settings:
+If you are running nginx in development mode via the configuration of `docker-compose.override.dev.nginx.yml` you have to set the following variables:
 
 #### `PORTFOLIO_FRONTEND`
 
@@ -54,7 +54,7 @@ The django `.env` file is located in `src/portfolio/.env`.
 
 Default: All schemas defined in `src/core/schemas/entries/`
 
-If you only want to use a subset of the provided, provide a list here.
+If you only want to use a subset of the included schemas, provide a list here.
 
 ```{warning}
 Changing this value can lead to incompatibilities with other Portfolios and Showroom.
@@ -105,13 +105,13 @@ The base url for the CAS server, e.g. `https://your.base.domain/cas/`.
 
 Default: `True`
 
-Whether to allow only CA-signed certificates. Only set this to False for a local dev environment if your (local) CAS server is using a self-signed certificate.
+Whether to allow only CA-signed certificates. Only set this to `False` for a local dev environment if your (local) CAS server is using a self-signed certificate.
 
 ### `CAS_VERSION`
 
 Default: `3`
 
-The CAS protocol version to use. Recommended is to use Version 2 or 3.
+The CAS protocol version to use. Recommended is to use Version `2` or `3`.
 
 ### `CORS_ALLOWED_ORIGINS`
 
