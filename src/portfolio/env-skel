@@ -96,6 +96,7 @@ SITE_URL=https://url/
 # PHAIDRA_AUDIO_CREATE=audio/create
 # PHAIDRA_OBJECT_CREATE=unknown/create
 # PHAIDRA_METADATA_TEMPLATE=phaidra_container.json
+# PHAIDRA_THESIS_TEMPLATE=phaidra_thesis.json
 
 
 ## The database port only needs to be changed, if you are running portfolio

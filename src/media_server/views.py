@@ -245,16 +245,6 @@ class MediaViewSet(viewsets.GenericViewSet):
         400: openapi.Response('Bad request'),
         403: openapi.Response('Access not allowed'),
     },
-    manual_parameters=[
-        openapi.Parameter(
-            'template_name',
-            openapi.IN_QUERY,
-            required=False,
-            description='template file name to map metadata to archival system',
-            default=settings.ARCHIVE_METADATA_TEMPLATE,
-            type=openapi.TYPE_STRING,
-        ),
-    ],
 )
 @api_view(['GET'])
 def archive_assets(request, media_pks, *args, **kwargs):
@@ -287,15 +277,13 @@ def archive_assets(request, media_pks, *args, **kwargs):
             _('Current user is not the owner of this media object'),
             status=status.HTTP_403_FORBIDDEN,
         )
-    template_name = request.GET.get('template_name', settings.ARCHIVE_METADATA_TEMPLATE)
 
     # Archive the entry first, get the container pid
-    entry_res = archive_entry(entry_pk, template_name)
+    entry_res = archive_entry(entry)
     if not entry_res.get('entry_pid'):
         return Response(entry_res)
 
     # archive the media objects asynchronously
-    # Media.objects.filter(pk__in=media_ids).update(archive_status=STATUS_TO_BE_ARCHIVED)
     queue = django_rq.get_queue('high')
     for m in media_objects:
         # Trigger saving in the background

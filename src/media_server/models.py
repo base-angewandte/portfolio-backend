@@ -14,7 +14,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models import IntegerField, Value
-from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
 from core.models import Entry
@@ -443,17 +443,12 @@ def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()
 
 
-@receiver(post_save, sender=Entry)
-def entry_post_save(sender, instance, created, update_fields, *args, **kwargs):
-    if created or (update_fields and 'archive_id' in update_fields):
-        # do nothing IF
-        ## Object just being created
-        ## pre_save triggered by archive method,
-        pass
-    elif instance.archive_id:
+@receiver(pre_save, sender=Entry)
+def entry_pre_save(sender, instance, update_fields, *args, **kwargs):
+    if instance.archive_id:
         # Update the metadata in the archived asset
-        archive_entry(instance.id)
+        res = archive_entry(instance)
+        if res.get('Error'):
+            raise ValueError(res.get('Error'))
     else:
-        # updating a (not yet archived) object
-        # do nothing
         pass

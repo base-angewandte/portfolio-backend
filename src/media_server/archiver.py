@@ -25,12 +25,13 @@ ARCHIVE_STATUS_CHOICES = (
 )
 
 
-def archive_entry(pk, template_name=settings.ARCHIVE_METADATA_TEMPLATE):
+def archive_entry(entry):
     """
     Calls the respective archival method as configured
     """
+    template_name = settings.ARCHIVE_THESIS_TEMPLATE if entry.is_thesis else settings.ARCHIVE_METADATA_TEMPLATE
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive_entry(pk, template_name)
+        return phaidra_archive_entry(entry, template_name)
 
 
 @job
@@ -70,11 +71,10 @@ def _phaidra_update_container(container_metadata, archive_id):
     return res
 
 
-def phaidra_archive_entry(pk, template_name):
+def phaidra_archive_entry(entry, template_name):
     """
     Archive the entry in Phaidra by creating or updating the container object
     """
-    entry = Entry.objects.get(id=pk)
     try:
         container_metadata = _map_container_template_data(entry, template_name)
     except ValueError as ve:
