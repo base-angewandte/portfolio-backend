@@ -83,9 +83,10 @@ class Entry(AbstractBaseModel):
         value."""
         try:
             return self.type.get('source') in (
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/bachelor_thesis',
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/diploma_thesis',
                 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation',
                 'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
-                'http://base.uni-ak.ac.at/portfolio/taxonomy/diploma_thesis',
             )
         except AttributeError:
             # Type attribute not set, ignore this error
