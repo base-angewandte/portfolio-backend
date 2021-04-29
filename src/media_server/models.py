@@ -409,23 +409,25 @@ def media_post_save(sender, instance, created, *args, **kwargs):
 
 @receiver(pre_delete, sender=Media)
 def media_pre_delete(sender, instance, *args, **kwargs):
+    conn = django_rq.get_connection()
     try:
-        conn = django_rq.get_connection()
         job = Job.fetch(instance.get_job_id(), connection=conn)
         if job.get_status() == 'started':
             try:
                 send_stop_job_command(conn, instance.get_job_id())
             except InvalidJobOperation:
                 pass
-        job.delete()
+            job.delete()
+    except NoSuchJobError:
+        pass
+    try:
         archive_job = Job.fetch(instance.get_archive_job_id(), connection=conn)
         if job.get_status() == 'started':
             try:
                 send_stop_job_command(conn, instance.get_archive_job_id())
             except InvalidJobOperation:
                 pass
-        archive_job.delete()
-
+            archive_job.delete()
     except NoSuchJobError:
         pass
 
