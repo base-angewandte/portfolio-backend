@@ -417,7 +417,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
                 send_stop_job_command(conn, instance.get_job_id())
             except InvalidJobOperation:
                 pass
-            job.delete()
+        job.delete()
     except NoSuchJobError:
         pass
     try:
@@ -427,7 +427,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
                 send_stop_job_command(conn, instance.get_archive_job_id())
             except InvalidJobOperation:
                 pass
-            archive_job.delete()
+        archive_job.delete()
     except NoSuchJobError:
         pass
 
