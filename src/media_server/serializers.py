@@ -47,7 +47,3 @@ class MediaPartialUpdateSerializer(serializers.Serializer):
 
     def validate_license(self, value):
         return validate_license(value)
-
-
-class ArchiveSerializer(serializers.Serializer):
-    pass
