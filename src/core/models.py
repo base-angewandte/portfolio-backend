@@ -78,18 +78,16 @@ class Entry(AbstractBaseModel):
 
     @property
     def is_thesis(self):
-        """
-        returns
-        True if the source attribute of type matches one of the thesis values
-        False if no type attribute exists or contains any other value
-        """
+        """returns True if the source attribute of type matches one of the
+        thesis values False if no type attribute exists or contains any other
+        value."""
         try:
             return self.type.get('source') in (
                 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation',
                 'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
                 'http://base.uni-ak.ac.at/portfolio/taxonomy/diploma_thesis',
             )
-        except AttributeError as e:
+        except AttributeError:
             # Type attribute not set, ignore this error
             pass
 
