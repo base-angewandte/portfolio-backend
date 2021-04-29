@@ -21,7 +21,7 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .archiver import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, archive_entry, archive_media
+from .archiver import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, archive_entry
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
