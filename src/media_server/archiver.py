@@ -97,7 +97,6 @@ def phaidra_archive_entry(entry, template_name):
             logging.warning('NO PID returned in response, %s', res.content)
     else:
         # Assume that there is a metadata change and update the container metadata
-        # FIXME: This should not be here;
         # instead update metadata should be called whenever the entry metadata is updated in Portfolio
         res = _phaidra_update_container({"metadata": {"json-ld": container_metadata}}, entry.archive_id)
         if res.status_code != 200:
