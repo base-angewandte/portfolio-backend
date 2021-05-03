@@ -7,7 +7,8 @@ register = template.Library()
 
 @register.filter(name='phaidra_eq_license')
 def phaidra_eq_license(arg):
-    """Fetches the equivalent concept for Portfolio license to be mapped to Phaidra """
+    """Fetches the equivalent concept for Portfolio license to be mapped to
+    Phaidra."""
     eq_concepts = get_equivalent_concepts(arg)
     if eq_concepts:
         # FIXME: What happens if there are more than in equivalent concepts?

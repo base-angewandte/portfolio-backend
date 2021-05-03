@@ -26,9 +26,7 @@ ARCHIVE_STATUS_CHOICES = (
 
 
 def archive_entry(entry):
-    """
-    Calls the respective archival method as configured
-    """
+    """Calls the respective archival method as configured."""
     template_name = settings.ARCHIVE_THESIS_TEMPLATE if entry.is_thesis else settings.ARCHIVE_METADATA_TEMPLATE
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
         return phaidra_archive_entry(entry, template_name)
@@ -36,9 +34,7 @@ def archive_entry(entry):
 
 @job
 def archive_media(media):
-    """
-    Calls the respective archival method as configured
-    """
+    """Calls the respective archival method as configured."""
     if settings.ARCHIVE_TYPE == 'PHAIDRA':
         return phaidra_archive_media(media)
 
@@ -60,9 +56,7 @@ def _phaidra_create_container(container_metadata):
 
 
 def _phaidra_update_container(container_metadata, archive_id):
-    """
-    Updates the metadata of a container object in Phaidra
-    """
+    """Updates the metadata of a container object in Phaidra."""
     res = requests.post(
         uris.get('BASE_URI') + f'object/{archive_id}/metadata',
         files={'metadata': dumps(container_metadata)},
@@ -72,9 +66,8 @@ def _phaidra_update_container(container_metadata, archive_id):
 
 
 def phaidra_archive_entry(entry, template_name):
-    """
-    Archive the entry in Phaidra by creating or updating the container object
-    """
+    """Archive the entry in Phaidra by creating or updating the container
+    object."""
     try:
         container_metadata = _map_container_template_data(entry, template_name)
     except ValueError as ve:
@@ -83,7 +76,7 @@ def phaidra_archive_entry(entry, template_name):
 
     # if the entry is not already archived as a container, create a container object
     if not entry.archive_id:
-        res = _phaidra_create_container({"metadata": {"json-ld": {"container": container_metadata}}})
+        res = _phaidra_create_container({'metadata': {'json-ld': {'container': container_metadata}}})
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res
@@ -98,7 +91,7 @@ def phaidra_archive_entry(entry, template_name):
     else:
         # Assume that there is a metadata change and update the container metadata
         # instead update metadata should be called whenever the entry metadata is updated in Portfolio
-        res = _phaidra_update_container({"metadata": {"json-ld": container_metadata}}, entry.archive_id)
+        res = _phaidra_update_container({'metadata': {'json-ld': container_metadata}}, entry.archive_id)
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res
@@ -107,9 +100,8 @@ def phaidra_archive_entry(entry, template_name):
 
 
 def phaidra_archive_media(media):
-    """
-    Archives the given media in Phaidra and
-    returns the persistent id for
+    """Archives the given media in Phaidra and returns the persistent id for.
+
     - the container (entry_pid) and
     - the media (media_pid)
     """
@@ -154,7 +146,7 @@ def phaidra_archive_media(media):
             media.save()
 
             # Add member to container
-            link_member_url = uris.get("BASE_URI") + f'object/{entry.archive_id}/relationship/add'
+            link_member_url = uris.get('BASE_URI') + f'object/{entry.archive_id}/relationship/add'
 
             res = requests.post(
                 link_member_url,

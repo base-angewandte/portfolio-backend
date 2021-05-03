@@ -30,19 +30,19 @@ def any_must_match(list_value, args):
         conditions = args.split(';')
         # print("CONDITIONS", conditions)
 
-        for i, item in enumerate(list_value):
-            # print(i, item)
+        for _i, item in enumerate(list_value):
+            # print(_i, item)
             # all the conditions must be satisfied for an item to qualify
             conditions_met = []
             for cond in conditions:
-                field_name, field_val = cond.split("=")
+                field_name, field_val = cond.split('=')
                 # print("COND", cond)
                 # First attribute in property path is omitted as it's passed to the template tag
                 matches = get_nested_prop(item, field_name.split('.')[1:])
                 # print("MATCHES", matches)
-                conditions_met.append((matches is not None and field_val in matches))
+                conditions_met.append(matches is not None and field_val in matches)
 
-            # print(i, "CONDITIONS_MET", conditions_met)
+            # print(_i, "CONDITIONS_MET", conditions_met)
             if all(conditions_met):
                 return ''
 

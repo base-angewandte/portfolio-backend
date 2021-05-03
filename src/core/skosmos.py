@@ -286,9 +286,8 @@ def get_collection_members(collection, maxhits=1000, use_cache=True):
 
 
 def get_equivalent_concepts(uri):
-    """
-    Returns the URI from owl:sameAs entry in the graph data for the given URI
-    """
+    """Returns the URI from owl:sameAs entry in the graph data for the given
+    URI."""
     json_data = get_json_data(uri)
     eq_concepts = [node.get('owl:sameAs') for node in json_data.get('graph') if 'owl:sameAs' in node]
     return eq_concepts

@@ -248,14 +248,14 @@ class MediaViewSet(viewsets.GenericViewSet):
 )
 @api_view(['GET'])
 def archive_assets(request, media_pks, *args, **kwargs):
-    """
-    # @entry_pk: entry pk
+    """# @entry_pk: entry pk
+
     @media_pks: comma separated list of media pks
     Expected all media pks from the same entry - owned by the user
     """
     # remove duplicate media ids from request
     media_ids = [pk.strip() for pk in list(set(media_pks.split(',')))]
-    ## check if all assets belong to the same entry
+    # check if all assets belong to the same entry
     try:
         media_objects = [Media.objects.get(id=pk) for pk in media_ids]
     except Media.DoesNotExist:
