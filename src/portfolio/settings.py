@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'core',
     'api',
     'media_server',
+    'docs',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -136,10 +137,11 @@ CAS_LOGGED_MSG = None
 CAS_RENEW = False
 CAS_LOGOUT_COMPLETELY = True
 CAS_RETRY_LOGIN = True
-CAS_VERSION = '3'
+CAS_VERSION = env.str('CAS_VERSION', default='3')
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
 CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
+CAS_RENAME_ATTRIBUTES = env.dict('CAS_RENAME_ATTRIBUTES', default={})
 
 """ Email settings """
 SERVER_EMAIL = 'error@%s' % urlparse(SITE_URL).hostname
@@ -719,6 +721,16 @@ ACTIVE_SOURCES = {
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
 
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
+
+DOCS_USER = env('DOCS_USER', default=None)
+DOCS_PASSWORD = env('DOCS_PASSWORD', default=None)
+
+DOCS_REALM = 'base Portfolio Backend\'s Documentation'
+DOCS_ROOT = os.path.join(BASE_DIR, '..', 'docs', 'build', 'html')  # noqa: F405
+DOCS_URL = env('DOCS_URL', default='docs/')
+
+if not os.path.exists(DOCS_ROOT):
+    os.makedirs(DOCS_ROOT)
 
 ARCHIVE_TYPE = env.str('ARCHIVE_TYPE', '')
 ARCHIVE_SETTINGS = None

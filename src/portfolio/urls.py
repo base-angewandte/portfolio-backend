@@ -28,6 +28,8 @@ urlpatterns = [
     path('autosuggest/', include('autosuggest.urls')),
     path('p/', include('media_server.urls')),
     path(r'django-rq/', include('django_rq.urls')),
+    # docs
+    path(settings.DOCS_URL, include('docs.urls')),
 ]
 
 if settings.DEBUG:

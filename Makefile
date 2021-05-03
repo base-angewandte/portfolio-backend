@@ -32,7 +32,7 @@ restart-gunicorn:
 restart-rq:
 	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
 
-update: git-update init init-static restart-gunicorn restart-rq
+update: git-update init init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
 	docker-compose up -d --build \
@@ -50,6 +50,10 @@ start-dev-docker:
 
 clear-entries:
 	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
+
+build-docs:
+	docker build -t portfolio-docs ./docker/docs
+	docker run -it -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
 
 pip-compile:
 	pip-compile src/requirements.in
