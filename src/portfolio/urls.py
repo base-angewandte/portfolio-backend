@@ -27,6 +27,8 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('autosuggest/', include('autosuggest.urls')),
     path('p/', include('media_server.urls')),
+    # docs
+    path(settings.DOCS_URL, include('docs.urls')),
 ]
 
 if settings.DEBUG:
