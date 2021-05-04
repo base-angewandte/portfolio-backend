@@ -2,6 +2,7 @@ import logging
 from json import dumps, loads
 
 import requests
+import yaml
 from django_rq import job
 
 from django.conf import settings
@@ -42,7 +43,9 @@ def archive_media(media):
 def _map_container_template_data(entry, template_name):
     template = loader.get_template(template_name)
     context = {'entry': entry}
-    container_metadata = loads(template.render(context))
+    # Using yaml safe_load instead of json.loads
+    # because template rendered json may contain trailing commas
+    container_metadata = yaml.safe_load(template.render(context))
     return container_metadata
 
 
