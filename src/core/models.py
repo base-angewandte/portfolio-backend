@@ -37,8 +37,8 @@ class Entry(AbstractBaseModel):
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     objects = EntryManager()
-    archive_id = models.CharField(max_length=255, default='')
-    archive_URI = models.CharField(max_length=255, default='')
+    archive_id = models.CharField(max_length=255, blank=True, null=True)
+    archive_URI = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         indexes = [
