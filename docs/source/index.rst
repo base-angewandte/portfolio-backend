@@ -13,6 +13,7 @@ Welcome to base Portfolio Backend's documentation!
    configuration
    docker_compose_overrides
    create_forms
+   management_commands
    rest_api
 
 
