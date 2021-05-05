@@ -11,6 +11,7 @@ from django.utils import translation
 
 from core.models import Entry
 from core.schemas import ACTIVE_TUPLES
+from core.skosmos import get_preflabel_lazy
 
 
 class Command(BaseCommand):
@@ -26,6 +27,8 @@ class Command(BaseCommand):
 
         if lang in settings.LANGUAGES_DICT.keys():
             translation.activate(lang)
+
+        lang = translation.get_language()
 
         def _handle_dict(dct):
             lbl = dct.get('label') or ''
@@ -56,11 +59,11 @@ class Command(BaseCommand):
             csv_writer.writerow(
                 [
                     'ID',
-                    'title',
-                    'subtitle',
-                    'type',
-                    'owner',
-                    'data',
+                    get_preflabel_lazy('title'),
+                    get_preflabel_lazy('subtitle'),
+                    get_preflabel_lazy('type'),
+                    'owner' if lang == 'en' else 'Besitzer',
+                    'data' if lang == 'en' else 'Daten',
                 ]
             )
             date_filters = []
