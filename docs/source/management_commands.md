@@ -15,7 +15,7 @@ This action is not reversible.
 
 ### `export_published`
 
-This command exports published entries for a specific year.
+This command exports published entries for a specific year as CSV. Exported CSV files can be found in `src/export`.
 
 #### Arguments
 
