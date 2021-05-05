@@ -139,12 +139,13 @@ dmypy.json
 .vscode/
 
 ## Project
+dockerdata*/
 logs/
 src/assets/
+src/export/*.csv
 src/fixtures/vcr_cassettes/
 tmp/
 
-dockerdata*/
 docker-compose.override.yml
 hashids_salt.py
 secret_key.py
