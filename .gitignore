@@ -141,6 +141,7 @@ dmypy.json
 ## Project
 logs/
 src/assets/
+src/export/*.csv
 src/fixtures/vcr_cassettes/
 tmp/
 
