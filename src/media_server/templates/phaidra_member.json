@@ -1,11 +1,12 @@
 {% load licensemapper %}
+{% load metadataformatter %}
 {
     "metadata": {
         "json-ld": {
             "ebucore:hasMimeType": [
                 "{{media.mime_type}}"
             ],
-            "ebucore:filename": ["{{media.file}}"],
+            "ebucore:filename": ["{{media.file.name | filename_without_path}}"],
             "edm:rights": [
                 "{{media.license.source | phaidra_eq_license}}"
             ]
