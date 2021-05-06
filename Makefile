@@ -17,6 +17,12 @@ git-update:
 init:
 	docker-compose exec portfolio-django bash -c "pip-sync && python manage.py migrate"
 
+init-rq:
+	docker-compose exec portfolio-rq-worker-1 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-worker-2 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-worker-3 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-scheduler bash -c "pip-sync && python manage.py migrate"
+
 init-static:
 	docker-compose exec portfolio-django bash -c "python manage.py collectstatic --noinput"
 
@@ -32,7 +38,7 @@ restart-gunicorn:
 restart-rq:
 	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
 
-update: git-update init init-static restart-gunicorn restart-rq build-docs
+update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
 	docker-compose up -d --build \
