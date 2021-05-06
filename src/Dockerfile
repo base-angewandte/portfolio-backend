@@ -31,7 +31,7 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade --no-cache-dir pip==21.0.1
+RUN pip install --upgrade --no-cache-dir pip==21.1.1
 COPY requirements.txt .
 RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
 
