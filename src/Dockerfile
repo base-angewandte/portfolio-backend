@@ -2,6 +2,7 @@ FROM python:3.7 AS base
 
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR 1
+ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
@@ -32,9 +33,9 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade --no-cache-dir pip==21.1.1
+RUN pip install --upgrade pip==21.1.1
 COPY requirements.txt .
-RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 EXPOSE 8200
 
@@ -42,7 +43,7 @@ EXPOSE 8200
 FROM base as dev
 
 COPY requirements-dev.txt .
-RUN pip install --disable-pip-version-check --no-cache-dir -r requirements-dev.txt
+RUN pip install -r requirements-dev.txt
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
 
