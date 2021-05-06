@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # hadolint ignore=DL3003
 RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
-    && wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
+    && wget --progress=dot:giga https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && tar xvf Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && cd Image-ExifTool-"${EXIFTOOL_VERSION}"/ \
     && perl Makefile.PL \
@@ -23,6 +23,7 @@ RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
 	&& cd .. \
 	&& rm -rf Image-ExifTool-"${EXIFTOOL_VERSION}"*
 
+# hadolint ignore=DL3059
 RUN mkdir /logs
 VOLUME /logs
 
