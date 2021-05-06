@@ -3,6 +3,9 @@ FROM python:3.7 AS base
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR 1
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
+ENV PIP_USER 1
+ENV PYTHONUSERBASE /djangoenv
+ENV PATH="$PYTHONUSERBASE/bin:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
