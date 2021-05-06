@@ -97,6 +97,10 @@ def get_icon(entry_type):
             return icon
 
 
+def get_active_schemas():
+    return [schema for _types, schema, _icon in ACTIVE_TUPLES]
+
+
 def get_type_jsonschema():
     return schema2jsonschema(TypeModelSchema, force_text=True)['properties']['type']
 
