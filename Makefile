@@ -52,7 +52,7 @@ start-dev-docker:
 		portfolio-postgres \
 		portfolio-lool \
 		portfolio-django
-	docker logs -f portfolio-django-dev
+	docker logs -f portfolio-django
 
 clear-entries:
 	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
