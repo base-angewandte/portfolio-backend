@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.utils import translation
 
 from core.models import Entry
-from core.schemas import ACTIVE_TUPLES
+from core.schemas import get_active_schemas
 from core.skosmos import get_preflabel_lazy
 
 
@@ -68,12 +68,9 @@ class Command(BaseCommand):
             )
             date_filters = []
             date_fields = []
-            schemas = []
+            schemas = get_active_schemas()
 
-            for _t, s, _i in ACTIVE_TUPLES:
-                schemas.append(s)
-
-            for s in list(set(schemas)):
+            for s in schemas:
                 date_fields += s().date_fields
 
             for df in list(set(date_fields)):

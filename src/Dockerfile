@@ -2,6 +2,10 @@ FROM python:3.7 AS base
 
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR 1
+ENV PIP_DISABLE_PIP_VERSION_CHECK 1
+ENV PIP_USER 1
+ENV PYTHONUSERBASE /djangoenv
+ENV PATH="$PYTHONUSERBASE/bin:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
@@ -14,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # hadolint ignore=DL3003
 RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
-    && wget https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
+    && wget --progress=dot:giga https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && tar xvf Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && cd Image-ExifTool-"${EXIFTOOL_VERSION}"/ \
     && perl Makefile.PL \
@@ -23,6 +27,7 @@ RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
 	&& cd .. \
 	&& rm -rf Image-ExifTool-"${EXIFTOOL_VERSION}"*
 
+# hadolint ignore=DL3059
 RUN mkdir /logs
 VOLUME /logs
 
@@ -31,9 +36,9 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade --no-cache-dir pip==21.1.1
+RUN pip install --upgrade pip==21.1.1
 COPY requirements.txt .
-RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 EXPOSE 8200
 
@@ -41,7 +46,7 @@ EXPOSE 8200
 FROM base as dev
 
 COPY requirements-dev.txt .
-RUN pip install --disable-pip-version-check --no-cache-dir -r requirements-dev.txt
+RUN pip install -r requirements-dev.txt
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
 
