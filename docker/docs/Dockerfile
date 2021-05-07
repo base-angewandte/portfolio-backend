@@ -1,0 +1,11 @@
+FROM python:3.7
+
+ENV PYTHONUNBUFFERED 1
+
+COPY requirements.txt /tmp/requirements.txt
+
+RUN pip install -qq --upgrade --no-cache-dir pip==21.1.1
+RUN pip install -qq --disable-pip-version-check --no-cache-dir -r /tmp/requirements.txt
+
+WORKDIR /docs
+VOLUME /docs

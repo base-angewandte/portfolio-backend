@@ -1,7 +1,7 @@
 from marshmallow import fields
 
 from django.utils.text import format_lazy
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members, get_preflabel_lazy

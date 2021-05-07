@@ -1,4 +1,4 @@
-version: '2'
+version: '2.3'
 services:
 
   portfolio-redis:
@@ -36,8 +36,10 @@ services:
       - 8200
     volumes:
       - ./src:/django
+      - ./docs/build:/docs/build
       - ./logs:/logs
       - $PORTFOLIO_ASSETS:/django/assets
+      - ./docker/imagemagick/policy.xml:/etc/ImageMagick-6/policy.xml
     networks:
       - portfolionet
     restart: always
@@ -99,7 +101,7 @@ services:
     command: python manage.py rqscheduler
 
   portfolio-lool:
-    image: collabora/code:4.0.5.2
+    image: collabora/code:4.2.3.1
     container_name: portfolio-lool
     volumes:
       - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml

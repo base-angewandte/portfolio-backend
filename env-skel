@@ -1,5 +1,8 @@
-PORTFOLIO_FRONTEND=/opt/base/portfolio-frontend/dist
-PORTFOLIO_ASSETS=./dockerdata/django/assets
+# For details about the different environment variables see configuration.md in docs
+
 PORTFOLIO_DB_NAME=django_portfolio
 PORTFOLIO_DB_USER=django_portfolio
 PORTFOLIO_DB_PASSWORD=password
+
+# PORTFOLIO_FRONTEND=/opt/base/portfolio-frontend/dist
+# PORTFOLIO_ASSETS=./dockerdata/django/assets

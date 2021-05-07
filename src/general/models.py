@@ -1,4 +1,3 @@
-# coding: utf-8
 import shortuuid
 
 from django.db import models
@@ -15,11 +14,12 @@ class AbstractBaseModel(models.Model):
 
 # Based on implementation from https://github.com/nebstrebor/django-shortuuidfield
 class ShortUUIDField(models.CharField):
-    """
-    A field which stores a Short UUID value in base57 format. This may also have
-    the Boolean attribute 'auto' which will set the value on initial save to a
-    new UUID value (calculated using shortuuid). Note that while all
-    UUIDs are expected to be unique we enforce this with a DB constraint.
+    """A field which stores a Short UUID value in base57 format.
+
+    This may also have the Boolean attribute 'auto' which will set the
+    value on initial save to a new UUID value (calculated using
+    shortuuid). Note that while all UUIDs are expected to be unique we
+    enforce this with a DB constraint.
     """
 
     def __init__(self, auto=True, prefix=None, namespace=None, *args, **kwargs):
@@ -38,11 +38,11 @@ class ShortUUIDField(models.CharField):
             kwargs['blank'] = True
             kwargs['unique'] = True
 
-        super(ShortUUIDField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ShortUUIDField, self).deconstruct()
-        del kwargs["max_length"]
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs['max_length']
         if self.prefix:
             kwargs['prefix'] = self.prefix
         if self.auto:
@@ -54,11 +54,11 @@ class ShortUUIDField(models.CharField):
         return name, path, args, kwargs
 
     def pre_save(self, model_instance, add):
-        """
-        This is used to ensure that we auto-set values if required.
+        """This is used to ensure that we auto-set values if required.
+
         See CharField.pre_save
         """
-        value = super(ShortUUIDField, self).pre_save(model_instance, add)
+        value = super().pre_save(model_instance, add)
         if self.auto and not value:
             # Assign a new value for this attribute if required.
             value = shortuuid.uuid(name=self.namespace)
@@ -70,4 +70,4 @@ class ShortUUIDField(models.CharField):
     def formfield(self, **kwargs):
         if self.auto:
             return None
-        return super(ShortUUIDField, self).formfield(**kwargs)
+        return super().formfield(**kwargs)

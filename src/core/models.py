@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 
 from general.models import AbstractBaseModel, ShortUUIDField
 
@@ -21,12 +21,15 @@ class Entry(AbstractBaseModel):
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)
-    subtitle = models.CharField(verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True,)
+    subtitle = models.CharField(verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True)
     type = JSONField(verbose_name=get_preflabel_lazy('type'), validators=[validate_type], blank=True, null=True)
     notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(
-        verbose_name=get_preflabel_lazy('keywords'), validators=[validate_keywords], blank=True, null=True,
+        verbose_name=get_preflabel_lazy('keywords'),
+        validators=[validate_keywords],
+        blank=True,
+        null=True,
     )
     texts = JSONField(verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True)
     published = models.BooleanField(default=False)
@@ -88,7 +91,7 @@ class Entry(AbstractBaseModel):
                 ret['data'].append({'label': self._meta.get_field(field).verbose_name, 'value': value})
         if self.texts:
             texts = []
-            language_source = 'http://base.uni-ak.ac.at/portfolio/languages/{}'.format(lang)
+            language_source = f'http://base.uni-ak.ac.at/portfolio/languages/{lang}'
             for text in self.texts:
                 text_type = text.get('type', {}).get('label', {}).get(lang) or None
                 if text.get('data'):
@@ -112,6 +115,11 @@ class Entry(AbstractBaseModel):
         if self.type:
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
+                if schema is None:
+                    msg = _('Type %(type_source)s does not belong to any active schema') % {
+                        'type_source': self.type.get('source')
+                    }
+                    raise ValidationError(msg)
                 try:
                     validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
                 except SchemaValidationError as e:
@@ -121,11 +129,17 @@ class Entry(AbstractBaseModel):
             raise ValidationError(_('Data without type'))
 
     def add_relation(self, entry):
-        relation, created = Relation.objects.get_or_create(from_entry=self, to_entry=entry,)
+        relation, created = Relation.objects.get_or_create(
+            from_entry=self,
+            to_entry=entry,
+        )
         return relation
 
     def remove_relation(self, entry):
-        Relation.objects.filter(from_entry=self, to_entry=entry,).delete()
+        Relation.objects.filter(
+            from_entry=self,
+            to_entry=entry,
+        ).delete()
         return True
 
     def get_relations(self):

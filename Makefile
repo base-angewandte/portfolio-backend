@@ -17,6 +17,12 @@ git-update:
 init:
 	docker-compose exec portfolio-django bash -c "pip-sync && python manage.py migrate"
 
+init-rq:
+	docker-compose exec portfolio-rq-worker-1 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-worker-2 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-worker-3 bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-scheduler bash -c "pip-sync && python manage.py migrate"
+
 init-static:
 	docker-compose exec portfolio-django bash -c "python manage.py collectstatic --noinput"
 
@@ -32,7 +38,7 @@ restart-gunicorn:
 restart-rq:
 	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
 
-update: git-update init init-static restart-gunicorn restart-rq
+update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
 	docker-compose up -d --build \
@@ -40,13 +46,25 @@ start-dev:
 		portfolio-postgres \
 		portfolio-lool
 
+start-dev-docker:
+	docker-compose up -d --build \
+		portfolio-redis \
+		portfolio-postgres \
+		portfolio-lool \
+		portfolio-django
+	docker logs -f portfolio-django
+
 clear-entries:
 	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
 
+build-docs:
+	docker build -t portfolio-docs ./docker/docs
+	docker run -it -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
+
 pip-compile:
-	pip-compile src/requirements.in --output-file src/requirements.txt
-	pip-compile src/requirements.in src/requirements-dev.in --output-file src/requirements-dev.txt
+	pip-compile src/requirements.in
+	pip-compile src/requirements-dev.in
 
 pip-compile-upgrade:
-	pip-compile src/requirements.in --output-file src/requirements.txt --upgrade
-	pip-compile src/requirements.in src/requirements-dev.in --output-file src/requirements-dev.txt --upgrade
+	pip-compile src/requirements.in --upgrade
+	pip-compile src/requirements-dev.in --upgrade

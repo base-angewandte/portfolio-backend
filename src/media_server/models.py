@@ -2,16 +2,19 @@ import json
 import logging
 import os
 import shutil
-import subprocess
+import subprocess  # nosec
 
 import django_rq
 import magic
+from rq.command import send_stop_job_command
+from rq.exceptions import InvalidJobOperation, NoSuchJobError
+from rq.job import Job
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models import IntegerField, Value
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from core.models import Entry
@@ -128,6 +131,7 @@ class Media(models.Model):
         indexes = [
             models.Index(fields=['entry_id']),
         ]
+        ordering = ['-created']
 
     @property
     def metadata(self):
@@ -152,7 +156,7 @@ class Media(models.Model):
                 self.status = STATUS_IN_PROGRESS
                 self.save()
 
-                process = subprocess.run(command, stderr=subprocess.PIPE)
+                process = subprocess.run(command, stderr=subprocess.PIPE)  # nosec
 
                 if process.returncode == 0:
                     self.status = STATUS_CONVERTED
@@ -160,7 +164,8 @@ class Media(models.Model):
                 else:
                     logger.error(
                         'Error while converting {}:\n{}'.format(
-                            dict(TYPE_CHOICES).get(self.type), process.stderr.decode('utf-8'),
+                            dict(TYPE_CHOICES).get(self.type),
+                            process.stderr.decode('utf-8'),
                         )
                     )
                     self.status = STATUS_ERROR
@@ -190,7 +195,7 @@ class Media(models.Model):
             with open(self.get_file_path('preview.txt')) as f:
                 for line in f:
                     k, v = line.rstrip('\n').split(',')
-                    ret.append({'{}w'.format(k): self.get_url(v)})
+                    ret.append({f'{k}w': self.get_url(v)})
         return ret
 
     def get_data(self):
@@ -231,7 +236,7 @@ class Media(models.Model):
 
         for f in filename:
             if self.check_file(f):
-                return '{}/{}'.format(self.get_protected_assets_url(), f)
+                return f'{self.get_protected_assets_url()}/{f}'
 
         logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
         return None
@@ -268,7 +273,7 @@ class Media(models.Model):
     def check_mime_type(self):
         exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
         if exiftool_mime_type and self.mime_type != exiftool_mime_type:
-            logger.warning('MIMEType mismatch: {} != {}'.format(self.mime_type, exiftool_mime_type))
+            logger.warning(f'MIMEType mismatch: {self.mime_type} != {exiftool_mime_type}')
             # correct some mime types
             if self.mime_type in [
                 'application/zip',
@@ -286,7 +291,7 @@ class Media(models.Model):
 
     def set_exif(self):
         try:
-            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path],))[0]
+            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path]))[0]  # nosec
         except Exception:
             logger.warning('Could not read metainformation from file: %s', self.file.path)
             # create fallback data
@@ -295,6 +300,9 @@ class Media(models.Model):
                 'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
             }
         self.save()
+
+    def get_job_id(self):
+        return f'job_media_info_and_convert_{self.pk}'
 
 
 MIME_TYPE_TO_TYPE = {
@@ -309,25 +317,28 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id, flat=True):
+def get_media_for_entry(entry_id, flat=True, published=None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
     exclude = []
 
-    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED):
+    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+    if published is not None:
+        query = query.filter(published=published)
+
+    for m in query:
         exclude.append(m.pk)
         data = m.get_data()
         data.update({'response_code': 200})
         ret.append(data)
 
-    ret += list(
-        Media.objects.filter(entry_id=entry_id)
-        .exclude(id__in=exclude)
-        .annotate(response_code=Value(202, IntegerField()))
-        .values('id', 'response_code')
-    )
+    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
+    if published is not None:
+        query = query.filter(published=published)
+
+    ret += list(query.annotate(response_code=Value(202, IntegerField())).values('id', 'response_code'))
 
     return ret
 
@@ -349,7 +360,8 @@ def repair():
     for m in Media.objects.filter(status__in=[STATUS_NOT_CONVERTED, STATUS_ERROR]):
         m.status = STATUS_NOT_CONVERTED
         m.save()
-        django_rq.enqueue(m.media_info_and_convert)
+        queue = django_rq.get_queue('high')
+        queue.enqueue(m.media_info_and_convert, job_id=m.get_job_id(), failure_ttl=settings.RQ_FAILURE_TTL)
 
 
 # Signal handling
@@ -363,12 +375,39 @@ def media_post_save(sender, instance, created, *args, **kwargs):
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-                transaction.on_commit(lambda: queue.enqueue(instance.media_info_and_convert))
+                transaction.on_commit(
+                    lambda: queue.enqueue(
+                        instance.media_info_and_convert,
+                        job_id=instance.get_job_id(),
+                        failure_ttl=settings.RQ_FAILURE_TTL,
+                    )
+                )
         else:
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
                 sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
-                transaction.on_commit(lambda: django_rq.enqueue(instance.media_info_and_convert))
+                transaction.on_commit(
+                    lambda: django_rq.enqueue(
+                        instance.media_info_and_convert,
+                        job_id=instance.get_job_id(),
+                        failure_ttl=settings.RQ_FAILURE_TTL,
+                    )
+                )
+
+
+@receiver(pre_delete, sender=Media)
+def media_pre_delete(sender, instance, *args, **kwargs):
+    try:
+        conn = django_rq.get_connection()
+        job = Job.fetch(instance.get_job_id(), connection=conn)
+        if job.get_status() == 'started':
+            try:
+                send_stop_job_command(conn, instance.get_job_id())
+            except InvalidJobOperation:
+                pass
+        job.delete()
+    except NoSuchJobError:
+        pass
 
 
 @receiver(post_delete, sender=Media)

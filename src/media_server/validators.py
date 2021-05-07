@@ -17,6 +17,6 @@ def validate_license(value):
         msg = _('Invalid license: %(error)s') % {'error': e.message}  # noqa: B306
         raise ValidationError(msg)
 
-    license_set = set(json.dumps(d, sort_keys=True) for d in get_media_licenses())
+    license_set = {json.dumps(d, sort_keys=True) for d in get_media_licenses()}
     if json.dumps(value, sort_keys=True) not in license_set:
         raise ValidationError(_('Invalid license'))

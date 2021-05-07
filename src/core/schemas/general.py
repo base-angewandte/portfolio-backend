@@ -4,7 +4,7 @@ from marshmallow import fields, validate
 
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 
 from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel, get_preflabel_lazy, get_uri
 from ..utils import placeholder_lazy
@@ -16,7 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_field(field, label, additional_attributes):
-    return field(title=label, **{'x-attrs': {'placeholder': placeholder_lazy(label), **additional_attributes}},)
+    return field(
+        title=label,
+        **{'x-attrs': {'placeholder': placeholder_lazy(label), **additional_attributes}},
+    )
 
 
 def get_string_field(label, additional_attributes):
@@ -104,6 +107,22 @@ def get_date_location_group_field(additional_attributes=None):
     )
 
 
+def get_date_range_location_group_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
+    label = format_lazy(
+        '{date} {conjunction} {location}',
+        date=get_preflabel_lazy('date'),
+        conjunction=_('and'),
+        location=get_preflabel_lazy('location'),
+    )
+    return fields.List(
+        fields.Nested(DateRangeLocationSchema, additionalProperties=False),
+        title=label,
+        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+    )
+
+
 def get_date_range_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
@@ -114,7 +133,6 @@ def get_date_range_field(additional_attributes=None):
         additionalProperties=False,
         **{
             'x-attrs': {
-                'field_format': 'half',
                 'field_type': 'date',
                 'date_format': 'day',
                 'placeholder': {'date': placeholder_lazy(label)},
@@ -129,7 +147,7 @@ def get_date_range_time_range_field(additional_attributes=None):
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
-    label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time,)
+    label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
     return fields.Nested(
         DateRangeTimeRangeSchema,
         title=label,
@@ -168,7 +186,7 @@ def get_date_time_field(additional_attributes=None, label=None):
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     if label is None:
-        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time,)
+        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
     return fields.Nested(
         DateTimeSchema,
         title=label,
@@ -189,7 +207,7 @@ def get_date_time_range_field(additional_attributes=None, label=None):
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     if label is None:
-        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time,)
+        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
     return fields.Nested(
         DateTimeRangeSchema,
         title=label,
@@ -386,7 +404,10 @@ class SourceMultilingualLabelSchema(BaseSchema):
 
 class LanguageDataSchema(BaseSchema):
     source = fields.Str(
-        validate=validate.OneOf(get_languages_choices()[0], labels=get_languages_choices()[1],),
+        validate=validate.OneOf(
+            get_languages_choices()[0],
+            labels=get_languages_choices()[1],
+        ),
         **{'x-attrs': {'hidden': True}},
     )
     label = fields.Nested(MultilingualStringSchema, additionalProperties=False)
@@ -424,7 +445,7 @@ class DateTimeLocationModel(GenericModel):
         if label is None:
             label = self.metadata.get(attribute, {}).get('title')
         if is_range:
-            return {'label': label, 'value': {x: getattr(self, '{}_{}'.format(attribute, x)) for x in ['from', 'to']}}
+            return {'label': label, 'value': {x: getattr(self, f'{attribute}_{x}') for x in ['from', 'to']}}
         else:
             return {
                 'label': label,

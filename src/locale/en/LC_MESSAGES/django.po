@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-27 17:46+0200\n"
+"POT-Creation-Date: 2021-03-18 16:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,40 +16,46 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: api/serializers/entry.py:94
+#: api/serializers/entry.py:125
 msgid "will not be published"
 msgstr ""
 
-#: api/serializers/relation.py:20
+#: api/serializers/relation.py:23
 msgid "Relation already exists"
 msgstr ""
 
-#: api/serializers/relation.py:27 api/views.py:163
+#: api/serializers/relation.py:30 api/views.py:187
 msgid "Current user is not the owner of this entry"
 msgstr ""
 
-#: api/views.py:167 api/views.py:692 media_server/serializers.py:30
+#: api/views.py:191 api/views.py:776 api/views.py:801
+#: media_server/serializers.py:30
 msgid "Entry does not exist"
 msgstr ""
 
-#: api/views.py:240
-msgid "Schema not found for the given query."
+#: api/views.py:272
+msgid "Schema not found for the given query"
 msgstr ""
 
-#: api/views.py:274 api/views.py:687
+#: api/views.py:311 api/views.py:771
 msgid "User does not exist"
 msgstr ""
 
-#: core/models.py:118
+#: core/models.py:119
+#, python-format
+msgid "Type %(type_source)s does not belong to any active schema"
+msgstr ""
+
+#: core/models.py:126
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr ""
 
-#: core/models.py:121
+#: core/models.py:129
 msgid "Data without type"
 msgstr ""
 
-#: core/models.py:154
+#: core/models.py:165
 msgid "Both entries must belong to the same user"
 msgstr ""
 
@@ -57,13 +63,14 @@ msgstr ""
 msgid "Schemas improperly configured"
 msgstr ""
 
-#: core/schemas/__init__.py:60
+#: core/schemas/__init__.py:64
 msgid "Active schemas contain duplicate types"
 msgstr ""
 
-#: core/schemas/general.py:93 core/schemas/general.py:133
-#: core/schemas/general.py:156 core/schemas/general.py:178
-#: core/schemas/general.py:201 core/schemas/general.py:223
+#: core/schemas/entries/exhibition.py:45 core/schemas/general.py:100
+#: core/schemas/general.py:116 core/schemas/general.py:150
+#: core/schemas/general.py:173 core/schemas/general.py:189
+#: core/schemas/general.py:210 core/schemas/general.py:232
 msgid "and"
 msgstr ""
 
@@ -108,24 +115,23 @@ msgstr ""
 msgid "Invalid license"
 msgstr ""
 
-#: media_server/views.py:106 media_server/views.py:182
-#: media_server/views.py:225
+#: media_server/views.py:98 media_server/views.py:179 media_server/views.py:224
 msgid "Current user is not the owner of this media object"
 msgstr ""
 
-#: media_server/views.py:119 media_server/views.py:193
-#: media_server/views.py:233
+#: media_server/views.py:111 media_server/views.py:187
+#: media_server/views.py:232
 msgid "Media object does not exist"
 msgstr ""
 
-#: media_server/views.py:134
+#: media_server/views.py:129
 msgid "No space left for user"
 msgstr ""
 
-#: portfolio/settings.py:241
+#: portfolio/settings.py:247
 msgid "German"
 msgstr ""
 
-#: portfolio/settings.py:242
+#: portfolio/settings.py:248
 msgid "English"
 msgstr ""

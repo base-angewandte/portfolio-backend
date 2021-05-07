@@ -7,7 +7,7 @@ from rest_framework.utils.encoders import JSONEncoder
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.templatetags.static import static
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ..skosmos import get_preflabel, get_preflabel_lazy
 from .models import KeywordsModelSchema, TextsModelSchema, TypeModelSchema
@@ -31,7 +31,7 @@ def init():
     global ACTIVE_TYPES_LIST
 
     for schema in settings.ACTIVE_SCHEMAS:
-        s = importlib.import_module('.entries.{}'.format(schema), __name__)
+        s = importlib.import_module(f'.entries.{schema}', __name__)
         ACTIVE_TUPLES.append(
             (
                 s.TYPES,
@@ -80,21 +80,25 @@ def schema2jsonschema(schema, force_text=False):
 
 
 def get_jsonschema(entry_type, force_text=False):
-    for t, s, _i in ACTIVE_TUPLES:
-        if entry_type in t:
-            return schema2jsonschema(s, force_text)
+    for types, schema, _icon in ACTIVE_TUPLES:
+        if entry_type in types:
+            return schema2jsonschema(schema, force_text)
 
 
 def get_schema(entry_type):
-    for t, s, _i in ACTIVE_TUPLES:
-        if entry_type in t:
-            return s
+    for types, schema, _icon in ACTIVE_TUPLES:
+        if entry_type in types:
+            return schema
 
 
 def get_icon(entry_type):
-    for t, _s, i in ACTIVE_TUPLES:
-        if entry_type in t:
-            return i
+    for types, _schema, icon in ACTIVE_TUPLES:
+        if entry_type in types:
+            return icon
+
+
+def get_active_schemas():
+    return [schema for _types, schema, _icon in ACTIVE_TUPLES]
 
 
 def get_type_jsonschema():
