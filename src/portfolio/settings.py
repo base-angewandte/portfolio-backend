@@ -730,3 +730,7 @@ DOCS_URL = env('DOCS_URL', default='docs/')
 
 if not os.path.exists(DOCS_ROOT):
     os.makedirs(DOCS_ROOT)
+
+SHOWROOM_API_BASE = env.str('SHOWROOM_API_BASE', default=None)
+SHOWROOM_API_KEY = env.str('SHOWROOM_API_KEY', default=None)
+SHOWROOM_REPO_ID = env.int('SHOWROOM_REPO_ID', default=None)
