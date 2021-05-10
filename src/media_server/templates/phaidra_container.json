@@ -114,28 +114,6 @@
      {% endif %}
      {% endfor %}
     ],
-    "role:arc":[
-        {% for arc in entry.data.contributors %}
-        {% for role in arc.roles %}
-        {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/architecture" %}
-        {
-            "skos:exactMatch" : [
-                {
-                    "@value" : "{{role.source}}",
-                    "@type" : "ids:uri"
-                }
-            ],
-            "schema:name" : [
-                {
-                    "@value" : "{{arc.label}}"
-                }
-            ],
-            "@type" : "schema:Person"
-        },
-        {% endif %}
-        {% endfor %}
-        {% endfor %}
-    ],
     "role:edt":
     [{% for edt in entry.data.editors %}
      {
@@ -211,8 +189,26 @@
      {% endif %}
      {% endfor %}
      {% endfor %}
-     {% for aut in entry.data.contributors|contributors_by_role %}
-     {% endfor %}
-    ]
-
+    ],
+    {% for role in entry.data.contributors|contributors_by_role %}
+    {% for role_name, contributors in role.items %}
+    "{{role_name |phaidra_role_code }}":
+    [{% for person in contributors %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "{{person.source}}",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{person.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     },
+     {% endfor %}],
+    {% endfor %}
+    {% endfor %}
 }
