@@ -1,4 +1,5 @@
 {% load langmapper %}
+{% load contributormapper %}
 {
     "dcterms:type": [
         {
@@ -109,11 +110,10 @@
              }{% if not forloop.last %},{% endif %}
              {% endfor %}
          ]
-
-     }{% if not forloop.last %},{% endif %}
+     },
      {% endif %}
      {% endfor %}
-    ]{% if not forloop.last %},{% endif %}
+    ],
     "role:arc":[
         {% for arc in entry.data.contributors %}
         {% for role in arc.roles %}
@@ -131,7 +131,7 @@
                 }
             ],
             "@type" : "schema:Person"
-        }{% if not forloop.last %},{% endif %}
+        },
         {% endif %}
         {% endfor %}
         {% endfor %}
@@ -151,11 +151,11 @@
              }
          ],
          "@type" : "schema:Person"
-     }{% if not forloop.last %},{% endif %}
+     },
      {% endfor %}
      {% for edt in entry.data.contributors %}
      {% for role in edt.roles %}
-     {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/editing" %}
+     {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/editor" %}
      {
          "skos:exactMatch" : [
              {
@@ -189,7 +189,30 @@
              }
          ],
          "@type" : "schema:Person"
+     },
+     {% endfor %}
+     {% for aut in entry.data.contributors %}
+     {% for role in aut.roles %}
+     {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/author" %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "{{role.source}}",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{aut.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
      }{% if not forloop.last %},{% endif %}
+     {% endif %}
+     {% endfor %}
+     {% endfor %}
+     {% for aut in entry.data.contributors|contributors_by_role %}
      {% endfor %}
     ]
+
 }
