@@ -1,5 +1,10 @@
 # Changelog
 
+## unreleased
+
+### Fixed
+- Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
+
 ## 1.1.0
 
 ### Added
