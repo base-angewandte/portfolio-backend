@@ -46,6 +46,7 @@ class Command(BaseCommand):
                 'title': entry.title,
                 'belongs_to': str(entry.owner),
                 'source_repo': settings.SHOWROOM_REPO_ID,
+                'source_repo_entry_id': entry.id,
                 'type': entry.type,
                 'list': '[]',
                 'primary_details': '[]',
