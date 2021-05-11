@@ -190,6 +190,45 @@
      {% endfor %}
      {% endfor %}
     ],
+    "role:pbl":
+    [{% for pbl in entry.data.publishers %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "{{pbl.source}}",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{pbl.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     },
+     {% endfor %}
+     {% for pbl in entry.data.contributors %}
+     {% for role in aut.roles %}
+     {% if role.source == "http://base.uni-ak.ac.at/portfolio/vocabulary/publisher" %}
+     {
+         "skos:exactMatch" : [
+             {
+                 "@value" : "{{role.source}}",
+                 "@type" : "ids:uri"
+             }
+         ],
+         "schema:name" : [
+             {
+                 "@value" : "{{pbl.label}}"
+             }
+         ],
+         "@type" : "schema:Person"
+     }{% if not forloop.last %},{% endif %}
+     {% endif %}
+     {% endfor %}
+     {% endfor %}
+    ],
+
     {% for role in entry.data.contributors|contributors_by_role %}
     {% for role_name, contributors in role.items %}
     "{{role_name |phaidra_role_code }}":
