@@ -43,16 +43,17 @@ class Command(BaseCommand):
         not_pushed = []
         for entry in entries:
             data = {
-                'title': entry.title,
-                'belongs_to': str(entry.owner),
-                'source_repo': settings.SHOWROOM_REPO_ID,
                 'source_repo_entry_id': entry.id,
-                'type': entry.type,
-                'list': '[]',
-                'primary_details': '[]',
-                'secondary_details': entry.data,
-                'locations': '[]',
-                'dates': '[]',
+                'source_repo': settings.SHOWROOM_REPO_ID,
+                'belongs_to': str(entry.owner),
+                'data': {
+                    'title': entry.title,
+                    'subtitle': entry.subtitle,
+                    'type': entry.type,
+                    'keywords': entry.keywords,
+                    'texts': entry.texts,
+                    'data': entry.data,
+                },
             }
 
             # TODO: testing code
@@ -60,7 +61,7 @@ class Command(BaseCommand):
                 # TODO: we need this for dev until user profile is syncing entities
                 data['belongs_to'] = 'mYDG78x7RuPGBHSZgfFLtC'
                 # if entry.id in ['8gtpjPKkD2xcBqvEoestpn', 'oHW4dqHEhApPvLEUEMrFun']:
-                #    data['belongs_to'] = 'ladida'
+                #   data['belongs_to'] = 'ladida'
 
             headers = {
                 'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
