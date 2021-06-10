@@ -39,13 +39,13 @@ class Command(BaseCommand):
             entries = Entry.objects.filter(pk__in=options['id'])
 
         created = []
-        updated = []  # TODO: do we want to differentiate between updated and newly pushed entries?
+        updated = []
         not_pushed = []
         for entry in entries:
             data = {
                 'source_repo_entry_id': entry.id,
                 'source_repo': settings.SHOWROOM_REPO_ID,
-                'belongs_to': str(entry.owner),
+                'source_repo_owner_id': str(entry.owner),
                 'data': {
                     'title': entry.title,
                     'subtitle': entry.subtitle,
@@ -55,13 +55,6 @@ class Command(BaseCommand):
                     'data': entry.data,
                 },
             }
-
-            # TODO: testing code
-            if settings.DEBUG:
-                # TODO: we need this for dev until user profile is syncing entities
-                data['belongs_to'] = 'mYDG78x7RuPGBHSZgfFLtC'
-                # if entry.id in ['8gtpjPKkD2xcBqvEoestpn', 'oHW4dqHEhApPvLEUEMrFun']:
-                #   data['belongs_to'] = 'ladida'
 
             headers = {
                 'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
@@ -79,8 +72,15 @@ class Command(BaseCommand):
             # according to the api spec the only other option is a 201 response when the entry was pushed
             # but we should also check for anything unexpected to happen
             elif r.status_code == 201:
-                # so far Showroom does not differentiate between updated and created entries, so we'll add it to created
-                created.append(entry.id)
+                # so far Showroom does only allow single entry POSTs, but the response
+                # format is already tailored towards multi entry POSTs. therefore
+                # we extract the created/updated as if we would submit multiple
+                # entries and extend our aggregated lists
+                result = r.json()
+                if result_created := result.get('created'):
+                    created.extend([(entry['id'], entry['showroom_id']) for entry in result_created])
+                if result_updated := result.get('updated'):
+                    updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
             else:
                 raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
