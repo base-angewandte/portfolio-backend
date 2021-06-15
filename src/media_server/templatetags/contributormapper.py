@@ -10,8 +10,12 @@ register = template.Library()
 
 @register.filter(name='contributors_by_role')
 def contributors_by_role(contributors):
+    """Fetches the contributors as a roles."""
+    if contributors is None:
+        """Bail early on no contributors: contributors is None and not [] if
+        there none."""
+        return []
     ROLE_MAP = {}
-    """Fetches the contributors as a roles"""
     roles = defaultdict(list)
     for c in contributors:
         for role in c['roles']:
@@ -41,5 +45,5 @@ def contributors_by_role(contributors):
 
 @register.filter(name='phaidra_role_code')
 def phaidra_role_code(arg):
-    """Returns the role "key" as used in Phaidra-JSON LD"""
+    """Returns the role "key" as used in Phaidra-JSON LD."""
     return f'role:{arg.split("/")[-1]}'
