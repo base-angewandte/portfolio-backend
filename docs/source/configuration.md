@@ -371,3 +371,73 @@ Default: `1073741824` (10 GB)
 
 The disk quota a user has for their uploads (gets multiplied by the number of
 years an account already exists (1 in the first year)).
+
+### `ARCHIVE_TYPE`
+
+Default: `PHAIDRA`
+
+Name of the archival system used; all the settings needed for the archival will be prefixed with this value followed by an "_"; for example - `PHAIDRA_USER`.
+
+### Archival Settings (Phaidra)
+
+#### `PHAIDRA_USER`
+
+Username of account used by Portfolio backend to create objects in Phaidra
+
+#### `PHAIDRA_PWD`
+
+Password for the account used by Portfolio backend to create objects in Phaidra
+
+#### `PHAIDRA_IDENTIFIER_BASE`
+
+Base URL to which the persistent identifier (archive\_id) can be added - to access objects in Phadira. Should end with "/".
+
+#### `PHAIDRA_CREATE_URI`
+
+Endpoint for container creation in Phaidra
+
+#### `PHAIDRA_BASE_URI`
+
+Base URL of the phaidra endpoint to create member objects.
+
+##### `PHAIDRA_PICTURE_CREATE`
+
+Default: `picture/create`
+
+URL ending to create picture objects in Phaidra
+
+##### `PHAIDRA_DOCUMENT_CREATE`
+
+Default: `document/create`
+
+URL ending to create document objects in Phaidra
+
+##### `PHAIDRA_VIDEO_CREATE`
+
+Default: `video/create`
+
+URL ending to create video objects in Phaidra
+
+##### `PHAIDRA_AUDIO_CREATE`
+
+Default: `audio/create`
+
+URL ending to create audio objects in Phaidra
+
+##### `PHAIDRA_OBJECT_CREATE`
+
+Default: `unknown/create`
+
+URL ending to create any other object type in Phaidra
+
+#### `PHAIDRA_METADATA_TEMPLATE`
+
+Default: `phaidra_container.json`
+
+File containing metadata mapping from Portfolio to Phaidra in a Django template (media_server module)
+
+#### `PHAIDRA_THESIS_TEMPLATE`
+
+Default: `phaidra_thesis.json`
+
+File containing mandatory conditions for thesis archival and metadata mapping from Portfolio to Phaidra in a Django template (media_server module)

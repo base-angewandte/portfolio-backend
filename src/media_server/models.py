@@ -14,19 +14,19 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models import IntegerField, Value
-from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
 from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
+from .archiver import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, archive_entry
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
-
 STATUS_NOT_CONVERTED = 0
 STATUS_IN_PROGRESS = 1
 STATUS_CONVERTED = 2
@@ -126,6 +126,9 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license], blank=True, null=True)
+    archive_id = models.CharField(max_length=255, blank=True, null=True)
+    archive_URI = models.CharField(max_length=255, blank=True, null=True)
+    archive_status = models.IntegerField(choices=ARCHIVE_STATUS_CHOICES, default=STATUS_NOT_ARCHIVED)
 
     class Meta:
         indexes = [
@@ -206,6 +209,8 @@ class Media(models.Model):
             'metadata': self.metadata,
             'published': self.published,
             'license': self.license,
+            'archive_id': self.archive_id,
+            'archive_URI': self.archive_URI,
         }
         if self.type == AUDIO_TYPE:
             data.update({'mp3': self.get_url('listen.mp3')})
@@ -304,6 +309,9 @@ class Media(models.Model):
     def get_job_id(self):
         return f'job_media_info_and_convert_{self.pk}'
 
+    def get_archive_job_id(self):
+        return f'job_archive_{self.pk}'
+
 
 MIME_TYPE_TO_TYPE = {
     **{k: AUDIO_TYPE for k in AUDIO_MIME_TYPES},
@@ -338,7 +346,11 @@ def get_media_for_entry(entry_id, flat=True, published=None):
     if published is not None:
         query = query.filter(published=published)
 
-    ret += list(query.annotate(response_code=Value(202, IntegerField())).values('id', 'response_code'))
+    ret += list(
+        query.annotate(response_code=Value(202, IntegerField())).values(
+            'id', 'archive_id', 'archive_URI', 'response_code'
+        )
+    )
 
     return ret
 
@@ -397,8 +409,8 @@ def media_post_save(sender, instance, created, *args, **kwargs):
 
 @receiver(pre_delete, sender=Media)
 def media_pre_delete(sender, instance, *args, **kwargs):
+    conn = django_rq.get_connection()
     try:
-        conn = django_rq.get_connection()
         job = Job.fetch(instance.get_job_id(), connection=conn)
         if job.get_status() == 'started':
             try:
@@ -406,6 +418,16 @@ def media_pre_delete(sender, instance, *args, **kwargs):
             except InvalidJobOperation:
                 pass
         job.delete()
+    except NoSuchJobError:
+        pass
+    try:
+        archive_job = Job.fetch(instance.get_archive_job_id(), connection=conn)
+        if job.get_status() == 'started':
+            try:
+                send_stop_job_command(conn, instance.get_archive_job_id())
+            except InvalidJobOperation:
+                pass
+        archive_job.delete()
     except NoSuchJobError:
         pass
 
@@ -421,3 +443,14 @@ def media_post_delete(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=Entry)
 def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()
+
+
+@receiver(pre_save, sender=Entry)
+def entry_pre_save(sender, instance, update_fields, *args, **kwargs):
+    if instance.archive_id:
+        # Update the metadata in the archived asset
+        res = archive_entry(instance)
+        if res.get('Error'):
+            raise ValueError(res.get('Error'))
+    else:
+        pass

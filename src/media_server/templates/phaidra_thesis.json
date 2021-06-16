@@ -1,0 +1,7 @@
+{% load langmapper %}
+{% load  mandatory %}
+{% must_have "entry.title" entry.title %}
+{% must_have "entry.data.authors" entry.data.authors %}
+
+{% any_must_match entry.texts "texts.type.source=http://base.uni-ak.ac.at/portfolio/vocabulary/abstract;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/en;texts.data.language.source=http://base.uni-ak.ac.at/portfolio/languages/de" %}
+{% include 'phaidra_container.json' %}

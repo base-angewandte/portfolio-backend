@@ -32,6 +32,7 @@ env.read_env()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 PROJECT_NAME = '.'.join(__name__.split('.')[:-1])
 
 try:
@@ -193,6 +194,7 @@ ROOT_URLCONF = f'{PROJECT_NAME}.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -202,7 +204,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'debug': DEBUG,
-            'string_if_invalid': "[invalid variable '%s'!]" if DEBUG else '',
         },
     },
 ]
@@ -730,3 +731,24 @@ DOCS_URL = env('DOCS_URL', default='docs/')
 
 if not os.path.exists(DOCS_ROOT):
     os.makedirs(DOCS_ROOT)
+
+ARCHIVE_TYPE = env.str('ARCHIVE_TYPE', '')
+ARCHIVE_SETTINGS = None
+if ARCHIVE_TYPE:
+    ARCHIVE_CREDENTIALS = {
+        'USER': env.str(f'{ARCHIVE_TYPE}_USER'),
+        'PWD': env.str(f'{ARCHIVE_TYPE}_PWD'),
+    }
+    ARCHIVE_URIS = {
+        # end points created for media types with keys as mentioned in the media model
+        'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
+        'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI'),
+        'BASE_URI': env.str(f'{ARCHIVE_TYPE}_BASE_URI'),
+        'i': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_PICTURE_CREATE'),
+        'v': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_VIDEO_CREATE'),
+        'a': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_AUDIO_CREATE'),
+        'd': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_DOCUMENT_CREATE'),
+        'x': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_OBJECT_CREATE'),
+    }
+    ARCHIVE_METADATA_TEMPLATE = f'{ARCHIVE_TYPE.lower()}_container.json'
+    ARCHIVE_THESIS_TEMPLATE = f'{ARCHIVE_TYPE.lower()}_thesis.json'

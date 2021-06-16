@@ -37,6 +37,8 @@ class Entry(AbstractBaseModel):
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     objects = EntryManager()
+    archive_id = models.CharField(max_length=255, blank=True, null=True)
+    archive_URI = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         indexes = [
@@ -73,6 +75,24 @@ class Entry(AbstractBaseModel):
             data = self.data
             if schema and data:
                 return schema().year_display(data)
+
+    @property
+    def is_thesis(self):
+        """returns True if the source attribute of type matches one of the
+        thesis values False if no type attribute exists or contains any other
+        value."""
+        try:
+            return self.type.get('source') in (
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/bachelor_thesis',
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/diploma_thesis',
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation',
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
+            )
+        except AttributeError:
+            # Type attribute not set, ignore this error
+            pass
+
+        return False
 
     @property
     def data_display(self):

@@ -2,10 +2,12 @@ import logging
 import mimetypes
 from os.path import basename, join
 
+import django_rq
 import magic
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -16,6 +18,9 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
+from core.models import Entry
+
+from .archiver import STATUS_ARCHIVE_IN_PROGRESS, STATUS_ARCHIVED, STATUS_TO_BE_ARCHIVED, archive_entry, archive_media
 from .decorators import is_allowed
 from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
@@ -58,7 +63,7 @@ license_param = openapi.Parameter(
     description='media license json object',
     required=False,
     type=openapi.TYPE_STRING,
-    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}}
+    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}},
 )
 
 
@@ -230,3 +235,72 @@ class MediaViewSet(viewsets.GenericViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+
+
+@swagger_auto_schema(
+    methods=['get'],
+    operation_id='api_v1_archive_assets',
+    responses={
+        200: openapi.Response(''),
+        400: openapi.Response('Bad request'),
+        403: openapi.Response('Access not allowed'),
+    },
+)
+@api_view(['GET'])
+def archive_assets(request, media_pks, *args, **kwargs):
+    """# @entry_pk: entry pk
+
+    @media_pks: comma separated list of media pks
+    Expected all media pks from the same entry - owned by the user
+    """
+    # remove duplicate media ids from request
+    media_ids = [pk.strip() for pk in list(set(media_pks.split(',')))]
+    # check if all assets belong to the same entry
+    try:
+        media_objects = [Media.objects.get(id=pk) for pk in media_ids]
+    except Media.DoesNotExist:
+        return Response(
+            _('Media assets do not exist'),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    entry_pk = media_objects[0].entry_id
+    entry = Entry.objects.get(id=entry_pk)
+    if not all([entry_pk == m.entry_id for m in media_objects]):
+        return Response(
+            _('Media assets do not share the same metadata'),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if entry.owner != request.user:
+        return Response(
+            _('Current user is not the owner of this media object'),
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Archive the entry first, get the container pid
+    entry_res = archive_entry(entry)
+    if not entry_res.get('entry_pid'):
+        return Response(entry_res)
+
+    # archive the media objects asynchronously
+    queue = django_rq.get_queue('high')
+    for m in media_objects:
+        # Trigger saving in the background
+        if m.archive_status not in (STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS):
+            m.archive_status = STATUS_TO_BE_ARCHIVED
+            m.save()
+            queue.enqueue(
+                archive_media,
+                m,
+                job_id=m.get_archive_job_id(),
+                failure_ttl=settings.RQ_FAILURE_TTL,
+            )
+
+    return Response(
+        {
+            'entry': entry_pk,
+            'media_ids': media_ids,
+            'entry_pid': entry.archive_id,
+        }
+    )
