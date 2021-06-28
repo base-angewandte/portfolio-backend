@@ -9,8 +9,8 @@ class ExternalServerError(APIException):
 
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
 
-    @abstractmethod
     @property
+    @abstractmethod
     def external_service_name(self) -> str:
         """
         :return: The name of the external service
