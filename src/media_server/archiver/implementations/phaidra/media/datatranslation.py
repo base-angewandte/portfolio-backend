@@ -1,0 +1,54 @@
+from media_server.archiver.interface.datatranslation import (
+    AttributeCommand,
+    DictCommand,
+    ListCommand,
+    TranslationCommand,
+    Translator,
+)
+
+translator = Translator(
+    [
+        TranslationCommand(
+            getter_commands=[
+                AttributeCommand('mime_type'),
+            ],
+            setter_commands=[
+                DictCommand(access_key='metadata'),
+                DictCommand(access_key='json-ld'),
+                DictCommand(access_key='ebucore:hasMimeType'),
+                ListCommand(access_key=None),
+            ],
+            required=False,
+            required_in_reverse=False,
+        ),
+        TranslationCommand(
+            getter_commands=[
+                AttributeCommand('file'),
+                AttributeCommand('name'),
+            ],
+            setter_commands=[
+                DictCommand(access_key='metadata'),
+                DictCommand(access_key='json-ld'),
+                DictCommand(access_key='ebucore:filename'),
+                ListCommand(access_key=None),
+            ],
+            required=False,
+            required_in_reverse=False,
+        ),
+        TranslationCommand(
+            getter_commands=[
+                AttributeCommand('license'),
+                DictCommand('source'),
+                ListCommand(access_key=None, use_in_from_source_to_target=False),
+            ],
+            setter_commands=[
+                DictCommand(access_key='metadata'),
+                DictCommand(access_key='json-ld'),
+                DictCommand(access_key='edm:rights'),
+                ListCommand(access_key=None),
+            ],
+            required=False,
+            required_in_reverse=False,
+        ),
+    ]
+)
