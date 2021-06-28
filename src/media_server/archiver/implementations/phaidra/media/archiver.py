@@ -81,9 +81,11 @@ class MediaArchiver(AbstractArchiver):
         if self.media_object.archive_id:
             raise RuntimeWarning(f'Media <{self.media_object.id}> is already archived')
 
-        self.data = translator.translate(self.media_object)
+        data = translator.translate(self.media_object)
         schema = PhaidraMediaData()
-        errors = schema.load(self.data).errors
+        result = schema.load(data)
+        errors = result.errors
+        self.data = result.data
         self.throw_validation_errors(translator.translate(errors))
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
