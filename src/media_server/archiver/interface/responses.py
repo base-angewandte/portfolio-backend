@@ -17,12 +17,12 @@ class SuccessfulArchiveResponse(Response):
             {
                 'action': modification_type.value,
                 'object': object_description,
-                'servive': service,
+                'service': service,
                 'message': gettext('Successfully %(action) %(object) to %(service)')
                 % {
                     'action': modification_type.value,
                     'object': object_description,
-                    'servive': service,
+                    'service': service,
                 },
             }
         )
