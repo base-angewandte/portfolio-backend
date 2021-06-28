@@ -20,7 +20,9 @@ from django.views.static import serve
 
 from core.models import Entry
 
-from .archiver import STATUS_ARCHIVE_IN_PROGRESS, STATUS_ARCHIVED, STATUS_TO_BE_ARCHIVED, archive_entry, archive_media
+from .archiver import STATUS_ARCHIVED, archive_entry, archive_media
+from .archiver.choices import STATUS_ARCHIVE_IN_PROGRESS, STATUS_TO_BE_ARCHIVED
+from .archiver.controller.default import DefaultArchiveController
 from .decorators import is_allowed
 from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
@@ -254,6 +256,8 @@ def archive_assets(request, media_pks, *args, **kwargs):
     Expected all media pks from the same entry - owned by the user
     """
     # remove duplicate media ids from request
+    return DefaultArchiveController(request.user, {int(primary_key) for primary_key in media_pks.split(',')})
+
     media_ids = [pk.strip() for pk in list(set(media_pks.split(',')))]
     # check if all assets belong to the same entry
     try:

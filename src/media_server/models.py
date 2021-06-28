@@ -21,7 +21,8 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .archiver import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, archive_entry
+from .archiver import archive_entry
+from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
@@ -129,6 +130,9 @@ class Media(models.Model):
     archive_id = models.CharField(max_length=255, blank=True, null=True)
     archive_URI = models.CharField(max_length=255, blank=True, null=True)
     archive_status = models.IntegerField(choices=ARCHIVE_STATUS_CHOICES, default=STATUS_NOT_ARCHIVED)
+
+    objects = models.Manager()
+    """Explicitly add property, so IDE can find it"""
 
     class Meta:
         indexes = [
