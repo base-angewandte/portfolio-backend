@@ -9,21 +9,10 @@ from django.conf import settings
 from django.template import loader
 
 from core.models import Entry
+from media_server.archiver.choices import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED
 
 uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
-STATUS_NOT_ARCHIVED = 0
-STATUS_TO_BE_ARCHIVED = 1
-STATUS_ARCHIVE_IN_PROGRESS = 2
-STATUS_ARCHIVED = 3
-STATUS_ARCHIVE_ERROR = 4
-ARCHIVE_STATUS_CHOICES = (
-    (STATUS_NOT_ARCHIVED, 'not archived'),
-    (STATUS_TO_BE_ARCHIVED, 'to be archived'),
-    (STATUS_ARCHIVE_IN_PROGRESS, 'archival in progress'),
-    (STATUS_ARCHIVED, 'archived'),
-    (STATUS_ARCHIVE_ERROR, 'error'),
-)
 
 
 def archive_entry(entry):
