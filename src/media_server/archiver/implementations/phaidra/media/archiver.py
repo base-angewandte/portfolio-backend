@@ -7,11 +7,11 @@ from core.models import Entry
 from media_server.archiver import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED, credentials, uris
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.factory.archives import Archives
+from media_server.archiver.implementations.phaidra.exceptions import PhaidraServerError
 from media_server.archiver.implementations.phaidra.media.datatranslation import translator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
 from media_server.archiver.interface.abstractarchiver import AbstractArchiver
 from media_server.archiver.interface.archiveobject import ArchiveObject
-from media_server.archiver.interface.exceptions import ExternalServerError
 from media_server.archiver.interface.responses import ModificationType, SuccessfulArchiveResponse
 from media_server.models import Media
 
@@ -118,11 +118,11 @@ class MediaArchiver(AbstractArchiver):
         try:
             return media_push_response.json()['pid'].strip()
         except KeyError:
-            raise ExternalServerError(f'NO PID returned in response, {media_push_response.content}')
+            raise PhaidraServerError(f'NO PID returned in response, {media_push_response.content}')
 
     def _handle_external_server_response(self, response: requests.Response):
         if response.status_code != 200:
-            raise ExternalServerError(f'Response:\nStatus: {response.status_code}\nContent: {response.content}')
+            raise PhaidraServerError(f'Response:\nStatus: {response.status_code}\nContent: {response.content}')
 
     def _update_media(self, pid: str) -> None:
         self.media_object.archive_URI = uris.get('IDENTIFIER_BASE') + pid
