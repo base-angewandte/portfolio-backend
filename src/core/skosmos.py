@@ -227,7 +227,7 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
         except RequestException:
             pass
 
-    label = label or get_preflabel(concept, project, graph)
+    label = label or get_preflabel(concept, project, graph, language)
 
     if label:
         cache.set(cache_key, label, CACHE_TIME)
