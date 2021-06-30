@@ -1,9 +1,10 @@
-from typing import Any, Dict, Hashable, List, Optional
+from typing import Dict, Optional
 
+from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
 from media_server.models import Media
 
 
-class PhaidraMediaDataTranslator:
+class PhaidraMediaDataTranslator(AbstractDataTranslator):
     def translate_data(self, media: Media) -> dict:
         return {
             'metadata': {
@@ -16,9 +17,8 @@ class PhaidraMediaDataTranslator:
         }
 
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        super().translate_errors(errors)
         translated_errors = {}
-        if (errors is None) or len(errors) == 0:
-            return translated_errors
         try:
             translated_errors = self.set_nested(
                 ['media', 'mime_type'], errors['metadata']['json-ld']['ebucore:hasMimeType'], translated_errors
@@ -65,15 +65,3 @@ class PhaidraMediaDataTranslator:
             if media.license
             else []
         )
-
-    def set_nested(self, keys: List[Hashable], value: Any, target: Dict) -> Dict:
-        if len(keys) == 0:
-            return target
-        sub_target = target
-        last_key = keys.pop()
-        for key in keys:
-            if key not in sub_target:
-                sub_target[key] = {}
-            sub_target = sub_target[key]
-        sub_target[last_key] = value
-        return target
