@@ -91,9 +91,7 @@ subsections.
 
     ```bash
     pip install pip-tools
-    cd src
-    pip-sync requirements-dev.txt
-    cd ..
+    pip-sync src/requirements-dev.txt
     ```
 
 * Install pre-commit hooks:
