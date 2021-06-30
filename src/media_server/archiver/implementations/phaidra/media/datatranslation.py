@@ -1,54 +1,79 @@
-from media_server.archiver.interface.datatranslation import (
-    AttributeCommand,
-    DictCommand,
-    ListCommand,
-    TranslationCommand,
-    Translator,
-)
+from typing import Any, Dict, Hashable, List, Optional
 
-translator = Translator(
-    [
-        TranslationCommand(
-            getter_commands=[
-                AttributeCommand('mime_type'),
-            ],
-            setter_commands=[
-                DictCommand(access_key='metadata'),
-                DictCommand(access_key='json-ld'),
-                DictCommand(access_key='ebucore:hasMimeType'),
-                ListCommand(access_key=None),
-            ],
-            required=False,
-            required_in_reverse=False,
-        ),
-        TranslationCommand(
-            getter_commands=[
-                AttributeCommand('file'),
-                AttributeCommand('name'),
-            ],
-            setter_commands=[
-                DictCommand(access_key='metadata'),
-                DictCommand(access_key='json-ld'),
-                DictCommand(access_key='ebucore:filename'),
-                ListCommand(access_key=None),
-            ],
-            required=False,
-            required_in_reverse=False,
-        ),
-        TranslationCommand(
-            getter_commands=[
-                AttributeCommand('license'),
-                DictCommand('source'),
-                ListCommand(access_key=None, use_in_from_source_to_target=False),
-            ],
-            setter_commands=[
-                DictCommand(access_key='metadata'),
-                DictCommand(access_key='json-ld'),
-                DictCommand(access_key='edm:rights'),
-                ListCommand(access_key=None),
-            ],
-            required=False,
-            required_in_reverse=False,
-        ),
-    ]
-)
+from media_server.models import Media
+
+
+class PhaidraMediaDataTranslator:
+    def translate_data(self, media: Media) -> dict:
+        return {
+            'metadata': {
+                'json-ld': {
+                    'ebucore:hasMimeType': self._get_media_mime_types(media),
+                    'ebucore:filename': self._get_file_name(media),
+                    'edm:rights': self._get_licenses(media),
+                }
+            }
+        }
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        translated_errors = {}
+        if (errors is None) or len(errors) == 0:
+            return translated_errors
+        try:
+            translated_errors = self.set_nested(
+                ['media', 'mime_type'], errors['metadata']['json-ld']['ebucore:hasMimeType'], translated_errors
+            )
+        except KeyError:
+            pass
+        try:
+            translated_errors = self.set_nested(
+                ['media', 'file', 'name'], errors['metadata']['json-ld']['ebucore:filename'], translated_errors
+            )
+        except KeyError:
+            pass
+        try:
+            translated_errors = self.set_nested(
+                ['media', 'license', 'source'], errors['metadata']['json-ld']['edm:rights'], translated_errors
+            )
+        except KeyError:
+            pass
+        return translated_errors
+
+    def _get_media_mime_types(self, media: Media):
+        return (
+            [
+                media.mime_type,
+            ]
+            if media.mime_type
+            else []
+        )
+
+    def _get_file_name(self, media: Media):
+        return (
+            [
+                media.file.name,
+            ]
+            if media.file
+            else []
+        )
+
+    def _get_licenses(self, media: Media):
+        return (
+            [
+                media.license['source'],
+            ]
+            if media.license
+            else []
+        )
+
+    def set_nested(self, keys: List[Hashable], value: Any, target: Dict) -> Dict:
+        if len(keys) == 0:
+            return target
+        sub_target = target
+        last_key = keys.pop()
+        for key in keys:
+            if key not in sub_target:
+                sub_target[key] = {}
+            sub_target = sub_target[key]
+        sub_target[last_key] = value
+        return target

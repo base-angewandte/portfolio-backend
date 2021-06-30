@@ -1,14 +1,24 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
 
 class PhaidraJsonLD(Schema):
     ebucore_hasMimeType = fields.List(
-        fields.String(), required=True, load_from='ebucore:hasMimeType', dump_to='ebucore:hasMimeType'
+        fields.String(),
+        required=True,
+        load_from='ebucore:hasMimeType',
+        dump_to='ebucore:hasMimeType',
+        validate=validate.Length(min=1),
     )
     ebucore_filename = fields.List(
-        fields.String(), required=True, load_from='ebucore:filename', dump_to='ebucore:filename'
+        fields.String(),
+        required=True,
+        load_from='ebucore:filename',
+        dump_to='ebucore:filename',
+        validate=validate.Length(min=1),
     )
-    edm_Rights = fields.List(fields.String(), required=True, load_from='edm:rights', dump_to='edm:rights')
+    edm_rights = fields.List(
+        fields.String(), required=True, load_from='edm:rights', dump_to='edm:rights', validate=validate.Length(min=1)
+    )
 
 
 class PhaidraMetaData(Schema):

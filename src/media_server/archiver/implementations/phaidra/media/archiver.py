@@ -8,7 +8,7 @@ from media_server.archiver import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED, credent
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.factory.archives import Archives
 from media_server.archiver.implementations.phaidra.exceptions import PhaidraServerError
-from media_server.archiver.implementations.phaidra.media.datatranslation import translator
+from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
 from media_server.archiver.interface.abstractarchiver import AbstractArchiver
 from media_server.archiver.interface.archiveobject import ArchiveObject
@@ -80,13 +80,13 @@ class MediaArchiver(AbstractArchiver):
 
         if self.media_object.archive_id:
             raise RuntimeWarning(f'Media <{self.media_object.id}> is already archived')
-
-        data = translator.translate(self.media_object)
+        translator = PhaidraMediaDataTranslator()
+        data = translator.translate_data(self.media_object)
         schema = PhaidraMediaData()
         result = schema.load(data)
-        errors = result.errors
+        errors: dict = result.errors
         self.data = result.data
-        self.throw_validation_errors(translator.translate(errors))
+        self.throw_validation_errors(translator.translate_errors(errors))
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
         if not self.data:
