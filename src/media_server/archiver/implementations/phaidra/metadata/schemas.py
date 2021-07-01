@@ -1,8 +1,18 @@
 from marshmallow import Schema, fields, validate
 
 
-class DctermsSubject(Schema):
-    raise NotImplementedError()
+class SkosPrefLabel(Schema):
+    value = fields.String(required=True, load_from='@value', dump_to='@value')
+    language = fields.String(required=True, load_from='@language', dump_to='@language')
+
+
+class TypeLabel(Schema):
+    type = fields.Constant('skos:Concept', required=True, load_from='@type', dump_to='@type')
+    skos_prefLabel = fields.List(SkosPrefLabel(), required=True, load_from='skos:prefLabel', dump_to='skos:prefLabel')
+
+
+class TypeLabelMatchSchema(TypeLabel):
+    skos_exactMatch = fields.List(fields.String(), required=True, validate=validate.Length(equal=1))
 
 
 class TitleType(Schema):
@@ -18,16 +28,6 @@ class DceTitle(Schema):
     bf_subtitle = fields.Nested(TitleType, required=True, load_from='bf:subtitle', dump_to='bf:subtitle')
 
 
-class SkosPrefLabel(Schema):
-    value = fields.String(required=True, load_from='@value', dump_to='@value')
-    language = fields.String(required=True, load_from='@language', dump_to='@language')
-
-
-class EdmHasType(Schema):
-    type = fields.Constant('skos:Concept', dump_to='@type')
-    skos_prefLabel = fields.List(SkosPrefLabel(), load_from='skos:prefLabel', dump_to='skos:prefLabel')
-
-
 class PhaidraMetaData(Schema):
     dcterms_type = fields.Constant(
         [
@@ -41,7 +41,7 @@ class PhaidraMetaData(Schema):
         load_from='dcterms:type',
     )
 
-    edm_hasType = fields.List(EdmHasType(), load_from='edm:hasType', dump_to='edm:hasType', required=True)
+    edm_hasType = fields.List(TypeLabel(), load_from='edm:hasType', dump_to='edm:hasType', required=True)
 
     dce_title = fields.List(
         DceTitle(),
@@ -52,5 +52,11 @@ class PhaidraMetaData(Schema):
     )
 
     dcterms_subject = fields.List(
-        DctermsSubject(), required=True, load_from='dcterms:subject', dump_to='dcterms:subject'
+        TypeLabelMatchSchema(), required=True, load_from='dcterms:subject', dump_to='dcterms:subject'
     )
+
+    rdau_P60048 = fields.List(TypeLabelMatchSchema(), required=True, load_from='rdau:P60048', dump_to='rdau:P60048')
+
+    dce_format = fields.List(TypeLabelMatchSchema(), required=True, load_from='dce:format', dump_to='dce:format')
+
+    bf_note = fields.List(TypeLabelMatchSchema(), required=True, load_from='bf:note', dump_to='bf:note')
