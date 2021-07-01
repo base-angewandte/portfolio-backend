@@ -1,8 +1,37 @@
 from marshmallow import Schema, fields, validate
 
+value_field = fields.String(required=True, load_from='@value', dump_to='@value')
+
+
+class ValueType(Schema):
+    value = value_field
+    type = fields.Constant('ids:uri', required=True, load_from='@type', dump_to='@type')
+
+
+class SchemaName(Schema):
+    value = value_field
+
+
+class Person(Schema):
+    type = fields.Constant('ids:uri', required=True, load_from='@type', dump_to='@type')
+    skos_exactMatch = fields.List(
+        ValueType(),
+        required=True,
+        dump_to='skos:exactMatch',
+        load_from='skos:exactMatch',
+        validate=validate.Length(equal=1),
+    )
+    schemaName = fields.List(
+        SchemaName(),
+        required=True,
+        load_from='schema:name',
+        dump_to='schema:name',
+        validate=validate.Length(equal=1),
+    )
+
 
 class SkosPrefLabel(Schema):
-    value = fields.String(required=True, load_from='@value', dump_to='@value')
+    value = value_field
     language = fields.String(required=True, load_from='@language', dump_to='@language')
 
 
@@ -60,3 +89,9 @@ class PhaidraMetaData(Schema):
     dce_format = fields.List(TypeLabelMatchSchema(), required=True, load_from='dce:format', dump_to='dce:format')
 
     bf_note = fields.List(TypeLabelMatchSchema(), required=True, load_from='bf:note', dump_to='bf:note')
+
+    role_edt = fields.List(Person(), required=True, load_from='role:edt', dump_to='role:edt')
+
+    role_aut = fields.List(Person(), required=True, load_from='role:aut', dump_to='role:aut')
+
+    role_pbl = fields.List(Person(), required=True, load_from='role:pbl', dump_to='role:pbl')

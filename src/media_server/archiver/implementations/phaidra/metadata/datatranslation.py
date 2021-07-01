@@ -26,6 +26,9 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 ],
             ),
             'bf:note': self.get_get_bf_note(model),
+            'role:edt': self.get_role_by(model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'),
+            'role:aut': self.get_role_by(model, 'authors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'),
+            'role:pbl': self.get_role_by(model, 'role:pbl', 'http://base.uni-ak.ac.at/portfolio/vocabulary/publisher'),
         }
 
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
@@ -145,3 +148,46 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             for text_datum in text_data
             if ('text' in text_datum) and ('language' in text_datum) and ('source' in text_datum['language'])
         ]
+
+    def get_role_by(self, model: 'Entry', main_level: str, role_uri: str) -> List:
+        has_main_level_persons = main_level in model.data
+        has_contributors = 'contributors' in model.data
+        if not has_main_level_persons and not has_contributors:
+            return []
+
+        all_persons = []
+
+        if has_main_level_persons:
+            for person in model.data[main_level]:
+                if ('source' in person) and ('label' in person):
+                    all_persons.append(
+                        {
+                            'skos:exactMatch': [{'@value': person['source'], '@type': 'ids:uri'}],
+                            'schema:name': [
+                                {
+                                    '@value': person['label'],
+                                }
+                            ],
+                            '@type': 'schema:Person',
+                        }
+                    )
+
+        if has_contributors:
+            contributors = model.data['contributors']
+            for contributor in contributors:
+                if 'roles' in contributor:
+                    for role in contributor['roles']:
+                        if ('source' in role) and (role['source'] == role_uri):
+                            all_persons.append(
+                                {
+                                    'skos:exactMatch': [{'@value': role['source'], '@type': 'ids:uri'}],
+                                    'schema:name': [
+                                        {
+                                            '@value': contributor['label'],
+                                        }
+                                    ],
+                                    '@type': 'schema:Person',
+                                }
+                            )
+
+        return all_persons
