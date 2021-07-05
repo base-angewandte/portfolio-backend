@@ -1,13 +1,25 @@
+from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     from media_server.models import Entry
+    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+        BidirectionalConceptsMapper,
+    )
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
-    def translate_data(self, model: 'Entry') -> dict:
+    def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
+        data_with_static_structure = self._get_data_with_static_structure(model)
+        data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
+        return self._merge(data_with_static_structure, data_with_dynamic_structure)
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        raise NotImplementedError()
+
+    def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
         return {
             'dcterms:type': self._get_dcterms_type(),
             'edm:hasType': self._get_edm_hasType(model),
@@ -32,9 +44,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 model, 'role:pbl', 'http://base.uni-ak.ac.at/portfolio/vocabulary/publisher'
             ),
         }
-
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        raise NotImplementedError()
 
     def _get_dcterms_type(self) -> List:
         return [
@@ -193,3 +202,37 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                             )
 
         return all_persons
+
+    def _get_data_with_dynamic_structure(
+        self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
+    ):
+        data_with_dynamic_structure = defaultdict(list)
+        if 'contributors' not in model.data:
+            return data_with_dynamic_structure
+        contributors: List[Dict] = model.data['contributors']
+        for contributor in contributors:
+            if ('roles' not in contributor) or ('source' not in contributor) or ('label' not in contributor):
+                continue
+            for role in contributor['roles']:
+                if 'source' not in role:
+                    continue
+                phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
+                for phaidra_role in phaidra_roles:
+                    data_with_dynamic_structure[phaidra_role].append(
+                        {
+                            'skos:exactMatch': [{'@value': contributor['source'], '@type': 'ids:uri'}],
+                            'schema:name': [{'@value': contributor['label']}],
+                            '@type': 'schema:Person',
+                        },
+                    )
+            return data_with_dynamic_structure
+
+    def _merge(self, data_with_static_structure: dict, data_with_dynamic_structure: dict):
+        for key, value in data_with_dynamic_structure.items():
+            if key not in data_with_static_structure:
+                data_with_static_structure[key] = value
+            elif data_with_static_structure[key].__class__ is list and value.__class__ is list:
+                data_with_static_structure[key] += value
+            else:
+                pass  # All we do right now
+        return data_with_static_structure
