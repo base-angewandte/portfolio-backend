@@ -39,7 +39,7 @@ def protected_view(request, path, server):
             response['Content-Encoding'] = encoding
 
         if as_download:
-            response['Content-Disposition'] = 'attachment; filename={}'.format(basename(path))
+            response['Content-Disposition'] = f'attachment; filename={basename(path)}'
 
         response['X-Accel-Redirect'] = join(settings.PROTECTED_MEDIA_LOCATION, path).encode('utf8')
         return response
@@ -58,7 +58,7 @@ license_param = openapi.Parameter(
     description='media license json object',
     required=False,
     type=openapi.TYPE_STRING,
-    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}}
+    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}},
 )
 
 

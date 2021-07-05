@@ -110,7 +110,7 @@ logger = logging.getLogger(__name__)
 
 
 def user_directory_path(instance, filename):
-    return '{}/{}'.format(user_hash(instance.owner.username), filename)
+    return f'{user_hash(instance.owner.username)}/{filename}'
 
 
 class Media(models.Model):
@@ -171,7 +171,7 @@ class Media(models.Model):
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
+            logger.exception(f'Error while converting {dict(TYPE_CHOICES).get(self.type)}')
             self.status = STATUS_ERROR
             self.save()
 
