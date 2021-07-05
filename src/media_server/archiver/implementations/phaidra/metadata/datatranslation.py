@@ -1,6 +1,8 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
+
 if TYPE_CHECKING:
     from media_server.models import Entry
     from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
@@ -218,7 +220,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                     continue
                 phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
                 for phaidra_role in phaidra_roles:
-                    data_with_dynamic_structure[phaidra_role].append(
+                    data_with_dynamic_structure[get_phaidra_role_code(phaidra_role)].append(
                         {
                             'skos:exactMatch': [{'@value': contributor['source'], '@type': 'ids:uri'}],
                             'schema:name': [{'@value': contributor['label']}],

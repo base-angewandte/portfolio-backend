@@ -69,3 +69,8 @@ class BidirectionalConceptsMapper:
             if 'source' in role
         }
         return cls.from_base_uris(roles)
+
+
+def get_phaidra_role_code(role_uri):
+    """Returns the role "key" as used in Phaidra-JSON LD."""
+    return f'role:{role_uri.split("/")[-1]}'
