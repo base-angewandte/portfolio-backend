@@ -89,7 +89,7 @@ class MediaArchiver(AbstractArchiver):
         self.throw_validation_errors(translator.translate_errors(errors))
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
-        if not self.data:
+        if self.data is None:
             self.validate()
         media_push_response = self._push_to_archive()
         pid = self._handle_media_push_response(media_push_response)
