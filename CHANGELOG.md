@@ -2,6 +2,10 @@
 
 ## unreleased
 
+### Changed
+- Pull docker images before build
+- Updated pre-commit and hooks
+
 ### Fixed
 - Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
 
