@@ -37,7 +37,7 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==21.1.1
+RUN pip install --upgrade pip==21.1.3
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
