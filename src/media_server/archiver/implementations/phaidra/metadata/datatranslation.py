@@ -13,6 +13,25 @@ from media_server.archiver.implementations.phaidra.abstracts.datatranslation imp
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
+    """This module translates data from Entry(.data) to phaidra metadata format
+    and from the error messages of the validation process back to Entry(.data).
+    See .schemas.
+
+    Data and error translation is done in one class, because they are very similar in key/data structure. However this
+    class is quite big: It could and should me split into more classes, which also would ease creation of endpoints for
+    just parts of the data structure.
+
+    Also a lot of the abstract workflow is quite repetitive. An abstraction of the workflow into simple imperative
+    statements, that just describe the data structure would be advisable. At the current timeline of the project
+    this seems to make too much overhead.
+
+    The following approach was taken to "structure": The target structure is split into smaller (nested) components.
+    Each of this components is filled by a method. The ones that take data from source and translate it to the target
+    are prefixed _get_data_from_<component>. The ones that take error messages from the validation process and
+    translate them back into the source data model, are prefixed _get_errors_from_<component>. These methods are
+    ordered pairwise.
+    """
+
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
         data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
@@ -23,31 +42,35 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
         return {
-            'dcterms:type': self._get_dcterms_type(),
-            'edm:hasType': self._get_edm_hasType(model),
-            'dce:title': self.get_dc_title(model),
-            'dcterms:subject': self._get_dcterms_subject(model),
-            'rdau:P60048': self._get_type_match_label_list(
+            'dcterms:type': self._get_data_from_dcterms_type(),
+            'edm:hasType': self._get_data_from_edm_hasType(model),
+            'dce:title': self._get_data_from_dc_title(model),
+            'dcterms:subject': self._get_data_from_from_dcterms_subject(model),
+            'rdau:P60048': self._get_data_from_type_match_label_list(
                 model,
                 [
                     'material',
                 ],
             ),
-            'dce:format': self._get_type_match_label_list(
+            'dce:format': self._get_data_from_type_match_label_list(
                 model,
                 [
                     'format',
                 ],
             ),
-            'bf:note': self._get_get_bf_note(model),
-            'role:edt': self._get_role_by(model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'),
-            'role:aut': self._get_role_by(model, 'authors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'),
-            'role:pbl': self._get_role_by(
+            'bf:note': self._get_data_from_bf_note(model),
+            'role:edt': self._get_data_from_role_by(
+                model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
+            ),
+            'role:aut': self._get_data_from_role_by(
+                model, 'authors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+            ),
+            'role:pbl': self._get_data_from_role_by(
                 model, 'role:pbl', 'http://base.uni-ak.ac.at/portfolio/vocabulary/publisher'
             ),
         }
 
-    def _get_dcterms_type(self) -> List:
+    def _get_data_from_dcterms_type(self) -> List:
         return [
             {
                 '@type': 'skos:Concept',
@@ -56,23 +79,23 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             }
         ]
 
-    def _get_edm_hasType(self, model: 'Entry') -> List:
+    def _get_data_from_edm_hasType(self, model: 'Entry') -> List:
         return [
             {
                 '@type': 'skos:Concept',
-                'skos:prefLabel': self._get_skos_prefLabel_from_entry(model),
-                'skos:exactMatch': self._get_skos_exactMatch(model),
+                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_entry(model),
+                'skos:exactMatch': self._get_data_from_skos_exactMatch(model),
             }
         ]
 
-    def _get_skos_prefLabel_from_entry(self, model: 'Entry') -> List:
+    def _get_data_from_skos_prefLabel_from_entry(self, model: 'Entry') -> List:
         try:
             items: Dict = model.type['label']['items']
         except KeyError:
             return []
         return [{'@value': label, '@language': language} for language, label in items.items()]
 
-    def _get_skos_exactMatch(self, model: 'Entry') -> List:
+    def _get_data_from_skos_exactMatch(self, model: 'Entry') -> List:
         try:
             return [
                 model.type['source'],
@@ -80,7 +103,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         except KeyError:
             return []
 
-    def get_dc_title(self, model: 'Entry') -> List:
+    def _get_data_from_dc_title(self, model: 'Entry') -> List:
         return [
             {
                 '@type': 'bf:Title',
@@ -95,17 +118,17 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             }
         ]
 
-    def _get_dcterms_subject(self, model: 'Entry') -> List:
+    def _get_data_from_from_dcterms_subject(self, model: 'Entry') -> List:
         return [
             {
                 '@type': 'skos:Concept',
                 'skos:exactMatch': [keyword['source']] if 'source' in keyword else [],
-                'skos:prefLabel': self._get_skos_prefLabel_from_label_items_dict(keyword),
+                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_label_items_dict(keyword),
             }
             for keyword in model.keywords
         ]
 
-    def _get_skos_prefLabel_from_label_items_dict(self, container: Dict) -> List:
+    def _get_data_from_skos_prefLabel_from_label_items_dict(self, container: Dict) -> List:
         try:
             labels: Dict = container['label']['items']
             return [
@@ -118,7 +141,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         except KeyError:
             return []
 
-    def _get_type_match_label_list(self, model: 'Entry', data_keys: List[str]) -> List:
+    def _get_data_from_type_match_label_list(self, model: 'Entry', data_keys: List[str]) -> List:
         try:
             items = model.data
             for data_key in data_keys:
@@ -130,12 +153,12 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             {
                 '@type': 'skos:Concept',
                 'skos:exactMatch': [item['source']] if 'source' in item else [],
-                'skos:prefLabel': self._get_skos_prefLabel_from_label_items_dict(item),
+                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_label_items_dict(item),
             }
             for item in items
         ]
 
-    def _get_get_bf_note(self, model: 'Entry') -> List:
+    def _get_data_from_bf_note(self, model: 'Entry') -> List:
         abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
         text: Dict
         texts = [
@@ -146,12 +169,12 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         return [
             {
                 '@type': 'bf:Summary' if 'type' in text else 'bf:Note',
-                'skos:prefLabel': self._get_skos_prefLabel_from_text(text),
+                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_text_type(text),
             }
             for text in texts
         ]
 
-    def _get_skos_prefLabel_from_text(self, text: Dict) -> List:
+    def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
         try:
             text_data = text['data']
         except KeyError:
@@ -162,7 +185,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             if ('text' in text_datum) and ('language' in text_datum) and ('source' in text_datum['language'])
         ]
 
-    def _get_role_by(self, model: 'Entry', main_level: str, role_uri: str) -> List:
+    def _get_data_from_role_by(self, model: 'Entry', main_level: str, role_uri: str) -> List:
         has_main_level_persons = main_level in model.data
         has_contributors = 'contributors' in model.data
         if not has_main_level_persons and not has_contributors:
