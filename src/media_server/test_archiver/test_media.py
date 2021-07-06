@@ -114,7 +114,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
     def test_missing_data_validation_missing_license_source(self):
         media = self.get_media_object(has_license=False)
         phaidra_data = self.phaidra_media_data_translator.translate_data(media)
-        print(phaidra_data)
         phaidra_errors = self.phaidra_media_data_validator.validate(phaidra_data)
         self.assertEqual(
             phaidra_errors,
