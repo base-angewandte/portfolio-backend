@@ -1,3 +1,6 @@
+"""Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
+st_media_metadata.py Checkout
+src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -10,6 +13,45 @@ if TYPE_CHECKING:
     )
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
+
+
+def _create_value_object(value: str) -> Dict[str, str]:
+    return {'@value': value}
+
+
+def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
+    return {**_create_value_object(value), '@language': language}
+
+
+def _create_type_object(type_: str) -> Dict[str, str]:
+    return {'@type': type_}
+
+
+class DCTitleTranslator(AbstractDataTranslator):
+    def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+        title_container = _create_type_object('bf:Title')
+        if model.title:
+            title_container['bf:mainTitle'] = [
+                _create_value_language_object(model.title, 'und'),
+            ]
+        if model.subtitle:
+            title_container['bf:subtitle'] = [
+                _create_value_language_object(model.subtitle, 'und'),
+            ]
+        return [title_container]
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        translated_errors = {}
+        try:
+            translated_errors['title'] = errors['bf:mainTitle'][0]['@value']
+        except KeyError:
+            pass
+        try:
+            translated_errors['subtitle'] = errors['bf:subtitle'][0]['@value']
+        except KeyError:
+            pass
+
+        return translated_errors
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
@@ -27,10 +69,15 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     The following approach was taken to "structure": The target structure is split into smaller (nested) components.
     Each of this components is filled by a method. The ones that take data from source and translate it to the target
-    are prefixed _get_data_from_<component>. The ones that take error messages from the validation process and
+    are prefixed _get_data_for_<component>. The ones that take error messages from the validation process and
     translate them back into the source data model, are prefixed _get_errors_from_<component>. These methods are
     ordered pairwise.
     """
+
+    dc_title_translator: DCTitleTranslator
+
+    def __init__(self):
+        self.dc_title_translator = DCTitleTranslator()
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -44,7 +91,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         return {
             'dcterms:type': self._get_data_from_dcterms_type(),
             'edm:hasType': self._get_data_from_edm_hasType(model),
-            'dce:title': self._get_data_from_dc_title(model),
+            'dce:title': self.dc_title_translator.translate_data(model),
             'dcterms:subject': self._get_data_from_from_dcterms_subject(model),
             'rdau:P60048': self._get_data_from_type_match_label_list(
                 model,
@@ -102,21 +149,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             ]
         except KeyError:
             return []
-
-    def _get_data_from_dc_title(self, model: 'Entry') -> List:
-        return [
-            {
-                '@type': 'bf:Title',
-                'bf:mainTitle': {
-                    '@value': model.title,
-                    '@language': 'und',
-                },
-                'bf:subtitle': {
-                    '@value': model.subtitle,
-                    '@language': 'und',
-                },
-            }
-        ]
 
     def _get_data_from_from_dcterms_subject(self, model: 'Entry') -> List:
         return [
