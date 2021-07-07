@@ -104,7 +104,9 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
         try:
             type_labels: Dict = model.type['label']
         except KeyError:
-            return []
+            raise RuntimeError(f"Expected model.type['label'], but type only contains {model.type.keys()}")
+        except TypeError:
+            raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
         return [
             _create_value_language_object(language=language, value=label) for language, label in type_labels.items()
         ]
@@ -115,7 +117,9 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
                 model.type['source'],
             ]
         except KeyError:
-            return []
+            raise RuntimeError(f"Expected model.type['source'], but type only contains {model.type.keys()}")
+        except TypeError:
+            raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):

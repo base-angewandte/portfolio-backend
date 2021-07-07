@@ -146,7 +146,7 @@ class EdmHastypeTestCase(TestCase):
 
     _entry: Optional['Entry'] = None
 
-    _example_type_data = {
+    example_type_data = {
         'label': {'de': 'Artikel', 'en': 'article'},
         'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
     }
@@ -180,7 +180,7 @@ class EdmHastypeTestCase(TestCase):
             self._entry = Entry(
                 title='Panda Shampoo Usage In Northern Iraq',
                 owner=User.objects.create_user(username='Quatschenstein', email='port@folio.ac.at'),
-                type=self._example_type_data,
+                type=self.example_type_data,
             )
             self._entry.clean_fields()
             self._entry.save()
@@ -228,3 +228,19 @@ class EdmHastypeTestCase(TestCase):
                 {},
             ],
         )
+
+    def test_faulty_input_data_label(self):
+        data = deepcopy(self.example_type_data)
+        del data['label']
+        entry = Entry(type=data)
+        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+
+    def test_faulty_input_data_source(self):
+        data = deepcopy(self.example_type_data)
+        del data['source']
+        entry = Entry(type=data)
+        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+
+    def test_empty_input_data(self):
+        entry = Entry()
+        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
