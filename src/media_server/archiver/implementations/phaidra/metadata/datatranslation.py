@@ -37,6 +37,11 @@ def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
     return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
 
 
+def _get_data_from_skos_prefLabel_from_label_items_dict(container: Dict) -> List:
+    labels: Dict = container['label']
+    return [_create_value_language_object(label, language) for language, label in labels.items()]
+
+
 class DCTitleTranslator(AbstractDataTranslator):
     """A list of titles, where in our database is only one."""
 
@@ -122,6 +127,39 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
             raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
 
 
+class DcTermsSubjectTranslator(AbstractDataTranslator):
+    def translate_data(self, model: 'Entry') -> List:
+        """
+                :param model: eg model.keywords = [
+            {
+                "label": {
+                    "de": "Airbrush",
+                    "en": "Airbrushing"
+                },
+                "source": "http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e"
+            }
+        ]
+                :return:
+        """
+        try:
+            return [
+                {
+                    **_create_type_object('skos:Concept'),
+                    'skos:exactMatch': [keyword['source']],
+                    'skos:prefLabel': [
+                        _create_value_language_object(label, language) for language, label in keyword['label'].items()
+                    ],
+                }
+                for keyword in model.keywords
+            ]
+        except (KeyError, TypeError, AttributeError) as error:
+            raise RuntimeError(f'{error} with entry {model}')
+
+    def translate_errors(self, errors: List[Dict]) -> List[Dict]:
+        """None of these errors are user related."""
+        return [{} for error in errors]
+
+
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -147,6 +185,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     def __init__(self):
         self.dc_title_translator = DCTitleTranslator()
         self.edm_has_type_translator = EdmHasTypeTranslator()
+        self.dcterms_subject_translator = DcTermsSubjectTranslator()
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -161,7 +200,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             'dcterms:type': self._get_data_from_dcterms_type(),
             'edm:hasType': self.edm_has_type_translator.translate_data(model),
             'dce:title': self.dc_title_translator.translate_data(model),
-            'dcterms:subject': self._get_data_from_from_dcterms_subject(model),
+            'dcterms:subject': self.dcterms_subject_translator.translate_data(model),
             'rdau:P60048': self._get_data_from_type_match_label_list(
                 model,
                 [
@@ -195,29 +234,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             }
         ]
 
-    def _get_data_from_from_dcterms_subject(self, model: 'Entry') -> List:
-        return [
-            {
-                '@type': 'skos:Concept',
-                'skos:exactMatch': [keyword['source']] if 'source' in keyword else [],
-                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_label_items_dict(keyword),
-            }
-            for keyword in model.keywords
-        ]
-
-    def _get_data_from_skos_prefLabel_from_label_items_dict(self, container: Dict) -> List:
-        try:
-            labels: Dict = container['label']['items']
-            return [
-                {
-                    '@value': label,
-                    '@language': language,
-                }
-                for language, label in labels.items()
-            ]
-        except KeyError:
-            return []
-
     def _get_data_from_type_match_label_list(self, model: 'Entry', data_keys: List[str]) -> List:
         try:
             items = model.data
@@ -230,7 +246,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             {
                 '@type': 'skos:Concept',
                 'skos:exactMatch': [item['source']] if 'source' in item else [],
-                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_label_items_dict(item),
+                'skos:prefLabel': _get_data_from_skos_prefLabel_from_label_items_dict(item),
             }
             for item in items
         ]

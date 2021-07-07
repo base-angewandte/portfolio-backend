@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from core.models import Entry
 from media_server.archiver.implementations.phaidra.metadata.datatranslation import (
+    DcTermsSubjectTranslator,
     DCTitleTranslator,
     EdmHasTypeTranslator,
 )
@@ -244,3 +245,84 @@ class EdmHastypeTestCase(TestCase):
     def test_empty_input_data(self):
         entry = Entry()
         self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+
+
+class DcTermsSubjectTestCase(TestCase):
+    example_input_keywords = [
+        {
+            'label': {'de': 'Airbrush', 'en': 'Airbrushing'},
+            'source': 'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+        }
+    ]
+
+    expected_translated_data = [
+        {
+            '@type': 'skos:Concept',
+            'skos:exactMatch': ['http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e'],
+            'skos:prefLabel': [
+                {'@value': 'Airbrush', '@language': 'deu'},
+                {'@value': 'Airbrushing', '@language': 'eng'},
+            ],
+        }
+    ]
+
+    def test_translate_data(self):
+        entry = Entry(keywords=self.example_input_keywords)
+        self.assertEqual(DcTermsSubjectTranslator().translate_data(entry), self.expected_translated_data)
+
+    def test_validate_data(self):
+        schema = TypeLabelMatchSchema()
+        validation = [schema.validate(datum) for datum in self.expected_translated_data]
+        self.assertEqual(
+            validation,
+            [
+                {},
+            ],
+        )
+
+    def test_validate_faulty_data(self):
+        translated_data = deepcopy(self.expected_translated_data)
+        translated_datum = translated_data[0]
+        del translated_datum['skos:prefLabel']
+        schema = TypeLabelMatchSchema()
+        validation = schema.validate(translated_datum)
+        self.assertEqual(
+            validation,
+            {
+                'skos:prefLabel': {
+                    0: {
+                        '@language': ['Missing data for required field.'],
+                        '@value': ['Missing data for required field.'],
+                    }
+                },
+            },
+        )
+
+    def test_translate_errors(self):
+        phaidra_errors = [
+            {
+                'skos:prefLabel': {
+                    0: {
+                        '@language': ['Missing data for required field.'],
+                        '@value': ['Missing data for required field.'],
+                    }
+                },
+            }
+        ]
+        portfolio_errors = DcTermsSubjectTranslator().translate_errors(phaidra_errors)
+        self.assertEqual(
+            portfolio_errors,
+            [
+                {},
+            ],
+        )
+
+    def test_faulty_input_data(self):
+        data = deepcopy(self.example_input_keywords)
+        del data[0]['source']
+        entry = Entry(keywords=data)
+        self.assertRaises(RuntimeError, lambda: DcTermsSubjectTranslator().translate_data(entry))
+
+    def test_empty_input_data(self):
+        entry = Entry()
+        self.assertRaises(RuntimeError, lambda: DcTermsSubjectTranslator().translate_data(entry))

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
 
 if TYPE_CHECKING:
     from django.db.models import Model
@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 class AbstractDataTranslator(ABC):
     @abstractmethod
-    def translate_data(self, model: 'Model') -> dict:
+    def translate_data(self, model: 'Model') -> Union[Dict, List]:
         pass
 
     @abstractmethod
