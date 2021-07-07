@@ -18,48 +18,53 @@ value_field = fields.String(required=True, load_from='@value', dump_to='@value')
 
 class ValueTypeBaseSchema(Schema):
     value = value_field
-    type = fields.Constant('ids:uri', required=True, load_from='@type', dump_to='@type')
+    type = fields.Constant('ids:uri', load_from='@type', dump_to='@type')
+
+
+class ValueLanguageBaseSchema(Schema):
+    value = value_field
+    language = fields.String(required=True, load_from='@language', dump_to='@language')
+
+
+class TypeLabelMatchSchema(Schema):
+    type = fields.Constant('skos:Concept', load_from='@type', dump_to='@type')
+    skos_prefLabel = fields.Nested(
+        ValueLanguageBaseSchema, required=True, many=True, load_from='skos:prefLabel', dump_to='skos:prefLabel'
+    )
+    skos_exactMatch = fields.List(
+        fields.String(),
+        validate=validate.Length(equal=1),
+        required=True,
+        load_from='skos:exactMatch',
+        dump_to='skos:exactMatch',
+    )
 
 
 class Person(Schema):
-    type = fields.Constant('ids:uri', required=True, load_from='@type', dump_to='@type')
+    type = fields.Constant('ids:uri', load_from='@type', dump_to='@type')
     skos_exactMatch = fields.Nested(
         ValueTypeBaseSchema(),
         many=True,
-        required=True,
         dump_to='skos:exactMatch',
         load_from='skos:exactMatch',
         validate=validate.Length(equal=1),
     )
     schema_Name = fields.List(
         value_field,
-        required=True,
         load_from='schema:name',
         dump_to='schema:name',
         validate=validate.Length(equal=1),
     )
 
 
-class ValueLanguageBaseSchema(Schema):
-    value = value_field
-    language = fields.Constant('und', required=True, load_from='@language', dump_to='@language')
-
-
-class TypeLabel(Schema):
-    type = fields.Constant('skos:Concept', required=True, load_from='@type', dump_to='@type')
-    skos_prefLabel = fields.Nested(
-        ValueLanguageBaseSchema, many=True, required=True, load_from='skos:prefLabel', dump_to='skos:prefLabel'
-    )
-
-
-class TypeLabelMatchSchema(TypeLabel):
-    skos_exactMatch = fields.List(fields.String(), required=True, validate=validate.Length(equal=1))
-
-
 class DceTitleSchema(Schema):
     type = fields.Constant('bf:Title', required=True, load_from='@type', dump_to='@type')
     bf_mainTitle = fields.Nested(
-        ValueLanguageBaseSchema, required=True, load_from='bf:mainTitle', dump_to='bf:mainTitle', many=True
+        ValueLanguageBaseSchema,
+        required=True,
+        load_from='bf:mainTitle',
+        dump_to='bf:mainTitle',
+        many=True,
     )
     bf_subtitle = fields.Nested(ValueLanguageBaseSchema, load_from='bf:subtitle', dump_to='bf:subtitle', many=True)
 
@@ -77,36 +82,37 @@ class _PhaidraMetaData(Schema):
         load_from='dcterms:type',
     )
 
-    edm_hasType = fields.Nested(TypeLabel, many=True, load_from='edm:hasType', dump_to='edm:hasType', required=True)
+    edm_hasType = fields.Nested(
+        TypeLabelMatchSchema,
+        many=True,
+        load_from='edm:hasType',
+        dump_to='edm:hasType',
+    )
 
     dce_title = fields.Nested(
         DceTitleSchema,
-        many=True,
         required=True,
+        many=True,
         validate=validate.Length(equal=1),
         load_from='dce:title',
         dump_to='dce:title',
     )
 
     dcterms_subject = fields.Nested(
-        TypeLabelMatchSchema, many=True, required=True, load_from='dcterms:subject', dump_to='dcterms:subject'
+        TypeLabelMatchSchema, many=True, load_from='dcterms:subject', dump_to='dcterms:subject'
     )
 
-    rdau_P60048 = fields.Nested(
-        TypeLabelMatchSchema, many=True, required=True, load_from='rdau:P60048', dump_to='rdau:P60048'
-    )
+    rdau_P60048 = fields.Nested(TypeLabelMatchSchema, many=True, load_from='rdau:P60048', dump_to='rdau:P60048')
 
-    dce_format = fields.Nested(
-        TypeLabelMatchSchema, many=True, required=True, load_from='dce:format', dump_to='dce:format'
-    )
+    dce_format = fields.Nested(TypeLabelMatchSchema, many=True, load_from='dce:format', dump_to='dce:format')
 
-    bf_note = fields.Nested(TypeLabelMatchSchema, many=True, required=True, load_from='bf:note', dump_to='bf:note')
+    bf_note = fields.Nested(TypeLabelMatchSchema, many=True, load_from='bf:note', dump_to='bf:note')
 
-    role_edt = fields.Nested(Person, many=True, required=True, load_from='role:edt', dump_to='role:edt')
+    role_edt = fields.Nested(Person, many=True, load_from='role:edt', dump_to='role:edt')
 
-    role_aut = fields.Nested(Person, many=True, required=True, load_from='role:aut', dump_to='role:aut')
+    role_aut = fields.Nested(Person, many=True, load_from='role:aut', dump_to='role:aut')
 
-    role_pbl = fields.Nested(Person, many=True, required=True, load_from='role:pbl', dump_to='role:pbl')
+    role_pbl = fields.Nested(Person, many=True, load_from='role:pbl', dump_to='role:pbl')
 
 
 def _str_to_attribute(string: str) -> str:

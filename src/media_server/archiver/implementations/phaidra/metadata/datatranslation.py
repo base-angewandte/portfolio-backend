@@ -15,19 +15,31 @@ if TYPE_CHECKING:
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
 
 
-def _create_value_object(value: str) -> Dict[str, str]:
-    return {'@value': value}
-
-
-def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
-    return {**_create_value_object(value), '@language': language}
+def _convert_two_to_three_letter_language_code(language_code: str) -> str:
+    """To do :-) ?!"""
+    if len(language_code) == 3:
+        return language_code
+    return {
+        'en': 'eng',
+        'de': 'deu',
+    }[language_code]
 
 
 def _create_type_object(type_: str) -> Dict[str, str]:
     return {'@type': type_}
 
 
+def _create_value_object(value: str) -> Dict[str, str]:
+    return {'@value': value}
+
+
+def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
+    return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
+
+
 class DCTitleTranslator(AbstractDataTranslator):
+    """A list of titles, where in our database is only one."""
+
     def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
         title_container = _create_type_object('bf:Title')
         if model.title:
@@ -40,8 +52,13 @@ class DCTitleTranslator(AbstractDataTranslator):
             ]
         return [title_container]
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+    def translate_errors(self, errors: List[Dict]) -> Dict:
         translated_errors = {}
+        if errors.__len__() == 0:
+            return translated_errors
+        if errors.__len__() != 1:
+            raise RuntimeError(f'Title array is defined as length 1, not {errors.__len__()}')
+        errors = errors.pop()
         try:
             translated_errors['title'] = errors['bf:mainTitle'][0]['@value']
         except KeyError:
@@ -52,6 +69,53 @@ class DCTitleTranslator(AbstractDataTranslator):
             pass
 
         return translated_errors
+
+
+class EdmHasTypeTranslator(AbstractDataTranslator):
+    def translate_data(self, model: 'Entry') -> List[Dict]:
+        """
+        For Example
+        ```
+        model.type = {
+            "label": {
+                "de": "Artikel",
+                "en": "article"
+            },
+            "source": "http://base.uni-ak.ac.at/portfolio/taxonomy/article"
+        }
+        :param model:
+        :return:
+        """
+        return [
+            {
+                **_create_type_object('skos:Concept'),
+                'skos:prefLabel': self._translate_skos_prefLabel(model),
+                'skos:exactMatch': self._translate_skos_exactMatch(model),
+            },
+        ]
+
+    def translate_errors(self, errors: List[Dict]) -> List[Dict]:
+        """None of these errors are user related."""
+        return [
+            {},
+        ]
+
+    def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
+        try:
+            type_labels: Dict = model.type['label']
+        except KeyError:
+            return []
+        return [
+            _create_value_language_object(language=language, value=label) for language, label in type_labels.items()
+        ]
+
+    def _translate_skos_exactMatch(self, model: 'Entry') -> List[str]:
+        try:
+            return [
+                model.type['source'],
+            ]
+        except KeyError:
+            return []
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
@@ -78,6 +142,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def __init__(self):
         self.dc_title_translator = DCTitleTranslator()
+        self.edm_has_type_translator = EdmHasTypeTranslator()
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -90,7 +155,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
         return {
             'dcterms:type': self._get_data_from_dcterms_type(),
-            'edm:hasType': self._get_data_from_edm_hasType(model),
+            'edm:hasType': self.edm_has_type_translator.translate_data(model),
             'dce:title': self.dc_title_translator.translate_data(model),
             'dcterms:subject': self._get_data_from_from_dcterms_subject(model),
             'rdau:P60048': self._get_data_from_type_match_label_list(
@@ -125,30 +190,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
             }
         ]
-
-    def _get_data_from_edm_hasType(self, model: 'Entry') -> List:
-        return [
-            {
-                '@type': 'skos:Concept',
-                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_entry(model),
-                'skos:exactMatch': self._get_data_from_skos_exactMatch(model),
-            }
-        ]
-
-    def _get_data_from_skos_prefLabel_from_entry(self, model: 'Entry') -> List:
-        try:
-            items: Dict = model.type['label']['items']
-        except KeyError:
-            return []
-        return [{'@value': label, '@language': language} for language, label in items.items()]
-
-    def _get_data_from_skos_exactMatch(self, model: 'Entry') -> List:
-        try:
-            return [
-                model.type['source'],
-            ]
-        except KeyError:
-            return []
 
     def _get_data_from_from_dcterms_subject(self, model: 'Entry') -> List:
         return [
