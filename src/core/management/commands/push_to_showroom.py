@@ -122,7 +122,7 @@ class Command(BaseCommand):
                     }
                 elif medium.type == AUDIO_TYPE:
                     data['specifics'] = {
-                        'duration': medium_data.get('duration'),  # TODO
+                        'duration': medium_data['metadata'].get('Duration'),
                         'mp3': medium_data.get('mp3'),
                     }
                 elif medium.type == VIDEO_TYPE:
