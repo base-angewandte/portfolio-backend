@@ -27,7 +27,7 @@ class ValueLanguageBaseSchema(Schema):
 
 
 class TypeLabelMatchSchema(Schema):
-    type = fields.Constant('skos:Concept', load_from='@type', dump_to='@type')
+    type = fields.String(required=True, load_from='@type', dump_to='@type')
     skos_prefLabel = fields.Nested(
         ValueLanguageBaseSchema, required=True, many=True, load_from='skos:prefLabel', dump_to='skos:prefLabel'
     )
@@ -38,6 +38,10 @@ class TypeLabelMatchSchema(Schema):
         load_from='skos:exactMatch',
         dump_to='skos:exactMatch',
     )
+
+
+class SkosConceptSchema(TypeLabelMatchSchema):
+    type = fields.Constant('skos:Concept', load_from='@type', dump_to='@type')
 
 
 class Person(Schema):
@@ -83,7 +87,7 @@ class _PhaidraMetaData(Schema):
     )
 
     edm_hasType = fields.Nested(
-        TypeLabelMatchSchema,
+        SkosConceptSchema,
         many=True,
         load_from='edm:hasType',
         dump_to='edm:hasType',
@@ -99,12 +103,12 @@ class _PhaidraMetaData(Schema):
     )
 
     dcterms_subject = fields.Nested(
-        TypeLabelMatchSchema, many=True, load_from='dcterms:subject', dump_to='dcterms:subject'
+        SkosConceptSchema, many=True, load_from='dcterms:subject', dump_to='dcterms:subject'
     )
 
-    rdau_P60048 = fields.Nested(TypeLabelMatchSchema, many=True, load_from='rdau:P60048', dump_to='rdau:P60048')
+    rdau_P60048 = fields.Nested(SkosConceptSchema, many=True, load_from='rdau:P60048', dump_to='rdau:P60048')
 
-    dce_format = fields.Nested(TypeLabelMatchSchema, many=True, load_from='dce:format', dump_to='dce:format')
+    dce_format = fields.Nested(SkosConceptSchema, many=True, load_from='dce:format', dump_to='dce:format')
 
     bf_note = fields.Nested(TypeLabelMatchSchema, many=True, load_from='bf:note', dump_to='bf:note')
 

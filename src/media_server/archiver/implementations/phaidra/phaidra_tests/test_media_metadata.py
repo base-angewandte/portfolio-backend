@@ -11,7 +11,7 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     DCTitleTranslator,
     EdmHasTypeTranslator,
 )
-from media_server.archiver.implementations.phaidra.metadata.schemas import DceTitleSchema, TypeLabelMatchSchema
+from media_server.archiver.implementations.phaidra.metadata.schemas import DceTitleSchema, SkosConceptSchema
 
 
 class MetaDataTitle(TestCase):
@@ -193,7 +193,7 @@ class EdmHastypeTestCase(TestCase):
         self.assertEqual(translated_data, self.expected_translated_data)
 
     def test_validate_data(self):
-        schema = TypeLabelMatchSchema()
+        schema = SkosConceptSchema()
         validation = [schema.validate(datum) for datum in self.expected_translated_data]
         self.assertEqual(
             validation,
@@ -206,7 +206,7 @@ class EdmHastypeTestCase(TestCase):
         translated_data = deepcopy(self.expected_translated_data)
         translated_datum = translated_data[0]
         del translated_datum['skos:exactMatch']
-        schema = TypeLabelMatchSchema()
+        schema = SkosConceptSchema()
         validation = schema.validate(translated_datum)
         self.assertEqual(
             validation,
@@ -271,7 +271,7 @@ class DcTermsSubjectTestCase(TestCase):
         self.assertEqual(DcTermsSubjectTranslator().translate_data(entry), self.expected_translated_data)
 
     def test_validate_data(self):
-        schema = TypeLabelMatchSchema()
+        schema = SkosConceptSchema()
         validation = [schema.validate(datum) for datum in self.expected_translated_data]
         self.assertEqual(
             validation,
@@ -284,7 +284,7 @@ class DcTermsSubjectTestCase(TestCase):
         translated_data = deepcopy(self.expected_translated_data)
         translated_datum = translated_data[0]
         del translated_datum['skos:prefLabel']
-        schema = TypeLabelMatchSchema()
+        schema = SkosConceptSchema()
         validation = schema.validate(translated_datum)
         self.assertEqual(
             validation,

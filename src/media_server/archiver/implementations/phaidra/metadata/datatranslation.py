@@ -37,7 +37,7 @@ def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
     return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
 
 
-def _get_data_from_skos_prefLabel_from_label_items_dict(container: Dict) -> List:
+def _create_value_language_objects_from_label_dict(container: Dict) -> List:
     labels: Dict = container['label']
     return [_create_value_language_object(label, language) for language, label in labels.items()]
 
@@ -246,7 +246,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             {
                 '@type': 'skos:Concept',
                 'skos:exactMatch': [item['source']] if 'source' in item else [],
-                'skos:prefLabel': _get_data_from_skos_prefLabel_from_label_items_dict(item),
+                'skos:prefLabel': _create_value_language_objects_from_label_dict(item),
             }
             for item in items
         ]
