@@ -176,7 +176,7 @@ class GenericSkosConceptTranslator(AbstractDataTranslator):
         data_of_interest = self._get_data_of_interest(model)
         if data_of_interest.__len__() == 0:
             return data_of_interest
-        raise NotImplementedError()
+        return self._translate(data_of_interest)
 
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
         raise NotImplementedError()
@@ -193,6 +193,16 @@ class GenericSkosConceptTranslator(AbstractDataTranslator):
                     return []
         data_of_interest: List[Dict]
         return data_of_interest
+
+    def _translate(self, data_of_interest: List[Dict]) -> List[Dict]:
+        return [
+            {
+                **_create_type_object('skos:Concept'),
+                'skos:exactMatch': [datum['source']],
+                'skos:prefLabel': _create_value_language_objects_from_label_dict(datum),
+            }
+            for datum in data_of_interest
+        ]
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):

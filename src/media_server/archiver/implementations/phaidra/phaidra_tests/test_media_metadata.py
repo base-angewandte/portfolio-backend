@@ -363,3 +363,66 @@ class GenericSkosConceptTestCase(TestCase):
         entry = Entry(keywords=keywords)
         translator = GenericSkosConceptTranslator('keywords')
         self.assertEqual(keywords, translator._get_data_of_interest(entry))
+
+    def test_translate_keywords(self):
+        translator = GenericSkosConceptTranslator('keywords')
+        self.assertEqual(
+            translator._translate(
+                [
+                    {
+                        'label': {'de': 'Airbrush', 'en': 'Airbrushing'},
+                        'source': 'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+                    }
+                ]
+            ),
+            [
+                {
+                    '@type': 'skos:Concept',
+                    'skos:exactMatch': [
+                        'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+                    ],
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Airbrush',
+                            '@language': 'deu',
+                        },
+                        {
+                            '@value': 'Airbrushing',
+                            '@language': 'eng',
+                        },
+                    ],
+                }
+            ],
+        )
+
+    def test_full_translation(self):
+        entry = Entry(
+            keywords=[
+                {
+                    'label': {'de': 'Airbrush', 'en': 'Airbrushing'},
+                    'source': 'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+                }
+            ]
+        )
+        translator = GenericSkosConceptTranslator('keywords')
+        self.assertEqual(
+            translator.translate_data(entry),
+            [
+                {
+                    '@type': 'skos:Concept',
+                    'skos:exactMatch': [
+                        'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+                    ],
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Airbrush',
+                            '@language': 'deu',
+                        },
+                        {
+                            '@value': 'Airbrushing',
+                            '@language': 'eng',
+                        },
+                    ],
+                }
+            ],
+        )
