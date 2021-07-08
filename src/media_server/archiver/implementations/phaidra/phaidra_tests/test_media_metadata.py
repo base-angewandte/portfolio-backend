@@ -10,6 +10,7 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     DcTermsSubjectTranslator,
     DCTitleTranslator,
     EdmHasTypeTranslator,
+    GenericSkosConceptTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.schemas import DceTitleSchema, SkosConceptSchema
 
@@ -326,3 +327,39 @@ class DcTermsSubjectTestCase(TestCase):
     def test_empty_input_data(self):
         entry = Entry()
         self.assertRaises(RuntimeError, lambda: DcTermsSubjectTranslator().translate_data(entry))
+
+
+class GenericSkosConceptTestCase(TestCase):
+    def test_get_data_missing_key_fail(self):
+        entry = Entry(data={'other-stuff': ';-)'})
+        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_key_error=True)
+        self.assertRaises(KeyError, lambda: translator._get_data_of_interest(entry))
+
+    def test_get_data_missing_key_fallback(self):
+        entry = Entry(data={'other-stuff': ';-)'})
+        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_key_error=False)
+        self.assertEqual([], translator._get_data_of_interest(entry))
+
+    def test_get_materials_data(self):
+        materials_data = (
+            [
+                {
+                    'label': {'de': 'CD-Rom', 'en': 'CD-Rom'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/cd-rom',
+                }
+            ],
+        )
+        entry = Entry(data={'material': materials_data})
+        translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
+        self.assertEqual(materials_data, translator._get_data_of_interest(entry))
+
+    def test_get_keywords_data(self):
+        keywords = [
+            {
+                'label': {'de': 'Airbrush', 'en': 'Airbrushing'},
+                'source': 'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+            }
+        ]
+        entry = Entry(keywords=keywords)
+        translator = GenericSkosConceptTranslator('keywords')
+        self.assertEqual(keywords, translator._get_data_of_interest(entry))

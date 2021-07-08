@@ -2,7 +2,7 @@
 st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, Hashable, List, Optional
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
 
@@ -158,6 +158,41 @@ class DcTermsSubjectTranslator(AbstractDataTranslator):
     def translate_errors(self, errors: List[Dict]) -> List[Dict]:
         """None of these errors are user related."""
         return [{} for error in errors]
+
+
+class GenericSkosConceptTranslator(AbstractDataTranslator):
+    raise_on_key_error: bool
+    entry_attribute: str
+    json_keys: List[Hashable]
+
+    def __init__(
+        self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None, raise_on_key_error: bool = False
+    ):
+        self.entry_attribute = entry_attribute
+        self.raise_on_key_error = raise_on_key_error
+        self.json_keys = [] if json_keys is None else json_keys
+
+    def translate_data(self, model: 'Entry') -> List[Dict]:
+        data_of_interest = self._get_data_of_interest(model)
+        if data_of_interest.__len__() == 0:
+            return data_of_interest
+        raise NotImplementedError()
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        raise NotImplementedError()
+
+    def _get_data_of_interest(self, model: 'Entry') -> List[Dict]:
+        data_of_interest: Dict = getattr(model, self.entry_attribute)
+        for key in self.json_keys:
+            try:
+                data_of_interest = data_of_interest[key]
+            except KeyError as error:
+                if self.raise_on_key_error:
+                    raise error
+                else:
+                    return []
+        data_of_interest: List[Dict]
+        return data_of_interest
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
