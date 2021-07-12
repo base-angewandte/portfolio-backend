@@ -4,6 +4,13 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 
+class InternalValidationError(RuntimeError):
+    """When then internal data structure is no well defined, but the user does
+    not need to be concerned."""
+
+    pass
+
+
 class ExternalServerError(APIException):
     """External has an error."""
 

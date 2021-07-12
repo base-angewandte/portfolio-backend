@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
+from media_server.archiver.interface.exceptions import InternalValidationError
 
 if TYPE_CHECKING:
     from media_server.models import Entry
@@ -101,9 +102,10 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
 
     def translate_errors(self, errors: List[Dict]) -> List[Dict]:
         """None of these errors are user related."""
-        return [
-            {},
-        ]
+        if any([len(error) > 0 for error in errors]):
+            raise InternalValidationError(str(errors))
+        else:
+            return [{} for error in errors]
 
     def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
         try:
@@ -157,10 +159,15 @@ class DcTermsSubjectTranslator(AbstractDataTranslator):
 
     def translate_errors(self, errors: List[Dict]) -> List[Dict]:
         """None of these errors are user related."""
-        return [{} for error in errors]
+        if any([len(error) > 0 for error in errors]):
+            raise InternalValidationError(str(errors))
+        else:
+            return [{} for error in errors]
 
 
 class GenericSkosConceptTranslator(AbstractDataTranslator):
+    """Currently used on dcterms:subject, rdau:P60048, dce:format."""
+
     raise_on_key_error: bool
     entry_attribute: str
     json_keys: List[Hashable]
@@ -178,8 +185,12 @@ class GenericSkosConceptTranslator(AbstractDataTranslator):
             return data_of_interest
         return self._translate(data_of_interest)
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        raise NotImplementedError()
+    def translate_errors(self, errors: Optional[List[Dict]]) -> List[Dict]:
+        """None of these errors will be shown to the user."""
+        if any([len(error) > 0 for error in errors]):
+            raise InternalValidationError(str(errors))
+        else:
+            return [{} for error in errors]
 
     def _get_data_of_interest(self, model: 'Entry') -> List[Dict]:
         data_of_interest: Dict = getattr(model, self.entry_attribute)

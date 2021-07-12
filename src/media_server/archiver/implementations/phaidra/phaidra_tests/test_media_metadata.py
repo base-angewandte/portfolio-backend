@@ -13,6 +13,7 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     GenericSkosConceptTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.schemas import DceTitleSchema, SkosConceptSchema
+from media_server.archiver.interface.exceptions import InternalValidationError
 
 
 class MetaDataTitle(TestCase):
@@ -222,13 +223,9 @@ class EdmHastypeTestCase(TestCase):
                 'skos:exactMatch': ['Missing data for required field.'],
             },
         ]
-        translated_errors = EdmHasTypeTranslator().translate_errors(errors)
-        # None of these errors are user relevant, they would be by programmers fault
-        self.assertEqual(
-            translated_errors,
-            [
-                {},
-            ],
+        self.assertRaises(
+            InternalValidationError,
+            lambda: EdmHasTypeTranslator().translate_errors(errors),
         )
 
     def test_faulty_input_data_label(self):
@@ -310,13 +307,7 @@ class DcTermsSubjectTestCase(TestCase):
                 },
             }
         ]
-        portfolio_errors = DcTermsSubjectTranslator().translate_errors(phaidra_errors)
-        self.assertEqual(
-            portfolio_errors,
-            [
-                {},
-            ],
-        )
+        self.assertRaises(InternalValidationError, lambda: DcTermsSubjectTranslator().translate_errors(phaidra_errors))
 
     def test_faulty_input_data(self):
         data = deepcopy(self.example_input_keywords)
@@ -425,4 +416,58 @@ class GenericSkosConceptTestCase(TestCase):
                     ],
                 }
             ],
+        )
+
+    def test_validate_correct_input(self):
+        schema = SkosConceptSchema()
+        errors = schema.validate(
+            {
+                '@type': 'skos:Concept',
+                'skos:exactMatch': [
+                    'http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e',
+                ],
+                'skos:prefLabel': [
+                    {
+                        '@value': 'Airbrush',
+                        '@language': 'deu',
+                    },
+                    {
+                        '@value': 'Airbrushing',
+                        '@language': 'eng',
+                    },
+                ],
+            }
+        )
+        self.assertEqual(errors, {})
+
+    def test_validate_incorrect_input(self):
+        schema = SkosConceptSchema()
+        errors = schema.validate(
+            {
+                '@type': 'skos:Concept',
+                'skos:prefLabel': [
+                    {
+                        '@value': 'Airbrush',
+                        '@language': 'deu',
+                    },
+                    {
+                        '@value': 'Airbrushing',
+                        '@language': 'eng',
+                    },
+                ],
+            }
+        )
+        self.assertEqual(errors, {'skos:exactMatch': ['Missing data for required field.']})
+
+    def test_error_translation_empty(self):
+        self.assertEqual([], GenericSkosConceptTranslator('not-important', []).translate_errors([]))
+
+    def test_error_translation(self):
+        self.assertRaises(
+            InternalValidationError,
+            lambda: GenericSkosConceptTranslator('not-important', []).translate_errors(
+                [
+                    {'skos:exactMatch': ['Missing data for required field.']},
+                ]
+            ),
         )
