@@ -7,11 +7,16 @@ from django.test import TestCase
 
 from core.models import Entry
 from media_server.archiver.implementations.phaidra.metadata.datatranslation import (
+    BfNoteTranslator,
     DCTitleTranslator,
     EdmHasTypeTranslator,
     GenericSkosConceptTranslator,
 )
-from media_server.archiver.implementations.phaidra.metadata.schemas import DceTitleSchema, SkosConceptSchema
+from media_server.archiver.implementations.phaidra.metadata.schemas import (
+    DceTitleSchema,
+    SkosConceptSchema,
+    TypeLabelSchema,
+)
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 
@@ -392,6 +397,120 @@ class GenericSkosConceptTestCase(TestCase):
             lambda: GenericSkosConceptTranslator('not-important', []).translate_errors(
                 [
                     {'skos:exactMatch': ['Missing data for required field.']},
+                ]
+            ),
+        )
+
+
+class BfNoteTestCase(TestCase):
+    def test_translate_data_correct_default_case(self):
+        entry = Entry(
+            texts=[
+                {
+                    'data': [
+                        {'text': 'Any Text', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/en'}}
+                    ]
+                },
+            ]
+        )
+        translator = BfNoteTranslator()
+        self.assertEqual(
+            translator.translate_data(entry),
+            [
+                {
+                    '@type': 'bf:Note',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Any Text',
+                            '@language': 'eng',
+                        }
+                    ],
+                },
+            ],
+        )
+
+    def test_translate_data_correct_abstract_text_type_case(self):
+        entry = Entry(
+            texts=[
+                {
+                    'data': [
+                        {
+                            'text': 'Abstract Text!',
+                            'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/de'},
+                        }
+                    ],
+                    'type': {
+                        'label': {'de': 'Abstract', 'en': 'Abstract'},
+                        'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
+                    },
+                }
+            ]
+        )
+        translator = BfNoteTranslator()
+        self.assertEqual(
+            translator.translate_data(entry),
+            [
+                {
+                    '@type': 'bf:Summary',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Abstract Text!',
+                            '@language': 'deu',
+                        }
+                    ],
+                },
+            ],
+        )
+
+    def test_translate_faulty_data(self):
+        self.assertRaises(TypeError, lambda: BfNoteTranslator().translate_data(Entry(texts=23)))
+
+    def test_validate_data_correct(self):
+        schema = TypeLabelSchema()
+        self.assertEqual(
+            {},
+            schema.validate(
+                {
+                    '@type': 'bf:Summary',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Abstract Text!',
+                            '@language': 'deu',
+                        }
+                    ],
+                },
+            ),
+        )
+
+    def test_validate_data_error(self):
+        schema = TypeLabelSchema()
+        self.assertEqual(
+            {
+                '@type': ['Missing data for required field.'],
+            },
+            schema.validate(
+                {
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Abstract Text!',
+                            '@language': 'deu',
+                        }
+                    ]
+                },
+            ),
+        )
+
+    def test_translate_errors_empty(self):
+        self.assertEqual([{}], BfNoteTranslator().translate_errors([{}]))
+
+    def test_translate_error_not_empty(self):
+        self.assertRaises(
+            InternalValidationError,
+            lambda: BfNoteTranslator().translate_errors(
+                [
+                    {
+                        '@type': ['Missing data for required field.'],
+                    }
                 ]
             ),
         )

@@ -26,11 +26,15 @@ class ValueLanguageBaseSchema(Schema):
     language = fields.String(required=True, load_from='@language', dump_to='@language')
 
 
-class TypeLabelMatchSchema(Schema):
+class TypeLabelSchema(Schema):
     type = fields.String(required=True, load_from='@type', dump_to='@type')
     skos_prefLabel = fields.Nested(
         ValueLanguageBaseSchema, required=True, many=True, load_from='skos:prefLabel', dump_to='skos:prefLabel'
     )
+
+
+class SkosConceptSchema(TypeLabelSchema):
+    type = fields.Constant('skos:Concept', load_from='@type', dump_to='@type')
     skos_exactMatch = fields.List(
         fields.String(),
         validate=validate.Length(equal=1),
@@ -38,10 +42,6 @@ class TypeLabelMatchSchema(Schema):
         load_from='skos:exactMatch',
         dump_to='skos:exactMatch',
     )
-
-
-class SkosConceptSchema(TypeLabelMatchSchema):
-    type = fields.Constant('skos:Concept', load_from='@type', dump_to='@type')
 
 
 class Person(Schema):
@@ -110,7 +110,7 @@ class _PhaidraMetaData(Schema):
 
     dce_format = fields.Nested(SkosConceptSchema, many=True, load_from='dce:format', dump_to='dce:format')
 
-    bf_note = fields.Nested(TypeLabelMatchSchema, many=True, load_from='bf:note', dump_to='bf:note')
+    bf_note = fields.Nested(TypeLabelSchema, many=True, load_from='bf:note', dump_to='bf:note')
 
     role_edt = fields.Nested(Person, many=True, load_from='role:edt', dump_to='role:edt')
 

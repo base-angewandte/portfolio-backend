@@ -2,7 +2,9 @@
 st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
 from collections import defaultdict
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional
+from urllib.parse import urlparse
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
 
@@ -168,6 +170,38 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
         ]
 
 
+class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
+    def translate_data(self, model: 'Entry') -> List[Dict]:
+        abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
+        text: Dict
+        texts = [
+            text
+            for text in model.texts
+            if ('type' not in text) or (('source' in text['type']) and text['type']['source'] == abstract_source)
+        ]
+        return [
+            {
+                **_create_type_object('bf:Summary' if 'type' in text else 'bf:Note'),
+                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_text_type(text),
+            }
+            for text in texts
+        ]
+
+    def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
+        text_data = text['data']
+        return [
+            self._create_value_language_object(text_datum)
+            for text_datum in text_data
+            if ('text' in text_datum) and ('language' in text_datum) and ('source' in text_datum['language'])
+        ]
+
+    def _create_value_language_object(self, text_datum: Dict) -> Dict:
+        source = text_datum['language']['source']
+        parsed_source = urlparse(source)
+        parsed_path = Path(parsed_source.path)
+        return _create_value_language_object(value=text_datum['text'], language=parsed_path.name)
+
+
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -196,6 +230,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         self.dcterms_subject_translator = GenericSkosConceptTranslator('keywords')
         self.rdau_P60048_translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
         self.dce_format_translator = GenericSkosConceptTranslator('data', ['format'], raise_on_key_error=False)
+        self.bf_note_translator = BfNoteTranslator()
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -207,13 +242,13 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
         return {
-            'dcterms:type': self._get_data_from_dcterms_type(),
+            'dcterms:type': self._create_static_dcterms(),
             'edm:hasType': self.edm_has_type_translator.translate_data(model),
             'dce:title': self.dc_title_translator.translate_data(model),
             'dcterms:subject': self.dcterms_subject_translator.translate_data(model),
             'rdau:P60048': self.rdau_P60048_translator.translate_data(model),
             'dce:format': self.dce_format_translator.translate_data(model),
-            'bf:note': self._get_data_from_bf_note(model),
+            'bf:note': self.bf_note_translator.translate_data(model),
             'role:edt': self._get_data_from_role_by(
                 model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
             ),
@@ -225,57 +260,14 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             ),
         }
 
-    def _get_data_from_dcterms_type(self) -> List:
+    @staticmethod
+    def _create_static_dcterms() -> List:
         return [
             {
                 '@type': 'skos:Concept',
                 'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
                 'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
             }
-        ]
-
-    def _get_data_from_type_match_label_list(self, model: 'Entry', data_keys: List[str]) -> List:
-        try:
-            items = model.data
-            for data_key in data_keys:
-                items = items[data_key]
-        except KeyError:
-            return []
-
-        return [
-            {
-                '@type': 'skos:Concept',
-                'skos:exactMatch': [item['source']] if 'source' in item else [],
-                'skos:prefLabel': _create_value_language_objects_from_label_dict(item),
-            }
-            for item in items
-        ]
-
-    def _get_data_from_bf_note(self, model: 'Entry') -> List:
-        abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
-        text: Dict
-        texts = [
-            text
-            for text in model.texts
-            if ('type' not in text) or (('source' in text['type']) and text['type']['source'] == abstract_source)
-        ]
-        return [
-            {
-                '@type': 'bf:Summary' if 'type' in text else 'bf:Note',
-                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_text_type(text),
-            }
-            for text in texts
-        ]
-
-    def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
-        try:
-            text_data = text['data']
-        except KeyError:
-            return []
-        return [
-            {'@value': text_datum['text'], '@language': text_datum['language']['source']}
-            for text_datum in text_data
-            if ('text' in text_datum) and ('language' in text_datum) and ('source' in text_datum['language'])
         ]
 
     def _get_data_from_role_by(self, model: 'Entry', main_level: str, role_uri: str) -> List:
