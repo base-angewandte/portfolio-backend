@@ -5,7 +5,6 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
-from media_server.archiver.interface.exceptions import InternalValidationError
 
 if TYPE_CHECKING:
     from media_server.models import Entry
@@ -13,7 +12,10 @@ if TYPE_CHECKING:
         BidirectionalConceptsMapper,
     )
 
-from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
+from media_server.archiver.implementations.phaidra.abstracts.datatranslation import (
+    AbstractDataTranslator,
+    AbstractUserUnrelatedDataTranslator,
+)
 
 
 def _convert_two_to_three_letter_language_code(language_code: str) -> str:
@@ -77,7 +79,7 @@ class DCTitleTranslator(AbstractDataTranslator):
         return translated_errors
 
 
-class EdmHasTypeTranslator(AbstractDataTranslator):
+class EdmHasTypeTranslator(AbstractUserUnrelatedDataTranslator):
     def translate_data(self, model: 'Entry') -> List[Dict]:
         """
         For Example
@@ -99,13 +101,6 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
                 'skos:exactMatch': self._translate_skos_exactMatch(model),
             },
         ]
-
-    def translate_errors(self, errors: List[Dict]) -> List[Dict]:
-        """None of these errors are user related."""
-        if any([len(error) > 0 for error in errors]):
-            raise InternalValidationError(str(errors))
-        else:
-            return [{} for error in errors]
 
     def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
         try:
@@ -129,43 +124,7 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
             raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
 
 
-class DcTermsSubjectTranslator(AbstractDataTranslator):
-    def translate_data(self, model: 'Entry') -> List:
-        """
-                :param model: eg model.keywords = [
-            {
-                "label": {
-                    "de": "Airbrush",
-                    "en": "Airbrushing"
-                },
-                "source": "http://base.uni-ak.ac.at/recherche/keywords/c_699b3d9e"
-            }
-        ]
-                :return:
-        """
-        try:
-            return [
-                {
-                    **_create_type_object('skos:Concept'),
-                    'skos:exactMatch': [keyword['source']],
-                    'skos:prefLabel': [
-                        _create_value_language_object(label, language) for language, label in keyword['label'].items()
-                    ],
-                }
-                for keyword in model.keywords
-            ]
-        except (KeyError, TypeError, AttributeError) as error:
-            raise RuntimeError(f'{error} with entry {model}')
-
-    def translate_errors(self, errors: List[Dict]) -> List[Dict]:
-        """None of these errors are user related."""
-        if any([len(error) > 0 for error in errors]):
-            raise InternalValidationError(str(errors))
-        else:
-            return [{} for error in errors]
-
-
-class GenericSkosConceptTranslator(AbstractDataTranslator):
+class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
     """Currently used on dcterms:subject, rdau:P60048, dce:format."""
 
     raise_on_key_error: bool
@@ -184,13 +143,6 @@ class GenericSkosConceptTranslator(AbstractDataTranslator):
         if data_of_interest.__len__() == 0:
             return data_of_interest
         return self._translate(data_of_interest)
-
-    def translate_errors(self, errors: Optional[List[Dict]]) -> List[Dict]:
-        """None of these errors will be shown to the user."""
-        if any([len(error) > 0 for error in errors]):
-            raise InternalValidationError(str(errors))
-        else:
-            return [{} for error in errors]
 
     def _get_data_of_interest(self, model: 'Entry') -> List[Dict]:
         data_of_interest: Dict = getattr(model, self.entry_attribute)
@@ -241,7 +193,9 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     def __init__(self):
         self.dc_title_translator = DCTitleTranslator()
         self.edm_has_type_translator = EdmHasTypeTranslator()
-        self.dcterms_subject_translator = DcTermsSubjectTranslator()
+        self.dcterms_subject_translator = GenericSkosConceptTranslator('keywords')
+        self.rdau_P60048_translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
+        self.dce_format_translator = GenericSkosConceptTranslator('data', ['format'], raise_on_key_error=False)
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -257,18 +211,8 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             'edm:hasType': self.edm_has_type_translator.translate_data(model),
             'dce:title': self.dc_title_translator.translate_data(model),
             'dcterms:subject': self.dcterms_subject_translator.translate_data(model),
-            'rdau:P60048': self._get_data_from_type_match_label_list(
-                model,
-                [
-                    'material',
-                ],
-            ),
-            'dce:format': self._get_data_from_type_match_label_list(
-                model,
-                [
-                    'format',
-                ],
-            ),
+            'rdau:P60048': self.rdau_P60048_translator.translate_data(model),
+            'dce:format': self.dce_format_translator.translate_data(model),
             'bf:note': self._get_data_from_bf_note(model),
             'role:edt': self._get_data_from_role_by(
                 model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
