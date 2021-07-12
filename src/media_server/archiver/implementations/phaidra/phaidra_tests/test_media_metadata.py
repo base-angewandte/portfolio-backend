@@ -11,9 +11,11 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     DCTitleTranslator,
     EdmHasTypeTranslator,
     GenericSkosConceptTranslator,
+    GenericStaticPersonTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.schemas import (
     DceTitleSchema,
+    PersonSchema,
     SkosConceptSchema,
     TypeLabelSchema,
 )
@@ -514,3 +516,137 @@ class BfNoteTestCase(TestCase):
                 ]
             ),
         )
+
+
+class StaticGenericPersonTestCase(TestCase):
+    def test_translate_empty_data(self):
+        translator = GenericStaticPersonTranslator(
+            primary_level_data_key='editors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
+        )
+        entry = Entry(data={})
+        self.assertEqual([], translator.translate_data(entry))
+
+    def test_translate_data_correct(self):
+        entry = Entry(
+            data={
+                'authors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Autor*in', 'en': 'Author'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+                            }
+                        ],
+                        'source': 'http://d-nb.info/gnd/5299671-2',
+                    }
+                ]
+            }
+        )
+        translator = GenericStaticPersonTranslator(
+            primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+        )
+        self.assertEqual(
+            translator.translate_data(entry),
+            [
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [
+                        {
+                            '@value': 'http://d-nb.info/gnd/5299671-2',
+                            '@type': 'ids:uri',
+                        },
+                    ],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        }
+                    ],
+                },
+            ],
+        )
+
+    def test_translate_faulty_data(self):
+        entry = Entry(
+            data={
+                'authors': [
+                    {
+                        'label-got-wrong': 'Universität für Angewandte Kunst Wien',
+                        'source': 'http://d-nb.info/gnd/5299671-2',
+                    }
+                ]
+            }
+        )
+        translator = GenericStaticPersonTranslator(
+            primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+        )
+        self.assertRaises(KeyError, lambda: translator.translate_data(entry))
+
+    def test_validate_data_correct(self):
+        person_schema = PersonSchema()
+        self.assertEqual(
+            {},
+            person_schema.validate(
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [
+                        {
+                            '@value': 'http://d-nb.info/gnd/5299671-2',
+                            '@type': 'ids:uri',
+                        },
+                    ],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        }
+                    ],
+                }
+            ),
+        )
+
+    def test_validate_data_error(self):
+        person_schema = PersonSchema()
+        self.assertEqual(
+            {
+                'schema:name': {
+                    0: {
+                        '@value': ['Missing data for required field.'],
+                    }
+                }
+            },
+            person_schema.validate(
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [
+                        {
+                            '@value': 'http://d-nb.info/gnd/5299671-2',
+                            '@type': 'ids:uri',
+                        },
+                    ],
+                }
+            ),
+        )
+
+    def test_translate_errors_empty(self):
+        errors = [
+            {},
+        ]
+        translator = GenericStaticPersonTranslator(
+            primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+        )
+        self.assertEqual([{}], translator.translate_errors(errors))
+
+    def test_translate_error_not_empty(self):
+        errors = [
+            {
+                'schema:name': {
+                    0: {
+                        '@value': ['Missing data for required field.'],
+                    }
+                }
+            },
+        ]
+        translator = GenericStaticPersonTranslator(
+            primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+        )
+        self.assertRaises(InternalValidationError, lambda: translator.translate_errors(errors))

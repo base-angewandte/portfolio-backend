@@ -16,6 +16,10 @@ from media_server.archiver.implementations.phaidra.metadata.mappings.contributor
 value_field = fields.String(required=True, load_from='@value', dump_to='@value')
 
 
+class ValueSchema(Schema):
+    value_field = value_field
+
+
 class ValueTypeBaseSchema(Schema):
     value = value_field
     type = fields.Constant('ids:uri', load_from='@type', dump_to='@type')
@@ -44,20 +48,23 @@ class SkosConceptSchema(TypeLabelSchema):
     )
 
 
-class Person(Schema):
+class PersonSchema(Schema):
     type = fields.Constant('ids:uri', load_from='@type', dump_to='@type')
     skos_exactMatch = fields.Nested(
-        ValueTypeBaseSchema(),
+        ValueTypeBaseSchema,
         many=True,
         dump_to='skos:exactMatch',
         load_from='skos:exactMatch',
         validate=validate.Length(equal=1),
+        required=True,
     )
-    schema_Name = fields.List(
-        value_field,
+    schema_Name = fields.Nested(
+        ValueSchema,
+        many=True,
         load_from='schema:name',
         dump_to='schema:name',
         validate=validate.Length(equal=1),
+        required=True,
     )
 
 
@@ -112,11 +119,11 @@ class _PhaidraMetaData(Schema):
 
     bf_note = fields.Nested(TypeLabelSchema, many=True, load_from='bf:note', dump_to='bf:note')
 
-    role_edt = fields.Nested(Person, many=True, load_from='role:edt', dump_to='role:edt')
+    role_edt = fields.Nested(PersonSchema, many=True, load_from='role:edt', dump_to='role:edt')
 
-    role_aut = fields.Nested(Person, many=True, load_from='role:aut', dump_to='role:aut')
+    role_aut = fields.Nested(PersonSchema, many=True, load_from='role:aut', dump_to='role:aut')
 
-    role_pbl = fields.Nested(Person, many=True, load_from='role:pbl', dump_to='role:pbl')
+    role_pbl = fields.Nested(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl')
 
 
 def _str_to_attribute(string: str) -> str:
@@ -135,6 +142,6 @@ def get_phaidra_meta_data_schema_with_dynamic_fields(
             '''Do not overwrite static field definitions'''
             if schema_attribute not in marshmallow_fields:
                 marshmallow_fields[schema_attribute] = fields.Nested(
-                    Person, many=True, required=False, load_from=phaidra_role_code, dump_to=phaidra_role_code
+                    PersonSchema, many=True, required=False, load_from=phaidra_role_code, dump_to=phaidra_role_code
                 )
     return schema

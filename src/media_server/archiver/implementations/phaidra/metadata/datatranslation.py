@@ -47,6 +47,23 @@ def _create_value_language_objects_from_label_dict(container: Dict) -> List:
     return [_create_value_language_object(label, language) for language, label in labels.items()]
 
 
+def _create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
+    return {
+        **_create_type_object('schema:Person'),
+        'skos:exactMatch': [
+            {
+                '@value': source,
+                **_create_type_object('ids:uri'),
+            }
+        ],
+        'schema:name': [
+            {
+                **_create_value_object(name),
+            }
+        ],
+    }
+
+
 class DCTitleTranslator(AbstractDataTranslator):
     """A list of titles, where in our database is only one."""
 
@@ -202,6 +219,42 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         return _create_value_language_object(value=text_datum['text'], language=parsed_path.name)
 
 
+class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
+    role_uri: str
+    primary_level_data_key: str
+
+    def __init__(self, primary_level_data_key: str, role_uri: str):
+        """
+
+        :param primary_level_data_key: The key to look for persons in Entry.data[key]
+        :param role_uri:  Look for persons with this role in Entry.data[contributors]
+        """
+        self.role_uri = role_uri
+        self.primary_level_data_key = primary_level_data_key
+
+    def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+        first_level_persons = self._get_first_level_persons(model)
+        contributors = self._get_contributors(model)
+        return first_level_persons + contributors
+
+    def _get_first_level_persons(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+        if self.primary_level_data_key not in model.data:
+            return []
+        return [
+            _create_person_object(name=person['label'], source=person['source'])
+            for person in model.data[self.primary_level_data_key]
+        ]
+
+    def _get_contributors(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+        if 'contributors' not in model.data:
+            return []
+        return [
+            _create_person_object(source=role['source'], name=contributor['label'])
+            for contributor in model.data['contributors']
+            for role in contributor['roles']
+        ]
+
+
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -231,6 +284,18 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         self.rdau_P60048_translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
         self.dce_format_translator = GenericSkosConceptTranslator('data', ['format'], raise_on_key_error=False)
         self.bf_note_translator = BfNoteTranslator()
+        self.editor_translator = GenericStaticPersonTranslator(
+            primary_level_data_key='editors',
+            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/editor',
+        )
+        self.author_translator = GenericStaticPersonTranslator(
+            primary_level_data_key='authors',
+            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+        )
+        self.publisher_translator = GenericStaticPersonTranslator(
+            primary_level_data_key='publishers',
+            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
+        )
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
@@ -249,15 +314,9 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             'rdau:P60048': self.rdau_P60048_translator.translate_data(model),
             'dce:format': self.dce_format_translator.translate_data(model),
             'bf:note': self.bf_note_translator.translate_data(model),
-            'role:edt': self._get_data_from_role_by(
-                model, 'editors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
-            ),
-            'role:aut': self._get_data_from_role_by(
-                model, 'authors', 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
-            ),
-            'role:pbl': self._get_data_from_role_by(
-                model, 'role:pbl', 'http://base.uni-ak.ac.at/portfolio/vocabulary/publisher'
-            ),
+            'role:edt': self.editor_translator.translate_data(model),
+            'role:aut': self.author_translator.translate_data(model),
+            'role:pbl': self.publisher_translator.translate_data(model),
         }
 
     @staticmethod
@@ -269,49 +328,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
             }
         ]
-
-    def _get_data_from_role_by(self, model: 'Entry', main_level: str, role_uri: str) -> List:
-        has_main_level_persons = main_level in model.data
-        has_contributors = 'contributors' in model.data
-        if not has_main_level_persons and not has_contributors:
-            return []
-
-        all_persons = []
-
-        if has_main_level_persons:
-            for person in model.data[main_level]:
-                if ('source' in person) and ('label' in person):
-                    all_persons.append(
-                        {
-                            'skos:exactMatch': [{'@value': person['source'], '@type': 'ids:uri'}],
-                            'schema:name': [
-                                {
-                                    '@value': person['label'],
-                                }
-                            ],
-                            '@type': 'schema:Person',
-                        }
-                    )
-
-        if has_contributors:
-            contributors = model.data['contributors']
-            for contributor in contributors:
-                if 'roles' in contributor:
-                    for role in contributor['roles']:
-                        if ('source' in role) and (role['source'] == role_uri):
-                            all_persons.append(
-                                {
-                                    'skos:exactMatch': [{'@value': role['source'], '@type': 'ids:uri'}],
-                                    'schema:name': [
-                                        {
-                                            '@value': contributor['label'],
-                                        }
-                                    ],
-                                    '@type': 'schema:Person',
-                                }
-                            )
-
-        return all_persons
 
     def _get_data_with_dynamic_structure(
         self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
