@@ -3,7 +3,7 @@ st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Hashable, List, Optional
+from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
@@ -362,3 +362,32 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             else:
                 pass  # All we do right now
         return data_with_static_structure
+
+    @classmethod
+    def _filter_errors(cls, errors: Dict) -> Dict:
+        errors = cls._recursive_filter_errors(errors)
+        return {} if errors is None else errors  # keep to level dict
+
+    @classmethod
+    def _recursive_filter_errors(cls, errors: Union[Dict, List]) -> Optional[Union[Dict, List]]:
+        """Since we use marshmallow, we assume objects container either nested
+        objects or lists of errors.
+
+        :param errors:
+        :return:
+        """
+        if errors.__class__ is dict:
+            filtered_errors = {
+                key: filtered_value
+                for key, value in errors.items()
+                if (filtered_value := cls._recursive_filter_errors(value)) is not None
+            }
+        elif errors.__class__ is list:
+            filtered_errors = [
+                filtered_value
+                for value in errors
+                if (filtered_value := cls._recursive_filter_errors(value)) is not None
+            ]
+        else:
+            return errors  # leave node
+        return filtered_errors if filtered_errors else None

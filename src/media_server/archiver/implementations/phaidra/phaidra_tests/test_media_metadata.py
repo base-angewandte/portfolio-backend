@@ -12,6 +12,7 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     EdmHasTypeTranslator,
     GenericSkosConceptTranslator,
     GenericStaticPersonTranslator,
+    PhaidraMetaDataTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.schemas import (
     DceTitleSchema,
@@ -650,3 +651,52 @@ class StaticGenericPersonTestCase(TestCase):
             primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
         )
         self.assertRaises(InternalValidationError, lambda: translator.translate_errors(errors))
+
+
+class RecursiveErrorFilterTestCase(TestCase):
+
+    translator = PhaidraMetaDataTranslator()
+
+    def test_normal_errors(self):
+        some_errors = {
+            'level-1-A': ['error-1', 'error-2'],
+            'level-1-B': {
+                'level-2-A': [
+                    'error-3',
+                ]
+            },
+        }
+        filtered_errors = self.translator._filter_errors(some_errors)
+        self.assertEqual(some_errors, filtered_errors)
+
+    def test_nested_empty_errors_dict(self):
+        some_errors = {
+            'level-1-A': ['error-1', 'error-2'],
+            'level-1-B': {
+                # None, but there, since generating object was not aware of upper level
+            },
+        }
+        filtered_errors = self.translator._filter_errors(some_errors)
+        self.assertEqual(
+            filtered_errors,
+            {
+                'level-1-A': ['error-1', 'error-2'],
+            },
+        )
+
+    def test_nested_empty_errors_list(self):
+        some_errors = {
+            'level-1-A': ['error-1', 'error-2'],
+            'level-1-B': [  # this time a list of empty error objects!
+                {
+                    # None, but there, since generating object was not aware of upper level
+                }
+            ],
+        }
+        filtered_errors = self.translator._filter_errors(some_errors)
+        self.assertEqual(
+            filtered_errors,
+            {
+                'level-1-A': ['error-1', 'error-2'],
+            },
+        )
