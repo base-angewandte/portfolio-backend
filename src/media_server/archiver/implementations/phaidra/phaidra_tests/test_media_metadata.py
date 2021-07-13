@@ -14,6 +14,9 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     GenericStaticPersonTranslator,
     PhaidraMetaDataTranslator,
 )
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    BidirectionalConceptsMapper,
+)
 from media_server.archiver.implementations.phaidra.metadata.schemas import (
     DceTitleSchema,
     PersonSchema,
@@ -654,7 +657,6 @@ class StaticGenericPersonTestCase(TestCase):
 
 
 class RecursiveErrorFilterTestCase(TestCase):
-
     translator = PhaidraMetaDataTranslator()
 
     def test_normal_errors(self):
@@ -700,3 +702,67 @@ class RecursiveErrorFilterTestCase(TestCase):
                 'level-1-A': ['error-1', 'error-2'],
             },
         )
+
+
+class DynamicPersonsTestCase(TestCase):
+    def test_translate_empty_data(self):
+        entry = Entry()
+        translator = PhaidraMetaDataTranslator()
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
+        self.assertEqual(
+            {},
+            dynamic_data,
+        )
+
+    def test_translate_data_correct(self):
+        entry = Entry(
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            }
+        )
+
+        translator = PhaidraMetaDataTranslator()
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
+        self.assertEqual(
+            dynamic_data,
+            {
+                'role:act': [
+                    {
+                        '@type': 'schema:Person',
+                        'skos:exactMatch': [],
+                        'schema:name': [
+                            {
+                                '@value': 'Universität für Angewandte Kunst Wien',
+                            },
+                        ],
+                    },
+                ],
+            },
+        )
+
+    def test_translate_faulty_data(self):
+        raise NotImplementedError()
+
+    def test_validate_data_correct(self):
+        raise NotImplementedError()
+
+    def test_validate_data_error(self):
+        raise NotImplementedError()
+
+    def test_translate_errors_empty(self):
+        raise NotImplementedError()
+
+    def test_translate_error_not_empty(self):
+        raise NotImplementedError()

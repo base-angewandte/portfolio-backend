@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 
 from marshmallow import Schema, fields, validate
 
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    extract_phaidra_role_code,
+)
 
 value_field = fields.String(required=True, load_from='@value', dump_to='@value')
 
@@ -55,7 +57,6 @@ class PersonSchema(Schema):
         many=True,
         dump_to='skos:exactMatch',
         load_from='skos:exactMatch',
-        validate=validate.Length(equal=1),
         required=True,
     )
     schema_Name = fields.Nested(
@@ -136,7 +137,7 @@ def get_phaidra_meta_data_schema_with_dynamic_fields(
     schema = _PhaidraMetaData()
     for concept_mapper in bidirectional_concepts_mapper.concept_mappings.values():
         for os_sameAs in concept_mapper.owl_sameAs:
-            phaidra_role_code = get_phaidra_role_code(os_sameAs)
+            phaidra_role_code = extract_phaidra_role_code(os_sameAs)
             schema_attribute = _str_to_attribute(phaidra_role_code)
             marshmallow_fields: Dict[str, 'FieldABC'] = schema.fields
             '''Do not overwrite static field definitions'''

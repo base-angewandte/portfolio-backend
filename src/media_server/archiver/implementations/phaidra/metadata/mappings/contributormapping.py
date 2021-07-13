@@ -26,7 +26,20 @@ class ConceptMapper:
         else:
             raise RuntimeError('Got different data than expected ' + str(graph))
 
-        return cls(uri=node['uri'], owl_sameAs={element['uri'] for element in node['owl:sameAs']})
+        if 'owl:sameAs' not in node:
+            owl_sameAs = set()
+        elif node['owl:sameAs'].__class__ is dict:
+            owl_sameAs = set(node['owl:sameAs'].values())
+        elif node['owl:sameAs'].__class__ is list:
+            owl_sameAs = {element['uri'] for element in node['owl:sameAs']}
+        else:
+            raise RuntimeError(
+                f'Can not handle node["owl:sameAs"] with type {node["owl:sameAs"].__class__} and value {node["owl:sameAs"]}'
+            )
+        return cls(
+            uri=node['uri'],
+            owl_sameAs=owl_sameAs,
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -58,7 +71,7 @@ class BidirectionalConceptsMapper:
 
     @classmethod
     def from_entry(cls, entry: 'Entry') -> 'BidirectionalConceptsMapper':
-        if 'contributors' not in entry.data:
+        if (entry.data is None) or ('contributors' not in entry.data):
             return cls.from_base_uris(set())
         contributors = entry.data['contributors']
         roles = {
@@ -71,6 +84,6 @@ class BidirectionalConceptsMapper:
         return cls.from_base_uris(roles)
 
 
-def get_phaidra_role_code(role_uri):
+def extract_phaidra_role_code(role_uri):
     """Returns the role "key" as used in Phaidra-JSON LD."""
     return f'role:{role_uri.split("/")[-1]}'

@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import get_phaidra_role_code
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    extract_phaidra_role_code,
+)
 
 if TYPE_CHECKING:
     from media_server.models import Entry
@@ -48,20 +50,24 @@ def _create_value_language_objects_from_label_dict(container: Dict) -> List:
 
 
 def _create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
-    return {
+    person_object = {
         **_create_type_object('schema:Person'),
-        'skos:exactMatch': [
-            {
-                '@value': source,
-                **_create_type_object('ids:uri'),
-            }
-        ],
+        'skos:exactMatch': [],
         'schema:name': [
             {
                 **_create_value_object(name),
             }
         ],
     }
+
+    if source is not None:
+        person_object['skos:exactMatch'].append(
+            {
+                '@value': source,
+                **_create_type_object('ids:uri'),
+            }
+        )
+    return person_object
 
 
 class DCTitleTranslator(AbstractDataTranslator):
@@ -333,25 +339,25 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
     ):
         data_with_dynamic_structure = defaultdict(list)
-        if 'contributors' not in model.data:
+        if (model.data is None) or ('contributors' not in model.data):
             return data_with_dynamic_structure
         contributors: List[Dict] = model.data['contributors']
         for contributor in contributors:
-            if ('roles' not in contributor) or ('source' not in contributor) or ('label' not in contributor):
-                continue
             for role in contributor['roles']:
                 if 'source' not in role:
                     continue
                 phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
                 for phaidra_role in phaidra_roles:
-                    data_with_dynamic_structure[get_phaidra_role_code(phaidra_role)].append(
-                        {
-                            'skos:exactMatch': [{'@value': contributor['source'], '@type': 'ids:uri'}],
-                            'schema:name': [{'@value': contributor['label']}],
-                            '@type': 'schema:Person',
-                        },
+                    if 'loc.gov' not in phaidra_role:
+                        continue
+                    phaidra_role_code = extract_phaidra_role_code(phaidra_role)
+                    data_with_dynamic_structure[phaidra_role_code].append(
+                        _create_person_object(
+                            name=contributor['label'],
+                            source=contributor['source'] if 'source' in contributor else None,
+                        )
                     )
-            return data_with_dynamic_structure
+        return data_with_dynamic_structure
 
     def _merge(self, data_with_static_structure: dict, data_with_dynamic_structure: dict):
         for key, value in data_with_dynamic_structure.items():
