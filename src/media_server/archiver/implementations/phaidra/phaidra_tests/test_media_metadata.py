@@ -753,7 +753,20 @@ class DynamicPersonsTestCase(TestCase):
         )
 
     def test_translate_faulty_data(self):
-        raise NotImplementedError()
+        entry = Entry(
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        # 'roles': [],
+                    },
+                ],
+            }
+        )
+
+        translator = PhaidraMetaDataTranslator()
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        self.assertRaises(KeyError, lambda: translator._get_data_with_dynamic_structure(entry, mapping))
 
     def test_validate_data_correct(self):
         raise NotImplementedError()

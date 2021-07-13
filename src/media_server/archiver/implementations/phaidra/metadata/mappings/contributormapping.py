@@ -74,14 +74,13 @@ class BidirectionalConceptsMapper:
         if (entry.data is None) or ('contributors' not in entry.data):
             return cls.from_base_uris(set())
         contributors = entry.data['contributors']
-        roles = {
-            role['source']
-            for contributor in contributors
-            for role in contributor['roles']
-            if 'roles' in contributor
-            if 'source' in role
-        }
-        return cls.from_base_uris(roles)
+        roles = []
+        for contributor in contributors:
+            if 'roles' in contributor:
+                for role in contributor['roles']:
+                    if 'source' in role:
+                        roles.append(role['source'])
+        return cls.from_base_uris(set(roles))
 
 
 def extract_phaidra_role_code(role_uri):
