@@ -1082,4 +1082,82 @@ class UpmostLevelStaticDataTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        pass
+        entry = Entry()  # whatever
+        mapper = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        self.assertEqual({}, translator.translate_errors({}, mapper))
+
+
+class UpmostLevelAllDataTestCase(TestCase):
+    def test_translate_data_correct(self):
+        entry = Entry(
+            title='A Book With A Contributor',
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            },
+        )
+        translator = PhaidraMetaDataTranslator()
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        phaidra_data = translator.translate_data(model=entry, contributor_role_mapping=mapping)
+        self.assertEqual(
+            phaidra_data,
+            {
+                'dcterms:type': [
+                    {
+                        '@type': 'skos:Concept',
+                        'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
+                        'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
+                    }
+                ],
+                'edm:hasType': [],
+                'dce:title': [
+                    {
+                        '@type': 'bf:Title',
+                        'bf:mainTitle': [{'@value': 'A Book With A Contributor', '@language': 'und'}],
+                    }
+                ],
+                'dcterms:subject': [],
+                'rdau:P60048': [],
+                'dce:format': [],
+                'bf:note': [],
+                'role:edt': [],
+                'role:aut': [],
+                'role:pbl': [],
+                'role:act': [
+                    {
+                        '@type': 'schema:Person',
+                        'skos:exactMatch': [],
+                        'schema:name': [
+                            {
+                                '@value': 'Universität für Angewandte Kunst Wien',
+                            },
+                        ],
+                    },
+                ],
+            },
+        )
+
+    def test_translate_faulty_data(self):
+        raise NotImplementedError()
+
+    def test_validate_data_correct(self):
+        raise NotImplementedError()
+
+    def test_validate_data_error(self):
+        raise NotImplementedError()
+
+    def test_translate_errors_empty(self):
+        raise NotImplementedError()
+
+    def test_translate_error_not_empty(self):
+        raise NotImplementedError()

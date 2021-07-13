@@ -271,6 +271,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
             _create_person_object(source=role['source'], name=contributor['label'])
             for contributor in model.data['contributors']
             for role in contributor['roles']
+            if role['source'] == self.role_uri
         ]
 
 
