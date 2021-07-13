@@ -120,6 +120,8 @@ class EdmHasTypeTranslator(AbstractUserUnrelatedDataTranslator):
         :param model:
         :return:
         """
+        if model.type is None:
+            return []
         return [
             {
                 **_create_type_object('skos:Concept'),
@@ -129,39 +131,33 @@ class EdmHasTypeTranslator(AbstractUserUnrelatedDataTranslator):
         ]
 
     def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
-        try:
-            type_labels: Dict = model.type['label']
-        except KeyError:
-            raise RuntimeError(f"Expected model.type['label'], but type only contains {model.type.keys()}")
-        except TypeError:
-            raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
+        if 'label' not in model.type:
+            return []
+        type_labels: Dict = model.type['label']
         return [
             _create_value_language_object(language=language, value=label) for language, label in type_labels.items()
         ]
 
     def _translate_skos_exactMatch(self, model: 'Entry') -> List[str]:
-        try:
-            return [
-                model.type['source'],
-            ]
-        except KeyError:
-            raise RuntimeError(f"Expected model.type['source'], but type only contains {model.type.keys()}")
-        except TypeError:
-            raise RuntimeError(f'Expected model.type to be dict, but got {model.type.__class__}')
+        if 'source' not in model.type:
+            return []
+        return [
+            model.type['source'],
+        ]
 
 
 class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
     """Currently used on dcterms:subject, rdau:P60048, dce:format."""
 
-    raise_on_key_error: bool
+    raise_on_not_found_error: bool
     entry_attribute: str
     json_keys: List[Hashable]
 
     def __init__(
-        self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None, raise_on_key_error: bool = False
+        self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None, raise_on_not_found_error: bool = False
     ):
         self.entry_attribute = entry_attribute
-        self.raise_on_key_error = raise_on_key_error
+        self.raise_on_not_found_error = raise_on_not_found_error
         self.json_keys = [] if json_keys is None else json_keys
 
     def translate_data(self, model: 'Entry') -> List[Dict]:
@@ -172,11 +168,16 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
 
     def _get_data_of_interest(self, model: 'Entry') -> List[Dict]:
         data_of_interest: Dict = getattr(model, self.entry_attribute)
+        if data_of_interest is None:
+            if self.raise_on_not_found_error:
+                raise AttributeError(f'Attribute Entry.{self.entry_attribute} is empty')
+            else:
+                return []
         for key in self.json_keys:
             try:
                 data_of_interest = data_of_interest[key]
             except KeyError as error:
-                if self.raise_on_key_error:
+                if self.raise_on_not_found_error:
                     raise error
                 else:
                     return []
@@ -282,48 +283,56 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     ordered pairwise.
     """
 
-    dc_title_translator: DCTitleTranslator
+    _static_key_translator_mapping: Dict[str, AbstractDataTranslator]
 
     def __init__(self):
-        self.dc_title_translator = DCTitleTranslator()
-        self.edm_has_type_translator = EdmHasTypeTranslator()
-        self.dcterms_subject_translator = GenericSkosConceptTranslator('keywords')
-        self.rdau_P60048_translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
-        self.dce_format_translator = GenericSkosConceptTranslator('data', ['format'], raise_on_key_error=False)
-        self.bf_note_translator = BfNoteTranslator()
-        self.editor_translator = GenericStaticPersonTranslator(
-            primary_level_data_key='editors',
-            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/editor',
-        )
-        self.author_translator = GenericStaticPersonTranslator(
-            primary_level_data_key='authors',
-            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author',
-        )
-        self.publisher_translator = GenericStaticPersonTranslator(
-            primary_level_data_key='publishers',
-            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
-        )
+        self._static_key_translator_mapping = {
+            'edm:hasType': EdmHasTypeTranslator(),
+            'dce:title': DCTitleTranslator(),
+            'dcterms:subject': GenericSkosConceptTranslator('keywords'),
+            'rdau:P60048': GenericSkosConceptTranslator('data', ['material'], raise_on_not_found_error=False),
+            'dce:format': GenericSkosConceptTranslator('data', ['format'], raise_on_not_found_error=False),
+            'bf:note': BfNoteTranslator(),
+            'role:edt': GenericStaticPersonTranslator(
+                primary_level_data_key='editors',
+                role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/editor',
+            ),
+            'role:aut': GenericStaticPersonTranslator(
+                primary_level_data_key='authors',
+                role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+            ),
+            'role:pbl': GenericStaticPersonTranslator(
+                primary_level_data_key='publishers',
+                role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
+            ),
+        }
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
         data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
         return self._merge(data_with_static_structure, data_with_dynamic_structure)
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        raise NotImplementedError()
+    def translate_errors(
+        self, errors: Optional[Dict], contributor_role_mapping: 'BidirectionalConceptsMapper' = None
+    ) -> Dict:
+        errors_with_static_structure = self._translate_errors_with_static_structure(errors)
+        errors_with_dynamic_structure = self._translate_errors_with_dynamic_structure(errors, contributor_role_mapping)
+        all_errors = self._merge(errors_with_static_structure, errors_with_dynamic_structure)
+        return self._filter_errors(all_errors)
 
     def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
         return {
             'dcterms:type': self._create_static_dcterms(),
-            'edm:hasType': self.edm_has_type_translator.translate_data(model),
-            'dce:title': self.dc_title_translator.translate_data(model),
-            'dcterms:subject': self.dcterms_subject_translator.translate_data(model),
-            'rdau:P60048': self.rdau_P60048_translator.translate_data(model),
-            'dce:format': self.dce_format_translator.translate_data(model),
-            'bf:note': self.bf_note_translator.translate_data(model),
-            'role:edt': self.editor_translator.translate_data(model),
-            'role:aut': self.author_translator.translate_data(model),
-            'role:pbl': self.publisher_translator.translate_data(model),
+            **{
+                key: translator.translate_data(model)
+                for key, translator in self._static_key_translator_mapping.items()
+            },
+        }
+
+    def _translate_errors_with_static_structure(self, errors: Dict) -> Dict:
+        return {
+            key: translator.translate_errors(errors[key]) if key in errors else None
+            for key, translator in self._static_key_translator_mapping.items()
         }
 
     @staticmethod

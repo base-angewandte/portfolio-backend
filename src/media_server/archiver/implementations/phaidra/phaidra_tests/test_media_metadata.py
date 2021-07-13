@@ -240,32 +240,61 @@ class EdmHastypeTestCase(TestCase):
             lambda: EdmHasTypeTranslator().translate_errors(errors),
         )
 
-    def test_faulty_input_data_label(self):
+    def test_incomplete_input_data_label(self):
         data = deepcopy(self.example_type_data)
         del data['label']
         entry = Entry(type=data)
-        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+        self.assertEqual(
+            EdmHasTypeTranslator().translate_data(entry),
+            [
+                {
+                    '@type': 'skos:Concept',
+                    'skos:prefLabel': [],
+                    'skos:exactMatch': [
+                        'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
+                    ],
+                }
+            ],
+        )
 
-    def test_faulty_input_data_source(self):
+    def test_incomplete_input_data_source(self):
         data = deepcopy(self.example_type_data)
         del data['source']
         entry = Entry(type=data)
-        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+        self.assertEqual(
+            EdmHasTypeTranslator().translate_data(entry),
+            [
+                {
+                    '@type': 'skos:Concept',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Artikel',
+                            '@language': 'deu',
+                        },
+                        {
+                            '@value': 'article',
+                            '@language': 'eng',
+                        },
+                    ],
+                    'skos:exactMatch': [],
+                }
+            ],
+        )
 
     def test_empty_input_data(self):
         entry = Entry()
-        self.assertRaises(RuntimeError, lambda: EdmHasTypeTranslator().translate_data(entry))
+        self.assertEqual(EdmHasTypeTranslator().translate_data(entry), [])
 
 
 class GenericSkosConceptTestCase(TestCase):
     def test_get_data_missing_key_fail(self):
         entry = Entry(data={'other-stuff': ';-)'})
-        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_key_error=True)
+        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_not_found_error=True)
         self.assertRaises(KeyError, lambda: translator._get_data_of_interest(entry))
 
     def test_get_data_missing_key_fallback(self):
         entry = Entry(data={'other-stuff': ';-)'})
-        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_key_error=False)
+        translator = GenericSkosConceptTranslator('data', ['not-existing-key'], raise_on_not_found_error=False)
         self.assertEqual([], translator._get_data_of_interest(entry))
 
     def test_get_materials_data(self):
@@ -278,7 +307,7 @@ class GenericSkosConceptTestCase(TestCase):
             ],
         )
         entry = Entry(data={'material': materials_data})
-        translator = GenericSkosConceptTranslator('data', ['material'], raise_on_key_error=False)
+        translator = GenericSkosConceptTranslator('data', ['material'], raise_on_not_found_error=False)
         self.assertEqual(materials_data, translator._get_data_of_interest(entry))
 
     def test_get_keywords_data(self):
@@ -866,3 +895,66 @@ class DynamicPersonsTestCase(TestCase):
                 }
             ),
         )
+
+
+class UpmostLevelStaticDataTestCase(TestCase):
+    def test_translate_empty_data(self):
+        entry = Entry()
+        translator = PhaidraMetaDataTranslator()
+        self.assertRaises(TypeError, lambda: translator.translate_data(entry))
+
+    def test_translate_minimal_correct_data(self):
+        entry = Entry(title='A Book With A Cover And No Pages At All.', data={}, keywords=[], texts=[])
+        translator = PhaidraMetaDataTranslator()
+        self.assertEqual(
+            translator.translate_data(entry),
+            {
+                'dce:title': [
+                    {
+                        '@type': 'bf:Title',
+                        'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
+                    },
+                ]
+            },
+        )
+
+    def test_translate_some_correct_data(self):
+        raise NotImplementedError()
+
+    def test_translate_faulty_data(self):
+        raise NotImplementedError()
+
+    def test_validate_data_correct(self):
+        raise NotImplementedError()
+
+    def test_validate_data_error(self):
+        raise NotImplementedError()
+
+    def test_translate_errors_empty(self):
+        raise NotImplementedError()
+
+    def test_translate_error_not_empty(self):
+        raise NotImplementedError()
+
+
+class UpmostLevelAllDataTestCase(TestCase):
+    def test_translate_empty_data(self):
+        raise NotImplementedError()
+
+    def test_translate_data_correct(self):
+        raise NotImplementedError()
+
+    def test_translate_faulty_data(self):
+        raise NotImplementedError()
+
+    def test_validate_data_correct(self):
+        raise NotImplementedError()
+
+    def test_validate_data_error(self):
+        raise NotImplementedError()
+
+    def test_translate_errors_empty(self):
+        raise NotImplementedError()
+
+    def test_translate_error_not_empty(self):
+        raise NotImplementedError()
