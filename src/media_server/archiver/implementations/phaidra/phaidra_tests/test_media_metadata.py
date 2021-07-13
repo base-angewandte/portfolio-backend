@@ -22,6 +22,8 @@ from media_server.archiver.implementations.phaidra.metadata.schemas import (
     PersonSchema,
     SkosConceptSchema,
     TypeLabelSchema,
+    _PhaidraMetaData,
+    get_phaidra_meta_data_schema_with_dynamic_fields,
 )
 from media_server.archiver.interface.exceptions import InternalValidationError
 
@@ -769,7 +771,42 @@ class DynamicPersonsTestCase(TestCase):
         self.assertRaises(KeyError, lambda: translator._get_data_with_dynamic_structure(entry, mapping))
 
     def test_validate_data_correct(self):
-        raise NotImplementedError()
+        entry = Entry(
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            }
+        )
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        Schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
+        self.assertIsInstance(Schema, _PhaidraMetaData)
+        self.assertIn('role_act', Schema.fields)
+        self.assertEqual('role:act', Schema.fields['role_act'].load_from)
+        self.assertIs(Schema.fields['role_act'].nested, PersonSchema)
+        generated_schema = Schema.fields['role_act'].nested()
+        self.assertEqual(
+            {},
+            generated_schema.validate(
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        },
+                    ],
+                },
+            ),
+        )
 
     def test_validate_data_error(self):
         raise NotImplementedError()
