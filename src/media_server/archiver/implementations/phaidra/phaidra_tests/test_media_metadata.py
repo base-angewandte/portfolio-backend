@@ -809,7 +809,44 @@ class DynamicPersonsTestCase(TestCase):
         )
 
     def test_validate_data_error(self):
-        raise NotImplementedError()
+        entry = Entry(
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            }
+        )
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        Schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
+        generated_schema = Schema.fields['role_act'].nested()
+        self.assertEqual(
+            {
+                'skos:exactMatch': {
+                    0: {
+                        '@value': ['Missing data for required field.'],
+                    },
+                },
+            },
+            generated_schema.validate(
+                {
+                    '@type': 'schema:Person',
+                    # 'skos:exactMatch': [],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        },
+                    ],
+                },
+            ),
+        )
 
     def test_translate_errors_empty(self):
         raise NotImplementedError()
