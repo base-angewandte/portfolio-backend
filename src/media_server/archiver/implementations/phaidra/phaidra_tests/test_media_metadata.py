@@ -849,7 +849,20 @@ class DynamicPersonsTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        raise NotImplementedError()
+        translator = PhaidraMetaDataTranslator()
+        self.assertEqual({}, translator._translate_errors_with_dynamic_structure({}))
 
     def test_translate_error_not_empty(self):
-        raise NotImplementedError()
+        translator = PhaidraMetaDataTranslator()
+        self.assertRaises(
+            InternalValidationError,
+            lambda: translator._translate_errors_with_dynamic_structure(
+                {
+                    'skos:exactMatch': {
+                        0: {
+                            '@value': ['Missing data for required field.'],
+                        },
+                    },
+                }
+            ),
+        )

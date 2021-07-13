@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     extract_phaidra_role_code,
 )
+from media_server.archiver.interface.exceptions import InternalValidationError
 
 if TYPE_CHECKING:
     from media_server.models import Entry
@@ -337,7 +338,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def _get_data_with_dynamic_structure(
         self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
-    ):
+    ) -> Dict:
         data_with_dynamic_structure = defaultdict(list)
         if (model.data is None) or ('contributors' not in model.data):
             return data_with_dynamic_structure
@@ -358,6 +359,21 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                         )
                     )
         return data_with_dynamic_structure
+
+    def _translate_errors_with_dynamic_structure(
+        self, errors: Dict, contributor_role_mapping: Optional['BidirectionalConceptsMapper'] = None
+    ):
+        """
+
+        :param errors:
+        :param contributor_role_mapping: a placeholder for child classes. This would be needed to translate errors,
+            however we do not
+        :return:
+        """
+        if errors:
+            raise InternalValidationError(str(errors))
+        else:
+            return {}
 
     def _merge(self, data_with_static_structure: dict, data_with_dynamic_structure: dict):
         for key, value in data_with_dynamic_structure.items():
