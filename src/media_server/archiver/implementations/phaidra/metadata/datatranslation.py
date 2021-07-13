@@ -75,24 +75,28 @@ class DCTitleTranslator(AbstractDataTranslator):
     """A list of titles, where in our database is only one."""
 
     def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
-        title_container = _create_type_object('bf:Title')
-        if model.title:
-            title_container['bf:mainTitle'] = [
+        title_object = {
+            **_create_type_object('bf:Title'),
+            'bf:mainTitle': [
                 _create_value_language_object(model.title, 'und'),
-            ]
+            ],
+        }
         if model.subtitle:
-            title_container['bf:subtitle'] = [
+            title_object['bf:subtitle'] = [
                 _create_value_language_object(model.subtitle, 'und'),
             ]
-        return [title_container]
 
-    def translate_errors(self, errors: List[Dict]) -> Dict:
+        return [
+            title_object,
+        ]
+
+    def translate_errors(self, errors: Dict[int, Dict]) -> Dict:
         translated_errors = {}
         if errors.__len__() == 0:
             return translated_errors
         if errors.__len__() != 1:
             raise RuntimeError(f'Title array is defined as length 1, not {errors.__len__()}')
-        errors = errors.pop()
+        errors = errors[0]
         try:
             translated_errors['title'] = errors['bf:mainTitle'][0]['@value']
         except KeyError:
@@ -197,7 +201,6 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
 
 class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
     def translate_data(self, model: 'Entry') -> List[Dict]:
-
         # Bail early, if this field is NULL
         if model.texts is None:
             return []
@@ -294,6 +297,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     _static_key_translator_mapping: Dict[str, AbstractDataTranslator]
 
     def __init__(self):
+        self.data_with_dynamic_structure = defaultdict(list)
         self._static_key_translator_mapping = {
             'edm:hasType': EdmHasTypeTranslator(),
             'dce:title': DCTitleTranslator(),
@@ -338,10 +342,13 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         }
 
     def _translate_errors_with_static_structure(self, errors: Dict) -> Dict:
-        return {
-            key: translator.translate_errors(errors[key]) if key in errors else None
-            for key, translator in self._static_key_translator_mapping.items()
-        }
+        translated_errors = {}
+        for target_key, translator in self._static_key_translator_mapping.items():
+            if target_key in errors:
+                source_errors = translator.translate_errors(errors[target_key])
+                for source_key, source_error in source_errors.items():
+                    translated_errors[source_key] = source_error
+        return translated_errors
 
     @staticmethod
     def _create_static_dcterms() -> List:
@@ -356,9 +363,8 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     def _get_data_with_dynamic_structure(
         self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
     ) -> Dict:
-        data_with_dynamic_structure = defaultdict(list)
         if (model.data is None) or ('contributors' not in model.data):
-            return data_with_dynamic_structure
+            return self.data_with_dynamic_structure
         contributors: List[Dict] = model.data['contributors']
         for contributor in contributors:
             for role in contributor['roles']:
@@ -369,26 +375,36 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                     if 'loc.gov' not in phaidra_role:
                         continue
                     phaidra_role_code = extract_phaidra_role_code(phaidra_role)
-                    data_with_dynamic_structure[phaidra_role_code].append(
+                    self.data_with_dynamic_structure[phaidra_role_code].append(
                         _create_person_object(
                             name=contributor['label'],
                             source=contributor['source'] if 'source' in contributor else None,
                         )
                     )
-        return data_with_dynamic_structure
+        return self.data_with_dynamic_structure
 
     def _translate_errors_with_dynamic_structure(
-        self, errors: Dict, contributor_role_mapping: Optional['BidirectionalConceptsMapper'] = None
+        self, errors: Dict, contributor_role_mapping: 'BidirectionalConceptsMapper'
     ):
         """
 
         :param errors:
-        :param contributor_role_mapping: a placeholder for child classes. This would be needed to translate errors,
-            however we do not
+        :param contributor_role_mapping
         :return:
         """
-        if errors:
-            raise InternalValidationError(str(errors))
+
+        dynamic_errors = {}
+
+        for concept_mapping in contributor_role_mapping.concept_mappings.values():
+            for phaidra_role in concept_mapping.owl_sameAs:
+                if 'loc.gov' not in phaidra_role:
+                    continue
+                phaidra_role_code = extract_phaidra_role_code(phaidra_role)
+                if phaidra_role_code in errors:
+                    dynamic_errors[phaidra_role_code] = errors[phaidra_role_code]
+
+        if dynamic_errors:
+            raise InternalValidationError(str(dynamic_errors))
         else:
             return {}
 

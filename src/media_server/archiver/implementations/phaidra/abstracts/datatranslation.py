@@ -38,17 +38,9 @@ class AbstractUserUnrelatedDataTranslator(AbstractDataTranslator, ABC):
     raise InternalValidationError
     """
 
-    def translate_errors(self, errors: Optional[Union[List[Dict], Dict]]) -> Union[List[Dict], Dict]:
+    def translate_errors(self, errors: Optional[Union[List[Dict], Dict]]) -> Union[Dict[int, Dict], Dict[str, List]]:
         """None of these errors will be shown to the user."""
-        if errors.__class__ is list:
-            if any([len(error) > 0 for error in errors]):
-                raise InternalValidationError(str(errors))
-            else:
-                return [{} for error in errors]
-        elif errors.__class__ is dict:
-            if len(errors):
-                raise InternalValidationError(str(errors))
-            else:
-                return {}
+        if len(errors):
+            raise InternalValidationError(str(errors))
         else:
-            raise NotImplementedError(f'Can not handle error translation for type {errors.__class__}')
+            return {}

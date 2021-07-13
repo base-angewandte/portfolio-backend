@@ -83,6 +83,6 @@ class BidirectionalConceptsMapper:
         return cls.from_base_uris(set(roles))
 
 
-def extract_phaidra_role_code(role_uri):
+def extract_phaidra_role_code(role_uri) -> str:
     """Returns the role "key" as used in Phaidra-JSON LD."""
     return f'role:{role_uri.split("/")[-1]}'
