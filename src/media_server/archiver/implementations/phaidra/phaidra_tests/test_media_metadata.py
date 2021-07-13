@@ -904,25 +904,80 @@ class UpmostLevelStaticDataTestCase(TestCase):
         self.assertRaises(TypeError, lambda: translator.translate_data(entry))
 
     def test_translate_minimal_correct_data(self):
-        entry = Entry(title='A Book With A Cover And No Pages At All.', data={}, keywords=[], texts=[])
+        """
+        This is the minimum required data from Entry - remember translation is not validation.
+        Validation will take care of phaidra.
+        :return:
+        """
+        entry = Entry(title='A Book With A Cover And No Pages At All.')
         translator = PhaidraMetaDataTranslator()
         self.assertEqual(
             translator.translate_data(entry),
             {
+                'dcterms:type': [
+                    {
+                        '@type': 'skos:Concept',
+                        'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
+                        'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
+                    }
+                ],
+                'edm:hasType': [],
                 'dce:title': [
                     {
                         '@type': 'bf:Title',
                         'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
-                    },
-                ]
+                    }
+                ],
+                'dcterms:subject': [],
+                'rdau:P60048': [],
+                'dce:format': [],
+                'bf:note': [],
+                'role:edt': [],
+                'role:aut': [],
+                'role:pbl': [],
             },
         )
 
     def test_translate_some_correct_data(self):
-        raise NotImplementedError()
+        entry = Entry(
+            title='A Book With A Cover And No Pages At All.',
+            data={
+                'label': {'de': 'Installation', 'en': 'Installation'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
+            },
+        )
+        translator = PhaidraMetaDataTranslator()
+        self.assertEqual(
+            translator.translate_data(entry),
+            {
+                'dcterms:type': [
+                    {
+                        '@type': 'skos:Concept',
+                        'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
+                        'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
+                    }
+                ],
+                'edm:hasType': [],
+                'dce:title': [
+                    {
+                        '@type': 'bf:Title',
+                        'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
+                    }
+                ],
+                'dcterms:subject': [],
+                'rdau:P60048': [],
+                'dce:format': [],
+                'bf:note': [],
+                'role:edt': [],
+                'role:aut': [],
+                'role:pbl': [],
+            },
+        )
 
     def test_translate_faulty_data(self):
-        raise NotImplementedError()
+        entry = Entry()
+        translator = PhaidraMetaDataTranslator()
+        self.assertRaises(TypeError, lambda: translator.translate_data(entry))
 
     def test_validate_data_correct(self):
         raise NotImplementedError()

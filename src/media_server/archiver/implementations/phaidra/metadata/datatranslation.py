@@ -197,6 +197,11 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
 
 class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
     def translate_data(self, model: 'Entry') -> List[Dict]:
+
+        # Bail early, if this field is NULL
+        if model.texts is None:
+            return []
+
         abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
         text: Dict
         texts = [
@@ -241,6 +246,9 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         self.primary_level_data_key = primary_level_data_key
 
     def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+        if model.data is None:
+            # Bail early on model.data is null, since is nullable
+            return []
         first_level_persons = self._get_first_level_persons(model)
         contributors = self._get_contributors(model)
         return first_level_persons + contributors
