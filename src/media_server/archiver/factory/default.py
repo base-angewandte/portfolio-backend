@@ -1,7 +1,7 @@
 import typing
 from typing import TYPE_CHECKING, Dict
 
-import environ
+from portfolio import settings
 
 from ..implementations.phaidra.main import PhaidraArchiver
 from .archives import Archives
@@ -9,9 +9,6 @@ from .archives import Archives
 if TYPE_CHECKING:
     from ..interface.abstractarchiver import AbstractArchiver
     from ..interface.archiveobject import ArchiveObject
-
-_environment = environ.Env()
-_environment.read_env()
 
 
 class ArchiverFactory:
@@ -28,7 +25,7 @@ class ArchiverFactory:
         :param archive: defaults to env ARCHIVE_TYPE
         :return: An implementation for an archiver
         """
-        archive = archive or _environment.str('ARCHIVE_TYPE')
+        archive = archive or settings.ARCHIVE_TYPE
         if archive.__class__ is str:
             try:
                 archive = Archives(archive)

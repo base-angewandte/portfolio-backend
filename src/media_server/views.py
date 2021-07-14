@@ -251,7 +251,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 )
 @api_view(['GET'])
 def validate_assets(request, media_pks, *args, **kwargs):
-    controller = DefaultArchiveController(request.user, {int(primary_key) for primary_key in media_pks.split(',')})
+    controller = DefaultArchiveController(request.user, set(media_pks.split(',')))
     controller.validate()
     return SuccessfulValidationResponse(_('Asset validation successful'))
 

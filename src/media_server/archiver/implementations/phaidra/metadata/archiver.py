@@ -30,10 +30,10 @@ class DefaultMetadataArchiver(AbstractArchiver):
         result = schema.load(data)
         errors: dict = result.errors
         self.data = result.data
-        self.throw_validation_errors(translator.translate_errors(errors))
+        self.throw_validation_errors(translator.translate_errors(errors, contributor_role_mapping))
 
 
 class ThesisMetadataArchiver(AbstractArchiver, ABC):
-    def __init__(self, archive_object: ArchiveObject):
+    def __init__(self, archive_object: 'ArchiveObject'):
         super().__init__(archive_object)
         raise NotImplementedError()

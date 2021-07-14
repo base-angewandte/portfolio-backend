@@ -2,7 +2,7 @@ from rest_framework import routers
 
 from django.urls import include, path, re_path
 
-from media_server.views import MediaViewSet, archive_assets
+from media_server.views import MediaViewSet, archive_assets, validate_assets
 
 from . import views
 
@@ -27,5 +27,10 @@ urlpatterns = [
         r'^archive_assets/media/(?P<media_pks>[^/.]+)/$',
         archive_assets,
         name='archive_assets',
+    ),
+    re_path(
+        r'^validate_assets/media/(?P<media_pks>[^/.]+)/$',
+        validate_assets,
+        name='validate_assets',
     ),
 ]

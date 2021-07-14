@@ -28,7 +28,7 @@ class DefaultArchiveController:
     @property
     def media_objects(self) -> Set[Media]:
         if self._media_objects is None:
-            self._create_media_objects()
+            self._media_objects = self._create_media_objects()
         return self._media_objects
 
     _entry: Optional[Entry] = None
@@ -37,7 +37,7 @@ class DefaultArchiveController:
     def entry(self) -> Entry:
         if self._entry is None:
             self._entry = self._get_entry()
-        return self.entry
+        return self._entry
 
     _archiver: Optional['AbstractArchiver'] = None
 
