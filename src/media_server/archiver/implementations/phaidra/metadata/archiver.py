@@ -1,15 +1,20 @@
+from abc import ABC
 from typing import TYPE_CHECKING, Dict, Optional
 
+from ....interface.responses import SuccessfulArchiveResponse
 from .datatranslation import PhaidraMetaDataTranslator
 from .mappings.contributormapping import BidirectionalConceptsMapper
 from .schemas import get_phaidra_meta_data_schema_with_dynamic_fields
 
 if TYPE_CHECKING:
     from ....interface.archiveobject import ArchiveObject
+
 from ....interface.abstractarchiver import AbstractArchiver
 
 
 class DefaultMetadataArchiver(AbstractArchiver):
+    def push_to_archive(self) -> 'SuccessfulArchiveResponse':
+        raise NotImplementedError()
 
     data: Optional[Dict] = None
 
@@ -28,5 +33,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self.throw_validation_errors(translator.translate_errors(errors))
 
 
-class ThesisMetadataArchiver(AbstractArchiver):
-    pass
+class ThesisMetadataArchiver(AbstractArchiver, ABC):
+    def __init__(self, archive_object: ArchiveObject):
+        super().__init__(archive_object)
+        raise NotImplementedError()

@@ -26,3 +26,7 @@ class SuccessfulArchiveResponse(Response):
                 },
             }
         )
+
+
+class SuccessfulValidationResponse(Response):
+    pass
