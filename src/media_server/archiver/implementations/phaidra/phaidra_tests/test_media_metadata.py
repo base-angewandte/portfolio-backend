@@ -222,14 +222,18 @@ class EdmHastypeTestCase(TestCase):
         )
 
     def test_translate_errors(self):
-        errors = [
-            {
+        errors = {
+            0: {
                 'skos:exactMatch': ['Missing data for required field.'],
             },
-        ]
-        self.assertRaises(
-            InternalValidationError,
-            lambda: EdmHasTypeTranslator().translate_errors(errors),
+        }
+        self.assertEqual(
+            {
+                'type': [
+                    'Missing data for required field.',
+                ]
+            },
+            EdmHasTypeTranslator().translate_errors(errors),
         )
 
     def test_incomplete_input_data_label(self):
@@ -1061,6 +1065,24 @@ class UpmostLevelStaticDataTestCase(TestCase):
                     ],
                 }
             ],
+            'edm:hasType': [
+                {
+                    '@type': 'skos:Concept',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Artikel',
+                            '@language': 'deu',
+                        },
+                        {
+                            '@value': 'article',
+                            '@language': 'eng',
+                        },
+                    ],
+                    'skos:exactMatch': [
+                        'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
+                    ],
+                }
+            ],
         }
         self.assertEqual({}, _PhaidraMetaData().validate(minimal_correct_data))
 
@@ -1077,7 +1099,18 @@ class UpmostLevelStaticDataTestCase(TestCase):
                             }
                         }
                     }
-                }
+                },
+                'edm:hasType': {
+                    0: {
+                        'skos:exactMatch': ['Missing data for required field.'],
+                        'skos:prefLabel': {
+                            0: {
+                                '@language': ['Missing data for required field.'],
+                                '@value': ['Missing data for required field.'],
+                            },
+                        },
+                    },
+                },
             },
         )
 
@@ -1147,17 +1180,147 @@ class UpmostLevelAllDataTestCase(TestCase):
             },
         )
 
-    def test_translate_faulty_data(self):
-        raise NotImplementedError()
-
     def test_validate_data_correct(self):
-        raise NotImplementedError()
+        entry = Entry(
+            title='A Book With A Contributor',
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            },
+            type={
+                'label': {'de': 'Artikel', 'en': 'article'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
+            },
+        )
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
+        transformer = PhaidraMetaDataTranslator()
+        data = transformer.translate_data(entry, mapping)
+        errors = schema.validate(data)
+        self.assertEqual(errors, {})
 
     def test_validate_data_error(self):
-        raise NotImplementedError()
+        entry = Entry(
+            title='A Book With A Contributor',
+            data={
+                'contributors': [
+                    {
+                        # 'label': 'Universität für Angewandte Kunst Wien',
+                        'roles': [
+                            {
+                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
+                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                            }
+                        ],
+                    },
+                ],
+            },
+        )
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
+        self.assertEqual(
+            {
+                'role:act': {0: {'schema:name': ['Length must be 1.']}},
+                'edm:hasType': ['Length must be 1.'],
+            },
+            schema.validate(
+                {
+                    'dcterms:type': [
+                        {
+                            '@type': 'skos:Concept',
+                            'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
+                            'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
+                        }
+                    ],
+                    'edm:hasType': [],
+                    'dce:title': [
+                        {
+                            '@type': 'bf:Title',
+                            'bf:mainTitle': [{'@value': 'A Book With A Contributor', '@language': 'und'}],
+                        }
+                    ],
+                    'dcterms:subject': [],
+                    'rdau:P60048': [],
+                    'dce:format': [],
+                    'bf:note': [],
+                    'role:edt': [],
+                    'role:aut': [],
+                    'role:pbl': [],
+                    'role:act': [
+                        {
+                            '@type': 'schema:Person',
+                            'skos:exactMatch': [],
+                            'schema:name': [
+                                # nothing
+                            ],
+                        },
+                    ],
+                },
+            ),
+        )
 
-    def test_translate_errors_empty(self):
-        raise NotImplementedError()
 
-    def test_translate_error_not_empty(self):
-        raise NotImplementedError()
+class PhaidraRuleTest(TestCase):
+    """Full validation stories according to https://basedev.uni-
+    ak.ac.at/redmine/issues/1419 The entry must have a title.
+
+    The entry must have a type.
+    """
+
+    def test_missing_title(self):
+        entry = Entry(
+            # enforce no title
+            title=None,
+            type={
+                'label': {'de': 'Installation', 'en': 'Installation'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
+            },
+        )
+        errors = self._validate(entry)
+        self.assertEqual(errors, {'title': ['Field may not be null.']})
+
+    def test_missing_type(self):
+        entry = Entry(title='No Type')
+        errors = self._validate(entry)
+        self.assertEqual(errors, {'type': ['Missing data for required field.']})
+
+    def test_missing_type_and_title(self):
+        entry = Entry(title=None)
+        errors = self._validate(entry)
+        self.assertEqual(errors, {'type': ['Missing data for required field.'], 'title': ['Field may not be null.']})
+
+    def test_missing_nothing(self):
+        entry = Entry(
+            title='Everything included!',
+            type={
+                'label': {'de': 'Installation', 'en': 'Installation'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
+            },
+        )
+        errors = self._validate(entry)
+        self.assertEqual(errors, {})
+
+    def _validate(self, entry: 'Entry') -> Dict:
+        """Validate phaidra style, return errors portfolio style.
+
+        :param entry:
+        :return: errors
+        """
+        translator = PhaidraMetaDataTranslator()
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        schema = get_phaidra_meta_data_schema_with_dynamic_fields(dynamic_mapping)
+
+        phaidra_data = translator.translate_data(entry)
+        phaidra_errors = schema.validate(phaidra_data)
+        portfolio_errors = translator.translate_errors(phaidra_errors, dynamic_mapping)
+
+        return portfolio_errors

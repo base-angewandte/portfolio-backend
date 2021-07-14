@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
+import marshmallow
+
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     extract_phaidra_role_code,
 )
@@ -109,7 +111,7 @@ class DCTitleTranslator(AbstractDataTranslator):
         return translated_errors
 
 
-class EdmHasTypeTranslator(AbstractUserUnrelatedDataTranslator):
+class EdmHasTypeTranslator(AbstractDataTranslator):
     def translate_data(self, model: 'Entry') -> List[Dict]:
         """
         For Example
@@ -148,6 +150,17 @@ class EdmHasTypeTranslator(AbstractUserUnrelatedDataTranslator):
         return [
             model.type['source'],
         ]
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        """Minimum length is 1 on phaidra site, on ours only missing.
+
+        :param errors:
+        :return:
+        """
+        if errors:
+            return {'type': [marshmallow.fields.Field.default_error_messages['required']]}
+        else:
+            return {}
 
 
 class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
