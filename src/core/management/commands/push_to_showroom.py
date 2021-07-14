@@ -173,4 +173,44 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f'Could not push {len(media_not_pushed)} media:'))
             self.stdout.write(str(media_not_pushed))
 
-        # TODO: push all existing relationships of the pushed entries
+        self.stdout.write('Now pushing entry relations')
+        relations_created = []
+        relations_not_pushed = []
+        for entry in entries:
+            showroom_id = next((e[1] for e in created if e[0] == entry.id), None)
+            if not showroom_id:
+                showroom_id = next((e[1] for e in updated if e[0] == entry.id), None)
+            if not showroom_id:
+                continue
+            for related_entry in entry.relations.all():
+                data = {'activity_id': related_entry.id}
+                headers = {
+                    'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
+                    'X-Api-Key': settings.SHOWROOM_API_KEY,
+                }
+                path = f'activities/{showroom_id}/relations/'
+                r = requests.post(settings.SHOWROOM_API_BASE + path, json=data, headers=headers)
+
+                if r.status_code == 403:
+                    raise CommandError(f'Authentication failed: {r.text}')
+
+                elif r.status_code == 404 or r.status_code == 400:
+                    relations_not_pushed.append((entry.id, related_entry.id))
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f'Relation from {entry.id} to {related_entry.id} could not be pushed: {r.status_code}: {r.text}'
+                        )
+                    )
+
+                # according to the api spec the only other option is a 201 response
+                # when the relationship was successfully added
+                # but we should also check for anything unexpected to happen
+                elif r.status_code == 201:
+                    relations_created.append((entry.id, related_entry.id))
+                else:
+                    raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+
+        self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(relations_created)} relations.'))
+        if len(relations_not_pushed) > 0:
+            self.stdout.write(self.style.WARNING(f'Could not push {len(relations_not_pushed)} relations:'))
+            self.stdout.write(str(relations_not_pushed))
