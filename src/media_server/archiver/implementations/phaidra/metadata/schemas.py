@@ -112,6 +112,8 @@ class _PhaidraMetaData(Schema):
         dump_to='dce:title',
     )
 
+    dcterms_language = fields.List(fields.String())
+
     dcterms_subject = fields.Nested(
         SkosConceptSchema, many=True, load_from='dcterms:subject', dump_to='dcterms:subject'
     )

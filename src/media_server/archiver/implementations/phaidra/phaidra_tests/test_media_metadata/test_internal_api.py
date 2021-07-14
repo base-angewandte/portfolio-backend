@@ -943,6 +943,7 @@ class UpmostLevelStaticDataTestCase(TestCase):
                 ],
                 'edm:hasType': [],
                 'dce:title': [{'@type': 'bf:Title', 'bf:mainTitle': [{'@value': '', '@language': 'und'}]}],
+                'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
                 'dce:format': [],
@@ -978,6 +979,7 @@ class UpmostLevelStaticDataTestCase(TestCase):
                         'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
                     }
                 ],
+                'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
                 'dce:format': [],
@@ -1014,6 +1016,7 @@ class UpmostLevelStaticDataTestCase(TestCase):
                         'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
                     }
                 ],
+                'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
                 'dce:format': [],
@@ -1041,6 +1044,7 @@ class UpmostLevelStaticDataTestCase(TestCase):
                 ],
                 'edm:hasType': [],
                 'dce:title': [{'@type': 'bf:Title', 'bf:mainTitle': [{'@value': '', '@language': 'und'}]}],
+                'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
                 'dce:format': [],
@@ -1158,6 +1162,7 @@ class UpmostLevelAllDataTestCase(TestCase):
                         'bf:mainTitle': [{'@value': 'A Book With A Contributor', '@language': 'und'}],
                     }
                 ],
+                'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
                 'dce:format': [],

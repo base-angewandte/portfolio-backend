@@ -288,6 +288,14 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         ]
 
 
+class DCLanguageTranslator(AbstractUserUnrelatedDataTranslator):
+    def translate_data(self, model: 'Entry') -> Optional[List[str]]:
+        if (not model.data) or ('language' not in model.data):
+            return []
+        else:
+            return [model.data['language']['source']]
+
+
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -315,6 +323,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         self._static_key_translator_mapping = {
             'edm:hasType': EdmHasTypeTranslator(),
             'dce:title': DCTitleTranslator(),
+            'dcterms:language': DCLanguageTranslator(),
             'dcterms:subject': GenericSkosConceptTranslator('keywords'),
             'rdau:P60048': GenericSkosConceptTranslator('data', ['material'], raise_on_not_found_error=False),
             'dce:format': GenericSkosConceptTranslator('data', ['format'], raise_on_not_found_error=False),
