@@ -72,14 +72,6 @@ class MediaArchiver(AbstractArchiver):
         self.data = None
 
     def validate(self) -> None:
-
-        if not self.archive_object.entry.archive_id:
-            raise RuntimeError(
-                f'Can not archive media <{self.media_object.id}>. Entry <{self.archive_object.entry.id}> is not archived'
-            )
-
-        if self.media_object.archive_id:
-            raise RuntimeWarning(f'Media <{self.media_object.id}> is already archived')
         translator = PhaidraMediaDataTranslator()
         data = translator.translate_data(self.media_object)
         schema = PhaidraMediaData()
@@ -91,6 +83,7 @@ class MediaArchiver(AbstractArchiver):
     def push_to_archive(self) -> SuccessfulArchiveResponse:
         if self.data is None:
             self.validate()
+        self._check_for_consistency()
         media_push_response = self._push_to_archive()
         pid = self._handle_media_push_response(media_push_response)
         self._update_media(pid)
@@ -141,3 +134,17 @@ class MediaArchiver(AbstractArchiver):
 
     def handle_link_entry_to_media_response(self, link_entry_to_media_response: requests.Response):
         self._handle_external_server_response(link_entry_to_media_response)
+
+    def _check_for_consistency(self):
+        """
+        Check for consistency between portfolio and phaidra: if the entry belonging to this media is not already
+        archived, we can not archive the media
+        :return:
+        """
+        if not self.archive_object.entry.archive_id:
+            raise RuntimeError(
+                f'Can not archive media <{self.media_object.id}>. Entry <{self.archive_object.entry.id}> is not archived'
+            )
+
+        if self.media_object.archive_id:
+            raise RuntimeWarning(f'Media <{self.media_object.id}> is already archived')

@@ -130,15 +130,7 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
         our_errors = self.phaidra_media_data_translator.translate_errors(phaidra_errors)
         self.assertEqual(
             our_errors,
-            {
-                'media': {
-                    'license': {
-                        'source': [
-                            'Shorter than minimum length 1.',
-                        ],
-                    }
-                }
-            },
+            {'media': {'license': ['Missing data for required field.']}},
         )
 
     def test_missing_all_data_validation(self):

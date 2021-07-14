@@ -1,5 +1,7 @@
 import typing
 
+from rest_framework.exceptions import ValidationError
+
 from ...interface.abstractarchiver import AbstractArchiver
 from ...interface.responses import SuccessfulArchiveResponse
 from .media.archiver import MediaArchiveHandler
@@ -30,8 +32,20 @@ class PhaidraArchiver(AbstractArchiver):
         return self._media_archiver
 
     def validate(self) -> None:
-        self.metadata_data_archiver.validate()
-        self.media_archiver.validate()
+        validation_errors = []
+        for archiver in (self.metadata_data_archiver, self.media_archiver):
+            try:
+                archiver.validate()
+            except ValidationError as validation_error:
+                validation_errors.append(validation_error)
+        if validation_errors:
+            raise ValidationError(
+                {
+                    field: messages
+                    for validation_error in validation_errors
+                    for field, messages in validation_error.detail.items()
+                }
+            )
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
         metadata_response = self.metadata_data_archiver.push_to_archive()

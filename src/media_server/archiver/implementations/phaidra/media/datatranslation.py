@@ -1,5 +1,7 @@
 from typing import Dict, Optional
 
+import marshmallow
+
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
 from media_server.models import Media
 
@@ -20,9 +22,14 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
         super().translate_errors(errors)
         translated_errors = {}
         try:
-            translated_errors = self.set_nested(
-                ['media', 'mime_type'], errors['metadata']['json-ld']['ebucore:hasMimeType'], translated_errors
-            )
+            mime_errors = errors['metadata']['json-ld']['ebucore:hasMimeType']
+            mime_errors = [
+                marshmallow.fields.Field.default_error_messages['required']
+                if 'Shorter than minimum length' in mime_error
+                else mime_error
+                for mime_error in mime_errors
+            ]
+            translated_errors = self.set_nested(['media', 'mime_type'], mime_errors, translated_errors)
         except KeyError:
             pass
         try:
@@ -32,8 +39,20 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
         except KeyError:
             pass
         try:
+            license_errors = errors['metadata']['json-ld']['edm:rights']
+            license_errors = [
+                marshmallow.fields.Field.default_error_messages['required']
+                if 'Shorter than minimum length' in license_error
+                else license_error
+                for license_error in license_errors
+            ]
             translated_errors = self.set_nested(
-                ['media', 'license', 'source'], errors['metadata']['json-ld']['edm:rights'], translated_errors
+                [
+                    'media',
+                    'license',
+                ],
+                license_errors,
+                translated_errors,
             )
         except KeyError:
             pass
