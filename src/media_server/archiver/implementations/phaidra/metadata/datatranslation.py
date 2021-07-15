@@ -455,17 +455,18 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         :return:
         """
         if errors.__class__ is dict:
-            filtered_errors = {
-                key: filtered_value
-                for key, value in errors.items()
-                if (filtered_value := cls._recursive_filter_errors(value)) is not None
-            }
+            filtered_errors = {}
+            for key, value in errors.items():
+                filtered_value = cls._recursive_filter_errors(value)
+                if filtered_value is not None:
+                    filtered_errors[key] = filtered_value
+
         elif errors.__class__ is list:
-            filtered_errors = [
-                filtered_value
-                for value in errors
-                if (filtered_value := cls._recursive_filter_errors(value)) is not None
-            ]
+            filtered_errors = []
+            for value in errors:
+                filtered_value = cls._recursive_filter_errors(value)
+                if filtered_value is not None:
+                    filtered_errors.append(filtered_value)
         else:
             return errors  # leave node
         return filtered_errors if filtered_errors else None
