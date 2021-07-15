@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 
 class PhaidraContainerGenerator:
+
     title: str = 'Title'
 
     base = {
@@ -79,13 +80,38 @@ class PhaidraContainerGenerator:
         'skos:exactMatch': ['http://base.uni-ak.ac.at/portfolio/languages/ak'],
     }
 
+    supervisor = {
+        '@type': 'schema:Person',
+        'skos:exactMatch': [
+            {
+                '@value': 'http://d-nb.info/gnd/5299671-2',
+                '@type': 'ids:uri',
+            },
+        ],
+        'schema:name': [
+            {
+                '@value': 'Universität für Angewandte Kunst Wien',
+            }
+        ],
+    }
+
     @classmethod
-    def create_phaidra_container(cls, respect_author_rule: bool = True, respect_language_rule: bool = True) -> dict:
+    def create_phaidra_container(
+        cls,
+        respect_author_rule: bool = True,
+        respect_language_rule: bool = True,
+        respect_contributor_role: bool = True,
+    ) -> dict:
         phaidra_container = deepcopy(cls.base)
         if respect_author_rule:
             phaidra_container['role:aut'].append(cls.author)
         if respect_language_rule:
             phaidra_container['dcterms:language'].append(cls.language)
+
+        if respect_contributor_role:
+            if 'role:supervisor' not in phaidra_container:
+                phaidra_container['role:supervisor'] = []
+            phaidra_container['role:supervisor'].append(cls.supervisor)
 
         return phaidra_container
 
@@ -118,7 +144,14 @@ class ModelProvider:
         media.save()
         return media
 
-    def get_entry(self, title: bool = True, type_: bool = True, author: bool = True, language: bool = True) -> 'Entry':
+    def get_entry(
+        self,
+        title: bool = True,
+        type_: bool = True,
+        author: bool = True,
+        language: bool = True,
+        advisor: bool = True,
+    ) -> 'Entry':
         entry = Entry(owner=self.user, data={})
         if title:
             entry.title = 'A Title'
@@ -152,6 +185,22 @@ class ModelProvider:
                     'source': 'http://base.uni-ak.ac.at/portfolio/languages/ak',
                 }
             ]
+
+        if advisor:
+            if 'contributors' not in entry.data:
+                entry.data['contributors'] = []
+
+            entry.data['contributors'].append(
+                {
+                    'label': 'Universität für Angewandte Kunst Wien',
+                    'roles': [
+                        {
+                            'label': {'de': 'Betreuer', 'en': 'advisor'},
+                            'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisor',
+                        }
+                    ],
+                },
+            )
 
         entry.save()
         return entry

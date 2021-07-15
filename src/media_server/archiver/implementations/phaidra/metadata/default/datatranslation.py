@@ -252,7 +252,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
     role_uri: str
     primary_level_data_key: str
 
-    def __init__(self, primary_level_data_key: str, role_uri: str):
+    def __init__(self, primary_level_data_key: Optional[str], role_uri: str):
         """
 
         :param primary_level_data_key: The key to look for persons in Entry.data[key]

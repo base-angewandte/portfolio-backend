@@ -19,4 +19,14 @@ class _PhaidraThesisMetaDataSchema(_PhaidraMetaData):
         load_from='dcterms:language',
         dump_to='dcterms:language',
         validate=validate.Length(min=1),
+        required=True,
+    )
+
+    role_supervisor = fields.Nested(
+        PersonSchema,
+        many=True,
+        load_from='role:supervisor',
+        dump_to='role:supervisor',
+        validate=validate.Length(min=1),
+        required=True,
     )

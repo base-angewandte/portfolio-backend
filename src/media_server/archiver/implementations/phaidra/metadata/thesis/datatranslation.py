@@ -29,7 +29,7 @@ class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
 class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
     """Implement basic error feedback."""
 
-    def translate_errors(self, errors: List) -> Dict:
+    def translate_errors(self, errors: Union[Dict, List]) -> Dict:
         """Since all of this errors are on schema level, we just to add the top
         keys.
 
@@ -41,9 +41,29 @@ class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
         return {'data': {self.primary_level_data_key: errors}}
 
 
+class AdvisorSupervisorTranslator(GenericStaticPersonTranslator):
+    def __init__(self):
+        super().__init__(None, 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisor')
+
+    def translate_errors(self, errors: Union[Dict, List]) -> Dict:
+        """Empty or missing: Always send the same message.
+
+        :param errors:
+        :return:
+        """
+        if not errors:
+            return {}
+        return {
+            'data': {
+                'contributors': [
+                    'At least one contributor has to have the role advisor.',
+                ],
+            }
+        }
+
+
 class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
     def __init__(self):
-
         super().__init__()
 
         parent_author_translator: 'GenericStaticPersonTranslator' = self._static_key_translator_mapping['role:aut']
@@ -60,3 +80,5 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
             json_keys=parent_language_translator.json_keys,
             raise_on_not_found_error=parent_language_translator.raise_on_not_found_error,
         )
+
+        self._static_key_translator_mapping['role:supervisor'] = AdvisorSupervisorTranslator()
