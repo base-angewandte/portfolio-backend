@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.metadata.datatranslation import (
+from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
     BfNoteTranslator,
     DCTitleTranslator,
     EdmHasTypeTranslator,
@@ -13,16 +13,16 @@ from media_server.archiver.implementations.phaidra.metadata.datatranslation impo
     GenericStaticPersonTranslator,
     PhaidraMetaDataTranslator,
 )
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
-    BidirectionalConceptsMapper,
-)
-from media_server.archiver.implementations.phaidra.metadata.schemas import (
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     DceTitleSchema,
     PersonSchema,
     SkosConceptSchema,
     TypeLabelSchema,
     _PhaidraMetaData,
     get_phaidra_meta_data_schema_with_dynamic_fields,
+)
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    BidirectionalConceptsMapper,
 )
 from media_server.archiver.interface.exceptions import InternalValidationError
 

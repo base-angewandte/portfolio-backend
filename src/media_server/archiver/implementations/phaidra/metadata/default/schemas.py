@@ -1,7 +1,7 @@
 """Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
 st_media_metadata.py Check out src/media_server/archiver/implementations/phaidr
 a/metadata/datatranslation.py."""
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Type
 
 if TYPE_CHECKING:
     from marshmallow.base import FieldABC
@@ -137,8 +137,9 @@ def _str_to_attribute(string: str) -> str:
 
 def get_phaidra_meta_data_schema_with_dynamic_fields(
     bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
+    base_schema_class: Type[_PhaidraMetaData] = _PhaidraMetaData,
 ) -> _PhaidraMetaData:
-    schema = _PhaidraMetaData()
+    schema = base_schema_class()
     for concept_mapper in bidirectional_concepts_mapper.concept_mappings.values():
         for os_sameAs in concept_mapper.owl_sameAs:
             phaidra_role_code = extract_phaidra_role_code(os_sameAs)

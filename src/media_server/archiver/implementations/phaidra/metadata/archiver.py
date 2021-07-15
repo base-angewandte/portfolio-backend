@@ -1,10 +1,13 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Dict, Optional
 
+from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
+    get_phaidra_meta_data_schema_with_dynamic_fields,
+)
+
 from ....interface.responses import SuccessfulArchiveResponse
-from .datatranslation import PhaidraMetaDataTranslator
 from .mappings.contributormapping import BidirectionalConceptsMapper
-from .schemas import get_phaidra_meta_data_schema_with_dynamic_fields
 
 if TYPE_CHECKING:
     from ....interface.archiveobject import ArchiveObject
