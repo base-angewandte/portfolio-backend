@@ -73,11 +73,19 @@ class PhaidraContainerGenerator:
         ],
     }
 
+    language = {
+        '@type': 'skos:Concept',
+        'skos:prefLabel': [{'@value': 'Akan', '@language': 'eng'}, {'@value': 'Akan-Sprache', '@language': 'deu'}],
+        'skos:exactMatch': ['http://base.uni-ak.ac.at/portfolio/languages/ak'],
+    }
+
     @classmethod
-    def create_phaidra_container(cls, respect_author_rule: bool = True) -> dict:
+    def create_phaidra_container(cls, respect_author_rule: bool = True, respect_language_rule: bool = True) -> dict:
         phaidra_container = deepcopy(cls.base)
         if respect_author_rule:
             phaidra_container['role:aut'].append(cls.author)
+        if respect_language_rule:
+            phaidra_container['dcterms:language'].append(cls.language)
 
         return phaidra_container
 
@@ -95,6 +103,7 @@ class ModelProvider:
         license_: bool = True,
         mime_type: bool = True,
         author: bool = True,
+        language: bool = True,
     ) -> 'Media':
         entry = Entry(owner=self.user, data={})
         if title:
@@ -116,6 +125,17 @@ class ModelProvider:
                         }
                     ],
                     'source': 'http://d-nb.info/gnd/5299671-2',
+                }
+            ]
+
+        if language:
+            entry.data['language'] = [
+                {
+                    'label': {
+                        'de': 'Akan-Sprache',
+                        'en': 'Akan',
+                    },
+                    'source': 'http://base.uni-ak.ac.at/portfolio/languages/ak',
                 }
             ]
 
