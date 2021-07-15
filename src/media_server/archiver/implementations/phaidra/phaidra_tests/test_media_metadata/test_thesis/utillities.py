@@ -98,13 +98,27 @@ class ModelProvider:
 
     def get_media(
         self,
-        title: bool = True,
-        type_: bool = True,
+        entry: 'Entry',
         license_: bool = True,
         mime_type: bool = True,
-        author: bool = True,
-        language: bool = True,
     ) -> 'Media':
+        media = Media(
+            owner=self.user,
+            file=SimpleUploadedFile('example.txt', b'example text'),
+            entry_id=entry.id,
+        )
+        if mime_type:
+            media.mime_type = 'text/plain'
+        if license_:
+            media.license = {
+                'label': {'en': 'Creative Commons Attribution 4.0'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
+            }
+
+        media.save()
+        return media
+
+    def get_entry(self, title: bool = True, type_: bool = True, author: bool = True, language: bool = True) -> 'Entry':
         entry = Entry(owner=self.user, data={})
         if title:
             entry.title = 'A Title'
@@ -140,21 +154,7 @@ class ModelProvider:
             ]
 
         entry.save()
-        media = Media(
-            owner=self.user,
-            file=SimpleUploadedFile('example.txt', b'example text'),
-            entry_id=entry.id,
-        )
-        if mime_type:
-            media.mime_type = 'text/plain'
-        if license_:
-            media.license = {
-                'label': {'en': 'Creative Commons Attribution 4.0'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
-            }
-
-        media.save()
-        return media
+        return entry
 
 
 class ClientProvider:
