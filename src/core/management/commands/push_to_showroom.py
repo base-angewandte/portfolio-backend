@@ -97,22 +97,17 @@ class Command(BaseCommand):
         media_updated = []
         media_not_pushed = []
         for entry in entries:
-            showroom_id = next((e[1] for e in created if e[0] == entry.id), None)
-            if not showroom_id:
-                showroom_id = next((e[1] for e in updated if e[0] == entry.id), None)
-            if not showroom_id:
-                continue
             media = Media.objects.filter(entry_id=entry.id, published=True)
             for medium in media:
                 medium_data = medium.get_data()
                 data = {
                     'file': medium.file.url,
                     'type': medium.type,
-                    'activity': showroom_id,
                     'mime_type': medium.mime_type,
                     'exif': medium.exif,
                     'license': medium.license,
-                    'source_repo_id': medium.id,
+                    'source_repo_media_id': medium.id,
+                    'source_repo_entry_id': entry.id,
                     'specifics': {},
                 }
                 if medium.type == IMAGE_TYPE:
