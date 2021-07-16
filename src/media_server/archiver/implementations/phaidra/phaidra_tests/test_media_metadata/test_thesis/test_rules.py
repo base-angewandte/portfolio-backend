@@ -342,3 +342,69 @@ class MustHaveAnAdviserTestCase(TestCase):
         response = self.client_provider.get_media_primary_key_response(media)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 'Asset validation successful')
+
+
+class EmptyThesisTestCase(TestCase):
+    """In the case of an entry, with thesis, but not input, all error messages
+    should be displayed."""
+
+    expected_phaidra_errors_missing_field = {
+        'role:aut': ['Shorter than minimum length 1.'],
+        'role:supervisor': {
+            0: {
+                'schema:name': {0: {'@value': ['Missing data for required field.']}},
+                'skos:exactMatch': {0: {'@value': ['Missing data for required field.']}},
+            }
+        },
+        'dcterms:language': ['Shorter than minimum length 1.'],
+    }
+
+    expected_portfolio_errors = {
+        'data': {
+            'language': ['Missing data for required field.'],
+            'authors': ['Shorter than minimum length 1.'],
+            'contributors': ['At least one contributor has to have the role advisor.'],
+        }
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+        cls.client_provider = ClientProvider(cls.model_provider)
+
+    def test_schema_validation_fail(self):
+        invalid_data = PhaidraContainerGenerator.create_phaidra_container(
+            respect_contributor_role=False,
+            respect_language_rule=False,
+            respect_author_rule=False,
+        )
+        # Need dynamic schema here (!)
+        entry = self.model_provider.get_entry(advisor=False, author=False, language=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+        )
+        errors = dynamic_schema.validate(invalid_data)
+        self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
+
+    def test_error_transformation(self):
+        translator = PhaidraThesisMetaDataTranslator()
+        # Need to test dynamic here
+        entry = self.model_provider.get_entry(advisor=False, author=False, language=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
+        self.assertEqual(
+            portfolio_errors,
+            self.expected_portfolio_errors,
+        )
+
+    def test_endpoint_validation_fail(self):
+        media = self.model_provider.get_media(
+            self.model_provider.get_entry(advisor=False, author=False, language=False)
+        )
+        response = self.client_provider.get_media_primary_key_response(media)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            self.expected_portfolio_errors,
+        )

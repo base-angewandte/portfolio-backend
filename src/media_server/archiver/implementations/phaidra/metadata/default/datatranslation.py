@@ -367,8 +367,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         for target_key, translator in self._static_key_translator_mapping.items():
             if target_key in errors:
                 source_errors = translator.translate_errors(errors[target_key])
-                for source_key, source_error in source_errors.items():
-                    translated_errors[source_key] = source_error
+                translated_errors = self._set_nested_errors(source_errors, translated_errors)
         return translated_errors
 
     @staticmethod
@@ -468,3 +467,22 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
         else:
             return errors  # leave node
         return filtered_errors if filtered_errors else None
+
+    def _set_nested_errors(self, source_errors: Dict, translated_errors: Dict) -> Dict:
+        for key, value in source_errors.items():
+            # it is the error message, set it
+            if value.__class__ is list:
+                if key not in translated_errors:
+                    translated_errors[key] = value
+                else:
+                    if translated_errors[key].__class__ is list:
+                        translated_errors[key] += value
+                    else:
+                        raise TypeError(f'Cant add error {value} on errors{translated_errors}')
+            else:
+                # go one step beyond
+                if key not in translated_errors:
+                    translated_errors[key] = {}
+                sub_errors = translated_errors[key]
+                translated_errors[key] = self._set_nested_errors(value, sub_errors)
+        return translated_errors
