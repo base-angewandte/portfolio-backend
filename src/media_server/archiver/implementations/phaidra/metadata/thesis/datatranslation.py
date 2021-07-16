@@ -66,19 +66,17 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
     def __init__(self):
         super().__init__()
 
-        parent_author_translator: 'GenericStaticPersonTranslator' = self._static_key_translator_mapping['role:aut']
         self._static_key_translator_mapping['role:aut'] = ResponsiveGenericStaticPersonTranslator(
-            primary_level_data_key=parent_author_translator.primary_level_data_key,
-            role_uri=parent_author_translator.role_uri,
+            primary_level_data_key='authors',
+            role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author',
         )
 
-        parent_language_translator: 'GenericSkosConceptTranslator' = self._static_key_translator_mapping[
-            'dcterms:language'
-        ]
         self._static_key_translator_mapping['dcterms:language'] = ResponsiveGenericSkosConceptTranslator(
-            entry_attribute=parent_language_translator.entry_attribute,
-            json_keys=parent_language_translator.json_keys,
-            raise_on_not_found_error=parent_language_translator.raise_on_not_found_error,
+            'data',
+            [
+                'language',
+            ],
+            raise_on_not_found_error=False,
         )
 
         self._static_key_translator_mapping['role:supervisor'] = AdvisorSupervisorTranslator()
