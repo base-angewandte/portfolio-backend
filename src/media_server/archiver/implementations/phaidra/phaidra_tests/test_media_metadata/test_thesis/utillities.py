@@ -186,6 +186,7 @@ class ModelProvider:
         german_abstract: bool = True,
     ) -> 'Entry':
         entry = Entry(owner=self.user, data={})
+        entry.update_archive = False
         if title:
             entry.title = 'A Title'
         if type_:

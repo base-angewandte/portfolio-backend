@@ -28,6 +28,9 @@ class MediaArchiveHandler(AbstractArchiver):
             service=Archives.PHAIDRA.name,
         )
 
+    def update_archive(self) -> 'SuccessfulArchiveResponse':
+        raise NotImplementedError()
+
     @staticmethod
     def _push_to_archive_job(media_object: Media):
         entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
@@ -95,6 +98,9 @@ class MediaArchiver(AbstractArchiver):
             object_description=f'Media <{self.media_object.archive_id}>',
         )
 
+    def update_archive(self) -> 'SuccessfulArchiveResponse':
+        raise NotImplementedError()
+
     def _push_to_archive(self) -> requests.Response:
         return requests.post(
             uris.get(self.media_object.type, 'x'),
@@ -143,7 +149,8 @@ class MediaArchiver(AbstractArchiver):
         """
         if not self.archive_object.entry.archive_id:
             raise RuntimeError(
-                f'Can not archive media <{self.media_object.id}>. Entry <{self.archive_object.entry.id}> is not archived'
+                f'Can not archive media <{self.media_object.id}>. '
+                f'Entry <{self.archive_object.entry.id}> is not archived'
             )
 
         if self.media_object.archive_id:

@@ -4,6 +4,8 @@ from rest_framework.exceptions import APIException, NotFound, PermissionDenied, 
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry
@@ -21,7 +23,7 @@ class DefaultArchiveController:
     """Handle Archive Actions."""
 
     user: User
-    media_primary_keys: Set[int]
+    media_primary_keys: Set[str]
 
     _media_objects: Optional[Set[Media]] = None
 
@@ -47,15 +49,21 @@ class DefaultArchiveController:
             self._archiver = self._create_archiver()
         return self._archiver
 
-    def __init__(self, user: User, media_primary_keys: Set[int]):
+    def __init__(self, user: User, media_primary_keys: Set[str]):
         """
         :param user: The user, the request is coming from
-        :param media_primary_keys: primary keys of the media to archvive
+        :param media_primary_keys: primary keys of the media to archive
         """
         self.user = user
         self.media_primary_keys = media_primary_keys
         if self.media_primary_keys.__len__() == 0:
             raise ValidationError({'media_pks': [_('empty')]})
+
+    @classmethod
+    def from_entry(cls, entry: 'Entry') -> 'DefaultArchiveController':
+        return cls(
+            user=entry.owner, media_primary_keys={media.id for media in Media.objects.all().filter(entry_id=entry.id)}
+        )
 
     def push_to_archive(self) -> 'SuccessfulArchiveResponse':
         """Validates the data and pushes to archive.
@@ -74,6 +82,10 @@ class DefaultArchiveController:
         """
         self._validate_ownership()
         self._validate_for_archive()
+
+    def update_archive(self) -> 'SuccessfulArchiveResponse':
+        self.validate()
+        return self._update_archive()
 
     def _validate_for_archive(self) -> None:
         """Check if external rules are complied.
@@ -138,3 +150,15 @@ class DefaultArchiveController:
         return ArchiverFactory().create(
             ArchiveObject(user=self.user, entry=self.entry, media_objects=self.media_objects)
         )
+
+    def _update_archive(self):
+        self._create_archiver()
+        return self.archiver.update_archive()
+
+
+@receiver(pre_save, sender=Entry)
+def entry_pre_save(sender: 'Entry', update_fields, *args, **kwargs):
+    print(f'{sender.update_archive=}')
+    print(f'{sender.archive_id=}')
+    if sender.archive_id and sender.update_archive:
+        DefaultArchiveController.from_entry(sender).update_archive()

@@ -17,3 +17,6 @@ class ArchiveAssetTestcase(APITestCase):
         asset = self.model_provider.get_media(entry)
         response = self.client_provider.get_media_primary_key_response(asset, only_validate=False)
         self.assertEqual(response.status_code, 200)
+
+    def test_update_asset(self):
+        pass

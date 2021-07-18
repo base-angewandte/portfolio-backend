@@ -39,6 +39,15 @@ class AbstractArchiver(ABC):
         """
         pass
 
+    @abstractmethod
+    def update_archive(self) -> 'SuccessfulArchiveResponse':
+        """
+        Push to archive and return message
+        :raises: media_server.archiver.interface.exceptions.ExternalServerError
+        :return: SuccessfulArchiveResponse
+        """
+        pass
+
     def throw_validation_errors(self, errors: typing.Optional[typing.Dict[str, typing.List[str]]]) -> None:
         """
         :

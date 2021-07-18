@@ -15,13 +15,6 @@ uris = settings.ARCHIVE_URIS
 credentials = settings.ARCHIVE_CREDENTIALS
 
 
-def archive_entry(entry):
-    """Calls the respective archival method as configured."""
-    template_name = settings.ARCHIVE_THESIS_TEMPLATE if entry.is_thesis else settings.ARCHIVE_METADATA_TEMPLATE
-    if settings.ARCHIVE_TYPE == 'PHAIDRA':
-        return phaidra_archive_entry(entry, template_name)
-
-
 @job
 def archive_media(media):
     """Calls the respective archival method as configured."""

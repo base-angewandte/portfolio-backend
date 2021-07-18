@@ -59,6 +59,9 @@ class DefaultMetadataArchiver(AbstractArchiver):
         response = self._post_to_phaidra(url, json.dumps(self.data))
         return self._handle_phaidra_response(response)
 
+    def update_archive(self) -> 'SuccessfulArchiveResponse':
+        return self.is_update()
+
     def _create_phaidra_url(self, archive_id: Optional[str] = None):
         if archive_id is None:
             return settings.ARCHIVE_URIS['CREATE_URI']
@@ -87,6 +90,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         return data['pid']
 
     def _update_entry_archival_success_in_db(self, pid: str):
+        self.archive_object.entry.update_archive = False
         self.archive_object.entry.archive_id = pid
         self.archive_object.entry.archive_URI = urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid)
         print(self.archive_object.entry.texts)

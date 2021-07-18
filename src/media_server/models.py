@@ -14,14 +14,13 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.models import IntegerField, Value
-from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .archiver import archive_entry
 from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
@@ -447,14 +446,3 @@ def media_post_delete(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=Entry)
 def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()
-
-
-@receiver(pre_save, sender=Entry)
-def entry_pre_save(sender, instance, update_fields, *args, **kwargs):
-    if instance.archive_id:
-        # Update the metadata in the archived asset
-        res = archive_entry(instance)
-        if res.get('Error'):
-            raise ValueError(res.get('Error'))
-    else:
-        pass
