@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 
 class PhaidraContainerGenerator:
-
     title: str = 'Title'
 
     base = {
@@ -95,12 +94,23 @@ class PhaidraContainerGenerator:
         ],
     }
 
+    english_abstract = {
+        '@type': 'bf:Summary',
+        'skos:prefLabel': [
+            {
+                '@value': 'Abstract',
+                '@language': 'eng',
+            },
+        ],
+    }
+
     @classmethod
     def create_phaidra_container(
         cls,
         respect_author_rule: bool = True,
         respect_language_rule: bool = True,
         respect_contributor_role: bool = True,
+        respect_english_abstract_rule: bool = True,
     ) -> dict:
         phaidra_container = deepcopy(cls.base)
         if respect_author_rule:
@@ -112,6 +122,11 @@ class PhaidraContainerGenerator:
             if 'role:supervisor' not in phaidra_container:
                 phaidra_container['role:supervisor'] = []
             phaidra_container['role:supervisor'].append(cls.supervisor)
+
+        if respect_english_abstract_rule:
+            if 'bf:note' not in phaidra_container:
+                phaidra_container['bf:note'] = []
+            phaidra_container['bf:note'].append(cls.english_abstract)
 
         return phaidra_container
 
@@ -151,6 +166,7 @@ class ModelProvider:
         author: bool = True,
         language: bool = True,
         advisor: bool = True,
+        english_abstract: bool = True,
     ) -> 'Entry':
         entry = Entry(owner=self.user, data={})
         if title:
@@ -200,6 +216,21 @@ class ModelProvider:
                         }
                     ],
                 },
+            )
+
+        if english_abstract:
+            if entry.texts is None:
+                entry.texts = []
+            entry.texts.append(
+                {
+                    'data': [
+                        {'text': 'Abstract', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/en'}}
+                    ],
+                    'type': {
+                        'label': {'de': 'Abstract', 'en': 'Abstract'},
+                        'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
+                    },
+                }
             )
 
         entry.save()

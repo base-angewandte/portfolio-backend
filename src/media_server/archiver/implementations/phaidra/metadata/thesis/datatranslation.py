@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 from marshmallow import fields
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
+    BfNoteTranslator,
     GenericSkosConceptTranslator,
     GenericStaticPersonTranslator,
     PhaidraMetaDataTranslator,
@@ -24,6 +25,14 @@ class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
             target=translated_errors,
         )
         return translated_errors
+
+
+class ResponsiveBfNoteTranslator(BfNoteTranslator):
+    def translate_errors(self, errors: Union[List[str], Dict]) -> Dict[str, List[str]]:
+        if errors.__class__ is list:
+            return {'texts': errors}
+        else:
+            super().translate_errors(errors)
 
 
 class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
@@ -80,3 +89,4 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
         )
 
         self._static_key_translator_mapping['role:supervisor'] = AdvisorSupervisorTranslator()
+        self._static_key_translator_mapping['bf:note'] = ResponsiveBfNoteTranslator()

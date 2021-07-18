@@ -10,10 +10,16 @@ if TYPE_CHECKING:
 class AbstractDataTranslator(ABC):
     @abstractmethod
     def translate_data(self, model: 'Model') -> Union[Dict, List]:
+        """Return Data without the top most level key of target.
+
+        User will take care of it
+        todo: change
+        """
         pass
 
     @abstractmethod
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        """Return data including the top most level data key."""
         if (errors is None) or len(errors) == 0:
             return {}
 
