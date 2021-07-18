@@ -104,6 +104,16 @@ class PhaidraContainerGenerator:
         ],
     }
 
+    german_abstract = {
+        '@type': 'bf:Summary',
+        'skos:prefLabel': [
+            {
+                '@value': 'Abstract',
+                '@language': 'deu',
+            },
+        ],
+    }
+
     @classmethod
     def create_phaidra_container(
         cls,
@@ -111,6 +121,7 @@ class PhaidraContainerGenerator:
         respect_language_rule: bool = True,
         respect_contributor_role: bool = True,
         respect_english_abstract_rule: bool = True,
+        respect_german_abstract_rule: bool = True,
     ) -> dict:
         phaidra_container = deepcopy(cls.base)
         if respect_author_rule:
@@ -127,6 +138,11 @@ class PhaidraContainerGenerator:
             if 'bf:note' not in phaidra_container:
                 phaidra_container['bf:note'] = []
             phaidra_container['bf:note'].append(cls.english_abstract)
+
+        if respect_german_abstract_rule:
+            if 'bf:note' not in phaidra_container:
+                phaidra_container['bf:note'] = []
+            phaidra_container['bf:note'].append(cls.german_abstract)
 
         return phaidra_container
 
@@ -167,6 +183,7 @@ class ModelProvider:
         language: bool = True,
         advisor: bool = True,
         english_abstract: bool = True,
+        german_abstract: bool = True,
     ) -> 'Entry':
         entry = Entry(owner=self.user, data={})
         if title:
@@ -225,6 +242,21 @@ class ModelProvider:
                 {
                     'data': [
                         {'text': 'Abstract', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/en'}}
+                    ],
+                    'type': {
+                        'label': {'de': 'Abstract', 'en': 'Abstract'},
+                        'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
+                    },
+                }
+            )
+
+        if german_abstract:
+            if entry.texts is None:
+                entry.texts = []
+            entry.texts.append(
+                {
+                    'data': [
+                        {'text': 'Abstract', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/de'}}
                     ],
                     'type': {
                         'label': {'de': 'Abstract', 'en': 'Abstract'},
