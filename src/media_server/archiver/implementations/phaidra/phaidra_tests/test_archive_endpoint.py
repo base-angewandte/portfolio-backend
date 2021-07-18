@@ -11,12 +11,14 @@ class ArchiveAssetTestcase(APITestCase):
     def setUpTestData(cls):
         cls.model_provider = ModelProvider()
         cls.client_provider = ClientProvider(cls.model_provider)
+        cls.entry = cls.model_provider.get_entry()
+        cls.asset = cls.model_provider.get_media(cls.entry)
 
     def test_archive_asset(self):
-        entry = self.model_provider.get_entry()
-        asset = self.model_provider.get_media(entry)
-        response = self.client_provider.get_media_primary_key_response(asset, only_validate=False)
+        response = self.client_provider.get_media_primary_key_response(self.asset, only_validate=False)
         self.assertEqual(response.status_code, 200)
 
     def test_update_asset(self):
-        pass
+        self.entry.title = 'New Title'
+        response = self.client_provider.get_media_primary_key_response(self.asset, only_validate=False)
+        self.assertEqual(response.status_code, 200)
