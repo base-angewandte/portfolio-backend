@@ -13,6 +13,12 @@ class ModificationType(Enum):
 
 class SuccessfulArchiveResponse(Response):
     def __init__(self, modification_type: ModificationType, object_description: str, service: str):
+        """
+
+        :param modification_type:
+        :param object_description:
+        :param service:
+        """
         super().__init__(
             {
                 'action': modification_type.value,

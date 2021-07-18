@@ -276,9 +276,10 @@ class ClientProvider:
         if not r:
             raise RuntimeError('login fail')
 
-    def get_media_primary_key_response(self, media: 'Media') -> 'Response':
+    def get_media_primary_key_response(self, media: 'Media', only_validate: bool = True) -> 'Response':
+        action = 'validate' if only_validate else 'archive'
         return self.client.get(
-            f'/api/v1/validate_assets/media/{media.id}/',
+            f'/api/v1/{action}_assets/media/{media.id}/',
         )
 
     def __del__(self):
