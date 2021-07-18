@@ -8,7 +8,7 @@ from django.utils.translation import gettext
 class ModificationType(Enum):
     created = 'created'
     updated = 'updated'
-    uploaded: 'uploaded'
+    uploaded = 'uploaded'
 
 
 class SuccessfulArchiveResponse(Response):
@@ -24,12 +24,12 @@ class SuccessfulArchiveResponse(Response):
                 'action': modification_type.value,
                 'object': object_description,
                 'service': service,
-                'message': gettext('Successfully %(action) %(object) to %(service)')
-                % {
-                    'action': modification_type.value,
-                    'object': object_description,
-                    'service': service,
-                },
+                'message': gettext('Successfully %s %s to %s')
+                % (
+                    modification_type.value,
+                    object_description,
+                    service,
+                ),
             }
         )
 

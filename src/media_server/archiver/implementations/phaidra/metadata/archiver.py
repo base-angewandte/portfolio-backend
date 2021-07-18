@@ -93,7 +93,6 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self.archive_object.entry.update_archive = False
         self.archive_object.entry.archive_id = pid
         self.archive_object.entry.archive_URI = urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid)
-        print(self.archive_object.entry.texts)
         self.archive_object.entry.save(update_fields=['archive_URI', 'archive_id'])
 
     def _create_user_feedback(self, pid: str):

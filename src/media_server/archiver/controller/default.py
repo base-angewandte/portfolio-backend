@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Set
+from typing import TYPE_CHECKING, Optional, Set, Type
 
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
 
@@ -157,8 +157,6 @@ class DefaultArchiveController:
 
 
 @receiver(pre_save, sender=Entry)
-def entry_pre_save(sender: 'Entry', update_fields, *args, **kwargs):
-    print(f'{sender.update_archive=}')
-    print(f'{sender.archive_id=}')
-    if sender.archive_id and sender.update_archive:
-        DefaultArchiveController.from_entry(sender).update_archive()
+def entry_pre_save(sender: Type['Entry'], instance: 'Entry', update_fields, *args, **kwargs):
+    if instance.archive_id and instance.update_archive:
+        DefaultArchiveController.from_entry(instance).update_archive()
