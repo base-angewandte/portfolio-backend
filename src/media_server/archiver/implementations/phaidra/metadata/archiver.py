@@ -1,4 +1,5 @@
 import json
+import logging
 from abc import ABC
 from typing import TYPE_CHECKING, Dict, Optional
 from urllib.parse import urljoin
@@ -69,6 +70,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         return urljoin(base_uri, f'object/{archive_id}/metadata')
 
     def _post_to_phaidra(self, url, data):
+        logging.debug(f'Post to phaidra with metadata {data}')
         try:
             return requests.post(url, files={'metadata': data}, auth=(credentials.get('USER'), credentials.get('PWD')))
         except Exception as exception:
@@ -85,7 +87,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
 
     def _get_phaidra_pid(self, response: requests.Response) -> str:
         if response.status_code != 200:
-            raise RuntimeError(f'Phaidra returned with {response=} and content {response.content=}')
+            raise RuntimeError(f'Phaidra returned with response {response} and content {response.content}')
         data = json.loads(response.content)
         return data['pid']
 
