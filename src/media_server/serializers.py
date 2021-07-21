@@ -21,7 +21,7 @@ class MediaCreateSerializer(serializers.Serializer):
     file = serializers.FileField()
     entry = serializers.CharField()
     published = serializers.BooleanField()
-    license = serializers.JSONField(required=False)
+    license = serializers.JSONField()
 
     def validate_entry(self, value):
         try:
