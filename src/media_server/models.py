@@ -198,15 +198,19 @@ class Media(models.Model):
                     ret.append({f'{k}w': self.get_url(v)})
         return ret
 
-    def get_data(self):
+    def get_minimal_data(self):
         data = {
             'id': self.pk,
             'type': self.type,
             'original': self.file.url,
-            'metadata': self.metadata,
             'published': self.published,
             'license': self.license,
         }
+        return data
+
+    def get_data(self):
+        data = self.get_minimal_data()
+        data['metadata'] = self.metadata
         if self.type == AUDIO_TYPE:
             data.update({'mp3': self.get_url('listen.mp3')})
         elif self.type == DOCUMENT_TYPE:
