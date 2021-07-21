@@ -9,7 +9,7 @@ from .validators import validate_license as vl
 
 
 def validate_license(value):
-    if value:
+    if value is not None:
         try:
             vl(value)
         except ValidationError as e:
