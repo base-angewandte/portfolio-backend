@@ -180,7 +180,7 @@ class MediaViewSet(viewsets.GenericViewSet):
                         status=status.HTTP_403_FORBIDDEN,
                     )
                 elif m.status != 2:
-                    return Response({'id': pk}, status=status.HTTP_202_ACCEPTED)
+                    return Response(m.get_minimal_data(), status=status.HTTP_202_ACCEPTED)
 
                 return Response(m.get_data())
 

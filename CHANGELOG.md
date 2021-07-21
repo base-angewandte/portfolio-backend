@@ -6,6 +6,7 @@
 - Pull docker images before build
 - Updated pre-commit and hooks
 - Clean up docs container after running
+- Returning additional metadata for media that hasn't been converted yet
 
 ### Fixed
 - Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
