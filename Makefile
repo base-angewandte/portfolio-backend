@@ -61,7 +61,7 @@ clear-entries:
 
 build-docs:
 	docker build -t portfolio-docs ./docker/docs
-	docker run -it -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
+	docker run -it --rm -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
 
 pip-compile:
 	pip-compile src/requirements.in

@@ -5,6 +5,7 @@
 ### Changed
 - Pull docker images before build
 - Updated pre-commit and hooks
+- Clean up docs container after running
 
 ### Fixed
 - Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
