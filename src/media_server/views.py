@@ -52,13 +52,24 @@ def protected_view(request, path, server):
 
 # DRF views
 
-license_param = openapi.Parameter(
+license_args = [
     'license',
     openapi.IN_FORM,
+]
+license_kwargs = dict(
     description='media license json object',
-    required=False,
     type=openapi.TYPE_STRING,
     **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}},
+)
+license_param = openapi.Parameter(
+    *license_args,
+    **license_kwargs,
+    required=False,
+)
+license_param_required = openapi.Parameter(
+    *license_args,
+    **license_kwargs,
+    required=True,
 )
 
 
@@ -117,7 +128,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             415: openapi.Response('Unsupported media type'),
             422: openapi.Response('User quota exceeded'),
         },
-        manual_parameters=[license_param],
+        manual_parameters=[license_param_required],
     )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
