@@ -24,6 +24,9 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
+from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
+    ModelProvider,
+)
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 
@@ -1328,3 +1331,33 @@ class PhaidraRuleTest(TestCase):
         portfolio_errors = translator.translate_errors(phaidra_errors, dynamic_mapping)
 
         return portfolio_errors
+
+
+class TranslateNotImplementedLanguagesTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def test_translate_only_not_implemented(self):
+        entry = self.model_provider.get_entry(german_abstract=False, english_abstract=False, french_abstract=True)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        bf_note: List[Dict] = translation['bf:note']
+        self.assertEqual(0, len(bf_note))
+
+    def test_mixed(self):
+        entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=True)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        bf_note: List[Dict] = translation['bf:note']
+        self.assertEqual(2, len(bf_note))
+
+    def test_implemented(self):
+        entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=False)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        bf_note: List[Dict] = translation['bf:note']
+        self.assertEqual(2, len(bf_note))

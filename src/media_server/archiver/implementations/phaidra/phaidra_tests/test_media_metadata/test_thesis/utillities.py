@@ -184,7 +184,19 @@ class ModelProvider:
         advisor: bool = True,
         english_abstract: bool = True,
         german_abstract: bool = True,
+        french_abstract: bool = False,
     ) -> 'Entry':
+        """
+        :param title: Mandatory field
+        :param type_: Mandatory field
+        :param author: Mandatory field
+        :param language: Mandatory field
+        :param advisor: Mandatory field
+        :param english_abstract: Mandatory field
+        :param german_abstract: Mandatory field
+        :param french_abstract: Obligatory field
+        :return:
+        """
         entry = Entry(owner=self.user, data={})
         entry.update_archive = False
         if title:
@@ -258,6 +270,21 @@ class ModelProvider:
                 {
                     'data': [
                         {'text': 'Abstract', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/de'}}
+                    ],
+                    'type': {
+                        'label': {'de': 'Abstract', 'en': 'Abstract'},
+                        'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
+                    },
+                }
+            )
+
+        if french_abstract:
+            if entry.texts is None:
+                entry.texts = []
+            entry.texts.append(
+                {
+                    'data': [
+                        {'text': 'Abstract', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/fr'}}
                     ],
                     'type': {
                         'label': {'de': 'Abstract', 'en': 'Abstract'},

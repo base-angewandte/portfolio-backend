@@ -25,14 +25,24 @@ from media_server.archiver.implementations.phaidra.abstracts.datatranslation imp
 )
 
 
+class LanguageNotInTranslationMappingError(NotImplementedError):
+    pass
+
+
 def _convert_two_to_three_letter_language_code(language_code: str) -> str:
     """To do :-) ?!"""
     if len(language_code) == 3:
         return language_code
-    return {
+    language_mapping = {
         'en': 'eng',
         'de': 'deu',
-    }[language_code]
+    }
+    if language_code in language_mapping:
+        return language_mapping[language_code]
+    else:
+        raise LanguageNotInTranslationMappingError(
+            f'Can not translate language code {language_code}, only {set(language_mapping.keys())} are supported'
+        )
 
 
 def _create_type_object(type_: str) -> Dict[str, str]:
@@ -217,21 +227,18 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         # Bail early, if this field is NULL
         if model.texts is None:
             return []
-
-        abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
-        text: Dict
-        texts = [
-            text
-            for text in model.texts
-            if ('type' not in text) or (('source' in text['type']) and text['type']['source'] == abstract_source)
-        ]
-        return [
-            {
-                **_create_type_object('bf:Summary' if 'type' in text else 'bf:Note'),
-                'skos:prefLabel': self._get_data_from_skos_prefLabel_from_text_type(text),
-            }
-            for text in texts
-        ]
+        texts = self._filter_not_abstract_text_type(model)
+        translated = []
+        for text in texts:
+            translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(
+                'bf:Summary' if 'type' in text else 'bf:Note'
+            )
+            try:
+                translated_text['skos:prefLabel'] = self._get_data_from_skos_prefLabel_from_text_type(text)
+            except LanguageNotInTranslationMappingError:
+                continue  # if not available in target, do not translate
+            translated.append(translated_text)
+        return translated
 
     def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
         text_data = text['data']
@@ -246,6 +253,14 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         parsed_source = urlparse(source)
         parsed_path = Path(parsed_source.path)
         return _create_value_language_object(value=text_datum['text'], language=parsed_path.name)
+
+    def _filter_not_abstract_text_type(self, model: 'Entry') -> List[Dict]:
+        abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
+        return [
+            text
+            for text in model.texts
+            if ('type' not in text) or (('source' in text['type']) and text['type']['source'] == abstract_source)
+        ]
 
 
 class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
