@@ -22,9 +22,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.client = APIClient()
         self.client.login(username=self.username, password=self.peeword)
 
-    def _get_media(
-        self, title: bool = True, type_: bool = True, license_: bool = True, mime_type: bool = True
-    ) -> 'Media':
+    def _get_media(self, title: bool = True, type_: bool = True, mime_type: bool = True) -> 'Media':
         entry = Entry(owner=self.user)
         if title:
             entry.title = 'A Title'
@@ -41,18 +39,19 @@ class DefaultValidationEndpointTestCase(APITestCase):
         )
         if mime_type:
             media.mime_type = 'text/plain'
-        if license_:
-            media.license = {
-                'label': {'en': 'Creative Commons Attribution 4.0'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
-            }
+
+        media.license = {
+            'label': {'en': 'Creative Commons Attribution 4.0'},
+            'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
+        }
+
         media.save()
         return media
 
     def get_media_primary_key_response(
-        self, title: bool = True, type_: bool = True, license_: bool = True, mime_type: bool = True
+        self, title: bool = True, type_: bool = True, mime_type: bool = True
     ) -> 'Response':
-        media = self._get_media(title, type_, license_, mime_type)
+        media = self._get_media(title, type_, mime_type)
         return self.client.get(
             f'/api/v1/validate_assets/media/{media.id}/',
         )
@@ -88,25 +87,10 @@ class DefaultValidationEndpointTestCase(APITestCase):
             },
         )
 
-    def test_missing_license(self):
-        response = self.get_media_primary_key_response(license_=False)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {
-                'media': {
-                    'license': [
-                        'Missing data for required field.',
-                    ]
-                }
-            },
-        )
-
     def test_missing_every_mandatory_field(self):
         response = self.get_media_primary_key_response(
             title=False,
             mime_type=False,
-            license_=False,
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -115,9 +99,6 @@ class DefaultValidationEndpointTestCase(APITestCase):
                 # no title!
                 'media': {
                     'mime_type': [
-                        'Missing data for required field.',
-                    ],
-                    'license': [
                         'Missing data for required field.',
                     ],
                 },
