@@ -48,7 +48,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         )
         result = schema.load(data)
         errors: dict = result.errors
-        self.data = result.data
+        self.data = schema.dump(result.data).data
         errors = translator.translate_errors(errors, contributor_role_mapping)
         self.throw_validation_errors(errors)
 

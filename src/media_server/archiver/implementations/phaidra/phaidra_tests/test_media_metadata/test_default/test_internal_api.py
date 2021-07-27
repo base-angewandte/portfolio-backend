@@ -9,6 +9,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
     PhaidraThesisMetaDataTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
+from media_server.archiver.interface.archiveobject import ArchiveObject
 
 if TYPE_CHECKING:
     from media_server.archiver.implementations.phaidra.main import PhaidraArchiver
@@ -1458,3 +1459,34 @@ class ThesisSwitchSchemaTestCase(TestCase):
     def test_entry_thesis_type(self):
         schema = self._get_schema(type_=True, thesis_type=True)
         self.assertIsInstance(schema, _PhaidraThesisMetaDataSchema)
+
+
+class TitleExistsTestCase(TestCase):
+    """According to frontend devs, title is not found in not thesis
+    metadata."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def test_title_generation_from_thesis(self):
+        entry = self.model_provider.get_entry()
+        media = self.model_provider.get_media(entry=entry)
+        archiver = DefaultMetadataArchiver(
+            ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
+        )
+        archiver.validate()
+        self.assertIn('dce:title', archiver.data)
+
+        self.assertEqual(1, archiver.data['dce:title'].__len__())
+
+    def test_title_generation_from_not_thesis(self):
+        entry = self.model_provider.get_entry(thesis_type=False)
+        media = self.model_provider.get_media(entry=entry)
+        archiver = DefaultMetadataArchiver(
+            ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
+        )
+        archiver.validate()
+        self.assertIn('dce:title', archiver.data)
+
+        self.assertEqual(1, archiver.data['dce:title'].__len__())
