@@ -57,9 +57,19 @@ def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
     return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
 
 
-def _create_value_language_objects_from_label_dict(container: Dict) -> List:
+def _create_value_language_objects_from_label_dict(container: Dict, raise_=False) -> List:
     labels: Dict = container['label']
-    return [_create_value_language_object(label, language) for language, label in labels.items()]
+    value_language_objects = []
+    for language, label in labels.items():
+        try:
+            value_language_object = _create_value_language_object(label, language)
+        except LanguageNotInTranslationMappingError as error:
+            if raise_:
+                raise error
+            else:
+                continue
+        value_language_objects.append(value_language_object)
+    return value_language_objects
 
 
 def _create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
@@ -212,19 +222,14 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
         return data_of_interest
 
     def _translate(self, data_of_interest: List[Dict]) -> List[Dict]:
-        translated_concepts = []
-        for datum in data_of_interest:
-            translated_concept = {
+        return [
+            {
                 **_create_type_object('skos:Concept'),
                 'skos:exactMatch': [datum['source']],
+                'skos:prefLabel': _create_value_language_objects_from_label_dict(datum),
             }
-
-            try:
-                translated_concept['skos:prefLabel'] = _create_value_language_objects_from_label_dict(datum)
-            except LanguageNotInTranslationMappingError:
-                continue
-            translated_concepts.append(translated_concept)
-        return translated_concepts
+            for datum in data_of_interest
+        ]
 
 
 class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
