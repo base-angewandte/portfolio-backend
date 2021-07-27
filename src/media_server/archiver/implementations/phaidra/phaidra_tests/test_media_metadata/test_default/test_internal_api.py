@@ -1,10 +1,23 @@
 from copy import deepcopy
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from media_server.archiver.implementations.phaidra.metadata.archiver import (
+    DefaultMetadataArchiver,
+    ThesisMetadataArchiver,
+)
+from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import (
+    PhaidraThesisMetaDataTranslator,
+)
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
+
+if TYPE_CHECKING:
+    from media_server.archiver.implementations.phaidra.main import PhaidraArchiver
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 
 from core.models import Entry
+from media_server.archiver.controller.default import DefaultArchiveController
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
     BfNoteTranslator,
     DCTitleTranslator,
@@ -1369,3 +1382,76 @@ class TranslateLanguageTestCase(TestCase):
             2,
             translation['dcterms:language'].__len__(),
         )
+
+
+class ThesisSwitchArchiverTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def test_with_entry_no_type(self):
+        """Should return no default type."""
+        entry = self.model_provider.get_entry(type_=False)
+        media = self.model_provider.get_media(entry)
+        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        archiver: 'PhaidraArchiver' = controller.archiver
+        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
+        self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
+        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraMetaData)
+        self.assertEqual(metadata_data_archiver.translator_class, PhaidraMetaDataTranslator)
+
+    def test_entry_not_thesis_type(self):
+        """Should return no default type."""
+        entry = self.model_provider.get_entry(type_=True, thesis_type=False)
+        media = self.model_provider.get_media(entry)
+        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        archiver: 'PhaidraArchiver' = controller.archiver
+        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
+        self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
+        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraMetaData)
+        self.assertEqual(metadata_data_archiver.translator_class, PhaidraMetaDataTranslator)
+
+    def test_entry_thesis_type(self):
+        """Should return no thesis type."""
+        entry = self.model_provider.get_entry(type_=True, thesis_type=True)
+        media = self.model_provider.get_media(entry)
+        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        archiver: 'PhaidraArchiver' = controller.archiver
+        metadata_data_archiver: 'ThesisMetadataArchiver' = archiver.metadata_data_archiver
+        self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)
+        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraThesisMetaDataSchema)
+        self.assertEqual(metadata_data_archiver.translator_class, PhaidraThesisMetaDataTranslator)
+
+
+class ThesisSwitchSchemaTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def _get_schema(self, type_=True, thesis_type=True):
+        """Mimicks media_server.archiver.implementations.phaidra.metadata.archi
+        ver.DefaultMetadataArchiver.validate."""
+        entry = self.model_provider.get_entry(type_, thesis_type)
+        media = self.model_provider.get_media(entry)
+        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        archiver: 'PhaidraArchiver' = controller.archiver
+        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
+        contributor_role_mapping = metadata_data_archiver.mapper_class.from_entry(
+            metadata_data_archiver.archive_object.entry
+        )
+        return get_phaidra_meta_data_schema_with_dynamic_fields(
+            bidirectional_concepts_mapper=contributor_role_mapping,
+            base_schema_class=metadata_data_archiver.base_schema_class,
+        )
+
+    def test_with_entry_no_type(self):
+        schema = self._get_schema(type_=False)
+        self.assertIsInstance(schema, _PhaidraMetaData)
+
+    def test_entry_not_thesis_type(self):
+        schema = self._get_schema(type_=True, thesis_type=False)
+        self.assertIsInstance(schema, _PhaidraMetaData)
+
+    def test_entry_thesis_type(self):
+        schema = self._get_schema(type_=True, thesis_type=True)
+        self.assertIsInstance(schema, _PhaidraThesisMetaDataSchema)

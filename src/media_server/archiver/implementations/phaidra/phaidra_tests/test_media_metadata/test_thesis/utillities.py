@@ -186,8 +186,10 @@ class ModelProvider:
         german_abstract: bool = True,
         french_abstract: bool = False,
         akan_language: bool = False,
+        thesis_type: bool = True,
     ) -> 'Entry':
         """
+        :param thesis_type: if to use thesis type, or else. Only will be applied if type_ is True
         :param title: Mandatory field
         :param type_: Mandatory field
         :param author: Mandatory field
@@ -205,10 +207,16 @@ class ModelProvider:
         if title:
             entry.title = 'A Title'
         if type_:
-            entry.type = {
-                'label': {'de': 'Masterarbeit', 'en': 'master thesis'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
-            }
+            if thesis_type:
+                entry.type = {
+                    'label': {'de': 'Masterarbeit', 'en': 'master thesis'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
+                }
+            else:
+                entry.type = {
+                    'label': {'de': 'Installation', 'en': 'Installation'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
+                }
 
         if author:
             entry.data['authors'] = [
