@@ -74,18 +74,6 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 'Asset validation successful')
 
-    def test_missing_type(self):
-        response = self.get_media_primary_key_response(type_=False)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {
-                'type': [
-                    'Missing data for required field.',
-                ]
-            },
-        )
-
     def test_missing_mime_type(self):
         response = self.get_media_primary_key_response(mime_type=False)
         self.assertEqual(response.status_code, 400)
@@ -117,7 +105,6 @@ class DefaultValidationEndpointTestCase(APITestCase):
     def test_missing_every_mandatory_field(self):
         response = self.get_media_primary_key_response(
             title=False,
-            type_=False,
             mime_type=False,
             license_=False,
         )
@@ -126,9 +113,6 @@ class DefaultValidationEndpointTestCase(APITestCase):
             response.data,
             {
                 # no title!
-                'type': [
-                    'Missing data for required field.',
-                ],
                 'media': {
                     'mime_type': [
                         'Missing data for required field.',

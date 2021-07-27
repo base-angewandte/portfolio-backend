@@ -1106,17 +1106,6 @@ class UpmostLevelStaticDataTestCase(TestCase):
                         }
                     }
                 },
-                'edm:hasType': {
-                    0: {
-                        'skos:exactMatch': ['Missing data for required field.'],
-                        'skos:prefLabel': {
-                            0: {
-                                '@language': ['Missing data for required field.'],
-                                '@value': ['Missing data for required field.'],
-                            },
-                        },
-                    },
-                },
             },
         )
 
@@ -1235,10 +1224,7 @@ class UpmostLevelAllDataTestCase(TestCase):
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
         self.assertEqual(
-            {
-                'role:act': {0: {'schema:name': ['Length must be 1.']}},
-                'edm:hasType': ['Length must be 1.'],
-            },
+            {'role:act': {0: {'schema:name': ['Length must be 1.']}}},
             schema.validate(
                 {
                     'dcterms:type': [
@@ -1287,23 +1273,9 @@ class PhaidraRuleTest(TestCase):
         entry = Entry(
             # enforce no title
             title=None,
-            type={
-                'label': {'de': 'Installation', 'en': 'Installation'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
-            },
         )
         errors = self._validate(entry)
         self.assertEqual(errors, {'title': ['Field may not be null.']})
-
-    def test_missing_type(self):
-        entry = Entry(title='No Type')
-        errors = self._validate(entry)
-        self.assertEqual(errors, {'type': ['Missing data for required field.']})
-
-    def test_missing_type_and_title(self):
-        entry = Entry(title=None)
-        errors = self._validate(entry)
-        self.assertEqual(errors, {'type': ['Missing data for required field.'], 'title': ['Field may not be null.']})
 
     def test_missing_nothing(self):
         entry = Entry(

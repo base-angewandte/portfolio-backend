@@ -99,8 +99,6 @@ class _PhaidraMetaData(Schema):
         many=True,
         load_from='edm:hasType',
         dump_to='edm:hasType',
-        required=True,
-        validate=validate.Length(equal=1),
     )
 
     dce_title = fields.Nested(
