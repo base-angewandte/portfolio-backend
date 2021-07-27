@@ -806,7 +806,10 @@ class DynamicPersonsTestCase(TestCase):
 
         translator = PhaidraMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        self.assertRaises(KeyError, lambda: translator._get_data_with_dynamic_structure(entry, mapping))
+        self.assertEqual(
+            translator._get_data_with_dynamic_structure(entry, mapping),
+            {},
+        )
 
     def test_validate_data_correct(self):
         entry = Entry(

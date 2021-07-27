@@ -305,12 +305,13 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
     def _get_contributors(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
         if 'contributors' not in model.data:
             return []
-        return [
-            _create_person_object(source=role['source'], name=contributor['label'])
-            for contributor in model.data['contributors']
-            for role in contributor['roles']
-            if ('roles' in contributor) and (role['source'] == self.role_uri)
-        ]
+        contributors = []
+        for contributor in model.data['contributors']:
+            if 'roles' in contributor:
+                for role in contributor['roles']:
+                    if role['source'] == self.role_uri:
+                        contributors.append(_create_person_object(source=role['source'], name=contributor['label']))
+        return contributors
 
 
 class PhaidraMetaDataTranslator(AbstractDataTranslator):
@@ -412,6 +413,8 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             return self.data_with_dynamic_structure
         contributors: List[Dict] = model.data['contributors']
         for contributor in contributors:
+            if 'roles' not in contributor:
+                continue
             for role in contributor['roles']:
                 if 'source' not in role:
                     continue
