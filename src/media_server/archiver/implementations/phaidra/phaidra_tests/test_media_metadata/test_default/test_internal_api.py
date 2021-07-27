@@ -1305,7 +1305,7 @@ class PhaidraRuleTest(TestCase):
         return portfolio_errors
 
 
-class TranslateNotImplementedLanguagesTestCase(TestCase):
+class TranslateNotImplementedLanguageTextTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.model_provider = ModelProvider()
@@ -1333,3 +1333,39 @@ class TranslateNotImplementedLanguagesTestCase(TestCase):
         translation = translator.translate_data(entry, dynamic_mapping)
         bf_note: List[Dict] = translation['bf:note']
         self.assertEqual(2, len(bf_note))
+
+
+class TranslateNotImplementedLanguageTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def test_not_implemented_language(self):
+        entry = self.model_provider.get_entry(akan_language=True, german_language=False)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        self.assertEqual(
+            0,
+            translation['dcterms:language'].__len__(),
+        )
+
+    def test_implemented_language(self):
+        entry = self.model_provider.get_entry(german_language=True, akan_language=False)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        self.assertEqual(
+            1,
+            translation['dcterms:language'].__len__(),
+        )
+
+    def test_mixed_language(self):
+        entry = self.model_provider.get_entry(german_language=True, akan_language=True)
+        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraMetaDataTranslator()
+        translation = translator.translate_data(entry, dynamic_mapping)
+        self.assertEqual(
+            1,
+            translation['dcterms:language'].__len__(),
+        )

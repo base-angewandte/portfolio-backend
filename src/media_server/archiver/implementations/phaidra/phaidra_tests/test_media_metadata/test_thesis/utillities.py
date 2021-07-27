@@ -180,21 +180,24 @@ class ModelProvider:
         title: bool = True,
         type_: bool = True,
         author: bool = True,
-        language: bool = True,
+        german_language: bool = True,
         advisor: bool = True,
         english_abstract: bool = True,
         german_abstract: bool = True,
         french_abstract: bool = False,
+        akan_language: bool = False,
     ) -> 'Entry':
         """
         :param title: Mandatory field
         :param type_: Mandatory field
         :param author: Mandatory field
-        :param language: Mandatory field
+        :param german_language: Mandatory field
         :param advisor: Mandatory field
         :param english_abstract: Mandatory field
         :param german_abstract: Mandatory field
         :param french_abstract: Obligatory field
+        :param akan_language: Not Implemented field
+        :param german_language: Obligatory field
         :return:
         """
         entry = Entry(owner=self.user, data={})
@@ -221,14 +224,14 @@ class ModelProvider:
                 }
             ]
 
-        if language:
+        if german_language:
             entry.data['language'] = [
                 {
                     'label': {
-                        'de': 'Akan-Sprache',
-                        'en': 'Akan',
+                        'de': 'Deutsch',
+                        'en': 'German',
                     },
-                    'source': 'http://base.uni-ak.ac.at/portfolio/languages/ak',
+                    'source': 'http://base.uni-ak.ac.at/portfolio/languages/de',
                 }
             ]
 
@@ -290,6 +293,18 @@ class ModelProvider:
                         'label': {'de': 'Abstract', 'en': 'Abstract'},
                         'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
                     },
+                }
+            )
+
+        if akan_language:
+            if entry.data is None:
+                entry.data = {}
+            if 'language' not in entry.data:
+                entry.data['language'] = []
+            entry.data['language'].append(
+                {
+                    'label': {'de': 'Akan-Sprache', 'en': 'Akan', 'fr': 'akan'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/languages/ak',
                 }
             )
 

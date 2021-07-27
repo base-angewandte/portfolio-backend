@@ -212,14 +212,19 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
         return data_of_interest
 
     def _translate(self, data_of_interest: List[Dict]) -> List[Dict]:
-        return [
-            {
+        translated_concepts = []
+        for datum in data_of_interest:
+            translated_concept = {
                 **_create_type_object('skos:Concept'),
                 'skos:exactMatch': [datum['source']],
-                'skos:prefLabel': _create_value_language_objects_from_label_dict(datum),
             }
-            for datum in data_of_interest
-        ]
+
+            try:
+                translated_concept['skos:prefLabel'] = _create_value_language_objects_from_label_dict(datum)
+            except LanguageNotInTranslationMappingError:
+                continue
+            translated_concepts.append(translated_concept)
+        return translated_concepts
 
 
 class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
