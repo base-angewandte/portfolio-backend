@@ -13,7 +13,6 @@ from rq.job import Job
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
-from django.db.models import IntegerField, Value
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
@@ -342,31 +341,44 @@ def has_entry_media(entry_id):
 
 
 def get_media_for_entry(entry_id, flat=True, published=None):
+
     if flat:
+
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
+
     exclude = []
 
     query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+
     if published is not None:
+
         query = query.filter(published=published)
 
     for m in query:
+
         exclude.append(m.pk)
-        data = m.get_minimal_data()
+
+        data = m.get_data()
+
         data.update({'response_code': 200})
+
         ret.append(data)
 
     query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
+
     if published is not None:
+
         query = query.filter(published=published)
 
-    ret += list(
-        query.annotate(response_code=Value(202, IntegerField())).values(
-            'id', 'archive_id', 'archive_URI', 'response_code'
-        )
-    )
+    for m in query:
+
+        data = m.get_minimal_data()
+
+        data.update({'response_code': 202})
+
+        ret.append(data)
 
     return ret
 
