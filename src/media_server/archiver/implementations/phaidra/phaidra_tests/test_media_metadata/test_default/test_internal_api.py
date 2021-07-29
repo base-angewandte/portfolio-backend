@@ -1474,6 +1474,15 @@ class TitleExistsTestCase(TestCase):
     """According to frontend devs, title is not found in not thesis
     metadata."""
 
+    expected_title = [
+        {
+            '@type': 'bf:Title',
+            'bf:mainTitle': [
+                {'@value': 'A Title', '@language': 'und'},
+            ],
+        },
+    ]
+
     @classmethod
     def setUpTestData(cls):
         cls.model_provider = ModelProvider()
@@ -1486,8 +1495,8 @@ class TitleExistsTestCase(TestCase):
         )
         archiver.validate()
         self.assertIn('dce:title', archiver.data)
-
         self.assertEqual(1, archiver.data['dce:title'].__len__())
+        self.assertEqual(archiver.data['dce:title'], self.expected_title)
 
     def test_title_generation_from_not_thesis(self):
         entry = self.model_provider.get_entry(thesis_type=False)
@@ -1497,5 +1506,5 @@ class TitleExistsTestCase(TestCase):
         )
         archiver.validate()
         self.assertIn('dce:title', archiver.data)
-
         self.assertEqual(1, archiver.data['dce:title'].__len__())
+        self.assertEqual(archiver.data['dce:title'], self.expected_title)
