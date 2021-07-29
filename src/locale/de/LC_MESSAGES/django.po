@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-18 16:44+0100\n"
+"POT-Creation-Date: 2021-07-29 12:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: api/serializers/entry.py:125
+#: api/serializers/entry.py:127
 msgid "will not be published"
 msgstr "Werden nicht veröffentlicht"
 
@@ -29,7 +29,7 @@ msgstr "Verknüpfung existiert bereits"
 msgid "Current user is not the owner of this entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-#: api/views.py:191 api/views.py:776 api/views.py:801
+#: api/views.py:191 api/views.py:776 api/views.py:805
 #: media_server/serializers.py:30
 msgid "Entry does not exist"
 msgstr "Eintrag existiert nicht"
@@ -42,21 +42,21 @@ msgstr "Kein Schema gefunden"
 msgid "User does not exist"
 msgstr "Benutzer existiert nicht"
 
-#: core/models.py:119
+#: core/models.py:143
 #, python-format
 msgid "Type %(type_source)s does not belong to any active schema"
 msgstr "Typ %(type_source)s gehört zu keinem aktiven Schema"
 
-#: core/models.py:126
+#: core/models.py:150
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr "Ungültige Daten: %(error)s"
 
-#: core/models.py:129
+#: core/models.py:153
 msgid "Data without type"
 msgstr "Daten ohne Typ"
 
-#: core/models.py:165
+#: core/models.py:189
 msgid "Both entries must belong to the same user"
 msgstr "Beide Einträge müssen demselben Benutzer gehören"
 
@@ -103,6 +103,90 @@ msgstr "Dieselbe Sprache wird mehrmals definiert"
 msgid "Invalid texts: %(error)s"
 msgstr "Ungültige Texte: %(error)s"
 
+#: media_server/archiver/controller/default.py:61
+msgid "empty"
+msgstr ""
+
+#. Translators: Something goes wrong and the media for archival is not found.
+#: media_server/archiver/messages/errors.py:4
+#, fuzzy
+#| msgid "Media object does not exist"
+msgid "Media assets do not exist"
+msgstr "Medienobjekt existiert nicht"
+
+#. Translators: Only media assets of one entry can be archived together. 0 or more than one found
+#: media_server/archiver/messages/errors.py:9
+#, python-format
+msgid "All media objects must belong to one entry. %(n_entries)d found"
+msgstr ""
+
+#. Translators: Something goes wrong and the user tried to archive an media asset, which he does not "own"
+#: media_server/archiver/messages/errors.py:13 media_server/views.py:101
+#: media_server/views.py:182 media_server/views.py:227
+msgid "Current user is not the owner of this media object"
+msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
+
+#. Translators: The archival service is unavailable due to unknown reasons
+#: media_server/archiver/messages/errors.py:18
+#, python-format
+msgid "%(service)s temporarily unavailable, try again later."
+msgstr ""
+
+#: media_server/archiver/messages/success.py:5
+#, python-format
+msgid ""
+"Successfully %(modification_type)s %(object_description)s to %(service)s"
+msgstr ""
+
+#. Translators: Default message for fields with no value
+#: media_server/archiver/messages/validation/__init__.py:6
+msgid "Field may not be null."
+msgstr ""
+
+#. Translators: Default message for empty required fields
+#: media_server/archiver/messages/validation/__init__.py:9
+msgid "Missing data for required field."
+msgstr ""
+
+#. Translators: Default message for invalid type, for example a number is requested and en e-mail-address is given
+#: media_server/archiver/messages/validation/__init__.py:12
+#, fuzzy
+#| msgid "Invalid type: %(error)s"
+msgid "Invalid type."
+msgstr "Ungültiger Typ: %(error)s"
+
+#. Translators: Default message, when validation failed to unknown reason
+#: media_server/archiver/messages/validation/__init__.py:15
+#, fuzzy
+#| msgid "Invalid license"
+msgid "Invalid value."
+msgstr "Ungültige Lizenz"
+
+#. Translators: Displayed, when missing an author
+#: media_server/archiver/messages/validation/thesis.py:4
+msgid "An author is required"
+msgstr ""
+
+#. Translators: Displayed, when missing language
+#: media_server/archiver/messages/validation/thesis.py:8
+msgid "Language is required"
+msgstr ""
+
+#. Translators: Displayed, when missing Supervisor
+#: media_server/archiver/messages/validation/thesis.py:11
+msgid "A supervisor is required"
+msgstr ""
+
+#. Translators: Displayed, when missing an English abstract
+#: media_server/archiver/messages/validation/thesis.py:14
+msgid "An English Abstract is required"
+msgstr ""
+
+#. Translators: Displayed, when missing a German abstract
+#: media_server/archiver/messages/validation/thesis.py:17
+msgid "A German Abstract is required"
+msgstr ""
+
 #: media_server/serializers.py:33
 msgid "Current user is not the owner of entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
@@ -116,23 +200,23 @@ msgstr "Ungültige Lizenz: %(error)s"
 msgid "Invalid license"
 msgstr "Ungültige Lizenz"
 
-#: media_server/views.py:98 media_server/views.py:179 media_server/views.py:224
-msgid "Current user is not the owner of this media object"
-msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Medienobjekts"
-
-#: media_server/views.py:111 media_server/views.py:187
-#: media_server/views.py:232
+#: media_server/views.py:114 media_server/views.py:190
+#: media_server/views.py:235
 msgid "Media object does not exist"
 msgstr "Medienobjekt existiert nicht"
 
-#: media_server/views.py:129
+#: media_server/views.py:132
 msgid "No space left for user"
 msgstr "Kein Speicherplatz mehr für diesen Benutzer"
 
-#: portfolio/settings.py:247
+#: media_server/views.py:251
+msgid "Asset validation successful"
+msgstr ""
+
+#: portfolio/settings.py:250
 msgid "German"
 msgstr "Deutsch"
 
-#: portfolio/settings.py:248
+#: portfolio/settings.py:251
 msgid "English"
 msgstr "Englisch"

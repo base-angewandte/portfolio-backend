@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 16:49+0200\n"
+"POT-Creation-Date: 2021-07-29 12:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr ""
 msgid "Invalid texts: %(error)s"
 msgstr ""
 
-#: media_server/archiver/controller/default.py:62
+#: media_server/archiver/controller/default.py:61
 msgid "empty"
 msgstr ""
 
@@ -123,16 +123,61 @@ msgstr ""
 msgid "Current user is not the owner of this media object"
 msgstr ""
 
-#. Translators: The archival service is unavailable due to unkonwn reasons
+#. Translators: The archival service is unavailable due to unknown reasons
 #: media_server/archiver/messages/errors.py:18
-#, python-brace-format
-msgid "{service} temporarily unavailable, try again later."
+#, python-format
+msgid "%(service)s temporarily unavailable, try again later."
 msgstr ""
 
 #: media_server/archiver/messages/success.py:5
 #, python-format
 msgid ""
 "Successfully %(modification_type)s %(object_description)s to %(service)s"
+msgstr ""
+
+#. Translators: Default message for fields with no value
+#: media_server/archiver/messages/validation/__init__.py:6
+msgid "Field may not be null."
+msgstr ""
+
+#. Translators: Default message for empty required fields
+#: media_server/archiver/messages/validation/__init__.py:9
+msgid "Missing data for required field."
+msgstr ""
+
+#. Translators: Default message for invalid type, for example a number is requested and en e-mail-address is given
+#: media_server/archiver/messages/validation/__init__.py:12
+msgid "Invalid type."
+msgstr ""
+
+#. Translators: Default message, when validation failed to unknown reason
+#: media_server/archiver/messages/validation/__init__.py:15
+msgid "Invalid value."
+msgstr ""
+
+#. Translators: Displayed, when missing an author
+#: media_server/archiver/messages/validation/thesis.py:4
+msgid "An author is required"
+msgstr ""
+
+#. Translators: Displayed, when missing language
+#: media_server/archiver/messages/validation/thesis.py:8
+msgid "Language is required"
+msgstr ""
+
+#. Translators: Displayed, when missing Supervisor
+#: media_server/archiver/messages/validation/thesis.py:11
+msgid "A supervisor is required"
+msgstr ""
+
+#. Translators: Displayed, when missing an English abstract
+#: media_server/archiver/messages/validation/thesis.py:14
+msgid "An English Abstract is required"
+msgstr ""
+
+#. Translators: Displayed, when missing a German abstract
+#: media_server/archiver/messages/validation/thesis.py:17
+msgid "A German Abstract is required"
 msgstr ""
 
 #: media_server/serializers.py:33

@@ -34,7 +34,9 @@ class ConceptMapper:
             owl_sameAs = {element['uri'] for element in node['owl:sameAs']}
         else:
             raise RuntimeError(
-                f'Can not handle node["owl:sameAs"] with type {node["owl:sameAs"].__class__} and value {node["owl:sameAs"]}'
+                f'Can not handle node["owl:sameAs"] '
+                f'with type {node["owl:sameAs"].__class__} '
+                f'and value {node["owl:sameAs"]}'
             )
         return cls(
             uri=node['uri'],

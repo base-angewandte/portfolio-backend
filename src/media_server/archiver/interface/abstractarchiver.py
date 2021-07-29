@@ -15,7 +15,7 @@ class AbstractArchiver(ABC):
     def __init__(self, archive_object: ArchiveObject):
         """Archive Entry from the database to …
 
-        :param entry: Entry
+        :type archive_object: ArchiveObject
         """
         self.archive_object = archive_object
 
