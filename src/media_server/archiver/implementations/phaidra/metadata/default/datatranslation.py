@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
-import marshmallow
-
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     extract_phaidra_role_code,
 )
 from media_server.archiver.interface.exceptions import InternalValidationError
+from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 
 if TYPE_CHECKING:
     from media_server.models import Entry
@@ -156,6 +155,21 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
             },
         ]
 
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        """Minimum length is 1 on phaidra site, on ours only missing.
+
+        :param errors:
+        :return:
+        """
+        if errors:
+            return {
+                'type': [
+                    MISSING_DATA_FOR_REQUIRED_FIELD,
+                ]
+            }
+        else:
+            return {}
+
     def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
         if 'label' not in model.type:
             return []
@@ -170,17 +184,6 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
         return [
             model.type['source'],
         ]
-
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        """Minimum length is 1 on phaidra site, on ours only missing.
-
-        :param errors:
-        :return:
-        """
-        if errors:
-            return {'type': [marshmallow.fields.Field.default_error_messages['required']]}
-        else:
-            return {}
 
 
 class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):

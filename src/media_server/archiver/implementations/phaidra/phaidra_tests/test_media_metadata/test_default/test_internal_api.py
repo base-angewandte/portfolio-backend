@@ -10,6 +10,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
 )
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
 from media_server.archiver.interface.archiveobject import ArchiveObject
+from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 
 if TYPE_CHECKING:
     from media_server.archiver.implementations.phaidra.main import PhaidraArchiver
@@ -158,7 +159,7 @@ class MetaDataTitle(TestCase):
             portfolio_errors,
             {
                 # title defaults to empty string in db
-                # 'title': ['Missing data for required field.'],
+                # 'title': [MISSING_DATA_FOR_REQUIRED_FIELD],
             },
         )
         return portfolio_errors
@@ -233,20 +234,20 @@ class EdmHastypeTestCase(TestCase):
         self.assertEqual(
             validation,
             {
-                'skos:exactMatch': ['Missing data for required field.'],
+                'skos:exactMatch': [MISSING_DATA_FOR_REQUIRED_FIELD],
             },
         )
 
     def test_translate_errors(self):
         errors = {
             0: {
-                'skos:exactMatch': ['Missing data for required field.'],
+                'skos:exactMatch': [MISSING_DATA_FOR_REQUIRED_FIELD],
             },
         }
         self.assertEqual(
             {
                 'type': [
-                    'Missing data for required field.',
+                    MISSING_DATA_FOR_REQUIRED_FIELD,
                 ]
             },
             EdmHasTypeTranslator().translate_errors(errors),
@@ -435,7 +436,7 @@ class GenericSkosConceptTestCase(TestCase):
                 ],
             }
         )
-        self.assertEqual(errors, {'skos:exactMatch': ['Missing data for required field.']})
+        self.assertEqual(errors, {'skos:exactMatch': [MISSING_DATA_FOR_REQUIRED_FIELD]})
 
     def test_error_translation_empty(self):
         self.assertEqual({}, GenericSkosConceptTranslator('not-important', []).translate_errors([]))
@@ -445,7 +446,7 @@ class GenericSkosConceptTestCase(TestCase):
             InternalValidationError,
             lambda: GenericSkosConceptTranslator('not-important', []).translate_errors(
                 [
-                    {'skos:exactMatch': ['Missing data for required field.']},
+                    {'skos:exactMatch': [MISSING_DATA_FOR_REQUIRED_FIELD]},
                 ]
             ),
         )
@@ -535,7 +536,7 @@ class BfNoteTestCase(TestCase):
         schema = TypeLabelSchema()
         self.assertEqual(
             {
-                '@type': ['Missing data for required field.'],
+                '@type': [MISSING_DATA_FOR_REQUIRED_FIELD],
             },
             schema.validate(
                 {
@@ -558,7 +559,7 @@ class BfNoteTestCase(TestCase):
             lambda: BfNoteTranslator().translate_errors(
                 [
                     {
-                        '@type': ['Missing data for required field.'],
+                        '@type': [MISSING_DATA_FOR_REQUIRED_FIELD],
                     }
                 ]
             ),
@@ -657,7 +658,7 @@ class StaticGenericPersonTestCase(TestCase):
             {
                 'schema:name': {
                     0: {
-                        '@value': ['Missing data for required field.'],
+                        '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
                     }
                 }
             },
@@ -686,7 +687,7 @@ class StaticGenericPersonTestCase(TestCase):
             {
                 'schema:name': {
                     0: {
-                        '@value': ['Missing data for required field.'],
+                        '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
                     }
                 }
             },
@@ -873,7 +874,7 @@ class DynamicPersonsTestCase(TestCase):
             {
                 'skos:exactMatch': {
                     0: {
-                        '@value': ['Missing data for required field.'],
+                        '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
                     },
                 },
             },
@@ -936,7 +937,7 @@ class DynamicPersonsTestCase(TestCase):
                     'role:act': {
                         'skos:exactMatch': {
                             0: {
-                                '@value': ['Missing data for required field.'],
+                                '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
                             },
                         },
                     }
@@ -1117,8 +1118,8 @@ class UpmostLevelStaticDataTestCase(TestCase):
                     0: {
                         'bf:mainTitle': {
                             0: {
-                                '@language': ['Missing data for required field.'],
-                                '@value': ['Missing data for required field.'],
+                                '@language': [MISSING_DATA_FOR_REQUIRED_FIELD],
+                                '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
                             }
                         }
                     }
@@ -1241,7 +1242,15 @@ class UpmostLevelAllDataTestCase(TestCase):
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
         self.assertEqual(
-            {'role:act': {0: {'schema:name': ['Length must be 1.']}}},
+            {
+                'role:act': {
+                    0: {
+                        'schema:name': [
+                            MISSING_DATA_FOR_REQUIRED_FIELD,
+                        ]
+                    }
+                }
+            },
             schema.validate(
                 {
                     'dcterms:type': [

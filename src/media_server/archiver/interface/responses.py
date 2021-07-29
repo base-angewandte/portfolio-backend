@@ -2,7 +2,7 @@ from enum import Enum
 
 from rest_framework.response import Response
 
-from django.utils.translation import gettext
+from media_server.archiver import messages
 
 
 class ModificationType(Enum):
@@ -24,8 +24,7 @@ class SuccessfulArchiveResponse(Response):
                 'action': modification_type.value,
                 'object': object_description,
                 'service': service,
-                'message': gettext('Successfully %s %s to %s')
-                % (
+                'message': messages.success.successful_archival_message(
                     modification_type.value,
                     object_description,
                     service,

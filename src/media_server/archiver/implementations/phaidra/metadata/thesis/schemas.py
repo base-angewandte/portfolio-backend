@@ -1,34 +1,41 @@
 from typing import Dict, List, Set
 
-from marshmallow import ValidationError, fields, validate, validates
+from marshmallow import ValidationError, validates
 
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     PersonSchema,
     SkosConceptSchema,
     _PhaidraMetaData,
 )
+from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
+from media_server.archiver.implementations.phaidra.utillities.validate import (
+    ValidateAuthor,
+    ValidateLanguage,
+    ValidateSupervisor,
+)
+from media_server.archiver.messages.validation.thesis import MISSING_ENGLISH_ABSTRACT, MISSING_GERMAN_ABSTRACT
 
 
 class _PhaidraThesisMetaDataSchema(_PhaidraMetaData):
-    role_aut = fields.Nested(
-        PersonSchema, many=True, validate=validate.Length(min=1), load_from='role:aut', dump_to='role:aut'
+    role_aut = PortfolioNestedField(
+        PersonSchema, many=True, validate=ValidateAuthor(), load_from='role:aut', dump_to='role:aut'
     )
 
-    dcterms_language = fields.Nested(
+    dcterms_language = PortfolioNestedField(
         SkosConceptSchema,
         many=True,
         load_from='dcterms:language',
         dump_to='dcterms:language',
-        validate=validate.Length(min=1),
+        validate=ValidateLanguage(),
         required=True,
     )
 
-    role_supervisor = fields.Nested(
+    role_supervisor = PortfolioNestedField(
         PersonSchema,
         many=True,
         load_from='role:supervisor',
         dump_to='role:supervisor',
-        validate=validate.Length(min=1),
+        validate=ValidateSupervisor(),
         required=True,
     )
 
@@ -38,9 +45,9 @@ class _PhaidraThesisMetaDataSchema(_PhaidraMetaData):
         languages = self._extract_languages_from_type_label_schemas(abstracts)
         errors = []
         if 'eng' not in languages:
-            errors.append('Thesis must include at least one english abstract.')
+            errors.append(MISSING_ENGLISH_ABSTRACT)
         if 'deu' not in languages:
-            errors.append('Thesis must include at least one german abstract.')
+            errors.append(MISSING_GERMAN_ABSTRACT)
         if errors:
             raise ValidationError(errors)
 

@@ -23,6 +23,14 @@ from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_meta
     ModelProvider,
     PhaidraContainerGenerator,
 )
+from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
+from media_server.archiver.messages.validation.thesis import (
+    MISSING_AUTHOR,
+    MISSING_ENGLISH_ABSTRACT,
+    MISSING_GERMAN_ABSTRACT,
+    MISSING_LANGUAGE,
+    MISSING_SUPERVISOR,
+)
 
 
 class AtLeastOneAuthorTestCase(TestCase):
@@ -38,14 +46,14 @@ class AtLeastOneAuthorTestCase(TestCase):
 
     expected_phaidra_error = {
         'role:aut': [
-            'Shorter than minimum length 1.',
+            MISSING_AUTHOR,
         ]
     }
 
     expected_portfolio_errors = {
         'data': {
             'authors': [
-                'Shorter than minimum length 1.',
+                MISSING_AUTHOR,
             ],
         },
     }
@@ -81,7 +89,7 @@ class AtLeastOneAuthorTestCase(TestCase):
         self.assertRaisesMessage(
             ValidationError,
             # This is str repr and not the exactly same as in the response
-            "{'data': {'authors': [ErrorDetail(string='Shorter than minimum length 1.', code='invalid')]}}",
+            "{'data': {'authors': [ErrorDetail(string='" + MISSING_AUTHOR + "', code='invalid')]}}",
             lambda: controller.validate(),
         )
 
@@ -104,7 +112,7 @@ class AtLeastOneAuthorTestCase(TestCase):
             {
                 'data': {
                     'authors': [
-                        'Shorter than minimum length 1.',
+                        MISSING_AUTHOR,
                     ]
                 }
             },
@@ -130,14 +138,14 @@ class MustHaveALanguageTestCase(TestCase):
 
     expected_phaidra_errors = {
         'dcterms:language': [
-            'Shorter than minimum length 1.',
+            MISSING_LANGUAGE,
         ]
     }
 
     expected_portfolio_errors = {
         'data': {
             'language': [
-                'Missing data for required field.',
+                MISSING_LANGUAGE,
             ]
         }
     }
@@ -172,8 +180,8 @@ class MustHaveALanguageTestCase(TestCase):
         )
         self.assertRaisesMessage(
             ValidationError,
-            # This is str repr and not the exactly same as in the response
-            "{'data': {'language': [ErrorDetail(string='Missing data for required field.', code='invalid')]}}",
+            # This is str repr and not the exactly same as in the response, f-string did not work immediately
+            "{'data': {'language': [ErrorDetail(string='" + MISSING_LANGUAGE + "', code='invalid')]}}",
             lambda: controller.validate(),
         )
 
@@ -196,7 +204,7 @@ class MustHaveALanguageTestCase(TestCase):
             {
                 'data': {
                     'language': [
-                        'Missing data for required field.',
+                        MISSING_LANGUAGE,
                     ]
                 }
             },
@@ -218,23 +226,21 @@ class MustHaveAnAdviserTestCase(TestCase):
     expected_phaidra_errors_missing_field = {
         'role:supervisor': {
             0: {
-                'skos:exactMatch': {0: {'@value': ['Missing data for required field.']}},
-                'schema:name': {0: {'@value': ['Missing data for required field.']}},
+                'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
             }
         }
     }
 
     expected_phaidra_errors_empty_field = {
         'role:supervisor': [
-            'Shorter than minimum length 1.',
+            MISSING_SUPERVISOR,
         ]
     }
 
     expected_portfolio_errors = {
         'data': {
-            'contributors': [
-                'At least one contributor has to have the role advisor.',
-            ],
+            'contributors': [MISSING_SUPERVISOR],
         }
     }
 
@@ -307,8 +313,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertRaisesMessage(
             ValidationError,
             # This is str repr and not the exactly same as in the response
-            "{'data': {'contributors': [ErrorDetail(string='At least one contributor has to have the role advisor.',"
-            " code='invalid')]}}",
+            "{'data': {'contributors': [ErrorDetail(string='" + MISSING_SUPERVISOR + "'," " code='invalid')]}}",
             lambda: controller.validate(),
         )
 
@@ -331,7 +336,7 @@ class MustHaveAnAdviserTestCase(TestCase):
             {
                 'data': {
                     'contributors': [
-                        'At least one contributor has to have the role advisor.',
+                        MISSING_SUPERVISOR,
                     ]
                 }
             },
@@ -349,29 +354,37 @@ class EmptyThesisTestCase(TestCase):
     should be displayed."""
 
     expected_phaidra_errors_missing_field = {
-        'role:aut': ['Shorter than minimum length 1.'],
+        'role:aut': [
+            MISSING_AUTHOR,
+        ],
         'role:supervisor': {
             0: {
-                'schema:name': {0: {'@value': ['Missing data for required field.']}},
-                'skos:exactMatch': {0: {'@value': ['Missing data for required field.']}},
+                'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
             }
         },
-        'dcterms:language': ['Shorter than minimum length 1.'],
+        'dcterms:language': [
+            MISSING_LANGUAGE,
+        ],
         'bf:note': [
-            'Thesis must include at least one english abstract.',
-            'Thesis must include at least one german abstract.',
+            MISSING_ENGLISH_ABSTRACT,
+            MISSING_GERMAN_ABSTRACT,
         ],
     }
 
     expected_portfolio_errors = {
         'data': {
-            'language': ['Missing data for required field.'],
-            'authors': ['Shorter than minimum length 1.'],
-            'contributors': ['At least one contributor has to have the role advisor.'],
+            'language': [MISSING_LANGUAGE],
+            'authors': [
+                MISSING_AUTHOR,
+            ],
+            'contributors': [
+                MISSING_SUPERVISOR,
+            ],
         },
         'texts': [
-            'Thesis must include at least one english abstract.',
-            'Thesis must include at least one german abstract.',
+            MISSING_ENGLISH_ABSTRACT,
+            MISSING_GERMAN_ABSTRACT,
         ],
     }
 
@@ -430,13 +443,13 @@ class MustHaveEnglishAbstractTestCase(TestCase):
 
     expected_phaidra_errors_missing_field = {
         'bf:note': [
-            'Thesis must include at least one english abstract.',
+            MISSING_ENGLISH_ABSTRACT,
         ]
     }
 
     expected_portfolio_errors = {
         'texts': [
-            'Thesis must include at least one english abstract.',
+            MISSING_ENGLISH_ABSTRACT,
         ]
     }
 
@@ -479,13 +492,13 @@ class MustHaveGermanAbstractTestCase(TestCase):
 
     expected_phaidra_errors_missing_field = {
         'bf:note': [
-            'Thesis must include at least one german abstract.',
+            MISSING_GERMAN_ABSTRACT,
         ]
     }
 
     expected_portfolio_errors = {
         'texts': [
-            'Thesis must include at least one german abstract.',
+            MISSING_GERMAN_ABSTRACT,
         ]
     }
 

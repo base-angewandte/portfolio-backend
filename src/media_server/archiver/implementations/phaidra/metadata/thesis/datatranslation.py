@@ -1,13 +1,12 @@
 from typing import Dict, List, Optional, Union
 
-from marshmallow import fields
-
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
     BfNoteTranslator,
     GenericSkosConceptTranslator,
     GenericStaticPersonTranslator,
     PhaidraMetaDataTranslator,
 )
+from media_server.archiver.messages.validation.thesis import MISSING_SUPERVISOR
 
 
 class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
@@ -19,9 +18,7 @@ class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
         translated_errors = {}
         translated_errors = self.set_nested(
             keys=[self.entry_attribute, *self.json_keys],
-            value=[
-                fields.Field.default_error_messages['required'],
-            ],
+            value=errors,
             target=translated_errors,
         )
         return translated_errors
@@ -65,7 +62,7 @@ class AdvisorSupervisorTranslator(GenericStaticPersonTranslator):
         return {
             'data': {
                 'contributors': [
-                    'At least one contributor has to have the role advisor.',
+                    MISSING_SUPERVISOR,
                 ],
             }
         }

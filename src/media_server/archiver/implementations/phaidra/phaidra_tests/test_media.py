@@ -2,6 +2,8 @@ import unittest
 
 from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
+from media_server.archiver.messages import validation as validation_messages
+from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 from media_server.models import Media
 
 
@@ -121,7 +123,7 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
                 'metadata': {
                     'json-ld': {
                         'edm:rights': [
-                            'Shorter than minimum length 1.',
+                            MISSING_DATA_FOR_REQUIRED_FIELD,
                         ],
                     }
                 }
@@ -130,7 +132,7 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
         our_errors = self.phaidra_media_data_translator.translate_errors(phaidra_errors)
         self.assertEqual(
             our_errors,
-            {'media': {'license': ['Missing data for required field.']}},
+            {'media': {'license': [validation_messages.MISSING_DATA_FOR_REQUIRED_FIELD]}},
         )
 
     def test_missing_all_data_validation(self):
@@ -143,13 +145,13 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
                 'metadata': {
                     'json-ld': {
                         'edm:rights': [
-                            'Shorter than minimum length 1.',
+                            MISSING_DATA_FOR_REQUIRED_FIELD,
                         ],
                         'ebucore:hasMimeType': [
-                            'Shorter than minimum length 1.',
+                            MISSING_DATA_FOR_REQUIRED_FIELD,
                         ],
                         'ebucore:filename': [
-                            'Shorter than minimum length 1.',
+                            MISSING_DATA_FOR_REQUIRED_FIELD,
                         ],
                     }
                 }

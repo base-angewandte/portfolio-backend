@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry
+from media_server.archiver import messages
 
 from ...models import Media
 from ..factory.default import ArchiverFactory
@@ -117,7 +118,7 @@ class DefaultArchiveController:
             try:
                 media_objects.add(Media.objects.get(id=media_primary_key))
             except ObjectDoesNotExist:
-                raise NotFound(_('Media assets do not exist'))
+                raise NotFound(messages.errors.MEDIA_NOT_FOUND)
         return media_objects
 
     def _get_entry(self) -> Entry:
@@ -128,9 +129,7 @@ class DefaultArchiveController:
         entry_primary_keys = {media.entry_id for media in self.media_objects}
         n_entries = len(entry_primary_keys)
         if n_entries != 1:
-            raise APIException(
-                _('All media objects should belong to one entry. %(n_entries) found') % {'n_entries': {n_entries}}
-            )
+            raise APIException(messages.errors.assets_belong_to_not_one_entry(n_entries))
         return Entry.objects.get(pk=entry_primary_keys.pop())
 
     def _validate_ownership(self):
@@ -140,7 +139,7 @@ class DefaultArchiveController:
         :return:
         """
         if not (self.entry.owner == self.user):
-            raise PermissionDenied(_('Current user is not the owner of this media object'))
+            raise PermissionDenied(messages.errors.CURRENT_USER_NOW_OWNER_OF_MEDIA)
 
     def _create_archiver(self) -> 'AbstractArchiver':
         """

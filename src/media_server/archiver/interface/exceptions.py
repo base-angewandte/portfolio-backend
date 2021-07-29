@@ -3,6 +3,8 @@ from abc import abstractmethod
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
+from media_server.archiver.messages import errors
+
 
 class InternalValidationError(RuntimeError):
     """When then internal data structure is no well defined, but the user does
@@ -26,7 +28,7 @@ class ExternalServerError(APIException):
 
     @property
     def default_detail(self) -> str:
-        return f'{self.external_service_name} temporarily unavailable, try again later.'
+        return errors.external_service_unavailable(self.external_service_name)
 
     @property
     def default_code(self) -> str:

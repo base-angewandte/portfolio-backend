@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from rest_framework.test import APIClient, APITestCase
 
@@ -11,9 +11,14 @@ from media_server.models import Media
 if TYPE_CHECKING:
     from rest_framework.response import Response
 
+from media_server.archiver import messages
+
 
 class DefaultValidationEndpointTestCase(APITestCase):
     """Default aka not thesis."""
+
+    entry: Optional['Entry'] = None
+    media: Optional['Media'] = None
 
     def setUp(self) -> None:
         self.username = 'test-user'
@@ -22,38 +27,38 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.client = APIClient()
         self.client.login(username=self.username, password=self.peeword)
 
-    def _get_media(self, title: bool = True, type_: bool = True, mime_type: bool = True) -> 'Media':
-        entry = Entry(owner=self.user)
+    def _create_media(self, title: bool = True, type_: bool = True, mime_type: bool = True) -> 'Media':
+        self.entry = Entry(owner=self.user)
         if title:
-            entry.title = 'A Title'
+            self.entry.title = 'A Title'
         if type_:
-            entry.type = {
+            self.entry.type = {
                 'label': {'de': 'Installation', 'en': 'Installation'},
                 'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
             }
-        entry.save()
-        media = Media(
+        self.entry.save()
+        self.media = Media(
             owner=self.user,
             file=SimpleUploadedFile('example.txt', b'example text'),
-            entry_id=entry.id,
+            entry_id=self.entry.id,
         )
         if mime_type:
-            media.mime_type = 'text/plain'
+            self.media.mime_type = 'text/plain'
 
-        media.license = {
+        self.media.license = {
             'label': {'en': 'Creative Commons Attribution 4.0'},
             'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
         }
 
-        media.save()
-        return media
+        self.media.save()
+        return self.media
 
     def get_media_primary_key_response(
         self, title: bool = True, type_: bool = True, mime_type: bool = True
     ) -> 'Response':
-        media = self._get_media(title, type_, mime_type)
+        self.media = self._create_media(title, type_, mime_type)
         return self.client.get(
-            f'/api/v1/validate_assets/media/{media.id}/',
+            f'/api/v1/validate_assets/media/{self.media.id}/',
         )
 
     def tearDown(self) -> None:
@@ -78,13 +83,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data,
-            {
-                'media': {
-                    'mime_type': [
-                        'Missing data for required field.',
-                    ]
-                }
-            },
+            {'media': {'mime_type': [messages.validation.MISSING_DATA_FOR_REQUIRED_FIELD]}},
         )
 
     def test_missing_every_mandatory_field(self):
@@ -98,9 +97,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
             {
                 # no title!
                 'media': {
-                    'mime_type': [
-                        'Missing data for required field.',
-                    ],
+                    'mime_type': [messages.validation.MISSING_DATA_FOR_REQUIRED_FIELD],
                 },
             },
         )
