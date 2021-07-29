@@ -231,6 +231,19 @@ class Media(models.Model):
 
         return data
 
+    def get_minimal_data(self):
+
+        data = {
+            'id': self.pk,
+            'type': self.type,
+            'original': self.file.url,
+            'metadata': self.metadata,
+            'published': self.published,
+            'license': self.license,
+        }
+
+        return data
+
     def get_file_path(self, filename):
         return os.path.join(self.get_protected_assets_path(), filename)
 
@@ -341,7 +354,7 @@ def get_media_for_entry(entry_id, flat=True, published=None):
 
     for m in query:
         exclude.append(m.pk)
-        data = m.get_data()
+        data = m.get_minimal_data()
         data.update({'response_code': 200})
         ret.append(data)
 
