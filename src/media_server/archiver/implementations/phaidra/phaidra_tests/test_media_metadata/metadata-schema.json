@@ -21,8 +21,7 @@
         }
     },
     "required": [
-        "title",
-        "type"
+        "title"
     ],
     "if": {
         "properties": {
