@@ -57,7 +57,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
             self.validate()
         self.is_update = self.archive_object.entry.archive_id is not None
         url = self._create_phaidra_url(self.archive_object.entry.archive_id)
-        response = self._post_to_phaidra(url, json.dumps(self.data))
+        response = self._post_to_phaidra(url, self.data)
         return self._handle_phaidra_response(response)
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
@@ -69,7 +69,8 @@ class DefaultMetadataArchiver(AbstractArchiver):
         base_uri = settings.ARCHIVE_URIS['CREATE_URI']
         return urljoin(base_uri, f'object/{archive_id}/metadata')
 
-    def _post_to_phaidra(self, url, data):
+    def _post_to_phaidra(self, url, data: dict):
+        data = json.dumps(data)
         logging.debug(f'Post to phaidra with metadata {data}')
         try:
             return requests.post(url, files={'metadata': data}, auth=(credentials.get('USER'), credentials.get('PWD')))
