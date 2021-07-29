@@ -1,0 +1,146 @@
+﻿{
+    "description": "Data valid according to this schema is considered acceptable for archiving to Phaidra system.",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://portfolio-showroom.ac.at/mandatory-fields.schema.json",
+    "title": "Mandatory fields",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string"
+        },
+        "type": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "source"
+            ]
+        }
+    },
+    "required": [
+        "title",
+        "type"
+    ],
+    "if": {
+        "properties": {
+            "type": {
+                "type": "object",
+                "properties": {
+                    "source": {
+                        "type": "string",
+                        "pattern": "^http://base.uni-ak.ac.at/portfolio/taxonomy/(bachelor_thesis|diploma_thesis|master_thesis|doctoral_dissertation)$"
+                    }
+                }
+            }
+        }
+    },
+    "then": {
+        "properties": {
+            "texts": {
+                "type": "array",
+                "minItems": 1,
+                "contains": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "type": "array",
+                            "minItems": 2,
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "language": {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "pattern": "^http://base.uni-ak.ac.at/portfolio/languages/(en|de)$"
+                                            }
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "text",
+                                    "language"
+                                ]
+                            }
+                        },
+                        "type": {
+                            "type": "object",
+                            "properties": {
+                                "source": {
+                                    "type": "string",
+                                    "pattern": "^http://base.uni-ak.ac.at/portfolio/vocabulary/abstract$"
+                                }
+                            },
+                            "required": [
+                                "source"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "data",
+                        "type"
+                    ]
+                }
+            },
+            "data": {
+                "type": "object",
+                "properties": {
+                    "authors": {
+                        "type": "array",
+                        "minItems": 1
+                    },
+                    "language": {
+                        "type": "array",
+                        "minItems": 1
+                    },
+                    "contributors": {
+                        "type": "array",
+                        "minItems": 1,
+                        "contains": {
+                            "type": "object",
+                            "properties": {
+                                "roles": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "contains": {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "pattern": "^http://base.uni-ak.ac.at/portfolio/vocabulary/advisor$"
+                                            }
+                                        },
+                                        "required": [
+                                            "source"
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "roles"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "authors",
+                    "language",
+                    "contributors"
+                ]
+            }
+        },
+        "required": [
+            "texts",
+            "data"
+        ]
+    },
+    "additionalProperties": true
+}
