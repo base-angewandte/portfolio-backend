@@ -3,7 +3,7 @@ st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
@@ -371,15 +371,27 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
         data_with_static_structure = self._get_data_with_static_structure(model)
-        data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
-        return self._merge(data_with_static_structure, data_with_dynamic_structure)
+        if contributor_role_mapping is None:
+            data = data_with_static_structure
+        else:
+            data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
+            data = self._merge(data_with_static_structure, data_with_dynamic_structure)
+        data = self._wrap_in_container(data)
+        return data
 
     def translate_errors(
         self, errors: Optional[Dict], contributor_role_mapping: 'BidirectionalConceptsMapper' = None
     ) -> Dict:
+        errors = self._extract_from_container(errors)
         errors_with_static_structure = self._translate_errors_with_static_structure(errors)
-        errors_with_dynamic_structure = self._translate_errors_with_dynamic_structure(errors, contributor_role_mapping)
-        all_errors = self._merge(errors_with_static_structure, errors_with_dynamic_structure)
+        if contributor_role_mapping is None:
+            # allow skipping requests for dynamic structure
+            all_errors = errors_with_static_structure
+        else:
+            errors_with_dynamic_structure = self._translate_errors_with_dynamic_structure(
+                errors, contributor_role_mapping
+            )
+            all_errors = self._merge(errors_with_static_structure, errors_with_dynamic_structure)
         return self._filter_errors(all_errors)
 
     def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
@@ -517,3 +529,18 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 sub_errors = translated_errors[key]
                 translated_errors[key] = self._set_nested_errors(value, sub_errors)
         return translated_errors
+
+    def _wrap_in_container(self, data: Any) -> Dict:
+        return {
+            'metadata': {
+                'json-ld': {
+                    'container': data,
+                }
+            }
+        }
+
+    def _extract_from_container(self, data: Dict) -> Any:
+        try:
+            return data['metadata']['json-ld']['container']
+        except KeyError:
+            return {}

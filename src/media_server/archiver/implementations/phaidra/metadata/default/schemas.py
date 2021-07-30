@@ -3,6 +3,8 @@ st_media_metadata.py Check out src/media_server/archiver/implementations/phaidr
 a/metadata/datatranslation.py."""
 from typing import TYPE_CHECKING, Dict, Type
 
+from marshmallow import Schema, fields
+
 from media_server.archiver.implementations.phaidra.utillities.fields import (
     PortfolioConstantField,
     PortfolioListField,
@@ -16,8 +18,6 @@ if TYPE_CHECKING:
     from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
         BidirectionalConceptsMapper,
     )
-
-from marshmallow import Schema
 
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     extract_phaidra_role_code,
@@ -141,14 +141,32 @@ class _PhaidraMetaData(Schema):
     role_pbl = PortfolioNestedField(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl')
 
 
+class Container(Schema):
+    # _PhaidraMetaData is actually a placeholder.
+    # it will be replaced with _PhaidraMetaData() or ChildClassOf_PhaidraMetaData()
+    container = fields.Nested(_PhaidraMetaData, many=False, required=True)
+
+
+class JsonLd(Schema):
+    # it is important, that the nested schema is initialized here
+    # if not fields will not be available and dynamic fields will not be added (nested)
+    json_ld = fields.Nested(Container(), many=False, required=True, load_from='json-ld', dump_to='json-ld')
+
+
+class PhaidraMetaData(Schema):
+    # it is important, that the nested schema is initialized here
+    # if not fields will not be available and dynamic fields will not be added (nested)
+    metadata = fields.Nested(JsonLd(), many=False, required=True)
+
+
 def _str_to_attribute(string: str) -> str:
     return string.replace(':', '_')
 
 
-def get_phaidra_meta_data_schema_with_dynamic_fields(
+def _create_dynamic_phaidra_meta_data_schema(
     bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
     base_schema_class: Type[_PhaidraMetaData] = _PhaidraMetaData,
-) -> _PhaidraMetaData:
+) -> PhaidraMetaData:
     schema = base_schema_class()
     for concept_mapper in bidirectional_concepts_mapper.concept_mappings.values():
         for os_sameAs in concept_mapper.owl_sameAs:
@@ -161,3 +179,18 @@ def get_phaidra_meta_data_schema_with_dynamic_fields(
                     PersonSchema, many=True, required=False, load_from=phaidra_role_code, dump_to=phaidra_role_code
                 )
     return schema
+
+
+def _wrap_dynamic_schema(dynamic_schema: _PhaidraMetaData) -> PhaidraMetaData:
+    schema = PhaidraMetaData()
+    schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested = dynamic_schema
+    return schema
+
+
+def create_dynamic_phaidra_meta_data_schema(
+    bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
+    base_schema_class: Type[_PhaidraMetaData] = _PhaidraMetaData,
+) -> PhaidraMetaData:
+    dynamic_schema = _create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper, base_schema_class)
+    full_schema = _wrap_dynamic_schema(dynamic_schema)
+    return full_schema

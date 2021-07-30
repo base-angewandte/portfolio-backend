@@ -11,6 +11,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
 from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
+from media_server.archiver.messages.validation.thesis import MISSING_AUTHOR
 
 if TYPE_CHECKING:
     from media_server.archiver.implementations.phaidra.main import PhaidraArchiver
@@ -31,10 +32,11 @@ from media_server.archiver.implementations.phaidra.metadata.default.datatranslat
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     DceTitleSchema,
     PersonSchema,
+    PhaidraMetaData,
     SkosConceptSchema,
     TypeLabelSchema,
     _PhaidraMetaData,
-    get_phaidra_meta_data_schema_with_dynamic_fields,
+    create_dynamic_phaidra_meta_data_schema,
 )
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
@@ -830,12 +832,14 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        Schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
-        self.assertIsInstance(Schema, _PhaidraMetaData)
-        self.assertIn('role_act', Schema.fields)
-        self.assertEqual('role:act', Schema.fields['role_act'].load_from)
-        self.assertIs(Schema.fields['role_act'].nested, PersonSchema)
-        generated_schema = Schema.fields['role_act'].nested()
+        schema = create_dynamic_phaidra_meta_data_schema(mapping)
+        # get rid of outer layers
+        schema = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested
+        self.assertIsInstance(schema, _PhaidraMetaData)
+        self.assertIn('role_act', schema.fields)
+        self.assertEqual('role:act', schema.fields['role_act'].load_from)
+        self.assertEqual(schema.fields['role_act'].nested, PersonSchema)
+        generated_schema = schema.fields['role_act'].nested()
         self.assertEqual(
             {},
             generated_schema.validate(
@@ -868,8 +872,14 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        Schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
-        generated_schema = Schema.fields['role_act'].nested()
+        schema = create_dynamic_phaidra_meta_data_schema(mapping)
+        generated_schema = (
+            schema.fields['metadata']
+            .nested.fields['json_ld']
+            .nested.fields['container']
+            .nested.fields['role_act']
+            .nested()
+        )
         self.assertEqual(
             {
                 'skos:exactMatch': {
@@ -946,14 +956,17 @@ class DynamicPersonsTestCase(TestCase):
         )
 
 
-class UpmostLevelStaticDataTestCase(TestCase):
+class StaticDataTestCase(TestCase):
     def test_translate_empty_data(self):
         entry = Entry()
         translator = PhaidraMetaDataTranslator()
         # does not raise anything :-( title is '' default, but not nullable …
         # self.assertRaises(TypeError, lambda: translator.translate_data(entry))
+        data = translator.translate_data(entry)
+        # we do not want to deal with the outer scope
+        data = translator._extract_from_container(data)
         self.assertEqual(
-            translator.translate_data(entry),
+            data,
             {
                 'dcterms:type': [
                     {
@@ -983,8 +996,10 @@ class UpmostLevelStaticDataTestCase(TestCase):
         """
         entry = Entry(title='A Book With A Cover And No Pages At All.')
         translator = PhaidraMetaDataTranslator()
+        data = translator.translate_data(entry)
+        data = translator._extract_from_container(data)
         self.assertEqual(
-            translator.translate_data(entry),
+            data,
             {
                 'dcterms:type': [
                     {
@@ -1020,8 +1035,11 @@ class UpmostLevelStaticDataTestCase(TestCase):
             },
         )
         translator = PhaidraMetaDataTranslator()
+        data = translator.translate_data(entry)
+        # we do not want to deal with the outer scope
+        data = translator._extract_from_container(data)
         self.assertEqual(
-            translator.translate_data(entry),
+            data,
             {
                 'dcterms:type': [
                     {
@@ -1053,8 +1071,11 @@ class UpmostLevelStaticDataTestCase(TestCase):
         translator = PhaidraMetaDataTranslator()
         # does not raise anything :-( title is '' default, but not nullable …
         # self.assertRaises(TypeError, lambda: translator.translate_data(entry))
+        data = translator.translate_data(entry)
+        # I am to lazy, to write all levels, that do no count here
+        data = translator._extract_from_container(data)
         self.assertEqual(
-            translator.translate_data(entry),
+            data,
             {
                 'dcterms:type': [
                     {
@@ -1134,160 +1155,6 @@ class UpmostLevelStaticDataTestCase(TestCase):
         self.assertEqual({}, translator.translate_errors({}, mapper))
 
 
-class UpmostLevelAllDataTestCase(TestCase):
-    def test_translate_data_correct(self):
-        entry = Entry(
-            title='A Book With A Contributor',
-            data={
-                'contributors': [
-                    {
-                        'label': 'Universität für Angewandte Kunst Wien',
-                        'roles': [
-                            {
-                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
-                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
-                            }
-                        ],
-                    },
-                ],
-            },
-        )
-        translator = PhaidraMetaDataTranslator()
-        mapping = BidirectionalConceptsMapper.from_entry(entry)
-        phaidra_data = translator.translate_data(model=entry, contributor_role_mapping=mapping)
-        self.assertEqual(
-            phaidra_data,
-            {
-                'dcterms:type': [
-                    {
-                        '@type': 'skos:Concept',
-                        'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
-                        'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
-                    }
-                ],
-                'edm:hasType': [],
-                'dce:title': [
-                    {
-                        '@type': 'bf:Title',
-                        'bf:mainTitle': [{'@value': 'A Book With A Contributor', '@language': 'und'}],
-                    }
-                ],
-                'dcterms:language': [],
-                'dcterms:subject': [],
-                'rdau:P60048': [],
-                'dce:format': [],
-                'bf:note': [],
-                'role:edt': [],
-                'role:aut': [],
-                'role:pbl': [],
-                'role:act': [
-                    {
-                        '@type': 'schema:Person',
-                        'skos:exactMatch': [],
-                        'schema:name': [
-                            {
-                                '@value': 'Universität für Angewandte Kunst Wien',
-                            },
-                        ],
-                    },
-                ],
-            },
-        )
-
-    def test_validate_data_correct(self):
-        entry = Entry(
-            title='A Book With A Contributor',
-            data={
-                'contributors': [
-                    {
-                        'label': 'Universität für Angewandte Kunst Wien',
-                        'roles': [
-                            {
-                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
-                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
-                            }
-                        ],
-                    },
-                ],
-            },
-            type={
-                'label': {'de': 'Artikel', 'en': 'article'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
-            },
-        )
-        mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
-        transformer = PhaidraMetaDataTranslator()
-        data = transformer.translate_data(entry, mapping)
-        errors = schema.validate(data)
-        self.assertEqual(errors, {})
-
-    def test_validate_data_error(self):
-        entry = Entry(
-            title='A Book With A Contributor',
-            data={
-                'contributors': [
-                    {
-                        # 'label': 'Universität für Angewandte Kunst Wien',
-                        'roles': [
-                            {
-                                'label': {'de': 'Darsteller*in', 'en': 'Actor'},
-                                'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
-                            }
-                        ],
-                    },
-                ],
-            },
-        )
-        mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = get_phaidra_meta_data_schema_with_dynamic_fields(mapping)
-        self.assertEqual(
-            {
-                'role:act': {
-                    0: {
-                        'schema:name': [
-                            MISSING_DATA_FOR_REQUIRED_FIELD,
-                        ]
-                    }
-                }
-            },
-            schema.validate(
-                {
-                    'dcterms:type': [
-                        {
-                            '@type': 'skos:Concept',
-                            'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
-                            'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
-                        }
-                    ],
-                    'edm:hasType': [],
-                    'dce:title': [
-                        {
-                            '@type': 'bf:Title',
-                            'bf:mainTitle': [{'@value': 'A Book With A Contributor', '@language': 'und'}],
-                        }
-                    ],
-                    'dcterms:subject': [],
-                    'rdau:P60048': [],
-                    'dce:format': [],
-                    'bf:note': [],
-                    'role:edt': [],
-                    'role:aut': [],
-                    'role:pbl': [],
-                    'role:act': [
-                        {
-                            '@type': 'schema:Person',
-                            'skos:exactMatch': [],
-                            'schema:name': [
-                                # nothing
-                            ],
-                        },
-                    ],
-                },
-            ),
-        )
-
-
 class PhaidraRuleTest(TestCase):
     """Full validation stories according to https://basedev.uni-
     ak.ac.at/redmine/issues/1419 The entry must have a title.
@@ -1295,22 +1162,18 @@ class PhaidraRuleTest(TestCase):
     The entry must have a type.
     """
 
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
     def test_missing_title(self):
-        entry = Entry(
-            # enforce no title
-            title=None,
-        )
+        entry = self.model_provider.get_entry(title=False)
         errors = self._validate(entry)
-        self.assertEqual(errors, {'title': ['Field may not be null.']})
+        # title defaults to '' = empty string
+        self.assertEqual(errors, {})
 
     def test_missing_nothing(self):
-        entry = Entry(
-            title='Everything included!',
-            type={
-                'label': {'de': 'Installation', 'en': 'Installation'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
-            },
-        )
+        entry = self.model_provider.get_entry(title=True)
         errors = self._validate(entry)
         self.assertEqual(errors, {})
 
@@ -1322,12 +1185,11 @@ class PhaidraRuleTest(TestCase):
         """
         translator = PhaidraMetaDataTranslator()
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = get_phaidra_meta_data_schema_with_dynamic_fields(dynamic_mapping)
+        schema = create_dynamic_phaidra_meta_data_schema(dynamic_mapping)
 
         phaidra_data = translator.translate_data(entry)
         phaidra_errors = schema.validate(phaidra_data)
         portfolio_errors = translator.translate_errors(phaidra_errors, dynamic_mapping)
-
         return portfolio_errors
 
 
@@ -1341,6 +1203,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
         self.assertEqual(0, len(bf_note))
 
@@ -1349,6 +1213,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
         self.assertEqual(2, len(bf_note))
 
@@ -1357,6 +1223,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
         self.assertEqual(2, len(bf_note))
 
@@ -1371,6 +1239,8 @@ class TranslateLanguageTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         self.assertEqual(
             1,
             translation['dcterms:language'].__len__(),
@@ -1381,6 +1251,8 @@ class TranslateLanguageTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         self.assertEqual(
             1,
             translation['dcterms:language'].__len__(),
@@ -1391,6 +1263,8 @@ class TranslateLanguageTestCase(TestCase):
         dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
         translation = translator.translate_data(entry, dynamic_mapping)
+        # only check dynamic part
+        translation = translator._extract_from_container(translation)
         self.assertEqual(
             2,
             translation['dcterms:language'].__len__(),
@@ -1452,22 +1326,32 @@ class ThesisSwitchSchemaTestCase(TestCase):
         contributor_role_mapping = metadata_data_archiver.mapper_class.from_entry(
             metadata_data_archiver.archive_object.entry
         )
-        return get_phaidra_meta_data_schema_with_dynamic_fields(
+        return create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=contributor_role_mapping,
             base_schema_class=metadata_data_archiver.base_schema_class,
         )
 
     def test_with_entry_no_type(self):
         schema = self._get_schema(type_=False)
-        self.assertIsInstance(schema, _PhaidraMetaData)
+        self.assertIsInstance(schema, PhaidraMetaData)
+        self.assertIsInstance(
+            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested, _PhaidraMetaData
+        )
 
     def test_entry_not_thesis_type(self):
         schema = self._get_schema(type_=True, thesis_type=False)
-        self.assertIsInstance(schema, _PhaidraMetaData)
+        self.assertIsInstance(schema, PhaidraMetaData)
+        self.assertIsInstance(
+            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested, _PhaidraMetaData
+        )
 
     def test_entry_thesis_type(self):
         schema = self._get_schema(type_=True, thesis_type=True)
-        self.assertIsInstance(schema, _PhaidraThesisMetaDataSchema)
+        self.assertIsInstance(schema, PhaidraMetaData)
+        self.assertIsInstance(
+            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
+            _PhaidraThesisMetaDataSchema,
+        )
 
 
 class TitleExistsTestCase(TestCase):
@@ -1494,9 +1378,10 @@ class TitleExistsTestCase(TestCase):
             ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
         )
         archiver.validate()
-        self.assertIn('dce:title', archiver.data)
-        self.assertEqual(1, archiver.data['dce:title'].__len__())
-        self.assertEqual(archiver.data['dce:title'], self.expected_title)
+        data = archiver.data['metadata']['json-ld']['container']
+        self.assertIn('dce:title', data)
+        self.assertEqual(1, data['dce:title'].__len__())
+        self.assertEqual(data['dce:title'], self.expected_title)
 
     def test_title_generation_from_not_thesis(self):
         entry = self.model_provider.get_entry(thesis_type=False)
@@ -1505,6 +1390,30 @@ class TitleExistsTestCase(TestCase):
             ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
         )
         archiver.validate()
-        self.assertIn('dce:title', archiver.data)
-        self.assertEqual(1, archiver.data['dce:title'].__len__())
-        self.assertEqual(archiver.data['dce:title'], self.expected_title)
+        data = archiver.data['metadata']['json-ld']['container']
+        self.assertIn('dce:title', data)
+        self.assertEqual(1, data['dce:title'].__len__())
+        self.assertEqual(data['dce:title'], self.expected_title)
+
+
+class AllDataTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.model_provider = ModelProvider()
+
+    def test_incorrect_data_thesis(self):
+        entry = self.model_provider.get_entry(author=False, type_=True, thesis_type=True)
+        translator = PhaidraThesisMetaDataTranslator()
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        schema = create_dynamic_phaidra_meta_data_schema(mapping, _PhaidraThesisMetaDataSchema)
+        errors = translator.translate_errors(schema.validate(translator.translate_data(entry, mapping)))
+        self.assertEqual(
+            errors,
+            {
+                'data': {
+                    'authors': [
+                        MISSING_AUTHOR,
+                    ],
+                }
+            },
+        )

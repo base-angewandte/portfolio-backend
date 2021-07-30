@@ -11,7 +11,7 @@ from django.conf import settings
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     _PhaidraMetaData,
-    get_phaidra_meta_data_schema_with_dynamic_fields,
+    create_dynamic_phaidra_meta_data_schema,
 )
 
 from .... import credentials
@@ -43,7 +43,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         contributor_role_mapping = self.mapper_class.from_entry(self.archive_object.entry)
         translator = self.translator_class()
         data = translator.translate_data(self.archive_object.entry, contributor_role_mapping)
-        schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=contributor_role_mapping, base_schema_class=self.base_schema_class
         )
         result = schema.load(data)

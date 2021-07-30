@@ -9,7 +9,7 @@ from django.test import TestCase
 
 from media_server.archiver.controller.default import DefaultArchiveController
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
-    get_phaidra_meta_data_schema_with_dynamic_fields,
+    create_dynamic_phaidra_meta_data_schema,
 )
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
@@ -45,9 +45,15 @@ class AtLeastOneAuthorTestCase(TestCase):
         cls.client_provider = ClientProvider(cls.model_provider)
 
     expected_phaidra_error = {
-        'role:aut': [
-            MISSING_AUTHOR,
-        ]
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'role:aut': [
+                        MISSING_AUTHOR,
+                    ]
+                }
+            }
+        }
     }
 
     expected_portfolio_errors = {
@@ -60,22 +66,31 @@ class AtLeastOneAuthorTestCase(TestCase):
 
     def test_schema_validation_fail(self):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_author_rule=False)
-        # no need for the dynamic schema here
-        static_schema = _PhaidraThesisMetaDataSchema()
-        errors = static_schema.validate(invalid_data)
+        # Need dynamic schema here (!)
+        entry = self.model_provider.get_entry(author=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+        )
+        errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_error)
 
     def test_schema_validation(self):
         valid_data = PhaidraContainerGenerator.create_phaidra_container(respect_author_rule=True)
         # no need for the dynamic schema here
-        static_schema = _PhaidraThesisMetaDataSchema()
-        errors = static_schema.validate(valid_data)
+        # Need dynamic schema here (!)
+        entry = self.model_provider.get_entry(author=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+        )
+        errors = dynamic_schema.validate(valid_data)
         self.assertEqual({}, errors)
 
     def test_error_transformation(self):
         translator = PhaidraThesisMetaDataTranslator()
         # no need to test dynamic here
-        portfolio_errors = translator._translate_errors_with_static_structure(self.expected_phaidra_error)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_error)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -137,9 +152,15 @@ class MustHaveALanguageTestCase(TestCase):
         cls.client_provider = ClientProvider(cls.model_provider)
 
     expected_phaidra_errors = {
-        'dcterms:language': [
-            MISSING_LANGUAGE,
-        ]
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'dcterms:language': [
+                        MISSING_LANGUAGE,
+                    ]
+                }
+            }
+        }
     }
 
     expected_portfolio_errors = {
@@ -152,22 +173,29 @@ class MustHaveALanguageTestCase(TestCase):
 
     def test_schema_validation_fail(self):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_language_rule=False)
-        # no need for the dynamic schema here
-        static_schema = _PhaidraThesisMetaDataSchema()
-        errors = static_schema.validate(invalid_data)
+        # Need dynamic schema here (!)
+        entry = self.model_provider.get_entry(german_language=False, akan_language=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+        )
+        errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors)
 
     def test_schema_validation(self):
         valid_data = PhaidraContainerGenerator.create_phaidra_container(respect_language_rule=True)
-        # no need for the dynamic schema here
-        static_schema = _PhaidraThesisMetaDataSchema()
-        errors = static_schema.validate(valid_data)
+        # Need dynamic schema here (!)
+        entry = self.model_provider.get_entry(german_language=False, akan_language=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+        )
+        errors = dynamic_schema.validate(valid_data)
         self.assertEqual(errors, {})
 
     def test_error_transformation(self):
         translator = PhaidraThesisMetaDataTranslator()
-        # no need to test dynamic here
-        portfolio_errors = translator._translate_errors_with_static_structure(self.expected_phaidra_errors)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -224,23 +252,37 @@ class MustHaveAnAdviserTestCase(TestCase):
     """
 
     expected_phaidra_errors_missing_field = {
-        'role:supervisor': {
-            0: {
-                'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'role:supervisor': {
+                        0: {
+                            'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                            'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                        }
+                    }
+                }
             }
         }
     }
 
     expected_phaidra_errors_empty_field = {
-        'role:supervisor': [
-            MISSING_SUPERVISOR,
-        ]
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'role:supervisor': [
+                        MISSING_SUPERVISOR,
+                    ]
+                }
+            }
+        }
     }
 
     expected_portfolio_errors = {
         'data': {
-            'contributors': [MISSING_SUPERVISOR],
+            'contributors': [
+                MISSING_SUPERVISOR,
+            ],
         }
     }
 
@@ -254,7 +296,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -262,11 +304,11 @@ class MustHaveAnAdviserTestCase(TestCase):
 
     def test_schema_validation_fail_empty(self):
         data = PhaidraContainerGenerator.create_phaidra_container(respect_contributor_role=True)
-        data['role:supervisor'] = []
+        data['metadata']['json-ld']['container']['role:supervisor'] = []
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(data)
@@ -277,7 +319,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(valid_data)
@@ -354,22 +396,28 @@ class EmptyThesisTestCase(TestCase):
     should be displayed."""
 
     expected_phaidra_errors_missing_field = {
-        'role:aut': [
-            MISSING_AUTHOR,
-        ],
-        'role:supervisor': {
-            0: {
-                'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'role:aut': [
+                        MISSING_AUTHOR,
+                    ],
+                    'role:supervisor': {
+                        0: {
+                            'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                            'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                        }
+                    },
+                    'dcterms:language': [
+                        MISSING_LANGUAGE,
+                    ],
+                    'bf:note': [
+                        MISSING_ENGLISH_ABSTRACT,
+                        MISSING_GERMAN_ABSTRACT,
+                    ],
+                }
             }
-        },
-        'dcterms:language': [
-            MISSING_LANGUAGE,
-        ],
-        'bf:note': [
-            MISSING_ENGLISH_ABSTRACT,
-            MISSING_GERMAN_ABSTRACT,
-        ],
+        }
     }
 
     expected_portfolio_errors = {
@@ -406,7 +454,7 @@ class EmptyThesisTestCase(TestCase):
             advisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -440,11 +488,16 @@ class EmptyThesisTestCase(TestCase):
 
 
 class MustHaveEnglishAbstractTestCase(TestCase):
-
     expected_phaidra_errors_missing_field = {
-        'bf:note': [
-            MISSING_ENGLISH_ABSTRACT,
-        ]
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'bf:note': [
+                        MISSING_ENGLISH_ABSTRACT,
+                    ]
+                }
+            }
+        }
     }
 
     expected_portfolio_errors = {
@@ -462,7 +515,7 @@ class MustHaveEnglishAbstractTestCase(TestCase):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_english_abstract_rule=False)
         entry = self.model_provider.get_entry(english_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -489,11 +542,16 @@ class MustHaveEnglishAbstractTestCase(TestCase):
 
 
 class MustHaveGermanAbstractTestCase(TestCase):
-
     expected_phaidra_errors_missing_field = {
-        'bf:note': [
-            MISSING_GERMAN_ABSTRACT,
-        ]
+        'metadata': {
+            'json-ld': {
+                'container': {
+                    'bf:note': [
+                        MISSING_GERMAN_ABSTRACT,
+                    ]
+                }
+            }
+        }
     }
 
     expected_portfolio_errors = {
@@ -511,7 +569,7 @@ class MustHaveGermanAbstractTestCase(TestCase):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_german_abstract_rule=False)
         entry = self.model_provider.get_entry(german_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = get_phaidra_meta_data_schema_with_dynamic_fields(
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
             bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
         )
         errors = dynamic_schema.validate(invalid_data)

@@ -144,7 +144,7 @@ class PhaidraContainerGenerator:
                 phaidra_container['bf:note'] = []
             phaidra_container['bf:note'].append(cls.german_abstract)
 
-        return phaidra_container
+        return {'metadata': {'json-ld': {'container': phaidra_container}}}
 
 
 class ModelProvider:
@@ -218,8 +218,9 @@ class ModelProvider:
                     'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
                 }
 
+        entry.data['authors'] = []
         if author:
-            entry.data['authors'] = [
+            entry.data['authors'].append(
                 {
                     'label': 'Universität für Angewandte Kunst Wien',
                     'roles': [
@@ -230,7 +231,7 @@ class ModelProvider:
                     ],
                     'source': 'http://d-nb.info/gnd/5299671-2',
                 }
-            ]
+            )
 
         if german_language:
             entry.data['language'] = [

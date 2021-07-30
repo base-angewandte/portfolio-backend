@@ -1,11 +1,14 @@
 from typing import TYPE_CHECKING, Optional
 
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 
-from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
+from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
+    ClientProvider,
+    ModelProvider,
+)
 from media_server.models import Media
 
 if TYPE_CHECKING:
@@ -21,35 +24,13 @@ class DefaultValidationEndpointTestCase(APITestCase):
     media: Optional['Media'] = None
 
     def setUp(self) -> None:
-        self.username = 'test-user'
-        self.peeword = 'peeword'  # Yes, I am trying to trick some git hook …
-        self.user = User.objects.create_user(username=self.username, password=self.peeword)
-        self.client = APIClient()
-        self.client.login(username=self.username, password=self.peeword)
+        self.model_provider = ModelProvider()
+        self.client_provider = ClientProvider(self.model_provider)
 
-    def _create_media(self, title: bool = True, type_: bool = True, mime_type: bool = True) -> 'Media':
-        self.entry = Entry(owner=self.user)
-        if title:
-            self.entry.title = 'A Title'
-        if type_:
-            self.entry.type = {
-                'label': {'de': 'Installation', 'en': 'Installation'},
-                'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
-            }
-        self.entry.save()
-        self.media = Media(
-            owner=self.user,
-            file=SimpleUploadedFile('example.txt', b'example text'),
-            entry_id=self.entry.id,
-        )
-        if mime_type:
-            self.media.mime_type = 'text/plain'
-
-        self.media.license = {
-            'label': {'en': 'Creative Commons Attribution 4.0'},
-            'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-4.0',
-        }
-
+    def _create_media(self, title: bool = True, type_: bool = True, mime_type: bool = True, language=True) -> 'Media':
+        self.entry = self.model_provider.get_entry(title=title, type_=type_, german_language=language)
+        self.media = self.model_provider.get_media(entry=self.entry, mime_type=mime_type)
+        self.media.file = SimpleUploadedFile('example.txt', b'example text')
         self.media.save()
         return self.media
 
@@ -57,12 +38,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self, title: bool = True, type_: bool = True, mime_type: bool = True
     ) -> 'Response':
         self.media = self._create_media(title, type_, mime_type)
-        return self.client.get(
-            f'/api/v1/validate_assets/media/{self.media.id}/',
-        )
-
-    def tearDown(self) -> None:
-        self.client.logout()  # Very important! ;-)
+        return self.client_provider.get_media_primary_key_response(media=self.media, only_validate=True)
 
     def test_missing_nothing(self):
         response = self.get_media_primary_key_response()
