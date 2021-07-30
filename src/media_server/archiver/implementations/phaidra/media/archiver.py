@@ -16,11 +16,31 @@ from media_server.archiver.interface.responses import ModificationType, Successf
 from media_server.models import Media
 
 
+def _push_to_archive_job(media_object: Media):
+    entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
+    if not entry_object.archive_id:
+        raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
+    media_archiver = MediaArchiver(
+        archive_object=ArchiveObject(
+            user=entry_object.owner,
+            entry=entry_object,
+            media_objects={
+                media_object,
+            },
+        )
+    )
+    media_archiver.validate()
+    media_archiver.push_to_archive()
+
+
 class MediaArchiveHandler(AbstractArchiver):
     """Handles many media archive jobs."""
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
-        AsyncMediaHandler(media_objects=self.archive_object.media_objects, job=self._push_to_archive_job)
+        async_media_handler = AsyncMediaHandler(
+            media_objects=self.archive_object.media_objects, job=_push_to_archive_job
+        )
+        async_media_handler.enqueue()
         file_names = [media_object.file.name for media_object in self.archive_object.media_objects]
         return SuccessfulArchiveResponse(
             ModificationType.uploaded,
@@ -30,23 +50,6 @@ class MediaArchiveHandler(AbstractArchiver):
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
         raise NotImplementedError()
-
-    @staticmethod
-    def _push_to_archive_job(media_object: Media):
-        entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
-        if not entry_object.archive_id:
-            raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
-        media_archiver = MediaArchiver(
-            archive_object=ArchiveObject(
-                user=entry_object.owner,
-                entry=entry_object,
-                media_objects={
-                    media_object,
-                },
-            )
-        )
-        media_archiver.validate()
-        media_archiver.push_to_archive()
 
     def validate(self) -> None:
         """

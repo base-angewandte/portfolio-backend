@@ -20,7 +20,7 @@ class AsyncMediaHandler:
                 media_object.archive_status = STATUS_TO_BE_ARCHIVED
                 media_object.save()
                 queue.enqueue(
-                    django_rq.decorators.job(self.job),
+                    self.job,
                     media_object,
                     job_id=media_object.get_archive_job_id(),
                     failure_ttl=settings.RQ_FAILURE_TTL,
