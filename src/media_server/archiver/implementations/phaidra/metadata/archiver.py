@@ -9,47 +9,39 @@ import requests
 from django.conf import settings
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
-    _PhaidraMetaData,
-    create_dynamic_phaidra_meta_data_schema,
-)
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
 
 from .... import credentials
 from ....interface.exceptions import ExternalServerError
 from ....interface.responses import ModificationType, SuccessfulArchiveResponse
 from .mappings.contributormapping import BidirectionalConceptsMapper
 from .thesis.datatranslation import PhaidraThesisMetaDataTranslator
-from .thesis.schemas import _PhaidraThesisMetaDataSchema
+from .thesis.schemas import PhaidraThesisContainer, create_dynamic_phaidra_meta_data_schema
 
 if TYPE_CHECKING:
     from ....interface.archiveobject import ArchiveObject
+    from core.models import Entry
 
 from ....interface.abstractarchiver import AbstractArchiver
 
 
 class DefaultMetadataArchiver(AbstractArchiver):
-
     data: Optional[Dict] = None
-    mapper_class = BidirectionalConceptsMapper
-    translator_class = PhaidraMetaDataTranslator
-    base_schema_class = _PhaidraMetaData
 
     def __init__(self, archive_object: 'ArchiveObject'):
         super().__init__(archive_object)
         self.data = None
         self.is_update = None
+        self._schema = None
+        self._translator = None
 
     def validate(self) -> None:
-        contributor_role_mapping = self.mapper_class.from_entry(self.archive_object.entry)
-        translator = self.translator_class()
-        data = translator.translate_data(self.archive_object.entry, contributor_role_mapping)
-        schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=contributor_role_mapping, base_schema_class=self.base_schema_class
-        )
+        data = self._translate_data(self.archive_object.entry)
+        schema = self.schema
         result = schema.load(data)
         errors: dict = result.errors
         self.data = schema.dump(result.data).data
-        errors = translator.translate_errors(errors, contributor_role_mapping)
+        errors = self._translate_errors(errors)
         self.throw_validation_errors(errors)
 
     def push_to_archive(self) -> 'SuccessfulArchiveResponse':
@@ -105,8 +97,53 @@ class DefaultMetadataArchiver(AbstractArchiver):
             service='PHAIDRA',
         )
 
+    def _translate_data(self, entry: 'Entry') -> Dict:
+        return self.translator.translate_data(entry)
+
+    def _translate_errors(self, errors: Dict) -> Dict:
+        return self.translator.translate_errors(errors)
+
+    @property
+    def schema(self) -> 'PhaidraMetaData':
+        if self._schema is None:
+            self._schema = PhaidraMetaData()
+        return self._schema
+
+    @property
+    def translator(self) -> 'PhaidraMetaDataTranslator':
+        if self._translator is None:
+            self._translator = PhaidraMetaDataTranslator()
+        return self._translator
+
 
 class ThesisMetadataArchiver(DefaultMetadataArchiver, ABC):
-
     translator_class = PhaidraThesisMetaDataTranslator
-    base_schema_class = _PhaidraThesisMetaDataSchema
+    base_schema_class = PhaidraThesisContainer
+
+    def __init__(self, archive_object: 'ArchiveObject'):
+        super().__init__(archive_object)
+        self._concepts_mapper = None
+
+    @property
+    def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
+        if self._concepts_mapper is None:
+            self._concepts_mapper = BidirectionalConceptsMapper.from_entry(entry=self.archive_object.entry)
+        return self._concepts_mapper
+
+    @property
+    def schema(self) -> 'PhaidraMetaData':
+        if self._schema is None:
+            self._schema = create_dynamic_phaidra_meta_data_schema(self.concepts_mapper)
+        return self._schema
+
+    @property
+    def translator(self) -> 'PhaidraThesisMetaDataTranslator':
+        if self._translator is None:
+            self._translator = PhaidraThesisMetaDataTranslator()
+        return self._translator
+
+    def _translate_data(self, entry: 'Entry') -> Dict:
+        return self.translator.translate_data(entry, self.concepts_mapper)
+
+    def _translate_errors(self, errors: Dict) -> Dict:
+        return self.translator.translate_errors(errors, self.concepts_mapper)

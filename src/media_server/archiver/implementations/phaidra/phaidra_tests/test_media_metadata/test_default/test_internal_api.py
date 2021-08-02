@@ -1,3 +1,4 @@
+import importlib
 from copy import deepcopy
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -8,7 +9,10 @@ from media_server.archiver.implementations.phaidra.metadata.archiver import (
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import (
     PhaidraThesisMetaDataTranslator,
 )
-from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
+    PhaidraThesisContainer,
+    create_dynamic_phaidra_meta_data_schema,
+)
 from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 from media_server.archiver.messages.validation.thesis import MISSING_AUTHOR
@@ -32,11 +36,10 @@ from media_server.archiver.implementations.phaidra.metadata.default.datatranslat
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     DceTitleSchema,
     PersonSchema,
+    PhaidraContainer,
     PhaidraMetaData,
     SkosConceptSchema,
     TypeLabelSchema,
-    _PhaidraMetaData,
-    create_dynamic_phaidra_meta_data_schema,
 )
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
@@ -751,7 +754,7 @@ class RecursiveErrorFilterTestCase(TestCase):
 class DynamicPersonsTestCase(TestCase):
     def test_translate_empty_data(self):
         entry = Entry()
-        translator = PhaidraMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
         self.assertEqual(
@@ -776,7 +779,7 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
 
-        translator = PhaidraMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
         self.assertEqual(
@@ -808,7 +811,7 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
 
-        translator = PhaidraMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         self.assertEqual(
             translator._get_data_with_dynamic_structure(entry, mapping),
@@ -835,7 +838,7 @@ class DynamicPersonsTestCase(TestCase):
         schema = create_dynamic_phaidra_meta_data_schema(mapping)
         # get rid of outer layers
         schema = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested
-        self.assertIsInstance(schema, _PhaidraMetaData)
+        self.assertIsInstance(schema, PhaidraContainer)
         self.assertIn('role_act', schema.fields)
         self.assertEqual('role:act', schema.fields['role_act'].load_from)
         self.assertEqual(schema.fields['role_act'].nested, PersonSchema)
@@ -902,7 +905,7 @@ class DynamicPersonsTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        translator = PhaidraMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator()
         entry = Entry(
             data={
                 'contributors': [
@@ -938,7 +941,7 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        translator = PhaidraMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator()
         self.assertRaises(
             InternalValidationError,
             lambda: translator._translate_errors_with_dynamic_structure(
@@ -1129,11 +1132,11 @@ class StaticDataTestCase(TestCase):
                 }
             ],
         }
-        self.assertEqual({}, _PhaidraMetaData().validate(minimal_correct_data))
+        self.assertEqual({}, PhaidraContainer().validate(minimal_correct_data))
 
     def test_validate_data_error(self):
         self.assertEqual(
-            _PhaidraMetaData().validate({}),
+            PhaidraContainer().validate({}),
             {
                 'dce:title': {
                     0: {
@@ -1149,10 +1152,8 @@ class StaticDataTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        entry = Entry()  # whatever
-        mapper = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        self.assertEqual({}, translator.translate_errors({}, mapper))
+        self.assertEqual({}, translator.translate_errors({}))
 
 
 class PhaidraRuleTest(TestCase):
@@ -1184,12 +1185,10 @@ class PhaidraRuleTest(TestCase):
         :return: errors
         """
         translator = PhaidraMetaDataTranslator()
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = create_dynamic_phaidra_meta_data_schema(dynamic_mapping)
-
+        schema = PhaidraMetaData()
         phaidra_data = translator.translate_data(entry)
         phaidra_errors = schema.validate(phaidra_data)
-        portfolio_errors = translator.translate_errors(phaidra_errors, dynamic_mapping)
+        portfolio_errors = translator.translate_errors(phaidra_errors)
         return portfolio_errors
 
 
@@ -1200,9 +1199,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_translate_only_not_implemented(self):
         entry = self.model_provider.get_entry(german_abstract=False, english_abstract=False, french_abstract=True)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
@@ -1210,9 +1208,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_mixed(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=True)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
@@ -1220,9 +1217,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_implemented(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=False)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
@@ -1236,9 +1232,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_akan(self):
         entry = self.model_provider.get_entry(akan_language=True, german_language=False)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         self.assertEqual(
@@ -1248,9 +1243,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_german(self):
         entry = self.model_provider.get_entry(german_language=True, akan_language=False)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         self.assertEqual(
@@ -1260,9 +1254,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_akan_and_german(self):
         entry = self.model_provider.get_entry(german_language=True, akan_language=True)
-        dynamic_mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraMetaDataTranslator()
-        translation = translator.translate_data(entry, dynamic_mapping)
+        translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         self.assertEqual(
@@ -1284,8 +1277,15 @@ class ThesisSwitchArchiverTestCase(TestCase):
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
-        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraMetaData)
-        self.assertEqual(metadata_data_archiver.translator_class, PhaidraMetaDataTranslator)
+        self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
+        self.assertIsInstance(
+            metadata_data_archiver.schema.fields['metadata']
+            .nested.fields['json_ld']
+            .nested.fields['container']
+            .nested,
+            PhaidraContainer,
+        )
+        self.assertIsInstance(metadata_data_archiver.translator, PhaidraMetaDataTranslator)
 
     def test_entry_not_thesis_type(self):
         """Should return no default type."""
@@ -1295,8 +1295,15 @@ class ThesisSwitchArchiverTestCase(TestCase):
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
-        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraMetaData)
-        self.assertEqual(metadata_data_archiver.translator_class, PhaidraMetaDataTranslator)
+        self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
+        self.assertIsInstance(
+            metadata_data_archiver.schema.fields['metadata']
+            .nested.fields['json_ld']
+            .nested.fields['container']
+            .nested,
+            PhaidraContainer,
+        )
+        self.assertIsInstance(metadata_data_archiver.translator, PhaidraMetaDataTranslator)
 
     def test_entry_thesis_type(self):
         """Should return no thesis type."""
@@ -1306,52 +1313,15 @@ class ThesisSwitchArchiverTestCase(TestCase):
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'ThesisMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)
-        self.assertEqual(metadata_data_archiver.base_schema_class, _PhaidraThesisMetaDataSchema)
-        self.assertEqual(metadata_data_archiver.translator_class, PhaidraThesisMetaDataTranslator)
-
-
-class ThesisSwitchSchemaTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.model_provider = ModelProvider()
-
-    def _get_schema(self, type_=True, thesis_type=True):
-        """Mimicks media_server.archiver.implementations.phaidra.metadata.archi
-        ver.DefaultMetadataArchiver.validate."""
-        entry = self.model_provider.get_entry(type_, thesis_type)
-        media = self.model_provider.get_media(entry)
-        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
-        archiver: 'PhaidraArchiver' = controller.archiver
-        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
-        contributor_role_mapping = metadata_data_archiver.mapper_class.from_entry(
-            metadata_data_archiver.archive_object.entry
-        )
-        return create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=contributor_role_mapping,
-            base_schema_class=metadata_data_archiver.base_schema_class,
-        )
-
-    def test_with_entry_no_type(self):
-        schema = self._get_schema(type_=False)
-        self.assertIsInstance(schema, PhaidraMetaData)
+        self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
         self.assertIsInstance(
-            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested, _PhaidraMetaData
+            metadata_data_archiver.schema.fields['metadata']
+            .nested.fields['json_ld']
+            .nested.fields['container']
+            .nested,
+            PhaidraThesisContainer,
         )
-
-    def test_entry_not_thesis_type(self):
-        schema = self._get_schema(type_=True, thesis_type=False)
-        self.assertIsInstance(schema, PhaidraMetaData)
-        self.assertIsInstance(
-            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested, _PhaidraMetaData
-        )
-
-    def test_entry_thesis_type(self):
-        schema = self._get_schema(type_=True, thesis_type=True)
-        self.assertIsInstance(schema, PhaidraMetaData)
-        self.assertIsInstance(
-            schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
-            _PhaidraThesisMetaDataSchema,
-        )
+        self.assertIsInstance(metadata_data_archiver.translator, PhaidraThesisMetaDataTranslator)
 
 
 class TitleExistsTestCase(TestCase):
@@ -1405,8 +1375,10 @@ class AllDataTestCase(TestCase):
         entry = self.model_provider.get_entry(author=False, type_=True, thesis_type=True)
         translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = create_dynamic_phaidra_meta_data_schema(mapping, _PhaidraThesisMetaDataSchema)
-        errors = translator.translate_errors(schema.validate(translator.translate_data(entry, mapping)))
+        schema = create_dynamic_phaidra_meta_data_schema(mapping)
+        phaidra_data = translator.translate_data(entry, mapping)
+        phaidra_errors = schema.validate(phaidra_data)
+        errors = translator.translate_errors(phaidra_errors, mapping)
         self.assertEqual(
             errors,
             {
@@ -1416,4 +1388,26 @@ class AllDataTestCase(TestCase):
                     ],
                 }
             },
+        )
+
+
+class DynamicChildClassDoesNotInterfereWithSuperClass(TestCase):
+    def test_dynamic_first(self):
+        thesis_module = importlib.import_module(
+            'media_server.archiver.implementations.phaidra.metadata.thesis.schemas'
+        )
+        entry = Entry()
+        mapping = thesis_module.BidirectionalConceptsMapper.from_entry(entry)
+        dynamic_schema = thesis_module.create_dynamic_phaidra_meta_data_schema(mapping)
+        self.assertIsInstance(
+            dynamic_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
+            PhaidraThesisContainer,
+        )
+        default_module = importlib.import_module(
+            'media_server.archiver.implementations.phaidra.metadata.default.schemas'
+        )
+        static_schema = default_module.PhaidraMetaData()
+        self.assertIsInstance(
+            static_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
+            PhaidraContainer,
         )

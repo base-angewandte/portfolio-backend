@@ -8,16 +8,15 @@ from rest_framework.exceptions import ValidationError
 from django.test import TestCase
 
 from media_server.archiver.controller.default import DefaultArchiveController
-from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
-    create_dynamic_phaidra_meta_data_schema,
-)
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import (
     PhaidraThesisMetaDataTranslator,
 )
-from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import _PhaidraThesisMetaDataSchema
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
+    create_dynamic_phaidra_meta_data_schema,
+)
 from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
     ClientProvider,
     ModelProvider,
@@ -69,9 +68,7 @@ class AtLeastOneAuthorTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(author=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
-        )
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper=mapping)
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_error)
 
@@ -82,15 +79,16 @@ class AtLeastOneAuthorTestCase(TestCase):
         entry = self.model_provider.get_entry(author=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
         self.assertEqual({}, errors)
 
     def test_error_transformation(self):
         translator = PhaidraThesisMetaDataTranslator()
-        # no need to test dynamic here
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_error)
+        entry = self.model_provider.get_entry(author=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_error, mapping)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -177,7 +175,7 @@ class MustHaveALanguageTestCase(TestCase):
         entry = self.model_provider.get_entry(german_language=False, akan_language=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors)
@@ -188,14 +186,16 @@ class MustHaveALanguageTestCase(TestCase):
         entry = self.model_provider.get_entry(german_language=False, akan_language=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
         self.assertEqual(errors, {})
 
     def test_error_transformation(self):
         translator = PhaidraThesisMetaDataTranslator()
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors)
+        entry = self.model_provider.get_entry(german_language=False, akan_language=False)
+        mapping = BidirectionalConceptsMapper.from_entry(entry)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, mapping)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -297,7 +297,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         entry = self.model_provider.get_entry(advisor=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
@@ -309,7 +309,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(data)
         self.assertEqual(errors, self.expected_phaidra_errors_empty_field)
@@ -320,7 +320,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
         self.assertEqual({}, errors)
@@ -455,7 +455,7 @@ class EmptyThesisTestCase(TestCase):
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
@@ -516,7 +516,7 @@ class MustHaveEnglishAbstractTestCase(TestCase):
         entry = self.model_provider.get_entry(english_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
+            bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
@@ -569,9 +569,7 @@ class MustHaveGermanAbstractTestCase(TestCase):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_german_abstract_rule=False)
         entry = self.model_provider.get_entry(german_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
-            bidirectional_concepts_mapper=mapping, base_schema_class=_PhaidraThesisMetaDataSchema
-        )
+        dynamic_schema = create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper=mapping)
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 

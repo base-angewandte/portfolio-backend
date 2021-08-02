@@ -1,7 +1,7 @@
 """Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
 st_media_metadata.py Check out src/media_server/archiver/implementations/phaidr
 a/metadata/datatranslation.py."""
-from typing import TYPE_CHECKING, Dict, Type
+from typing import TYPE_CHECKING
 
 from marshmallow import Schema, fields
 
@@ -14,14 +14,7 @@ from media_server.archiver.implementations.phaidra.utillities.fields import (
 from media_server.archiver.implementations.phaidra.utillities.validate import ValidateLength1
 
 if TYPE_CHECKING:
-    from marshmallow.base import FieldABC
-    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
-        BidirectionalConceptsMapper,
-    )
-
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
-    extract_phaidra_role_code,
-)
+    pass
 
 value_field = PortfolioStringField(required=True, load_from='@value', dump_to='@value')
 
@@ -91,7 +84,7 @@ class DceTitleSchema(Schema):
     )
 
 
-class _PhaidraMetaData(Schema):
+class PhaidraContainer(Schema):
     dcterms_type = PortfolioConstantField(
         [
             {
@@ -121,30 +114,50 @@ class _PhaidraMetaData(Schema):
     )
 
     dcterms_language = PortfolioNestedField(
-        SkosConceptSchema, many=True, load_from='dcterms:language', dump_to='dcterms:language'
+        SkosConceptSchema, many=True, load_from='dcterms:language', dump_to='dcterms:language', validate=None
     )
 
     dcterms_subject = PortfolioNestedField(
-        SkosConceptSchema, many=True, load_from='dcterms:subject', dump_to='dcterms:subject'
+        SkosConceptSchema,
+        many=True,
+        load_from='dcterms:subject',
+        dump_to='dcterms:subject',
+        validate=None,
     )
 
-    rdau_P60048 = PortfolioNestedField(SkosConceptSchema, many=True, load_from='rdau:P60048', dump_to='rdau:P60048')
+    rdau_P60048 = PortfolioNestedField(
+        SkosConceptSchema,
+        many=True,
+        load_from='rdau:P60048',
+        dump_to='rdau:P60048',
+        validate=None,
+    )
 
-    dce_format = PortfolioNestedField(SkosConceptSchema, many=True, load_from='dce:format', dump_to='dce:format')
+    dce_format = PortfolioNestedField(
+        SkosConceptSchema,
+        many=True,
+        load_from='dce:format',
+        dump_to='dce:format',
+        validate=None,
+    )
 
-    bf_note = PortfolioNestedField(TypeLabelSchema, many=True, load_from='bf:note', dump_to='bf:note')
+    bf_note = PortfolioNestedField(
+        TypeLabelSchema,
+        many=True,
+        load_from='bf:note',
+        dump_to='bf:note',
+        validate=None,
+    )
 
-    role_edt = PortfolioNestedField(PersonSchema, many=True, load_from='role:edt', dump_to='role:edt')
+    role_edt = PortfolioNestedField(PersonSchema, many=True, load_from='role:edt', dump_to='role:edt', validate=None)
 
-    role_aut = PortfolioNestedField(PersonSchema, many=True, load_from='role:aut', dump_to='role:aut')
+    role_aut = PortfolioNestedField(PersonSchema, many=True, load_from='role:aut', dump_to='role:aut', validate=None)
 
-    role_pbl = PortfolioNestedField(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl')
+    role_pbl = PortfolioNestedField(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl', validate=None)
 
 
 class Container(Schema):
-    # _PhaidraMetaData is actually a placeholder.
-    # it will be replaced with _PhaidraMetaData() or ChildClassOf_PhaidraMetaData()
-    container = fields.Nested(_PhaidraMetaData, many=False, required=True)
+    container = fields.Nested(PhaidraContainer(), many=False, required=True)
 
 
 class JsonLd(Schema):
@@ -157,40 +170,3 @@ class PhaidraMetaData(Schema):
     # it is important, that the nested schema is initialized here
     # if not fields will not be available and dynamic fields will not be added (nested)
     metadata = fields.Nested(JsonLd(), many=False, required=True)
-
-
-def _str_to_attribute(string: str) -> str:
-    return string.replace(':', '_')
-
-
-def _create_dynamic_phaidra_meta_data_schema(
-    bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
-    base_schema_class: Type[_PhaidraMetaData] = _PhaidraMetaData,
-) -> PhaidraMetaData:
-    schema = base_schema_class()
-    for concept_mapper in bidirectional_concepts_mapper.concept_mappings.values():
-        for os_sameAs in concept_mapper.owl_sameAs:
-            phaidra_role_code = extract_phaidra_role_code(os_sameAs)
-            schema_attribute = _str_to_attribute(phaidra_role_code)
-            marshmallow_fields: Dict[str, 'FieldABC'] = schema.fields
-            '''Do not overwrite static field definitions'''
-            if schema_attribute not in marshmallow_fields:
-                marshmallow_fields[schema_attribute] = PortfolioNestedField(
-                    PersonSchema, many=True, required=False, load_from=phaidra_role_code, dump_to=phaidra_role_code
-                )
-    return schema
-
-
-def _wrap_dynamic_schema(dynamic_schema: _PhaidraMetaData) -> PhaidraMetaData:
-    schema = PhaidraMetaData()
-    schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested = dynamic_schema
-    return schema
-
-
-def create_dynamic_phaidra_meta_data_schema(
-    bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
-    base_schema_class: Type[_PhaidraMetaData] = _PhaidraMetaData,
-) -> PhaidraMetaData:
-    dynamic_schema = _create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper, base_schema_class)
-    full_schema = _wrap_dynamic_schema(dynamic_schema)
-    return full_schema

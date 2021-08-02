@@ -1,22 +1,14 @@
 """Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
 st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
-from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
-    extract_phaidra_role_code,
-)
-from media_server.archiver.interface.exceptions import InternalValidationError
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 
 if TYPE_CHECKING:
     from media_server.models import Entry
-    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
-        BidirectionalConceptsMapper,
-    )
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import (
     AbstractDataTranslator,
@@ -71,7 +63,7 @@ def _create_value_language_objects_from_label_dict(container: Dict, raise_=False
     return value_language_objects
 
 
-def _create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
+def create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
     person_object = {
         **_create_type_object('schema:Person'),
         'skos:exactMatch': [],
@@ -301,7 +293,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         if self.primary_level_data_key not in model.data:
             return []
         return [
-            _create_person_object(name=person['label'], source=person['source'])
+            create_person_object(name=person['label'], source=person['source'])
             for person in model.data[self.primary_level_data_key]
         ]
 
@@ -313,7 +305,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
             if 'roles' in contributor:
                 for role in contributor['roles']:
                     if role['source'] == self.role_uri:
-                        contributors.append(_create_person_object(source=role['source'], name=contributor['label']))
+                        contributors.append(create_person_object(source=role['source'], name=contributor['label']))
         return contributors
 
 
@@ -337,11 +329,10 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     ordered pairwise.
     """
 
-    _static_key_translator_mapping: Dict[str, AbstractDataTranslator]
+    _key_translator_mapping: Dict[str, AbstractDataTranslator]
 
     def __init__(self):
-        self.data_with_dynamic_structure = defaultdict(list)
-        self._static_key_translator_mapping = {
+        self._key_translator_mapping = {
             'edm:hasType': EdmHasTypeTranslator(),
             'dce:title': DCTitleTranslator(),
             'dcterms:language': GenericSkosConceptTranslator(
@@ -369,43 +360,25 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             ),
         }
 
-    def translate_data(self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper' = None) -> dict:
-        data_with_static_structure = self._get_data_with_static_structure(model)
-        if contributor_role_mapping is None:
-            data = data_with_static_structure
-        else:
-            data_with_dynamic_structure = self._get_data_with_dynamic_structure(model, contributor_role_mapping)
-            data = self._merge(data_with_static_structure, data_with_dynamic_structure)
+    def translate_data(self, model: 'Entry') -> dict:
+        data = self._translate_data(model)
         data = self._wrap_in_container(data)
         return data
 
-    def translate_errors(
-        self, errors: Optional[Dict], contributor_role_mapping: 'BidirectionalConceptsMapper' = None
-    ) -> Dict:
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
         errors = self._extract_from_container(errors)
-        errors_with_static_structure = self._translate_errors_with_static_structure(errors)
-        if contributor_role_mapping is None:
-            # allow skipping requests for dynamic structure
-            all_errors = errors_with_static_structure
-        else:
-            errors_with_dynamic_structure = self._translate_errors_with_dynamic_structure(
-                errors, contributor_role_mapping
-            )
-            all_errors = self._merge(errors_with_static_structure, errors_with_dynamic_structure)
-        return self._filter_errors(all_errors)
+        errors = self._translate_errors(errors)
+        return self._filter_errors(errors)
 
-    def _get_data_with_static_structure(self, model: 'Entry') -> Dict:
+    def _translate_data(self, model: 'Entry') -> Dict:
         return {
             'dcterms:type': self._create_static_dcterms(),
-            **{
-                key: translator.translate_data(model)
-                for key, translator in self._static_key_translator_mapping.items()
-            },
+            **{key: translator.translate_data(model) for key, translator in self._key_translator_mapping.items()},
         }
 
-    def _translate_errors_with_static_structure(self, errors: Dict) -> Dict:
+    def _translate_errors(self, errors: Dict) -> Dict:
         translated_errors = {}
-        for target_key, translator in self._static_key_translator_mapping.items():
+        for target_key, translator in self._key_translator_mapping.items():
             if target_key in errors:
                 source_errors = translator.translate_errors(errors[target_key])
                 translated_errors = self._set_nested_errors(source_errors, translated_errors)
@@ -420,66 +393,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
                 'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
             }
         ]
-
-    def _get_data_with_dynamic_structure(
-        self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
-    ) -> Dict:
-        if (model.data is None) or ('contributors' not in model.data):
-            return self.data_with_dynamic_structure
-        contributors: List[Dict] = model.data['contributors']
-        for contributor in contributors:
-            if 'roles' not in contributor:
-                continue
-            for role in contributor['roles']:
-                if 'source' not in role:
-                    continue
-                phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
-                for phaidra_role in phaidra_roles:
-                    if 'loc.gov' not in phaidra_role:
-                        continue
-                    phaidra_role_code = extract_phaidra_role_code(phaidra_role)
-                    self.data_with_dynamic_structure[phaidra_role_code].append(
-                        _create_person_object(
-                            name=contributor['label'],
-                            source=contributor['source'] if 'source' in contributor else None,
-                        )
-                    )
-        return self.data_with_dynamic_structure
-
-    def _translate_errors_with_dynamic_structure(
-        self, errors: Dict, contributor_role_mapping: 'BidirectionalConceptsMapper'
-    ):
-        """
-
-        :param errors:
-        :param contributor_role_mapping
-        :return:
-        """
-
-        dynamic_errors = {}
-
-        for concept_mapping in contributor_role_mapping.concept_mappings.values():
-            for phaidra_role in concept_mapping.owl_sameAs:
-                if 'loc.gov' not in phaidra_role:
-                    continue
-                phaidra_role_code = extract_phaidra_role_code(phaidra_role)
-                if phaidra_role_code in errors:
-                    dynamic_errors[phaidra_role_code] = errors[phaidra_role_code]
-
-        if dynamic_errors:
-            raise InternalValidationError(str(dynamic_errors))
-        else:
-            return {}
-
-    def _merge(self, data_with_static_structure: dict, data_with_dynamic_structure: dict):
-        for key, value in data_with_dynamic_structure.items():
-            if key not in data_with_static_structure:
-                data_with_static_structure[key] = value
-            elif data_with_static_structure[key].__class__ is list and value.__class__ is list:
-                data_with_static_structure[key] += value
-            else:
-                pass  # All we do right now
-        return data_with_static_structure
 
     @classmethod
     def _filter_errors(cls, errors: Dict) -> Dict:
