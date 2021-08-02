@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Dict, List, Set
 if TYPE_CHECKING:
     from marshmallow.base import FieldABC
 
-from marshmallow import ValidationError, validates
+from marshmallow import Schema, ValidationError, fields, validates
 
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     PersonSchema,
@@ -95,15 +95,31 @@ def _create_dynamic_phaidra_meta_data_schema(
     return schema
 
 
-def _wrap_dynamic_schema(dynamic_schema: PhaidraContainer) -> PhaidraMetaData:
-    schema = PhaidraMetaData()
+class ThesisContainer(Schema):
+    container = fields.Nested(PhaidraThesisContainer(), many=False, required=True)
+
+
+class ThesisJsonLd(Schema):
+    # it is important, that the nested schema is initialized here
+    # if not fields will not be available and dynamic fields will not be added (nested)
+    json_ld = fields.Nested(ThesisContainer(), many=False, required=True, load_from='json-ld', dump_to='json-ld')
+
+
+class PhaidraThesisMetaData(Schema):
+    # it is important, that the nested schema is initialized here
+    # if not fields will not be available and dynamic fields will not be added (nested)
+    metadata = fields.Nested(ThesisJsonLd(), many=False, required=True)
+
+
+def _wrap_dynamic_schema(dynamic_schema: PhaidraContainer) -> PhaidraThesisMetaData:
+    schema = PhaidraThesisMetaData()
     schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested = dynamic_schema
     return schema
 
 
 def create_dynamic_phaidra_meta_data_schema(
     bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
-) -> PhaidraMetaData:
+) -> PhaidraThesisMetaData:
     dynamic_schema = _create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper)
     full_schema = _wrap_dynamic_schema(dynamic_schema)
     return full_schema

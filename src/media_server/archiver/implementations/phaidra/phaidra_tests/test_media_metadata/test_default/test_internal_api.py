@@ -11,6 +11,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
 )
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
     PhaidraThesisContainer,
+    PhaidraThesisMetaData,
     create_dynamic_phaidra_meta_data_schema,
 )
 from media_server.archiver.interface.archiveobject import ArchiveObject
@@ -1313,7 +1314,7 @@ class ThesisSwitchArchiverTestCase(TestCase):
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'ThesisMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)
-        self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
+        self.assertIsInstance(metadata_data_archiver.schema, PhaidraThesisMetaData)
         self.assertIsInstance(
             metadata_data_archiver.schema.fields['metadata']
             .nested.fields['json_ld']
