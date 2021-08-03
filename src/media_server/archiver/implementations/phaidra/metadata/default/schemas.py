@@ -52,7 +52,7 @@ class SkosConceptSchema(TypeLabelSchema):
 
 
 class PersonSchema(Schema):
-    type = PortfolioConstantField('ids:uri', load_from='@type', dump_to='@type')
+    type = PortfolioConstantField('schema:Person', load_from='@type', dump_to='@type')
     skos_exactMatch = PortfolioNestedField(
         ValueTypeBaseSchema,
         many=True,
