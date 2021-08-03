@@ -32,9 +32,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
             {
                 'metadata': {
                     'json-ld': {
-                        'ebucore:hasMimeType': [
-                            self.example_mime_type,
-                        ],
                         'ebucore:filename': [self.example_file],
                         'edm:rights': [self.example_license['source']],
                     }
@@ -49,9 +46,7 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
         """
         media = self.get_media_object(has_mime_type=False, has_file=False, has_license=False)
         data = self.phaidra_media_data_translator.translate_data(media)
-        self.assertEqual(
-            data, {'metadata': {'json-ld': {'ebucore:hasMimeType': [], 'ebucore:filename': [], 'edm:rights': []}}}
-        )
+        self.assertEqual(data, {'metadata': {'json-ld': {'ebucore:filename': [], 'edm:rights': []}}})
 
     def test_data_translation_missing_mime_type(self):
         media = self.get_media_object(has_mime_type=False)
@@ -61,7 +56,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
             {
                 'metadata': {
                     'json-ld': {
-                        'ebucore:hasMimeType': [],
                         'ebucore:filename': [self.example_file],
                         'edm:rights': [self.example_license['source']],
                     }
@@ -77,9 +71,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
             {
                 'metadata': {
                     'json-ld': {
-                        'ebucore:hasMimeType': [
-                            self.example_mime_type,
-                        ],
                         'ebucore:filename': [],
                         'edm:rights': [self.example_license['source']],
                     }
@@ -95,9 +86,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
             {
                 'metadata': {
                     'json-ld': {
-                        'ebucore:hasMimeType': [
-                            self.example_mime_type,
-                        ],
                         'ebucore:filename': [self.example_file],
                         'edm:rights': [],
                     }
@@ -145,9 +133,6 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
                 'metadata': {
                     'json-ld': {
                         'edm:rights': [
-                            MISSING_DATA_FOR_REQUIRED_FIELD,
-                        ],
-                        'ebucore:hasMimeType': [
                             MISSING_DATA_FOR_REQUIRED_FIELD,
                         ],
                         'ebucore:filename': [
