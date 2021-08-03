@@ -5,16 +5,11 @@ from rest_framework.test import APITestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
-    ClientProvider,
-    ModelProvider,
-)
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 from media_server.models import Media
 
 if TYPE_CHECKING:
     from rest_framework.response import Response
-
-from media_server.archiver import messages
 
 
 class DefaultValidationEndpointTestCase(APITestCase):
@@ -54,29 +49,12 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 'Asset validation successful')
 
-    def test_missing_mime_type(self):
-        response = self.get_media_primary_key_response(mime_type=False)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {'media': {'mime_type': [messages.validation.MISSING_DATA_FOR_REQUIRED_FIELD]}},
-        )
-
     def test_missing_every_mandatory_field(self):
         response = self.get_media_primary_key_response(
             title=False,
             mime_type=False,
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {
-                # no title!
-                'media': {
-                    'mime_type': [messages.validation.MISSING_DATA_FOR_REQUIRED_FIELD],
-                },
-            },
-        )
+        self.assertEqual(response.status_code, 200)
 
 
 class WrongUserTestCase(APITestCase):

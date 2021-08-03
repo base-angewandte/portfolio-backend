@@ -83,7 +83,7 @@ class MediaArchiver(AbstractArchiver):
         schema = PhaidraMediaData()
         result = schema.load(data)
         errors: dict = result.errors
-        self.data = result.data
+        self.data = schema.dump(result.data)
         self.throw_validation_errors(translator.translate_errors(errors))
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
@@ -105,14 +105,16 @@ class MediaArchiver(AbstractArchiver):
         raise NotImplementedError()
 
     def _push_to_archive(self) -> requests.Response:
-        return requests.post(
-            uris.get(self.media_object.type, 'x'),
+        uri = uris.get(self.media_object.type, 'x')
+        response = requests.post(
+            uri,
             files={
                 'metadata': json.dumps(self.data),
                 'file': self.media_object.file,
             },
             auth=(credentials.get('USER'), credentials.get('PWD')),
         )
+        return response
 
     def _handle_media_push_response(self, media_push_response: requests.Response) -> str:
         if media_push_response.status_code != 200:
@@ -135,11 +137,13 @@ class MediaArchiver(AbstractArchiver):
         self.media_object.save()
 
     def link_entry_to_media(self) -> requests.Response:
-        return requests.post(
-            uris.get('BASE_URI') + f'object/{self.archive_object.entry.archive_id}/relationship/add',
+        uri = uris.get('BASE_URI') + f'object/{self.archive_object.entry.archive_id}/relationship/add'
+        response = requests.post(
+            uri,
             {'predicate': 'http://pcdm.org/models#hasMember', 'object': f'info:fedora/{self.media_object.archive_id}'},
             auth=(credentials.get('USER'), credentials.get('PWD')),
         )
+        return response
 
     def handle_link_entry_to_media_response(self, link_entry_to_media_response: requests.Response):
         self._handle_external_server_response(link_entry_to_media_response)

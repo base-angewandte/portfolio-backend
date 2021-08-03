@@ -45,9 +45,7 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
-    ModelProvider,
-)
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 

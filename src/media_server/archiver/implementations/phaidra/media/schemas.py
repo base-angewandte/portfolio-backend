@@ -9,13 +9,6 @@ from media_server.archiver.implementations.phaidra.utillities.validate import Va
 
 
 class PhaidraJsonLD(Schema):
-    ebucore_hasMimeType = PortfolioListField(
-        PortfolioStringField(),
-        required=True,
-        load_from='ebucore:hasMimeType',
-        dump_to='ebucore:hasMimeType',
-        validate=ValidateLength1(),
-    )
     ebucore_filename = PortfolioListField(
         PortfolioStringField(),
         required=True,

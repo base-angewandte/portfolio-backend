@@ -58,14 +58,23 @@ class DefaultMetadataArchiver(AbstractArchiver):
     def _create_phaidra_url(self, archive_id: Optional[str] = None):
         if archive_id is None:
             return settings.ARCHIVE_URIS['CREATE_URI']
-        base_uri = settings.ARCHIVE_URIS['CREATE_URI']
+        base_uri = settings.ARCHIVE_URIS['BASE_URI']
         return urljoin(base_uri, f'object/{archive_id}/metadata')
 
     def _post_to_phaidra(self, url, data: dict):
-        data = json.dumps(data)
+        """
+
+        :param url:
+        :param data:
+        :return:
+        """
+        serialized_data = json.dumps(data)
         logging.debug(f'Post to phaidra with metadata {data}')
         try:
-            return requests.post(url, files={'metadata': data}, auth=(credentials.get('USER'), credentials.get('PWD')))
+            response = requests.post(
+                url, files={'metadata': serialized_data}, auth=(credentials.get('USER'), credentials.get('PWD'))
+            )
+            return response
         except Exception as exception:
             raise ExternalServerError(exception)
 
@@ -82,7 +91,12 @@ class DefaultMetadataArchiver(AbstractArchiver):
         if response.status_code != 200:
             raise RuntimeError(f'Phaidra returned with response {response} and content {response.content}')
         data = json.loads(response.content)
-        return data['pid']
+        if self.is_update:
+            if any([alert['type'] != 'success' for alert in data['alerts']]):
+                raise RuntimeError(f'Phaidra returned with response {response} and content {response.content}')
+            return self.archive_object.entry.archive_id
+        else:
+            return data['pid']
 
     def _update_entry_archival_success_in_db(self, pid: str):
         self.archive_object.entry.update_archive = False

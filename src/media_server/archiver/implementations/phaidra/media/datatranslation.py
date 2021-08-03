@@ -11,7 +11,6 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
         return {
             'metadata': {
                 'json-ld': {
-                    'ebucore:hasMimeType': self._get_media_mime_types(media),
                     'ebucore:filename': self._get_file_name(media),
                     'edm:rights': self._get_licenses(media),
                 }

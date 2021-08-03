@@ -1,10 +1,7 @@
 import requests
 from rest_framework.test import APITestCase
 
-from media_server.archiver.implementations.phaidra.phaidra_tests.test_media_metadata.test_thesis.utillities import (
-    ClientProvider,
-    ModelProvider,
-)
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 
 
 class TestArchival(APITestCase):
