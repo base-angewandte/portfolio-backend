@@ -12,6 +12,13 @@
 ### Fixed
 - Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
 
+
+## 1.1.1
+
+### Added
+- Added support for new INDEX vocabulary collections
+
+
 ## 1.1.0
 
 ### Added
