@@ -241,6 +241,7 @@ def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.
         .replace('Sammlung', '')
         .replace('Collection', '')
         .replace('JART', '')
+        .replace('INDEX', '')
         .strip()
     )
 
