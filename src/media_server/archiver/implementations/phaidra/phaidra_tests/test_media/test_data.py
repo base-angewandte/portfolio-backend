@@ -1,13 +1,19 @@
-import unittest
+from typing import Optional
 
+from django.test import TestCase
+
+from core.models import Entry
+from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver
 from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.messages import validation as validation_messages
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 from media_server.models import Media
 
 
-class PhaidraMediaDataTestCase(unittest.TestCase):
+class PhaidraMediaDataTestCase(TestCase):
 
     phaidra_media_data_translator = PhaidraMediaDataTranslator()
     phaidra_media_data_validator = PhaidraMediaData()
@@ -142,3 +148,30 @@ class PhaidraMediaDataTestCase(unittest.TestCase):
                 }
             },
         )
+
+
+class TestUpperDataStructure(TestCase):
+    """https://basedev.uni-ak.ac.at/redmine/issues/1477."""
+
+    entry: Optional['Entry'] = None
+    model_provider: Optional['ModelProvider'] = None
+
+    def setUp(self):
+        """
+        We need one entry, that has been archived yet
+        :return:
+        """
+        self.model_provider = ModelProvider()
+        self.entry = self.model_provider.get_entry(thesis_type=False)
+        self.archive_object = ArchiveObject(
+            entry=self.entry,
+            media_objects=set(),  # nothing to here, since we test this,
+            user=self.model_provider.user,
+        )
+        self.media = self.model_provider.get_media(self.entry)
+        self.archive_object.media_objects.add(self.media)
+
+    def test_data_is_object(self):
+        archiver = MediaArchiver(self.archive_object)
+        archiver.validate()  # generates data
+        self.assertIsInstance(archiver.data, dict)
