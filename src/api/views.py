@@ -28,6 +28,7 @@ from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema, get_schema
 from core.schemas.entries.conference import ConferenceSchema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES, DocumentSchema
 from core.schemas.entries.event import EventSchema
+from core.schemas.entries.research_project import ResearchProjectSchema
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
@@ -389,6 +390,7 @@ def user_data(request, pk=None, *args, **kwargs):
     document_schema = DocumentSchema()
     conference_schema = ConferenceSchema()
     event_schema = EventSchema()
+    research_project_schema = ResearchProjectSchema()
     publications_label = get_altlabel_collection('collection_document_publication', lang=lang)
     monographs_label = get_altlabel_collection('collection_monograph', lang=lang)
     monographs_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_monograph')
@@ -440,11 +442,6 @@ def user_data(request, pk=None, *args, **kwargs):
     teaching_label = get_altlabel_collection('collection_teaching', lang=lang)
     teaching_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_teaching')
     teaching_data = []
-    education_qualifications_label = get_altlabel_collection('collection_education_qualification', lang=lang)
-    education_qualifications_types = get_collection_members(
-        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_education_qualification'
-    )
-    education_qualifications_data = []
     conferences_symposiums_label = get_altlabel_collection('collection_conference_symposium', lang=lang)
     conferences_symposiums_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference'
@@ -467,7 +464,12 @@ def user_data(request, pk=None, *args, **kwargs):
     design_label = get_altlabel_collection('collection_design', lang=lang)
     design_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_design')
     design_data = []
-    events_label = get_altlabel_collection('collection_event', lang=lang)
+    education_qualifications_label = get_altlabel_collection('collection_education_qualification', lang=lang)
+    education_qualifications_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_education_qualification'
+    )
+    education_qualifications_data = []
+    functions_practice_label = get_altlabel_collection('collection_functions_practice', lang=lang)
     events_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_event')
     visual_and_verbal_presentations_label = get_altlabel_collection('collection_visual_verbal_presentation', lang=lang)
     visual_and_verbal_presentations_types = get_collection_members(
@@ -478,8 +480,8 @@ def user_data(request, pk=None, *args, **kwargs):
     memberships_data = []
     expert_functions_label = get_altlabel_collection('collection_expert_function ', lang=lang)
     expert_functions_data = []
-    general_activities_label = get_altlabel_collection('collection_general_activity ', lang=lang)
-    general_activities_data = []
+    general_functions_practice_label = get_altlabel_collection('general_function_and_practice', lang=lang)
+    general_functions_practice_data = []
     festivals_label = get_altlabel_collection('collection_festival', lang=lang)
     festivals_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_festival')
     festivals_data = []
@@ -498,8 +500,8 @@ def user_data(request, pk=None, *args, **kwargs):
     videos_label = get_altlabel_collection('collection_film_video', lang=lang)
     videos_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video')
     videos_data = []
-    general_publications_label = 'Sonstige Veröffentlichungen' if lang == 'de' else 'General Publications'
-    general_publications_data = []
+    general_activities_label = get_altlabel_collection('collection_general_activity ', lang=lang)
+    general_activities_data = []
 
     published_entries = published_entries_query.order_by('title')
 
@@ -608,16 +610,34 @@ def user_data(request, pk=None, *args, **kwargs):
             elif e_data.contributors is not None and any(
                 i.source == user.username
                 and i.roles is not None
-                and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing' for r in i.roles)
+                and any(
+                    r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/senate_committee_work'
+                    for r in i.roles
+                )
                 for i in e_data.contributors
             ):
                 expert_functions_data.append(entry_to_data(e))
-            # General Activities
+            # General Functions & Practice
             else:
-                general_activities_data.append(entry_to_data(e))
+                general_functions_practice_data.append(entry_to_data(e))
         # Research Projects
         elif entry_type in research_projects_types:
-            research_projects_data.append(entry_to_data(e))
+            e_data = research_project_schema.load(e.data).data
+            if (
+                e.type.get('source')
+                == 'http://base.uni-ak.ac.at/portfolio/taxonomy/teaching_project_teaching_research_project'
+                and e_data.contributors is not None
+                and any(
+                    i.source == user.username
+                    and i.roles is not None
+                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/project_lead' for r in i.roles)
+                    for i in e_data.contributors
+                )
+            ):
+                teaching_data.append(entry_to_data(e))
+            else:
+                research_projects_data.append(entry_to_data(e))
         # Awards and Grants
         elif entry_type in awards_and_grants_types:
             awards_and_grants_data.append(entry_to_data(e))
@@ -660,9 +680,9 @@ def user_data(request, pk=None, *args, **kwargs):
         # Films/Videos
         elif entry_type in videos_types:
             videos_data.append(entry_to_data(e))
-        # General Publications
+        # General Activites
         else:
-            general_publications_data.append(e)
+            general_activities_data.append(e)
 
     # Publications
     publications_data = []
@@ -688,17 +708,17 @@ def user_data(request, pk=None, *args, **kwargs):
         if d:
             teaching_collected_data.append(to_data_dict(lbl, d))
 
-    # Activities
-    activities_data = []
+    # Functions & Practice
+    functions_practice_data = []
 
     for lbl, d in [
         (memberships_label, memberships_data),
         (expert_functions_label, expert_functions_data),
         (visual_and_verbal_presentations_label, visual_and_verbal_presentations_data),
-        (general_activities_label, general_activities_data),
+        (general_functions_practice_label, general_functions_practice_data),
     ]:
         if d:
-            activities_data.append(to_data_dict(lbl, d))
+            functions_practice_data.append(to_data_dict(lbl, d))
 
     # Create return data in desired order
     for lbl, d, sort in (
@@ -715,14 +735,14 @@ def user_data(request, pk=None, *args, **kwargs):
         (concerts_label, concerts_data, True),
         (design_label, design_data, True),
         (education_qualifications_label, education_qualifications_data, True),
-        (events_label, activities_data, False),
+        (functions_practice_label, functions_practice_data, False),
         (festivals_label, festivals_data, True),
         (images_label, images_data, True),
         (performances_label, performances_data, True),
         (sculptures_label, sculptures_data, True),
         (software_label, software_data, True),
         (videos_label, videos_data, True),
-        (general_publications_label, general_publications_data, True),
+        (general_activities_label, general_activities_data, True),
     ):
         if d:
             usr_data['data'].append(to_data_dict(lbl, d, sort=sort))
