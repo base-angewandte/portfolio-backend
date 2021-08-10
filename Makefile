@@ -43,7 +43,7 @@ restart-rq:
 update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
-	docker-compose pull
+	docker-compose pull --ignore-pull-failures
 	docker-compose build --no-cache --pull
 	docker-compose up -d \
 		portfolio-redis \
@@ -51,7 +51,7 @@ start-dev:
 		portfolio-lool
 
 start-dev-docker:
-	docker-compose pull
+	docker-compose pull --ignore-pull-failures
 	docker-compose build --no-cache --pull
 	docker-compose up -d \
 		portfolio-redis \
