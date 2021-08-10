@@ -83,7 +83,7 @@ class MediaArchiver(AbstractArchiver):
         schema = PhaidraMediaData()
         result = schema.load(data)
         errors: dict = result.errors
-        self.data = schema.dump(result.data)
+        self.data = schema.dump(result.data).data
         self.throw_validation_errors(translator.translate_errors(errors))
 
     def push_to_archive(self) -> SuccessfulArchiveResponse:
