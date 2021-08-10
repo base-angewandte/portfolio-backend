@@ -14,7 +14,7 @@ from media_server.archiver.implementations.phaidra.utillities.fields import (
 from media_server.archiver.implementations.phaidra.utillities.validate import ValidateLength1
 
 if TYPE_CHECKING:
-    pass
+    from core.models import Entry
 
 value_field = PortfolioStringField(required=True, load_from='@value', dump_to='@value')
 
@@ -170,3 +170,23 @@ class PhaidraMetaData(Schema):
     # it is important, that the nested schema is initialized here
     # if not fields will not be available and dynamic fields will not be added (nested)
     metadata = fields.Nested(JsonLd(), many=False, required=True)
+
+
+def create_dynamic_phaidra_default_meta_data_schema(entry: 'Entry') -> 'PhaidraMetaData':
+    """
+    Data structure has to change on status of archival (update/push)
+
+    ```
+    metadata->json-ld->container->{predicates}
+    metadata->json-ld->member_foo->{predicates}
+    metadata->json-ld->member_bar->{predicates}
+    ```
+    https://github.com/phaidra/phaidra-api/wiki/Creating-a-container
+    :param entry:
+    :return: PhaidraMetaData
+    """
+    schema = PhaidraMetaData()
+    container_field: fields.Field = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container']
+    container_field.dump_to = 'container' if entry.archive_id is None else entry.archive_id
+
+    return schema

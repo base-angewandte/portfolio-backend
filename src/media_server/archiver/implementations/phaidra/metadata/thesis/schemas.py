@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Dict, List, Set
 
 if TYPE_CHECKING:
     from marshmallow.base import FieldABC
+    from core.models import Entry
 
 from marshmallow import Schema, ValidationError, fields, validates
 
@@ -117,9 +118,14 @@ def _wrap_dynamic_schema(dynamic_schema: PhaidraContainer) -> PhaidraThesisMetaD
     return schema
 
 
-def create_dynamic_phaidra_meta_data_schema(
+def create_dynamic_phaidra_thesis_meta_data_schema(
+    entry: 'Entry',
     bidirectional_concepts_mapper: 'BidirectionalConceptsMapper',
 ) -> PhaidraThesisMetaData:
     dynamic_schema = _create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper)
     full_schema = _wrap_dynamic_schema(dynamic_schema)
+
+    container_field: fields.Field = full_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container']
+    container_field.dump_to = 'container' if entry.archive_id is None else entry.archive_id
+
     return full_schema

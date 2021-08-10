@@ -15,7 +15,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
     PhaidraThesisMetaDataTranslator,
 )
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
-    create_dynamic_phaidra_meta_data_schema,
+    create_dynamic_phaidra_thesis_meta_data_schema,
 )
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
     ClientProvider,
@@ -68,7 +68,9 @@ class AtLeastOneAuthorTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(author=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper=mapping)
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry, bidirectional_concepts_mapper=mapping
+        )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_error)
 
@@ -78,7 +80,8 @@ class AtLeastOneAuthorTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(author=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
@@ -174,7 +177,8 @@ class MustHaveALanguageTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(german_language=False, akan_language=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -185,7 +189,8 @@ class MustHaveALanguageTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(german_language=False, akan_language=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
@@ -296,7 +301,8 @@ class MustHaveAnAdviserTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -308,7 +314,8 @@ class MustHaveAnAdviserTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(data)
@@ -319,7 +326,8 @@ class MustHaveAnAdviserTestCase(TestCase):
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(valid_data)
@@ -454,7 +462,8 @@ class EmptyThesisTestCase(TestCase):
             advisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -515,7 +524,8 @@ class MustHaveEnglishAbstractTestCase(TestCase):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_english_abstract_rule=False)
         entry = self.model_provider.get_entry(english_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry,
             bidirectional_concepts_mapper=mapping,
         )
         errors = dynamic_schema.validate(invalid_data)
@@ -569,7 +579,9 @@ class MustHaveGermanAbstractTestCase(TestCase):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_german_abstract_rule=False)
         entry = self.model_provider.get_entry(german_abstract=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = create_dynamic_phaidra_meta_data_schema(bidirectional_concepts_mapper=mapping)
+        dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            entry=entry, bidirectional_concepts_mapper=mapping
+        )
         errors = dynamic_schema.validate(invalid_data)
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 
