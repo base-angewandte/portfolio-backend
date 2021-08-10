@@ -3,6 +3,7 @@
 ## unreleased
 
 ### Changed
+- New API lists logic
 - Pull docker images before build
 - Updated pre-commit and hooks
 - Clean up docs container after running
