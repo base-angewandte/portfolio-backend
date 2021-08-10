@@ -17,7 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
 from .decorators import is_allowed
-from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
+from .models import DOCUMENT_TYPE, STATUS_CONVERTED, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -190,7 +190,7 @@ class MediaViewSet(viewsets.GenericViewSet):
                         _('Current user is not the owner of this media object'),
                         status=status.HTTP_403_FORBIDDEN,
                     )
-                elif m.status != 2:
+                elif m.status != STATUS_CONVERTED:
                     return Response(m.get_minimal_data(), status=status.HTTP_202_ACCEPTED)
 
                 return Response(m.get_data())
