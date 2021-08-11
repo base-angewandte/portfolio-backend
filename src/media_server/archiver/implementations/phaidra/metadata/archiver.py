@@ -1,6 +1,5 @@
 import json
 import logging
-from abc import ABC
 from typing import TYPE_CHECKING, Dict, Optional
 from urllib.parse import urljoin
 
@@ -133,7 +132,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         return self._translator
 
 
-class ThesisMetadataArchiver(DefaultMetadataArchiver, ABC):
+class ThesisMetadataArchiver(DefaultMetadataArchiver):
     translator_class = PhaidraThesisMetaDataTranslator
     base_schema_class = PhaidraThesisContainer
 
