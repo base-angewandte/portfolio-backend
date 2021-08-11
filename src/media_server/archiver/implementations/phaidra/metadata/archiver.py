@@ -8,10 +8,7 @@ import requests
 from django.conf import settings
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
-    PhaidraMetaData,
-    create_dynamic_phaidra_default_meta_data_schema,
-)
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
 
 from .... import credentials
 from ....interface.exceptions import ExternalServerError
@@ -122,7 +119,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
     @property
     def schema(self) -> 'PhaidraMetaData':
         if self._schema is None:
-            self._schema = create_dynamic_phaidra_default_meta_data_schema(self.archive_object.entry)
+            self._schema = PhaidraMetaData()
         return self._schema
 
     @property
@@ -149,9 +146,7 @@ class ThesisMetadataArchiver(DefaultMetadataArchiver):
     @property
     def schema(self) -> 'PhaidraMetaData':
         if self._schema is None:
-            self._schema = create_dynamic_phaidra_thesis_meta_data_schema(
-                self.archive_object.entry, self.concepts_mapper
-            )
+            self._schema = create_dynamic_phaidra_thesis_meta_data_schema(self.concepts_mapper)
         return self._schema
 
     @property

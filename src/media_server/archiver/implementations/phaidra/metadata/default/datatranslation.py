@@ -446,9 +446,7 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
     def _wrap_in_container(self, data: Any) -> Dict:
         return {
             'metadata': {
-                'json-ld': {
-                    'container': data,
-                }
+                'json-ld': data,
             }
         }
 

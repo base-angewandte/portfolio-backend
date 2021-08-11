@@ -834,7 +834,7 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = create_dynamic_phaidra_thesis_meta_data_schema(entry, mapping)
+        schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
         # get rid of outer layers
         schema = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested
         self.assertIsInstance(schema, PhaidraContainer)
@@ -874,7 +874,7 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = create_dynamic_phaidra_thesis_meta_data_schema(entry, mapping)
+        schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
         generated_schema = (
             schema.fields['metadata']
             .nested.fields['json_ld']
@@ -1374,7 +1374,7 @@ class AllDataTestCase(TestCase):
         entry = self.model_provider.get_entry(author=False, type_=True, thesis_type=True)
         translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        schema = create_dynamic_phaidra_thesis_meta_data_schema(entry, mapping)
+        schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
         phaidra_data = translator.translate_data(entry, mapping)
         phaidra_errors = schema.validate(phaidra_data)
         errors = translator.translate_errors(phaidra_errors, mapping)
