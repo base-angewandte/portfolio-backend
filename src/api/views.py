@@ -627,13 +627,8 @@ def user_data(request, pk=None, *args, **kwargs):
             if (
                 e.type.get('source')
                 == 'http://base.uni-ak.ac.at/portfolio/taxonomy/teaching_project_teaching_research_project'
-                and e_data.contributors is not None
-                and any(
-                    i.source == user.username
-                    and i.roles is not None
-                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/project_lead' for r in i.roles)
-                    for i in e_data.contributors
-                )
+                and e_data.project_lead is not None
+                and any(i.source == user.username for i in e_data.project_lead)
             ):
                 teaching_data.append(entry_to_data(e))
             else:
