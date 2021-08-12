@@ -61,7 +61,7 @@ def phaidra_archive_entry(entry, template_name):
 
     # if the entry is not already archived as a container, create a container object
     if not entry.archive_id:
-        res = _phaidra_create_container({'metadata': {'json-ld': {'container': container_metadata}}})
+        res = _phaidra_create_container({'metadata': {'json-ld': container_metadata}})
         if res.status_code != 200:
             logging.warning('Response:\nStatus: %s\nContent: %s', res.status_code, res.content)
             return res

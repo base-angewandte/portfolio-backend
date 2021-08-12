@@ -836,7 +836,7 @@ class DynamicPersonsTestCase(TestCase):
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
         # get rid of outer layers
-        schema = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested
+        schema = schema.fields['metadata'].nested.fields['json_ld'].nested
         self.assertIsInstance(schema, PhaidraContainer)
         self.assertIn('role_act', schema.fields)
         self.assertEqual('role:act', schema.fields['role_act'].load_from)
@@ -875,13 +875,7 @@ class DynamicPersonsTestCase(TestCase):
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
-        generated_schema = (
-            schema.fields['metadata']
-            .nested.fields['json_ld']
-            .nested.fields['container']
-            .nested.fields['role_act']
-            .nested()
-        )
+        generated_schema = schema.fields['metadata'].nested.fields['json_ld'].nested.fields['role_act'].nested()
         self.assertEqual(
             {
                 'skos:exactMatch': {
@@ -1278,10 +1272,7 @@ class ThesisSwitchArchiverTestCase(TestCase):
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
         self.assertIsInstance(
-            metadata_data_archiver.schema.fields['metadata']
-            .nested.fields['json_ld']
-            .nested.fields['container']
-            .nested,
+            metadata_data_archiver.schema.fields['metadata'].nested.fields['json_ld'].nested,
             PhaidraContainer,
         )
         self.assertIsInstance(metadata_data_archiver.translator, PhaidraMetaDataTranslator)
@@ -1296,10 +1287,7 @@ class ThesisSwitchArchiverTestCase(TestCase):
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
         self.assertIsInstance(
-            metadata_data_archiver.schema.fields['metadata']
-            .nested.fields['json_ld']
-            .nested.fields['container']
-            .nested,
+            metadata_data_archiver.schema.fields['metadata'].nested.fields['json_ld'].nested,
             PhaidraContainer,
         )
         self.assertIsInstance(metadata_data_archiver.translator, PhaidraMetaDataTranslator)
@@ -1314,10 +1302,7 @@ class ThesisSwitchArchiverTestCase(TestCase):
         self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraThesisMetaData)
         self.assertIsInstance(
-            metadata_data_archiver.schema.fields['metadata']
-            .nested.fields['json_ld']
-            .nested.fields['container']
-            .nested,
+            metadata_data_archiver.schema.fields['metadata'].nested.fields['json_ld'].nested,
             PhaidraThesisContainer,
         )
         self.assertIsInstance(metadata_data_archiver.translator, PhaidraThesisMetaDataTranslator)
@@ -1347,7 +1332,7 @@ class TitleExistsTestCase(TestCase):
             ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
         )
         archiver.validate()
-        data = archiver.data['metadata']['json-ld']['container']
+        data = archiver.data['metadata']['json-ld']
         self.assertIn('dce:title', data)
         self.assertEqual(1, data['dce:title'].__len__())
         self.assertEqual(data['dce:title'], self.expected_title)
@@ -1359,7 +1344,7 @@ class TitleExistsTestCase(TestCase):
             ArchiveObject(user=self.model_provider.user, entry=entry, media_objects={media})
         )
         archiver.validate()
-        data = archiver.data['metadata']['json-ld']['container']
+        data = archiver.data['metadata']['json-ld']
         self.assertIn('dce:title', data)
         self.assertEqual(1, data['dce:title'].__len__())
         self.assertEqual(data['dce:title'], self.expected_title)
@@ -1398,7 +1383,6 @@ class AllDataTestCase(TestCase):
         phaidra_data = archiver.data
         self.assertEqual(list(phaidra_data.keys()), ['metadata'])
         self.assertEqual(list(phaidra_data['metadata'].keys()), ['json-ld'])
-        self.assertEqual(list(phaidra_data['metadata']['json-ld'].keys()), ['container'])
 
     def test_upper_level_keys_update_default(self):
         # Create entry and pus it to archive
@@ -1416,12 +1400,6 @@ class AllDataTestCase(TestCase):
         phaidra_data = archiver.data
         self.assertEqual(list(phaidra_data.keys()), ['metadata'])
         self.assertEqual(list(phaidra_data['metadata'].keys()), ['json-ld'])
-        self.assertEqual(
-            list(phaidra_data['metadata']['json-ld'].keys()),
-            [
-                entry.archive_id,
-            ],
-        )
 
     def test_upper_level_keys_create_thesis(self):
         entry = self.model_provider.get_entry()
@@ -1432,7 +1410,6 @@ class AllDataTestCase(TestCase):
         phaidra_data = archiver.data
         self.assertEqual(list(phaidra_data.keys()), ['metadata'])
         self.assertEqual(list(phaidra_data['metadata'].keys()), ['json-ld'])
-        self.assertEqual(list(phaidra_data['metadata']['json-ld'].keys()), ['container'])
 
     def test_upper_level_keys_update_thesis(self):
         # Create entry and pus it to archive
@@ -1450,12 +1427,6 @@ class AllDataTestCase(TestCase):
         phaidra_data = archiver.data
         self.assertEqual(list(phaidra_data.keys()), ['metadata'])
         self.assertEqual(list(phaidra_data['metadata'].keys()), ['json-ld'])
-        self.assertEqual(
-            list(phaidra_data['metadata']['json-ld'].keys()),
-            [
-                entry.archive_id,
-            ],
-        )
 
 
 class DynamicChildClassDoesNotInterfereWithSuperClass(TestCase):
@@ -1465,9 +1436,9 @@ class DynamicChildClassDoesNotInterfereWithSuperClass(TestCase):
         )
         entry = Entry()
         mapping = thesis_module.BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_schema = thesis_module.create_dynamic_phaidra_thesis_meta_data_schema(entry, mapping)
+        dynamic_schema = thesis_module.create_dynamic_phaidra_thesis_meta_data_schema(mapping)
         self.assertIsInstance(
-            dynamic_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
+            dynamic_schema.fields['metadata'].nested.fields['json_ld'].nested,
             PhaidraThesisContainer,
         )
         default_module = importlib.import_module(
@@ -1475,6 +1446,6 @@ class DynamicChildClassDoesNotInterfereWithSuperClass(TestCase):
         )
         static_schema = default_module.PhaidraMetaData()
         self.assertIsInstance(
-            static_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['container'].nested,
+            static_schema.fields['metadata'].nested.fields['json_ld'].nested,
             PhaidraContainer,
         )

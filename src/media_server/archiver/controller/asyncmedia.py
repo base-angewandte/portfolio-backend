@@ -19,9 +19,8 @@ class AsyncMediaHandler:
         self.queue: django_rq.queues.Queue = django_rq.get_queue(self.queue_name)
 
     def enqueue(self):
-
         for media_object in self.media_objects:
-            if media_object.status not in (STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS):
+            if media_object.archive_status not in (STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS):
                 media_object.archive_status = STATUS_TO_BE_ARCHIVED
                 media_object.save()
                 self.queue.enqueue(

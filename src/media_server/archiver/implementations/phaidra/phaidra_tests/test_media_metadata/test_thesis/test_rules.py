@@ -46,11 +46,9 @@ class AtLeastOneAuthorTestCase(TestCase):
     expected_phaidra_error = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'role:aut': [
-                        MISSING_AUTHOR,
-                    ]
-                }
+                'role:aut': [
+                    MISSING_AUTHOR,
+                ]
             }
         }
     }
@@ -150,11 +148,9 @@ class MustHaveALanguageTestCase(TestCase):
     expected_phaidra_errors = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'dcterms:language': [
-                        MISSING_LANGUAGE,
-                    ]
-                }
+                'dcterms:language': [
+                    MISSING_LANGUAGE,
+                ]
             }
         }
     }
@@ -248,12 +244,10 @@ class MustHaveAnAdviserTestCase(TestCase):
     expected_phaidra_errors_missing_field = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'role:supervisor': {
-                        0: {
-                            'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                            'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                        }
+                'role:supervisor': {
+                    0: {
+                        'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                        'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
                     }
                 }
             }
@@ -263,11 +257,9 @@ class MustHaveAnAdviserTestCase(TestCase):
     expected_phaidra_errors_empty_field = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'role:supervisor': [
-                        MISSING_SUPERVISOR,
-                    ]
-                }
+                'role:supervisor': [
+                    MISSING_SUPERVISOR,
+                ]
             }
         }
     }
@@ -296,7 +288,7 @@ class MustHaveAnAdviserTestCase(TestCase):
 
     def test_schema_validation_fail_empty(self):
         data = PhaidraContainerGenerator.create_phaidra_container(respect_contributor_role=True)
-        data['metadata']['json-ld']['container']['role:supervisor'] = []
+        data['metadata']['json-ld']['role:supervisor'] = []
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(advisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
@@ -386,24 +378,22 @@ class EmptyThesisTestCase(TestCase):
     expected_phaidra_errors_missing_field = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'role:aut': [
-                        MISSING_AUTHOR,
-                    ],
-                    'role:supervisor': {
-                        0: {
-                            'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                            'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
-                        }
-                    },
-                    'dcterms:language': [
-                        MISSING_LANGUAGE,
-                    ],
-                    'bf:note': [
-                        MISSING_ENGLISH_ABSTRACT,
-                        MISSING_GERMAN_ABSTRACT,
-                    ],
-                }
+                'role:aut': [
+                    MISSING_AUTHOR,
+                ],
+                'role:supervisor': {
+                    0: {
+                        'schema:name': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                        'skos:exactMatch': {0: {'@value': [MISSING_DATA_FOR_REQUIRED_FIELD]}},
+                    }
+                },
+                'dcterms:language': [
+                    MISSING_LANGUAGE,
+                ],
+                'bf:note': [
+                    MISSING_ENGLISH_ABSTRACT,
+                    MISSING_GERMAN_ABSTRACT,
+                ],
             }
         }
     }
@@ -477,11 +467,9 @@ class MustHaveEnglishAbstractTestCase(TestCase):
     expected_phaidra_errors_missing_field = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'bf:note': [
-                        MISSING_ENGLISH_ABSTRACT,
-                    ]
-                }
+                'bf:note': [
+                    MISSING_ENGLISH_ABSTRACT,
+                ]
             }
         }
     }
@@ -529,11 +517,9 @@ class MustHaveGermanAbstractTestCase(TestCase):
     expected_phaidra_errors_missing_field = {
         'metadata': {
             'json-ld': {
-                'container': {
-                    'bf:note': [
-                        MISSING_GERMAN_ABSTRACT,
-                    ]
-                }
+                'bf:note': [
+                    MISSING_GERMAN_ABSTRACT,
+                ]
             }
         }
     }

@@ -452,6 +452,6 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     def _extract_from_container(self, data: Dict) -> Any:
         try:
-            return data['metadata']['json-ld']['container']
+            return data['metadata']['json-ld']
         except KeyError:
             return {}

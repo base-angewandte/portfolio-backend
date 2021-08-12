@@ -1,4 +1,5 @@
 import json
+import urllib
 
 import requests
 from rest_framework.exceptions import APIException
@@ -115,6 +116,7 @@ class MediaArchiver(AbstractArchiver):
             },
             auth=(credentials.get('USER'), credentials.get('PWD')),
         )
+
         return response
 
     def _handle_media_push_response(self, media_push_response: requests.Response) -> str:
@@ -132,7 +134,7 @@ class MediaArchiver(AbstractArchiver):
             raise PhaidraServerError(f'Response:\nStatus: {response.status_code}\nContent: {response.content}')
 
     def _update_media(self, pid: str) -> None:
-        self.media_object.archive_URI = uris.get('IDENTIFIER_BASE') + pid
+        self.media_object.archive_URI = urllib.parse.urljoin(uris.get('IDENTIFIER_BASE'), pid)
         self.media_object.archive_id = pid
         self.media_object.archive_status = STATUS_ARCHIVED
         self.media_object.save()

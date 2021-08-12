@@ -22,7 +22,9 @@ class DefaultValidationEndpointTestCase(APITestCase):
         self.model_provider = ModelProvider()
         self.client_provider = ClientProvider(self.model_provider)
 
-    def _create_media(self, title: bool = True, type_: bool = True, mime_type: bool = True, language=True) -> 'Media':
+    def _create_media(
+        self, title: bool = True, type_: bool = True, mime_type: Optional[str] = 'text/plain', language=True
+    ) -> 'Media':
         self.entry = self.model_provider.get_entry(title=title, type_=type_, german_language=language)
         self.media = self.model_provider.get_media(entry=self.entry, mime_type=mime_type)
         self.media.file = SimpleUploadedFile('example.txt', b'example text')
@@ -30,7 +32,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
         return self.media
 
     def get_media_primary_key_response(
-        self, title: bool = True, type_: bool = True, mime_type: bool = True
+        self, title: bool = True, type_: bool = True, mime_type: Optional[str] = 'text/plain'
     ) -> 'Response':
         self.media = self._create_media(title, type_, mime_type)
         return self.client_provider.get_media_primary_key_response(media=self.media, only_validate=True)
@@ -52,7 +54,7 @@ class DefaultValidationEndpointTestCase(APITestCase):
     def test_missing_every_mandatory_field(self):
         response = self.get_media_primary_key_response(
             title=False,
-            mime_type=False,
+            mime_type=None,
         )
         self.assertEqual(response.status_code, 200)
 

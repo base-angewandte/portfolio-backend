@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from rest_framework.test import APIClient
 
@@ -144,7 +144,7 @@ class PhaidraContainerGenerator:
                 phaidra_container['bf:note'] = []
             phaidra_container['bf:note'].append(cls.german_abstract)
 
-        return {'metadata': {'json-ld': {'container': phaidra_container}}}
+        return {'metadata': {'json-ld': phaidra_container}}
 
 
 class ModelProvider:
@@ -154,18 +154,15 @@ class ModelProvider:
         self.user = User.objects.create_user(username=self.username, password=self.peeword)
 
     def get_media(
-        self,
-        entry: 'Entry',
-        license_: bool = True,
-        mime_type: bool = True,
+        self, entry: 'Entry', license_: bool = True, mime_type: Optional[str] = 'text/plain', file_type='pdf'
     ) -> 'Media':
         media = Media(
             owner=self.user,
-            file=SimpleUploadedFile('example.txt', b'example text'),
+            file=SimpleUploadedFile(f'example.{file_type}', b'example file'),
             entry_id=entry.id,
         )
         if mime_type:
-            media.mime_type = 'text/plain'
+            media.mime_type = mime_type
         if license_:
             media.license = {
                 'label': {'en': 'Creative Commons Attribution 4.0'},
