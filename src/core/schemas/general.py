@@ -371,6 +371,29 @@ def get_published_in_field(additional_attributes=None):
     )
 
 
+def get_status_field(additional_attributes=None):
+    if additional_attributes is None:
+        additional_attributes = {}
+    label = get_preflabel_lazy('status')
+    return fields.Nested(
+        SourceMultilingualLabelSchema,
+        title=label,
+        additionalProperties=False,
+        **{
+            'x-attrs': {
+                'field_format': 'half',
+                'field_type': 'chips',
+                'set_label_language': True,
+                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'statuses'}),
+                'type': 'object',
+                'prefetch': ['source'],
+                'placeholder': placeholder_lazy(label),
+                **additional_attributes,
+            }
+        },
+    )
+
+
 def get_url_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}

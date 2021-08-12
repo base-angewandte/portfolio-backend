@@ -2,6 +2,9 @@
 
 ## unreleased
 
+### Added
+- Added status field to ResearchProjectSchema
+
 ### Changed
 - New API lists logic
 - Pull docker images before build
