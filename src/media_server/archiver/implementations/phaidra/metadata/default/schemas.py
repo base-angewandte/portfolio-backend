@@ -95,6 +95,7 @@ class PhaidraContainer(Schema):
 
     edm_hasType = PortfolioNestedField(
         SkosConceptSchema,
+        required=False,
         many=True,
         load_from='edm:hasType',
         dump_to='edm:hasType',

@@ -58,8 +58,8 @@ class ArchiveSecondAsset(APITestCase):
     """> If an entry has already been archived successfully (e.g. "View in
     Phaidra" button is shown at the top),
 
-        > attempting to push to archive a second attachment from the same entry results in the following response from the
-        > archive_assets API:
+        > attempting to push to archive a second attachment from the same entry results in the following response from
+        > the archive_assets API:
     ```RuntimeError at /api/v1/archive_assets/media/65iBsTkazHjuoETmb9ayLV/
     Phaidra returned with response <Response [404]> and content b'Not found\n'```
     """

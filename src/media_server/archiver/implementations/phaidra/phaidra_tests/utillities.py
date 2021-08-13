@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Set
 
 from rest_framework.test import APIClient
 
@@ -329,6 +329,13 @@ class ClientProvider:
         action = 'validate' if only_validate else 'archive'
         return self.client.get(
             f'/api/v1/{action}_assets/media/{media.id}/',
+        )
+
+    def get_multiple_medias_primary_key_response(self, medias: Set['Media'], only_validate: bool = True) -> 'Response':
+        action = 'validate' if only_validate else 'archive'
+        media_keys = ','.join([media.id for media in medias])
+        return self.client.get(
+            f'/api/v1/{action}_assets/media/{media_keys}/',
         )
 
     def __del__(self):

@@ -22,6 +22,7 @@ class Entry(AbstractBaseModel):
         super().__init__(*args, **kwargs)
         self.update_archive = update_archive
 
+    update_archive = True
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)

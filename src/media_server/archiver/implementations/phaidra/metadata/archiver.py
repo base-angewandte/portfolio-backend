@@ -52,7 +52,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         return self._handle_phaidra_response(response)
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
-        return self.is_update()
+        return self.push_to_archive()
 
     def _create_phaidra_url(self, archive_id: Optional[str] = None):
         if archive_id is None:

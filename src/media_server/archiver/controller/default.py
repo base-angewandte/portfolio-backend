@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException, NotFound, PermissionDenied, 
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
@@ -63,7 +63,8 @@ class DefaultArchiveController:
     @classmethod
     def from_entry(cls, entry: 'Entry') -> 'DefaultArchiveController':
         return cls(
-            user=entry.owner, media_primary_keys={media.id for media in Media.objects.all().filter(entry_id=entry.id)}
+            user=entry.owner,
+            media_primary_keys={media.id for media in Media.objects.all().filter(entry_id=entry.id)},
         )
 
     def push_to_archive(self) -> 'SuccessfulArchiveResponse':
@@ -155,7 +156,7 @@ class DefaultArchiveController:
         return self.archiver.update_archive()
 
 
-@receiver(pre_save, sender=Entry)
+@receiver(post_save, sender=Entry)
 def entry_pre_save(sender: Type['Entry'], instance: 'Entry', update_fields, *args, **kwargs):
     if instance.archive_id and instance.update_archive:
         DefaultArchiveController.from_entry(instance).update_archive()
