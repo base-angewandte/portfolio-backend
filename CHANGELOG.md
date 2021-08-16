@@ -1,6 +1,6 @@
 # Changelog
 
-## unreleased
+## 1.1.2
 
 ### Added
 - Added status field to ResearchProjectSchema
