@@ -1,5 +1,6 @@
 import json
 import urllib
+from datetime import datetime
 
 import requests
 from rest_framework.exceptions import APIException
@@ -108,6 +109,9 @@ class MediaArchiver(AbstractArchiver):
     def _push_to_archive(self) -> requests.Response:
         media_type = self.media_object.type or 'd'  # document as default uri
         uri = uris.get(media_type)
+        t = datetime.now().isoformat()
+        with open('/home/oeaw/Desktop/log.txt', 'a') as file:
+            file.write(json.dumps({'time': t, 'data': self.data}))
         response = requests.post(
             uri,
             files={

@@ -137,7 +137,7 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
         :param model:
         :return:
         """
-        if model.type is None:
+        if not model.type:
             return []
         return [
             {

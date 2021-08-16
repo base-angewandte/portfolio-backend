@@ -170,7 +170,6 @@ class MetaDataTitle(TestCase):
 
 
 class EdmHastypeTestCase(TestCase):
-    """Nothing in phaidra checks, but in legacy templates."""
 
     _entry: Optional['Entry'] = None
 
@@ -301,6 +300,65 @@ class EdmHastypeTestCase(TestCase):
     def test_empty_input_data(self):
         entry = Entry()
         self.assertEqual(EdmHasTypeTranslator().translate_data(entry), [])
+
+
+class MissingTypeTestCase(TestCase):
+    """Type is not mandatory."""
+
+    _entry: Optional['Entry'] = None
+
+    expected_translated_data = {
+        'metadata': {
+            'json-ld': {
+                'dcterms:type': [
+                    {
+                        '@type': 'skos:Concept',
+                        '' 'skos:exactMatch': ['https://pid.phaidra.org/vocabulary/8MY0-BQDQ'],
+                        'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
+                    }
+                ],
+                'edm:hasType': [],
+                'dce:title': [
+                    {
+                        '@type': 'bf:Title',
+                        'bf:mainTitle': [{'@value': 'Panda Shampoo Usage In Northern Iraq', '@language': 'und'}],
+                    }
+                ],
+                'dcterms:language': [],
+                'dcterms:subject': [],
+                'rdau:P60048': [],
+                'dce:format': [],
+                'bf:note': [],
+                'role:edt': [],
+                'role:aut': [],
+                'role:pbl': [],
+            }
+        }
+    }
+
+    @property
+    def entry(self) -> Entry:
+        """To make sure _example data is correct!
+
+        :return:
+        """
+        if self._entry is None:
+            self._entry = Entry(
+                title='Panda Shampoo Usage In Northern Iraq',
+                owner=User.objects.create_user(username='Quatschenstein', email='port@folio.ac.at'),
+            )
+            self._entry.save()
+        return self._entry
+
+    def test_translate_data(self):
+        entry = self.entry
+        translated_data = PhaidraMetaDataTranslator().translate_data(entry)
+        self.assertEqual(translated_data, self.expected_translated_data)
+
+    def test_validate_data(self):
+        schema = PhaidraMetaData()
+        validation = schema.validate(self.expected_translated_data)
+        self.assertEqual(validation, {})
 
 
 class GenericSkosConceptTestCase(TestCase):
