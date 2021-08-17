@@ -11,6 +11,7 @@ from media_server.archiver.factory.archives import Archives
 from media_server.archiver.implementations.phaidra.exceptions import PhaidraServerError
 from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
+from media_server.archiver.implementations.phaidra.media.uris import create_phaidra_object_create_uri
 from media_server.archiver.interface.abstractarchiver import AbstractArchiver
 from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.interface.responses import ModificationType, SuccessfulArchiveResponse
@@ -106,10 +107,7 @@ class MediaArchiver(AbstractArchiver):
         raise NotImplementedError()
 
     def _push_to_archive(self) -> requests.Response:
-        if self.media_object.type in uris:
-            uri = uris[self.media_object.type]
-        else:
-            uri = uris['BASE_URI'] + 'unknown/create'
+        uri = create_phaidra_object_create_uri(self.media_object.mime_type)
         response = requests.post(
             uri,
             files={
