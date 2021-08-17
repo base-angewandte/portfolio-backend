@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess  # nosec
+import typing
 
 import django_rq
 import magic
@@ -24,6 +25,9 @@ from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
+
+if typing.TYPE_CHECKING:
+    from django.db.models.query import QuerySet
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
 STATUS_NOT_CONVERTED = 0
@@ -341,46 +345,15 @@ def has_entry_media(entry_id):
 
 
 def get_media_for_entry(entry_id, flat=True, published=None):
-
     if flat:
-
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
-
-    ret = []
-
-    exclude = []
-
-    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
-
+    query: 'QuerySet' = Media.objects.filter(
+        entry_id=entry_id,
+    )
     if published is not None:
-
         query = query.filter(published=published)
-
-    for m in query:
-
-        exclude.append(m.pk)
-
-        data = m.get_data()
-
-        data.update({'response_code': 200})
-
-        ret.append(data)
-
-    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
-
-    if published is not None:
-
-        query = query.filter(published=published)
-
-    for m in query:
-
-        data = m.get_minimal_data()
-
-        data.update({'response_code': 202})
-
-        ret.append(data)
-
-    return ret
+    media: 'Media'
+    return [media.get_data() for media in query]
 
 
 def get_image_for_entry(entry_id):
