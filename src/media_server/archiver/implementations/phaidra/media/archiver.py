@@ -106,8 +106,10 @@ class MediaArchiver(AbstractArchiver):
         raise NotImplementedError()
 
     def _push_to_archive(self) -> requests.Response:
-        media_type = self.media_object.type or 'd'  # document as default uri
-        uri = uris.get(media_type)
+        if self.media_object.type in uris:
+            uri = uris[self.media_object.type]
+        else:
+            uri = uris['BASE_URI'] + 'unknown/create'
         response = requests.post(
             uri,
             files={
