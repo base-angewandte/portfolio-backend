@@ -1,8 +1,9 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 
 import marshmallow
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import AbstractDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import ConceptMapper
 from media_server.models import Media
 
 
@@ -76,10 +77,22 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
         )
 
     def _get_licenses(self, media: Media):
-        return (
+        phaidra_licenses = (
             [
                 media.license['source'],
             ]
             if media.license
             else []
         )
+
+        # one phaidra license can have multiple licenses in skosmos
+        # but return a flat list
+        return [
+            translated_license
+            for phaidra_license in phaidra_licenses
+            for translated_license in self._translate_license(phaidra_license)
+        ]
+
+    def _translate_license(self, phaidra_license: str) -> Set[str]:
+        concept_mapper = ConceptMapper.from_base_uri(phaidra_license)
+        return concept_mapper.owl_sameAs

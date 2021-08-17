@@ -19,7 +19,7 @@ class PhaidraMediaDataTestCase(TestCase):
     phaidra_media_data_validator = PhaidraMediaData()
     example_mime_type = 'audio/aac'
     example_file = 'some_file.aac'
-    example_license = {'source': 'not-important'}
+    example_license = {'source': 'http://base.uni-ak.ac.at/portfolio/licenses/CC-BY-SA-4.0'}
 
     def get_media_object(self, has_mime_type=True, has_file=True, has_license=True):
         kwargs = {
@@ -39,7 +39,9 @@ class PhaidraMediaDataTestCase(TestCase):
                 'metadata': {
                     'json-ld': {
                         'ebucore:filename': [self.example_file],
-                        'edm:rights': [self.example_license['source']],
+                        'edm:rights': [
+                            'http://creativecommons.org/licenses/by-sa/4.0/',
+                        ],
                     }
                 }
             },
@@ -63,7 +65,9 @@ class PhaidraMediaDataTestCase(TestCase):
                 'metadata': {
                     'json-ld': {
                         'ebucore:filename': [self.example_file],
-                        'edm:rights': [self.example_license['source']],
+                        'edm:rights': [
+                            'http://creativecommons.org/licenses/by-sa/4.0/',
+                        ],
                     }
                 }
             },
@@ -78,7 +82,9 @@ class PhaidraMediaDataTestCase(TestCase):
                 'metadata': {
                     'json-ld': {
                         'ebucore:filename': [],
-                        'edm:rights': [self.example_license['source']],
+                        'edm:rights': [
+                            'http://creativecommons.org/licenses/by-sa/4.0/',
+                        ],
                     }
                 }
             },
