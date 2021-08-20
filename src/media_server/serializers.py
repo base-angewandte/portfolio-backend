@@ -9,7 +9,7 @@ from .validators import validate_license as vl
 
 
 def validate_license(value):
-    if value:
+    if value is not None:
         try:
             vl(value)
         except ValidationError as e:
@@ -21,7 +21,7 @@ class MediaCreateSerializer(serializers.Serializer):
     file = serializers.FileField()
     entry = serializers.CharField()
     published = serializers.BooleanField()
-    license = serializers.JSONField(required=False)
+    license = serializers.JSONField()
 
     def validate_entry(self, value):
         try:

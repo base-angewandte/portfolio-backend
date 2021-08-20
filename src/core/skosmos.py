@@ -176,6 +176,10 @@ def get_roles():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/role')
 
 
+def get_statuses():
+    return fetch_data('http://base.uni-ak.ac.at/vocabulary/collection_portfolio_project_status')
+
+
 def get_software_licenses():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses')
 
@@ -227,7 +231,7 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
         except RequestException:
             pass
 
-    label = label or get_preflabel(concept, project, graph)
+    label = label or get_preflabel(concept, project, graph, language)
 
     if label:
         cache.set(cache_key, label, CACHE_TIME)

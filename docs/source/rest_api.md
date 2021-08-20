@@ -11,7 +11,7 @@ An access token is needed which has to be used as bearer authentication token in
 **Header Format:** Authorization Bearer <access_token>
 
 ```{note}
-The access token can be created via management command: `python manage.py createapiuser`
+The access token can be created via management command: `python manage.py createapiuser <user_name>`
 ```
 
 ## User Data

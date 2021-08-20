@@ -17,7 +17,11 @@ from core.skosmos import autosuggest
 logger = logging.getLogger(__name__)
 
 fieldname_paramter = openapi.Parameter(
-    'fieldname', openapi.IN_PATH, required=True, type=openapi.TYPE_STRING, enum=list(settings.ACTIVE_SOURCES.keys()),
+    'fieldname',
+    openapi.IN_PATH,
+    required=True,
+    type=openapi.TYPE_STRING,
+    enum=list(settings.ACTIVE_SOURCES.keys()),
 )
 
 

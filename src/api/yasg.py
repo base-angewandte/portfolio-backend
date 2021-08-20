@@ -13,7 +13,10 @@ from django.conf import settings
 from core.schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
 
 authorization_header_paramter = openapi.Parameter(
-    'Authorization', openapi.IN_HEADER, required=True, type=openapi.TYPE_STRING,
+    'Authorization',
+    openapi.IN_HEADER,
+    required=True,
+    type=openapi.TYPE_STRING,
 )
 
 language_header_parameter = openapi.Parameter(
@@ -51,7 +54,9 @@ class JSONFieldInspector(FieldInspector):
                     type=openapi.TYPE_ARRAY,
                     items=get_texts_jsonschema()['items'],
                 )
-            return SwaggerType(type=openapi.TYPE_OBJECT,)
+            return SwaggerType(
+                type=openapi.TYPE_OBJECT,
+            )
 
         return NotHandled
 
