@@ -246,6 +246,8 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         return translated
 
     def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
+        if 'data' not in text:
+            return []
         text_data = text['data']
         return [
             self._create_value_language_object(text_datum)
