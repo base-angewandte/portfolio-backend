@@ -3,7 +3,9 @@ export
 
 
 start:
-	docker-compose up -d --build
+	docker-compose pull
+	docker-compose build --no-cache --pull
+	docker-compose up -d
 
 stop:
 	docker-compose down
@@ -30,7 +32,7 @@ cleanup:
 	docker-compose exec portfolio-django bash -c "python manage.py clearsessions && python manage.py django_cas_ng_clean_sessions"
 
 build-portfolio:
-	docker-compose build portfolio-django
+	docker-compose build --pull portfolio-django
 
 restart-gunicorn:
 	docker-compose exec portfolio-django bash -c 'kill -HUP `cat /var/run/django.pid`'
@@ -63,7 +65,7 @@ clear-entries:
 
 build-docs:
 	docker build -t portfolio-docs ./docker/docs
-	docker run -it -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
+	docker run -it --rm -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
 
 pip-compile:
 	pip-compile src/requirements.in

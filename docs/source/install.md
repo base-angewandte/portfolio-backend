@@ -91,9 +91,7 @@ subsections.
 
     ```bash
     pip install pip-tools
-    cd src
-    pip-sync requirements-dev.txt
-    cd ..
+    pip-sync src/requirements-dev.txt
     ```
 
 * Install pre-commit hooks:
@@ -139,6 +137,19 @@ subsections.
     python manage.py runserver 8200
     ```
 
+````{note}
+If you are working **on a system with non-US/UK locales** you might use a
+number format that uses `,` as decimal separator rather than `.`. In that
+case **audio and video conversions will fail** due to an error when `printf` is
+used to format the duration. This should not affect the containerised dev
+and production setup. To work around this, set the `LC_NUMERIC` environment
+variable to `en_US.UTF-8`, e.g. by starting the dev server with the following
+command:
+
+```bash
+LC_NUMERIC="en_US.UTF-8" python manage.py runserver 8200
+```
+````
 
 ## Production
 

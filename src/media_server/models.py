@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import subprocess  # nosec
-import typing
 
 import django_rq
 import magic
@@ -25,9 +24,6 @@ from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
-
-if typing.TYPE_CHECKING:
-    from django.db.models.query import QuerySet
 
 SCRIPTS_BASE_DIR = os.path.join(settings.BASE_DIR, MediaServerConfig.name, 'scripts')
 STATUS_NOT_CONVERTED = 0
@@ -113,7 +109,7 @@ logger = logging.getLogger(__name__)
 
 
 def user_directory_path(instance, filename):
-    return '{}/{}'.format(user_hash(instance.owner.username), filename)
+    return f'{user_hash(instance.owner.username)}/{filename}'
 
 
 class Media(models.Model):
@@ -180,7 +176,7 @@ class Media(models.Model):
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception('Error while converting {}'.format(dict(TYPE_CHOICES).get(self.type)))
+            logger.exception(f'Error while converting {dict(TYPE_CHOICES).get(self.type)}')
             self.status = STATUS_ERROR
             self.save()
 
@@ -207,17 +203,21 @@ class Media(models.Model):
                     ret.append({f'{k}w': self.get_url(v)})
         return ret
 
-    def get_data(self):
+    def get_minimal_data(self):
         data = {
             'id': self.pk,
             'type': self.type,
             'original': self.file.url,
-            'metadata': self.metadata,
             'published': self.published,
             'license': self.license,
             'archive_id': self.archive_id,
             'archive_URI': self.archive_URI,
         }
+        return data
+
+    def get_data(self):
+        data = self.get_minimal_data()
+        data['metadata'] = self.metadata
         if self.type == AUDIO_TYPE:
             data.update({'mp3': self.get_url('listen.mp3')})
         elif self.type == DOCUMENT_TYPE:
@@ -231,19 +231,6 @@ class Media(models.Model):
                     'playlist': self.get_url('playlist.m3u8'),
                 }
             )
-
-        return data
-
-    def get_minimal_data(self):
-
-        data = {
-            'id': self.pk,
-            'type': self.type,
-            'original': self.file.url,
-            'metadata': self.metadata,
-            'published': self.published,
-            'license': self.license,
-        }
 
         return data
 
@@ -347,13 +334,30 @@ def has_entry_media(entry_id):
 def get_media_for_entry(entry_id, flat=True, published=None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
-    query: 'QuerySet' = Media.objects.filter(
-        entry_id=entry_id,
-    )
+
+    ret = []
+    exclude = []
+
+    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
     if published is not None:
         query = query.filter(published=published)
-    media: 'Media'
-    return [media.get_data() for media in query]
+
+    for m in query:
+        exclude.append(m.pk)
+        data = m.get_data()
+        data.update({'response_code': 200})
+        ret.append(data)
+
+    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
+    if published is not None:
+        query = query.filter(published=published)
+
+    for m in query:
+        data = m.get_minimal_data()
+        data.update({'response_code': 202})
+        ret.append(data)
+
+    return ret
 
 
 def get_image_for_entry(entry_id):
