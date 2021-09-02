@@ -41,13 +41,17 @@ restart-rq:
 update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
-	docker-compose up -d --build \
+	docker-compose pull --ignore-pull-failures
+	docker-compose build --no-cache --pull
+	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
 		portfolio-lool
 
 start-dev-docker:
-	docker-compose up -d --build \
+	docker-compose pull --ignore-pull-failures
+	docker-compose build --no-cache --pull
+	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
 		portfolio-lool \
