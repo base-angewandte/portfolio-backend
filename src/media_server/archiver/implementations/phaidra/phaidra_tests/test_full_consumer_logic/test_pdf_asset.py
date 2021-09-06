@@ -293,6 +293,7 @@ class UpdateEntryWithOnePdfFile(TestCase):
         cls.entry = Entry.objects.get(pk=cls.entry.id)
         cls.entry.title = cls.new_title
         cls.entry.save()
+        worker.work(burst=True)  # wait until update is done
         cls.entry.refresh_from_db()
         cls.media.refresh_from_db()
         archiver = ThesisMetadataArchiver(

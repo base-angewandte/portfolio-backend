@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional, Set, Type
 
+import django_rq
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
 
 from django.contrib.auth.models import User
@@ -10,8 +11,10 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry
 from media_server.archiver import messages
+from portfolio import settings
 
 from ...models import Media
+from ..choices import STATUS_ARCHIVE_IN_UPDATE
 from ..factory.default import ArchiverFactory
 from ..interface.archiveobject import ArchiveObject
 
@@ -156,7 +159,18 @@ class DefaultArchiveController:
         return self.archiver.update_archive()
 
 
+def update_entry_archival(entry: 'Entry'):
+    DefaultArchiveController.from_entry(entry).update_archive()
+
+
 @receiver(post_save, sender=Entry)
 def entry_pre_save(sender: Type['Entry'], instance: 'Entry', update_fields, *args, **kwargs):
     if instance.archive_id and instance.update_archive:
-        DefaultArchiveController.from_entry(instance).update_archive()
+        instance.archive_status = STATUS_ARCHIVE_IN_UPDATE
+        queue: django_rq.queues.Queue = django_rq.get_queue('high')
+        queue.enqueue(
+            update_entry_archival,
+            instance,
+            job_id=instance.pk,
+            failure_ttl=settings.RQ_FAILURE_TTL,
+        )

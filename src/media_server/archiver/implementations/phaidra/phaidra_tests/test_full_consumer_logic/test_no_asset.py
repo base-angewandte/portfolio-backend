@@ -5,6 +5,7 @@ worth to test. However it can not be done with the api, since no assets
 are not allowed there and so this test file will use the internal API.
 """
 
+import django_rq
 import requests
 
 from django.core.validators import URLValidator
@@ -98,6 +99,8 @@ class UpdateEntryTestCase(TestCase):
             ArchiveObject(entry=self.entry, media_objects=set(), user=model_provider.user)
         )
         thesis_archiver.push_to_archive()
+        worker = django_rq.get_worker('high')
+        worker.work(burst=True)
         self.entry.refresh_from_db()
         self.metadata = thesis_archiver.data
 
