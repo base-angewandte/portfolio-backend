@@ -166,7 +166,10 @@ def update_entry_archival(entry: 'Entry'):
 @receiver(post_save, sender=Entry)
 def entry_pre_save(sender: Type['Entry'], instance: 'Entry', update_fields, *args, **kwargs):
     if instance.archive_id and instance.update_archive:
+        # validate synchronous
+        DefaultArchiveController.from_entry(instance).validate()
         instance.archive_status = STATUS_ARCHIVE_IN_UPDATE
+        # update asynchronous
         queue: django_rq.queues.Queue = django_rq.get_queue('high')
         queue.enqueue(
             update_entry_archival,
