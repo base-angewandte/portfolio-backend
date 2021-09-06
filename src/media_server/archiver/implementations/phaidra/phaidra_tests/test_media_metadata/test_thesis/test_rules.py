@@ -280,7 +280,7 @@ class MustHaveAnAdviserTestCase(TestCase):
     def test_schema_validation_fail_missing(self):
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_contributor_role=False)
         # Need dynamic schema here (!)
-        entry = self.model_provider.get_entry(advisor=False)
+        entry = self.model_provider.get_entry(supervisor=False)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(bidirectional_concepts_mapper=mapping)
         errors = dynamic_schema.validate(invalid_data)
@@ -290,7 +290,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         data = PhaidraContainerGenerator.create_phaidra_container(respect_contributor_role=True)
         data['metadata']['json-ld']['role:supervisor'] = []
         # Need dynamic schema here (!)
-        entry = self.model_provider.get_entry(advisor=True)
+        entry = self.model_provider.get_entry(supervisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(bidirectional_concepts_mapper=mapping)
         errors = dynamic_schema.validate(data)
@@ -299,7 +299,7 @@ class MustHaveAnAdviserTestCase(TestCase):
     def test_schema_validation(self):
         valid_data = PhaidraContainerGenerator.create_phaidra_container(respect_contributor_role=True)
         # Need dynamic schema here (!)
-        entry = self.model_provider.get_entry(advisor=True)
+        entry = self.model_provider.get_entry(supervisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(bidirectional_concepts_mapper=mapping)
         errors = dynamic_schema.validate(valid_data)
@@ -308,7 +308,7 @@ class MustHaveAnAdviserTestCase(TestCase):
     def test_error_transformation_missing_field(self):
         translator = PhaidraThesisMetaDataTranslator()
         # Need to test dynamic here
-        entry = self.model_provider.get_entry(advisor=True)
+        entry = self.model_provider.get_entry(supervisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
         self.assertEqual(
@@ -319,13 +319,13 @@ class MustHaveAnAdviserTestCase(TestCase):
     def test_error_transformation_empty_field(self):
         translator = PhaidraThesisMetaDataTranslator()
         # Need to test dynamic here
-        entry = self.model_provider.get_entry(advisor=True)
+        entry = self.model_provider.get_entry(supervisor=True)
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_empty_field, mapping)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
-        media = self.model_provider.get_media(self.model_provider.get_entry(advisor=False))
+        media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=False))
         controller = DefaultArchiveController(
             media.owner,
             {
@@ -340,7 +340,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         )
 
     def test_implementation(self):
-        media = self.model_provider.get_media(self.model_provider.get_entry(advisor=True))
+        media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=True))
         controller = DefaultArchiveController(
             media.owner,
             {
@@ -350,7 +350,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertIsNone(controller.validate())
 
     def test_endpoint_validation_fail(self):
-        media = self.model_provider.get_media(self.model_provider.get_entry(advisor=False))
+        media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=False))
         response = self.client_provider.get_media_primary_key_response(media)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -365,7 +365,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         )
 
     def test_endpoint(self):
-        media = self.model_provider.get_media(self.model_provider.get_entry(advisor=True))
+        media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=True))
         response = self.client_provider.get_media_primary_key_response(media)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 'Asset validation successful')
@@ -429,7 +429,7 @@ class EmptyThesisTestCase(TestCase):
         )
         # Need dynamic schema here (!)
         entry = self.model_provider.get_entry(
-            advisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
+            supervisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         dynamic_schema = create_dynamic_phaidra_thesis_meta_data_schema(bidirectional_concepts_mapper=mapping)
@@ -440,7 +440,7 @@ class EmptyThesisTestCase(TestCase):
         translator = PhaidraThesisMetaDataTranslator()
         # Need to test dynamic here
         entry = self.model_provider.get_entry(
-            advisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
+            supervisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
@@ -452,7 +452,7 @@ class EmptyThesisTestCase(TestCase):
     def test_endpoint_validation_fail(self):
         media = self.model_provider.get_media(
             self.model_provider.get_entry(
-                advisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
+                supervisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
             )
         )
         response = self.client_provider.get_media_primary_key_response(media)

@@ -178,7 +178,7 @@ class ModelProvider:
         type_: bool = True,
         author: bool = True,
         german_language: bool = True,
-        advisor: bool = True,
+        supervisor: bool = True,
         english_abstract: bool = True,
         german_abstract: bool = True,
         french_abstract: bool = False,
@@ -191,7 +191,7 @@ class ModelProvider:
         :param type_: Mandatory field
         :param author: Mandatory field
         :param german_language: Mandatory field
-        :param advisor: Mandatory field
+        :param supervisor: Mandatory field
         :param english_abstract: Mandatory field
         :param german_abstract: Mandatory field
         :param french_abstract: Obligatory field
@@ -241,7 +241,7 @@ class ModelProvider:
                 }
             ]
 
-        if advisor:
+        if supervisor:
             if 'contributors' not in entry.data:
                 entry.data['contributors'] = []
 
@@ -250,8 +250,8 @@ class ModelProvider:
                     'label': 'Universität für Angewandte Kunst Wien',
                     'roles': [
                         {
-                            'label': {'de': 'Betreuer', 'en': 'advisor'},
-                            'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisor',
+                            'label': {'de': 'Supervisor', 'en': 'supervisor'},
+                            'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
                         }
                     ],
                 },

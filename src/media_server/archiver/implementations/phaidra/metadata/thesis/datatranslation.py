@@ -57,7 +57,7 @@ class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
 
 class AdvisorSupervisorTranslator(GenericStaticPersonTranslator):
     def __init__(self):
-        super().__init__(None, 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisor')
+        super().__init__(None, 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor')
 
     def translate_errors(self, errors: Union[Dict, List]) -> Dict:
         """Empty or missing: Always send the same message.
