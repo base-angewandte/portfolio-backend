@@ -224,6 +224,7 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
                 'skos:prefLabel': _create_value_language_objects_from_label_dict(datum),
             }
             for datum in data_of_interest
+            if 'source' in datum
         ]
 
 
