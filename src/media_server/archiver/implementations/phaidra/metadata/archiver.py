@@ -13,6 +13,7 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from .... import credentials
 from ....interface.exceptions import ExternalServerError
 from ....interface.responses import ModificationType, SuccessfulArchiveResponse
+from ..uris import create_phaidra_update_url
 from .mappings.contributormapping import BidirectionalConceptsMapper
 from .thesis.datatranslation import PhaidraThesisMetaDataTranslator
 from .thesis.schemas import PhaidraThesisContainer, create_dynamic_phaidra_thesis_meta_data_schema
@@ -47,18 +48,12 @@ class DefaultMetadataArchiver(AbstractArchiver):
         if self.data is None:
             self.validate()
         self.is_update = self.archive_object.entry.archive_id is not None
-        url = self._create_phaidra_url(self.archive_object.entry.archive_id)
+        url = create_phaidra_update_url(self.archive_object.entry.archive_id)
         response = self._post_to_phaidra(url, self.data)
         return self._handle_phaidra_response(response)
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
         return self.push_to_archive()
-
-    def _create_phaidra_url(self, archive_id: Optional[str] = None):
-        if archive_id is None:
-            return settings.ARCHIVE_URIS['CREATE_URI']
-        base_uri = settings.ARCHIVE_URIS['BASE_URI']
-        return urljoin(base_uri, f'object/{archive_id}/metadata')
 
     def _post_to_phaidra(self, url, data: dict):
         """

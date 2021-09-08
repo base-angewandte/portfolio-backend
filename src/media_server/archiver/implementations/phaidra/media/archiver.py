@@ -11,14 +11,17 @@ from media_server.archiver.factory.archives import Archives
 from media_server.archiver.implementations.phaidra.exceptions import PhaidraServerError
 from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
-from media_server.archiver.implementations.phaidra.media.uris import create_phaidra_object_create_uri
+from media_server.archiver.implementations.phaidra.uris import (
+    create_phaidra_object_create_uri,
+    create_phaidra_update_url,
+)
 from media_server.archiver.interface.abstractarchiver import AbstractArchiver
 from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.interface.responses import ModificationType, SuccessfulArchiveResponse
 from media_server.models import Media
 
 
-def _push_to_archive_job(media_object: Media):
+def _push_to_archive_job(media_object: 'Media'):
     entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
     if not entry_object.archive_id:
         raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
@@ -33,6 +36,27 @@ def _push_to_archive_job(media_object: Media):
     )
     media_archiver.validate()
     media_archiver.push_to_archive()
+
+
+def _update_archive_job(media_object: 'Media'):
+    entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
+    if not entry_object.archive_id:
+        raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
+    print('++++++++++++++++++++++++++++++++++++++')
+    print(f'{media_object.archive_id=}')
+    print(f'{media_object.license=}')
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    media_archiver = MediaArchiver(
+        archive_object=ArchiveObject(
+            user=entry_object.owner,
+            entry=entry_object,
+            media_objects={
+                media_object,
+            },
+        )
+    )
+    media_archiver.validate()
+    media_archiver.update_archive()
 
 
 class MediaArchiveHandler(AbstractArchiver):
@@ -51,7 +75,16 @@ class MediaArchiveHandler(AbstractArchiver):
         )
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
-        raise NotImplementedError()
+        async_media_handler = AsyncMediaHandler(
+            media_objects=self.archive_object.media_objects, job=_update_archive_job
+        )
+        async_media_handler.enqueue()
+        file_names = [media_object.file.name for media_object in self.archive_object.media_objects]
+        return SuccessfulArchiveResponse(
+            ModificationType.updated,
+            object_description='media ' + ', '.join(file_names),
+            service=Archives.PHAIDRA.name,
+        )
 
     def validate(self) -> None:
         """
@@ -76,7 +109,7 @@ class MediaArchiver(AbstractArchiver):
 
     def __init__(self, archive_object: ArchiveObject):
         super().__init__(archive_object)
-        self.media_object = archive_object.media_objects.pop()
+        self.media_object = next(iter(archive_object.media_objects))
         self.data = None
 
     def validate(self) -> None:
@@ -104,7 +137,15 @@ class MediaArchiver(AbstractArchiver):
         )
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
-        raise NotImplementedError()
+        if self.data is None:
+            self.validate()
+        self._check_for_consistency()
+        self._update_archive()
+        return SuccessfulArchiveResponse(
+            modification_type=ModificationType.updated,
+            service='phaidra',
+            object_description=f'Media <{self.media_object.archive_id}>',
+        )
 
     def _push_to_archive(self) -> requests.Response:
         uri = create_phaidra_object_create_uri(self.media_object.mime_type)
@@ -117,6 +158,17 @@ class MediaArchiver(AbstractArchiver):
             auth=(credentials.get('USER'), credentials.get('PWD')),
         )
 
+        return response
+
+    def _update_archive(self) -> requests.Response:
+        uri = create_phaidra_update_url(self.media_object.mime_type)
+        response = requests.post(
+            uri,
+            files={
+                'metadata': json.dumps(self.data),
+            },
+            auth=(credentials.get('USER'), credentials.get('PWD')),
+        )
         return response
 
     def _handle_media_push_response(self, media_push_response: requests.Response) -> str:
@@ -137,6 +189,7 @@ class MediaArchiver(AbstractArchiver):
         self.media_object.archive_URI = urllib.parse.urljoin(uris.get('IDENTIFIER_BASE'), pid)
         self.media_object.archive_id = pid
         self.media_object.archive_status = STATUS_ARCHIVED
+        self.media_object.update_archive = False
         self.media_object.save()
 
     def link_entry_to_media(self) -> requests.Response:

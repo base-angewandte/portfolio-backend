@@ -53,4 +53,6 @@ class PhaidraArchiver(AbstractArchiver):
         return metadata_response
 
     def update_archive(self) -> 'SuccessfulArchiveResponse':
-        return self.metadata_data_archiver.update_archive()
+        metadata_response = self.metadata_data_archiver.update_archive()
+        self.media_archiver.update_archive()
+        return metadata_response
