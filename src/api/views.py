@@ -19,6 +19,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.cache import cache
 from django.db.models import Max, Q
+from django.http import Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, gettext_lazy as _
@@ -162,6 +163,18 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     ordering_fields = entry_ordering_fields
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Http404 as nfe:
+            reverse_pk = kwargs.get('pk', '')[::-1]
+            if self.get_queryset().filter(pk=reverse_pk).exists():
+                return Response(reverse_pk, status=301)
+            else:
+                raise nfe
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @swagger_auto_schema(
         manual_parameters=[
