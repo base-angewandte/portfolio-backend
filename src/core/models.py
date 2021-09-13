@@ -40,7 +40,7 @@ class Entry(AbstractBaseModel):
     objects = EntryManager()
     archive_id = models.CharField(max_length=255, blank=True, null=True)
     archive_URI = models.CharField(max_length=255, blank=True, null=True)
-    archive_date = models.DateTimeField(null=True)
+    archive_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [

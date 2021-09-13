@@ -128,7 +128,7 @@ class Media(models.Model):
     license = JSONField(validators=[validate_license])
     archive_id = models.CharField(max_length=255, blank=True, null=True)
     archive_URI = models.CharField(max_length=255, blank=True, null=True)
-    archive_date = models.DateTimeField(null=True)
+    archive_date = models.DateTimeField(null=True, blank=True)
     archive_status = models.IntegerField(choices=ARCHIVE_STATUS_CHOICES, default=STATUS_NOT_ARCHIVED)
 
     objects = models.Manager()
