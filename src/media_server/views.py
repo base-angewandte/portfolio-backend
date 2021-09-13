@@ -272,3 +272,15 @@ def archive_assets(request, media_pks, *args, **kwargs):
     # remove duplicate media ids from request
     controller = DefaultArchiveController(request.user, {primary_key for primary_key in media_pks.split(',')})
     return controller.push_to_archive()
+
+
+@api_view(['PUT'])
+def update_assets(request, media_pks, *args, **kwargs):
+    """# @entry_pk: entry pk
+
+    @media_pks: comma separated list of media pks
+    Expected all media pks from the same entry - owned by the user
+    """
+    # remove duplicate media ids from request
+    controller = DefaultArchiveController(request.user, {primary_key for primary_key in media_pks.split(',')})
+    return controller.update_archive()

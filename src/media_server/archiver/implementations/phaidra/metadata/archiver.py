@@ -94,7 +94,6 @@ class DefaultMetadataArchiver(AbstractArchiver):
             return data['pid']
 
     def _update_entry_archival_success_in_db(self, pid: str):
-        self.archive_object.entry.update_archive = False
         self.archive_object.entry.archive_id = pid
         self.archive_object.entry.archive_URI = urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid)
         self.archive_object.entry.archive_date = timezone.now()

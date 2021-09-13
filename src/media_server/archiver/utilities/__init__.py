@@ -12,7 +12,7 @@ class DateTimeComparator:
         """
         self.max_seconds = max_seconds
 
-    def greaterThen(self, first: datetime, second: datetime) -> bool:
+    def greater_then(self, first: datetime, second: datetime) -> bool:
         """Checks if the first is greater then the second with the given max
         seconds as fuzzyness.
 
@@ -22,7 +22,7 @@ class DateTimeComparator:
         """
         return (first - second).total_seconds() > self.max_seconds
 
-    def smallerThen(self, first: datetime, second: datetime) -> bool:
+    def smaller_then(self, first: datetime, second: datetime) -> bool:
         """Checks if the first is smaller then the second with the given max
         seconds as fuzzyness.
 
@@ -31,3 +31,6 @@ class DateTimeComparator:
         :return:
         """
         return (first - second).total_seconds() > self.max_seconds
+
+    def about_the_same(self, first: datetime, second: datetime) -> bool:
+        return (first - second).total_seconds() < self.max_seconds

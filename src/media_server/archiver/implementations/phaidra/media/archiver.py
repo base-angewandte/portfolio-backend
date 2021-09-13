@@ -139,6 +139,8 @@ class MediaArchiver(AbstractArchiver):
             self.validate()
         self._check_for_consistency()
         self._update_archive()
+        self.media_object.archive_date = timezone.now()
+        self.media_object.save()
         return SuccessfulArchiveResponse(
             modification_type=ModificationType.updated,
             service='phaidra',

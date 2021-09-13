@@ -59,16 +59,12 @@ class ArchivedTestCase(TestCase):
     def test_entry_archival_date(self):
         self.assertIsNotNone(self.entry.archive_date)
         self.assertIsInstance(self.entry.archive_date, date)
-        self.assertFalse(DateTimeComparator().greaterThen(self.entry.archive_date, self.entry.date_changed))
-
-        self.assertFalse(DateTimeComparator().smallerThen(self.entry.archive_date, self.entry.date_changed))
+        self.assertTrue(DateTimeComparator().about_the_same(self.entry.archive_date, self.entry.date_changed))
 
     def test_media_has_archival_date(self):
         self.assertIsNotNone(self.media.archive_date)
         self.assertIsInstance(self.media.archive_date, date)
-        self.assertFalse(DateTimeComparator().greaterThen(self.media.archive_date, self.media.modified))
-
-        self.assertFalse(DateTimeComparator().smallerThen(self.media.archive_date, self.media.modified))
+        self.assertTrue(DateTimeComparator().about_the_same(self.media.archive_date, self.media.modified))
 
 
 class SavedAfterArchivalTestCase(TestCase):
@@ -102,7 +98,7 @@ class SavedAfterArchivalTestCase(TestCase):
     def test_entry_archival_date_differs_from_save_date(self):
         date_time_comparator = DateTimeComparator(max_seconds=self.time_gone)
         self.assertTrue(
-            date_time_comparator.greaterThen(
+            date_time_comparator.greater_then(
                 self.entry.date_changed,
                 self.entry.archive_date,
             ),
@@ -116,7 +112,7 @@ class SavedAfterArchivalTestCase(TestCase):
     def test_media_archival_date_differs_from_save_date(self):
         date_time_comparator = DateTimeComparator(max_seconds=self.time_gone)
         self.assertTrue(
-            date_time_comparator.greaterThen(
+            date_time_comparator.greater_then(
                 self.media.modified,
                 self.media.archive_date,
             ),
@@ -147,6 +143,8 @@ class UpdatedArchivalTestCase(TestCase):
         client_provider.get_media_primary_key_response(cls.media, only_validate=False)
         worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
         worker.work(burst=True)  # wait until it is done
+        cls.entry.refresh_from_db()
+        cls.media.refresh_from_db()
         cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
         cls.entry.save()
         cls.media.published = not cls.media.published  # just to change anything. I am not sure, if it is saved, if not
@@ -156,7 +154,7 @@ class UpdatedArchivalTestCase(TestCase):
         cls.media.refresh_from_db()
 
     def test_entry_archival_and_save_date_are_the_same(self):
-        self.assertGreaterEqual(self.entry.archive_date, self.entry.date_changed)
+        self.assertTrue(DateTimeComparator().about_the_same(self.entry.archive_date, self.entry.date_changed))
 
     def test_media_archival_and_save_date_are_the_same(self):
-        self.assertGreaterEqual(self.media.archive_date, self.media.modified)
+        self.assertTrue(DateTimeComparator().about_the_same(self.media.archive_date, self.media.modified))
