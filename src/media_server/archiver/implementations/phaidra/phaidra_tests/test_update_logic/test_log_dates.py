@@ -9,6 +9,7 @@ from django.test import TestCase
 from core.models import Entry
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.utilities import DateTimeComparator
 from media_server.models import Media
 
 
@@ -57,12 +58,16 @@ class ArchivedTestCase(TestCase):
     def test_entry_archival_date(self):
         self.assertIsNotNone(self.entry.archive_date)
         self.assertIsInstance(self.entry.archive_date, date)
-        self.assertGreaterEqual(self.entry.archive_date, self.entry.date_changed)
+        self.assertFalse(DateTimeComparator().greaterThen(self.entry.archive_date, self.entry.date_changed))
+
+        self.assertFalse(DateTimeComparator().smallerThen(self.entry.archive_date, self.entry.date_changed))
 
     def test_media_has_archival_date(self):
         self.assertIsNotNone(self.media.archive_date)
         self.assertIsInstance(self.media.archive_date, date)
-        self.assertGreaterEqual(self.media.archive_date, self.media.modified)
+        self.assertFalse(DateTimeComparator().greaterThen(self.media.archive_date, self.media.modified))
+
+        self.assertFalse(DateTimeComparator().smallerThen(self.media.archive_date, self.media.modified))
 
 
 class SavedAfterArchivalTestCase(TestCase):

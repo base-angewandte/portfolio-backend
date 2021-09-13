@@ -4,6 +4,8 @@ import urllib
 import requests
 from rest_framework.exceptions import APIException
 
+from django.utils import timezone
+
 from core.models import Entry
 from media_server.archiver import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED, credentials, uris
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
@@ -42,10 +44,6 @@ def _update_archive_job(media_object: 'Media'):
     entry_object: Entry = Entry.objects.get(id=media_object.entry_id)
     if not entry_object.archive_id:
         raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
-    print('++++++++++++++++++++++++++++++++++++++')
-    print(f'{media_object.archive_id=}')
-    print(f'{media_object.license=}')
-    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
     media_archiver = MediaArchiver(
         archive_object=ArchiveObject(
             user=entry_object.owner,
@@ -189,7 +187,7 @@ class MediaArchiver(AbstractArchiver):
         self.media_object.archive_URI = urllib.parse.urljoin(uris.get('IDENTIFIER_BASE'), pid)
         self.media_object.archive_id = pid
         self.media_object.archive_status = STATUS_ARCHIVED
-        self.media_object.update_archive = False
+        self.media_object.archive_date = timezone.now()
         self.media_object.save()
 
     def link_entry_to_media(self) -> requests.Response:

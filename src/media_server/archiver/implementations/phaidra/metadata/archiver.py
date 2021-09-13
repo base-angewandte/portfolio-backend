@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 import requests
 
 from django.conf import settings
+from django.utils import timezone
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
@@ -96,7 +97,8 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self.archive_object.entry.update_archive = False
         self.archive_object.entry.archive_id = pid
         self.archive_object.entry.archive_URI = urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid)
-        self.archive_object.entry.save(update_fields=['archive_URI', 'archive_id'])
+        self.archive_object.entry.archive_date = timezone.now()
+        self.archive_object.entry.save(update_fields=['archive_URI', 'archive_id', 'archive_date'])
 
     def _create_user_feedback(self, pid: str):
         return SuccessfulArchiveResponse(
