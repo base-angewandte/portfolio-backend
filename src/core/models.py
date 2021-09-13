@@ -18,9 +18,6 @@ from .validators import validate_keywords, validate_texts, validate_type
 
 
 class Entry(AbstractBaseModel):
-    def __init__(self, *args, update_archive: bool = True, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.update_archive = update_archive
 
     update_archive = True
     id = ShortUUIDField(primary_key=True)

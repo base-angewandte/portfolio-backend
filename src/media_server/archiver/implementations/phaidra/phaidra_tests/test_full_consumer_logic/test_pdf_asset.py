@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.test import TestCase
 
-from core.models import Entry
 from media_server.archiver import STATUS_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.implementations.phaidra.metadata.archiver import ThesisMetadataArchiver
@@ -260,76 +259,6 @@ class ArchiveEntryWithTwoPdfFiles(TestCase):
         data_2 = response_2.json()
         self.assertEqual(data_2['status'], 200)
         self.assertEqual(data_2['index']['ismemberof'][0], self.entry.archive_id)
-
-
-class UpdateEntryWithOnePdfFile(TestCase):
-    new_title = 'new title'
-
-    @classmethod
-    def setUpTestData(cls):
-        """
-        - Create an entry
-        - create media with pdf file
-        - connect the media to entry
-        - send a request to the API to archival it
-        - fast forward the redis queue for sync testing
-        - change entry title, save
-        - archival should be done automatically … … …
-        - fast forward the redis queue for sync testing
-        - reload data from db for testing
-        - generate metadata for testing
-
-        :return:
-        """
-        model_provider = ModelProvider()
-        cls.entry = model_provider.get_entry()
-        cls.media = model_provider.get_media(entry=cls.entry, file_type='pdf', mime_type='application/pdf')
-        cls.media.type = 'd'  # auto detection does not work here, unknown reason
-        cls.media.save()
-        client_provider = ClientProvider(model_provider)
-        client_provider.get_media_primary_key_response(cls.media, only_validate=False)
-        worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-        worker.work(burst=True)  # wait until it is done
-        cls.entry = Entry.objects.get(pk=cls.entry.id)
-        cls.entry.title = cls.new_title
-        cls.entry.save()
-        worker.work(burst=True)  # wait until update is done
-        cls.entry.refresh_from_db()
-        cls.media.refresh_from_db()
-        archiver = ThesisMetadataArchiver(
-            archive_object=ArchiveObject(entry=cls.entry, user=model_provider.user, media_objects={cls.media})
-        )
-        archiver.validate()
-        cls.metadata = archiver.data
-
-    def test_phaidra_entry_meta_data_changed(self):
-        response = requests.get(
-            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.entry.archive_id}/metadata'
-        )
-        data = response.json()
-        self.assertEqual(data['status'], 200)
-        self.assertEqual(
-            self.new_title,
-            response.json()['metadata']['JSON-LD']['dce:title'][0]['bf:mainTitle'][0]['@value'],
-            f'Did not find expected title in '
-            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.entry.archive_id}/metadata',
-        )
-
-    def test_phaidra_entry_index_still_valid(self):
-        response = requests.get(
-            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.entry.archive_id}/index'
-        )
-        data = response.json()
-        self.assertEqual(data['status'], 200)
-        self.assertEqual(data['index']['hasmember'][0], self.media.archive_id)
-
-    def test_phaidra_media_index_still_valid(self):
-        response = requests.get(
-            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.media.archive_id}/index'
-        )
-        data = response.json()
-        self.assertEqual(data['status'], 200)
-        self.assertEqual(data['index']['ismemberof'][0], self.entry.archive_id)
 
 
 class AddOnePdfFileToEntryWithOnePdfFile(TestCase):
