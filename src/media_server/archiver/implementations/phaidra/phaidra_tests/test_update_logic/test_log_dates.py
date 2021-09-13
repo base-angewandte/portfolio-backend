@@ -1,6 +1,7 @@
 """The time of archival of entries and media should be logged in the
 database."""
 from datetime import date
+from time import sleep
 
 import django_rq
 
@@ -87,6 +88,10 @@ class SavedAfterArchivalTestCase(TestCase):
         client_provider.get_media_primary_key_response(cls.media, only_validate=False)
         worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
         worker.work(burst=True)  # wait until it is done
+        cls.time_gone = 1
+        sleep(cls.time_gone)  # currently I do not see any other way, to test this. Field is not editable
+        cls.entry.refresh_from_db()
+        cls.media.refresh_from_db()
         cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
         cls.entry.save()
         cls.entry.refresh_from_db()
@@ -95,10 +100,32 @@ class SavedAfterArchivalTestCase(TestCase):
         cls.media.refresh_from_db()
 
     def test_entry_archival_date_differs_from_save_date(self):
-        self.assertLess(self.entry.archive_date, self.entry.date_changed)
+        date_time_comparator = DateTimeComparator(max_seconds=self.time_gone)
+        self.assertTrue(
+            date_time_comparator.greaterThen(
+                self.entry.date_changed,
+                self.entry.archive_date,
+            ),
+            f''''Entry save date is not at least {date_time_comparator.max_seconds} seconds away from archive date
+{self.entry.date_changed=}
+{self.entry.archive_date=}
+{(self.entry.date_changed - self.entry.archive_date).total_seconds()}
+''',
+        )
 
     def test_media_archival_date_differs_from_save_date(self):
-        self.assertLess(self.media.archive_date, self.media.date_changed)
+        date_time_comparator = DateTimeComparator(max_seconds=self.time_gone)
+        self.assertTrue(
+            date_time_comparator.greaterThen(
+                self.media.modified,
+                self.media.archive_date,
+            ),
+            f''''Media save date is not at least {date_time_comparator.max_seconds} seconds away from archive date
+{self.media.modified=}
+{self.media.archive_date=}
+{(self.media.modified - self.media.archive_date).total_seconds()}
+''',
+        )
 
 
 class UpdatedArchivalTestCase(TestCase):
