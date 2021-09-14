@@ -33,4 +33,5 @@ class DateTimeComparator:
         return (first - second).total_seconds() > self.max_seconds
 
     def about_the_same(self, first: datetime, second: datetime) -> bool:
-        return (first - second).total_seconds() < self.max_seconds
+        # Checks if the difference is within the given fuzzyness
+        return abs((first - second).total_seconds()) < self.max_seconds
