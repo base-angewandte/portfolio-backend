@@ -145,6 +145,8 @@ class UpdatedArchivalTestCase(TestCase):
         worker.work(burst=True)  # wait until it is done
         cls.entry.refresh_from_db()
         cls.media.refresh_from_db()
+        cls.time_gone = 1
+        sleep(cls.time_gone)  # currently I do not see any other way, to test this. Field is not editable
         cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
         cls.entry.save()
         cls.media.published = not cls.media.published  # just to change anything. I am not sure, if it is saved, if not
@@ -154,7 +156,13 @@ class UpdatedArchivalTestCase(TestCase):
         cls.media.refresh_from_db()
 
     def test_entry_archival_and_save_date_are_the_same(self):
-        self.assertTrue(DateTimeComparator().about_the_same(self.entry.archive_date, self.entry.date_changed))
+        self.assertTrue(
+            DateTimeComparator(max_seconds=self.time_gone).about_the_same(
+                self.entry.archive_date, self.entry.date_changed
+            )
+        )
 
     def test_media_archival_and_save_date_are_the_same(self):
-        self.assertTrue(DateTimeComparator().about_the_same(self.media.archive_date, self.media.modified))
+        self.assertTrue(
+            DateTimeComparator(self.time_gone).about_the_same(self.media.archive_date, self.media.modified)
+        )
