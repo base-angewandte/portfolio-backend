@@ -140,7 +140,7 @@ class MediaArchiver(AbstractArchiver):
         self._check_for_consistency()
         self._update_archive()
         self.media_object.archive_date = Now()
-        self.media_object.save()
+        self.media_object.save(update_fields=['archive_date', 'modified'])
         return SuccessfulArchiveResponse(
             modification_type=ModificationType.updated,
             service='phaidra',
@@ -215,6 +215,3 @@ class MediaArchiver(AbstractArchiver):
                 f'Can not archive media <{self.media_object.id}>. '
                 f'Entry <{self.archive_object.entry.id}> is not archived'
             )
-
-        if self.media_object.archive_id:
-            raise RuntimeWarning(f'Media <{self.media_object.id}> is already archived')
