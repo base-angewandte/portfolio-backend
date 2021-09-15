@@ -1,13 +1,16 @@
 import logging
 import mimetypes
 from os.path import basename, join
+from typing import Iterable, Set
 
 import magic
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from django.conf import settings
@@ -17,6 +20,10 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
+from core.models import Entry
+
+from .archiver import STATUS_ARCHIVED
+from .archiver.choices import STATUS_ARCHIVE_IN_UPDATE, STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED
 from .archiver.controller.default import DefaultArchiveController
 from .archiver.interface.responses import SuccessfulValidationResponse
 from .decorators import is_allowed
@@ -257,30 +264,67 @@ class MediaViewSet(viewsets.GenericViewSet):
 )
 @api_view(['GET'])
 def validate_assets(request, media_pks, *args, **kwargs):
-    controller = DefaultArchiveController(request.user, set(media_pks.split(',')))
+    primary_keys = {primary_key for primary_key in media_pks.split(',')}
+    if primary_keys.__len__() == 0:
+        raise ValidationError('At least one media has to be passed for archiving.')
+
+    media_objects = Media.objects.all().filter(id__in=primary_keys)
+    media_objects: Set['Media'] = set(media_objects)
+
+    controller = DefaultArchiveController(request.user, media_objects)
     controller.validate()
     return SuccessfulValidationResponse(_('Asset validation successful'))
 
 
 @api_view(['GET'])
 def archive_assets(request, media_pks, *args, **kwargs):
-    """# @entry_pk: entry pk
-
+    """
     @media_pks: comma separated list of media pks
     Expected all media pks from the same entry - owned by the user
     """
     # remove duplicate media ids from request
-    controller = DefaultArchiveController(request.user, {primary_key for primary_key in media_pks.split(',')})
+    primary_keys = {primary_key for primary_key in media_pks.split(',')}
+    if primary_keys.__len__() == 0:
+        raise ValidationError('At least one media has to be passed for archiving.')
+
+    media_objects = Media.objects.all().filter(id__in=primary_keys).filter(archive_status=STATUS_NOT_ARCHIVED)
+
+    media_objects: Set['Media'] = set(media_objects)
+
+    if media_objects.__len__() != primary_keys.__len__():
+        not_archived_media_primary_keys = {media.id for media in media_objects}
+        missing_primary_keys = primary_keys.difference(not_archived_media_primary_keys)
+        raise ValidationError(f'The following media pk do not have a STATUS_NOT_ARCHIVED: {missing_primary_keys}')
+
+    for media_object in media_objects:
+        media_object.archive_status = STATUS_TO_BE_ARCHIVED
+        media_object.save()
+
+    controller = DefaultArchiveController(request.user, media_objects)
     return controller.push_to_archive()
 
 
 @api_view(['PUT'])
-def update_assets(request, media_pks, *args, **kwargs):
-    """# @entry_pk: entry pk
+def archive(request: Request, *args, **kwargs):
+    """"""
+    try:
+        entry_pk = request.query_params['entry']
+    except KeyError:
+        raise APIException('Entry param is not optional')
 
-    @media_pks: comma separated list of media pks
-    Expected all media pks from the same entry - owned by the user
-    """
-    # remove duplicate media ids from request
-    controller = DefaultArchiveController(request.user, {primary_key for primary_key in media_pks.split(',')})
+    entry_object: 'Entry' = Entry.objects.get(pk=entry_pk)
+    if not entry_object.archive_id:
+        raise APIException('Entry is not archived')
+
+    media_objects: Iterable['Media'] = (
+        Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
+    )
+
+    media_objects: Set['Media'] = set(media_objects)
+
+    for media_object in media_objects:
+        media_object.archive_status = STATUS_ARCHIVE_IN_UPDATE
+        media_object.save()
+
+    controller = DefaultArchiveController(user=request.user, media_objects=media_objects)
     return controller.update_archive()

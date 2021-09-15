@@ -92,7 +92,7 @@ class AtLeastOneAuthorTestCase(TestCase):
         controller = DefaultArchiveController(
             media.owner,
             {
-                media.id,
+                media,
             },
         )
         self.assertRaisesMessage(
@@ -107,7 +107,7 @@ class AtLeastOneAuthorTestCase(TestCase):
         controller = DefaultArchiveController(
             media.owner,
             {
-                media.id,
+                media,
             },
         )
         self.assertIsNone(controller.validate())
@@ -193,7 +193,7 @@ class MustHaveALanguageTestCase(TestCase):
         controller = DefaultArchiveController(
             media.owner,
             {
-                media.id,
+                media,
             },
         )
         self.assertRaisesMessage(
@@ -208,7 +208,7 @@ class MustHaveALanguageTestCase(TestCase):
         controller = DefaultArchiveController(
             media.owner,
             {
-                media.id,
+                media,
             },
         )
         self.assertIsNone(controller.validate())
@@ -329,7 +329,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         controller = DefaultArchiveController(
             media.owner,
             {
-                media.id,
+                media,
             },
         )
         self.assertRaisesMessage(
@@ -343,9 +343,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=True))
         controller = DefaultArchiveController(
             media.owner,
-            {
-                media.id,
-            },
+            {media},
         )
         self.assertIsNone(controller.validate())
 

@@ -1324,7 +1324,12 @@ class ThesisSwitchArchiverTestCase(TestCase):
         """Should return no default type."""
         entry = self.model_provider.get_entry(type_=False)
         media = self.model_provider.get_media(entry)
-        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        controller = DefaultArchiveController(
+            user=self.model_provider.user,
+            media_objects={
+                media,
+            },
+        )
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
@@ -1339,7 +1344,12 @@ class ThesisSwitchArchiverTestCase(TestCase):
         """Should return no default type."""
         entry = self.model_provider.get_entry(type_=True, thesis_type=False)
         media = self.model_provider.get_media(entry)
-        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        controller = DefaultArchiveController(
+            user=self.model_provider.user,
+            media_objects={
+                media,
+            },
+        )
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
@@ -1354,7 +1364,12 @@ class ThesisSwitchArchiverTestCase(TestCase):
         """Should return no thesis type."""
         entry = self.model_provider.get_entry(type_=True, thesis_type=True)
         media = self.model_provider.get_media(entry)
-        controller = DefaultArchiveController(user=self.model_provider.user, media_primary_keys={media.id})
+        controller = DefaultArchiveController(
+            user=self.model_provider.user,
+            media_objects={
+                media,
+            },
+        )
         archiver: 'PhaidraArchiver' = controller.archiver
         metadata_data_archiver: 'ThesisMetadataArchiver' = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)

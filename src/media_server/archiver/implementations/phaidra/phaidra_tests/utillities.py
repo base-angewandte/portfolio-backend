@@ -341,5 +341,5 @@ class ClientProvider:
     def __del__(self):
         self.client.logout()  # Very important! ;-)
 
-    def get_update_entry_archival_response(self, entry):
-        return self.client.get(f'/api/v1/archive?entry={entry.id}')
+    def get_update_entry_archival_response(self, entry) -> 'Response':
+        return self.client.put(f'/api/v1/archive?entry={entry.id}')

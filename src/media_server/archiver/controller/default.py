@@ -1,10 +1,8 @@
 from typing import TYPE_CHECKING, Optional, Set
 
-from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry
 from media_server.archiver import messages
@@ -22,16 +20,7 @@ class DefaultArchiveController:
     """Handle Archive Actions."""
 
     user: User
-    media_primary_keys: Set[str]
-
-    _media_objects: Optional[Set[Media]] = None
-
-    @property
-    def media_objects(self) -> Set[Media]:
-        if self._media_objects is None:
-            self._media_objects = self._create_media_objects()
-        return self._media_objects
-
+    media_objects: Set['Media']
     _entry: Optional[Entry] = None
 
     @property
@@ -48,22 +37,13 @@ class DefaultArchiveController:
             self._archiver = self._create_archiver()
         return self._archiver
 
-    def __init__(self, user: User, media_primary_keys: Set[str]):
+    def __init__(self, user: User, media_objects: Set['Media']):
         """
         :param user: The user, the request is coming from
-        :param media_primary_keys: primary keys of the media to archive
+        :param media_objects: the media to archive
         """
+        self.media_objects = media_objects
         self.user = user
-        self.media_primary_keys = media_primary_keys
-        if self.media_primary_keys.__len__() == 0:
-            raise ValidationError({'media_pks': [_('empty')]})
-
-    @classmethod
-    def from_entry(cls, entry: 'Entry') -> 'DefaultArchiveController':
-        return cls(
-            user=entry.owner,
-            media_primary_keys={media.id for media in Media.objects.all().filter(entry_id=entry.id)},
-        )
 
     def push_to_archive(self) -> 'SuccessfulArchiveResponse':
         """Validates the data and pushes to archive.
@@ -104,21 +84,6 @@ class DefaultArchiveController:
         """
         self._create_archiver()
         return self.archiver.push_to_archive()
-
-    def _create_media_objects(self) -> Set[Media]:
-        """Get all media objects as defined in media_primary_keys from the
-        database.
-
-        :raises NotFound
-        :return:
-        """
-        media_objects = set()
-        for media_primary_key in self.media_primary_keys:
-            try:
-                media_objects.add(Media.objects.get(id=media_primary_key))
-            except ObjectDoesNotExist:
-                raise NotFound(messages.errors.MEDIA_NOT_FOUND)
-        return media_objects
 
     def _get_entry(self) -> Entry:
         """

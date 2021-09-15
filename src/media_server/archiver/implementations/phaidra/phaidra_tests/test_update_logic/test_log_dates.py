@@ -149,9 +149,17 @@ class UpdatedArchivalTestCase(TestCase):
         sleep(cls.time_gone)  # currently I do not see any other way, to test this. Field is not editable
         cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
         cls.entry.save()
-        cls.media.published = not cls.media.published  # just to change anything. I am not sure, if it is saved, if not
+        # just to change anything. I am not sure, if it is saved, if not
+        cls.media.license = {
+            'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'},
+            'source': 'http://base.uni-ak.ac.at/portfolio/licenses/copyright',
+        }
         cls.media.save()
-        client_provider.get_update_entry_archival_response(cls.entry)
+        response = client_provider.get_update_entry_archival_response(cls.entry)
+        if response.status_code != 200:
+            raise RuntimeError(f'Update call returned {response.status_code=} and {response.content=}')
+        worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
+        worker.work(burst=True)  # wait until it is done
         cls.entry.refresh_from_db()
         cls.media.refresh_from_db()
 
@@ -159,10 +167,14 @@ class UpdatedArchivalTestCase(TestCase):
         self.assertTrue(
             DateTimeComparator(max_seconds=self.time_gone).about_the_same(
                 self.entry.archive_date, self.entry.date_changed
-            )
+            ),
+            f"""{self.entry.archive_date=}
+{self.entry.date_changed=}
+{(self.entry.archive_date - self.entry.date_changed).total_seconds()}""",
         )
 
     def test_media_archival_and_save_date_are_the_same(self):
         self.assertTrue(
-            DateTimeComparator(self.time_gone).about_the_same(self.media.archive_date, self.media.modified)
+            DateTimeComparator(self.time_gone).about_the_same(self.media.archive_date, self.media.modified),
+            f'\n{self.media.archive_date=}\n{self.media.modified=}',
         )
