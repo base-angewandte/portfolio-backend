@@ -25,6 +25,7 @@ from core.models import Entry
 from .archiver import STATUS_ARCHIVED
 from .archiver.choices import STATUS_ARCHIVE_IN_UPDATE, STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED
 from .archiver.controller.default import DefaultArchiveController
+from .archiver.controller.status_info import EntryArchivalInformer
 from .archiver.interface.responses import SuccessfulValidationResponse
 from .decorators import is_allowed
 from .models import DOCUMENT_TYPE, STATUS_CONVERTED, Media, get_type_for_mime_type
@@ -328,3 +329,22 @@ def archive(request: Request, *args, **kwargs):
 
     controller = DefaultArchiveController(user=request.user, media_objects=media_objects)
     return controller.update_archive()
+
+
+@api_view(['GET'])
+def archive_is_changed(request: Request, *args, **kwargs):
+    try:
+        entry_pk = request.query_params['entry']
+    except KeyError:
+        raise ValidationError('Entry query param is mandatory')
+    try:
+        entry = Entry.objects.get(pk=entry_pk)
+    except Entry.DoesNotExist:
+        raise ValidationError(f'Entry {entry_pk} does not exist')
+
+    entry_threshold = request.query_params.get('entry_threshold', None)
+    entry_threshold = entry_threshold if entry_threshold is None else int(entry_threshold)
+    asset_threshold = request.query_params.get('asset_threshold', None)
+    asset_threshold = asset_threshold if asset_threshold is None else int(asset_threshold)
+    archival_informer = EntryArchivalInformer(entry, entry_threshold, asset_threshold)
+    return Response(archival_informer.has_changed)

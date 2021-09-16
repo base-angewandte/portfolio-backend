@@ -341,5 +341,18 @@ class ClientProvider:
     def __del__(self):
         self.client.logout()  # Very important! ;-)
 
-    def get_update_entry_archival_response(self, entry) -> 'Response':
+    def get_update_entry_archival_response(self, entry: 'Entry') -> 'Response':
         return self.client.put(f'/api/v1/archive?entry={entry.id}')
+
+    def get_is_changed_response(
+        self,
+        entry: 'Entry',
+        entry_threshold: Optional[int] = None,
+        asset_threshold: Optional[int] = None,
+    ):
+        url = f'/api/v1/archive/is-changed?entry={entry.id}'
+        if entry_threshold is not None:
+            url += f'&entry_threshold={entry_threshold}'
+        if asset_threshold is not None:
+            url += f'&asset_threshold={asset_threshold}'
+        return self.client.get(url)
