@@ -1,7 +1,7 @@
 import logging
 import mimetypes
 from os.path import basename, join
-from typing import Iterable, Set
+from typing import Collection, Set
 
 import magic
 from drf_yasg import openapi
@@ -317,9 +317,12 @@ def archive(request: Request, *args, **kwargs):
     if not entry_object.archive_id:
         raise APIException('Entry is not archived')
 
-    media_objects: Iterable['Media'] = (
+    media_objects: Collection['Media'] = (
         Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
     )
+
+    if len(media_objects) == 0:
+        raise APIException('Did not find any assets with status archived for entry.')
 
     media_objects: Set['Media'] = set(media_objects)
 
