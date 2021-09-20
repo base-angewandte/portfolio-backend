@@ -140,6 +140,7 @@ class MediaArchiver(AbstractArchiver):
         self._check_for_consistency()
         self._update_archive()
         self.media_object.archive_date = Now()
+        self.media_object.archive_status = STATUS_ARCHIVED
         self.media_object.save(update_fields=['archive_date', 'modified'])
         return SuccessfulArchiveResponse(
             modification_type=ModificationType.updated,
