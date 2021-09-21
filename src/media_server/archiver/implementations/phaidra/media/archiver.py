@@ -4,7 +4,7 @@ import urllib
 import requests
 from rest_framework.exceptions import APIException
 
-from django.db.models.functions import Now
+from django.utils import timezone
 
 from core.models import Entry
 from media_server.archiver import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED, credentials, uris
@@ -139,7 +139,7 @@ class MediaArchiver(AbstractArchiver):
             self.validate()
         self._check_for_consistency()
         self._update_archive()
-        self.media_object.archive_date = Now()
+        self.media_object.archive_date = timezone.now()
         self.media_object.archive_status = STATUS_ARCHIVED
         self.media_object.save(update_fields=['archive_date', 'modified'])
         return SuccessfulArchiveResponse(
@@ -190,7 +190,7 @@ class MediaArchiver(AbstractArchiver):
         self.media_object.archive_URI = urllib.parse.urljoin(uris.get('IDENTIFIER_BASE'), pid)
         self.media_object.archive_id = pid
         self.media_object.archive_status = STATUS_ARCHIVED
-        self.media_object.archive_date = Now()
+        self.media_object.archive_date = timezone.now()
         self.media_object.save()
 
     def link_entry_to_media(self) -> requests.Response:
