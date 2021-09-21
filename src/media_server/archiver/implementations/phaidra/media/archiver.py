@@ -141,7 +141,7 @@ class MediaArchiver(AbstractArchiver):
         self._update_archive()
         self.media_object.archive_date = timezone.now()
         self.media_object.archive_status = STATUS_ARCHIVED
-        self.media_object.save(update_fields=['archive_date', 'modified'])
+        self.media_object.save(update_fields=['archive_date', 'modified', 'archive_status'])
         return SuccessfulArchiveResponse(
             modification_type=ModificationType.updated,
             service='phaidra',
