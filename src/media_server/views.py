@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
@@ -125,7 +126,10 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     if serializer.validated_data:
-                        Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                        Media.objects.filter(pk=m.pk).update(
+                            modified=timezone.now(),
+                            **serializer.validated_data,
+                        )
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
