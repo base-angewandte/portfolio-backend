@@ -42,6 +42,7 @@ class EntryNoMediaNotArchivedTestCase(TestCase):
         self.assertIsNone(self.entry_archival_informer.has_changed)
 
     def test_response(self):
+        print(self.response.content)
         self.assertIsNone(self.response.data)
 
 

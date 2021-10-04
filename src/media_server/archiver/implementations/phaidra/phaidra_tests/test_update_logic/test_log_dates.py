@@ -103,8 +103,8 @@ class SavedAfterArchivalTestCase(TestCase):
                 self.entry.archive_date,
             ),
             f''''Entry save date is not at least {date_time_comparator.max_seconds} seconds away from archive date
-{self.entry.date_changed=}
-{self.entry.archive_date=}
+self.entry.date_changed={self.entry.date_changed}
+self.entry.archive_date=={self.entry.archive_date}
 {(self.entry.date_changed - self.entry.archive_date).total_seconds()}
 ''',
         )
@@ -117,8 +117,8 @@ class SavedAfterArchivalTestCase(TestCase):
                 self.media.archive_date,
             ),
             f''''Media save date is not at least {date_time_comparator.max_seconds} seconds away from archive date
-{self.media.modified=}
-{self.media.archive_date=}
+self.media.modified={self.media.modified}
+self.media.archive_date={self.media.archive_date}
 {(self.media.modified - self.media.archive_date).total_seconds()}
 ''',
         )
@@ -157,7 +157,10 @@ class UpdatedArchivalTestCase(TestCase):
         cls.media.save()
         response = client_provider.get_update_entry_archival_response(cls.entry)
         if response.status_code != 200:
-            raise RuntimeError(f'Update call returned {response.status_code=} and {response.content=}')
+            raise RuntimeError(
+                f'Update call returned '
+                f'response.status_code={response.status_code} '
+                f'and response.content={response.content}')
         worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
         worker.work(burst=True)  # wait until it is done
         cls.entry.refresh_from_db()
@@ -168,13 +171,14 @@ class UpdatedArchivalTestCase(TestCase):
             DateTimeComparator(max_seconds=self.time_gone).about_the_same(
                 self.entry.archive_date, self.entry.date_changed
             ),
-            f"""{self.entry.archive_date=}
-{self.entry.date_changed=}
+            f"""self.entry.archive_date={self.entry.archive_date}
+self.entry.date_changed={self.entry.date_changed}
 {(self.entry.archive_date - self.entry.date_changed).total_seconds()}""",
         )
 
     def test_media_archival_and_save_date_are_the_same(self):
         self.assertTrue(
             DateTimeComparator(self.time_gone).about_the_same(self.media.archive_date, self.media.modified),
-            f'\n{self.media.archive_date=}\n{self.media.modified=}',
+            f'\nself.media.archive_date={self.media.archive_date}\n'
+            f'self.media.modified={self.media.modified}',
         )
