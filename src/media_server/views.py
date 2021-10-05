@@ -1,3 +1,4 @@
+import json
 import logging
 import mimetypes
 from os.path import basename, join
@@ -354,4 +355,8 @@ def archive_is_changed(request: Request, *args, **kwargs):
     asset_threshold = request.query_params.get('asset_threshold', None)
     asset_threshold = asset_threshold if asset_threshold is None else int(asset_threshold)
     archival_informer = EntryArchivalInformer(entry, entry_threshold, asset_threshold)
-    return Response(archival_informer.has_changed)
+    return HttpResponse(
+        json.dumps(
+            archival_informer.has_changed
+        )
+    )

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -11,7 +12,7 @@ from media_server.archiver.controller.status_info import EntryArchivalInformer
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 
 if TYPE_CHECKING:
-    from rest_framework.response import Response
+    from django.http import HttpResponse
 
 
 class EntryNoMediaNotArchivedTestCase(TestCase):
@@ -21,7 +22,7 @@ class EntryNoMediaNotArchivedTestCase(TestCase):
     """
 
     entry_archival_informer: 'EntryArchivalInformer'
-    response: 'Response'
+    response: 'HttpResponse'
 
     @classmethod
     def setUpTestData(cls):
@@ -42,8 +43,7 @@ class EntryNoMediaNotArchivedTestCase(TestCase):
         self.assertIsNone(self.entry_archival_informer.has_changed)
 
     def test_response(self):
-        print(self.response.content)
-        self.assertIsNone(self.response.data)
+        self.assertIsNone(json.loads(self.response.content.decode('utf-8')))
 
 
 class EntryWithMediaArchived(TestCase):
@@ -53,7 +53,7 @@ class EntryWithMediaArchived(TestCase):
     """
 
     entry_archival_informer: 'EntryArchivalInformer'
-    response: 'Response'
+    response: 'HttpResponse'
 
     @classmethod
     def setUpTestData(cls):
@@ -81,7 +81,7 @@ class EntryWithMediaArchived(TestCase):
         self.assertFalse(self.entry_archival_informer.has_changed)
 
     def test_response(self):
-        self.assertFalse(self.response.data)
+        self.assertFalse(json.loads(self.response.content.decode('utf-8')))
 
 
 class EntryWithMediaSavedAfterArchival(TestCase):
@@ -91,7 +91,7 @@ class EntryWithMediaSavedAfterArchival(TestCase):
     """
 
     entry_archival_informer: 'EntryArchivalInformer'
-    response: 'Response'
+    response: 'HttpResponse'
 
     @classmethod
     def setUpTestData(cls):
@@ -141,14 +141,14 @@ class EntryWithMediaSavedAfterArchival(TestCase):
         self.assertTrue(self.entry_archival_informer.has_changed)
 
     def test_response(self):
-        self.assertTrue(self.response.data)
+        self.assertTrue(json.loads(self.response.content.decode('utf-8')))
 
 
 class EntrySavedAfterArchivalMediaUpToDate(TestCase):
     """An Entry, that is saved after archival, the media is up to date."""
 
     entry_archival_informer: 'EntryArchivalInformer'
-    response: 'Response'
+    response: 'HttpResponse'
 
     @classmethod
     def setUpTestData(cls):
@@ -190,7 +190,7 @@ class EntrySavedAfterArchivalMediaUpToDate(TestCase):
         self.assertTrue(self.entry_archival_informer.has_changed)
 
     def test_response(self):
-        self.assertTrue(self.response.data)
+        self.assertTrue(json.loads(self.response.content.decode('utf-8')))
 
 
 class EntryUpToDateMediaMixed(TestCase):
@@ -198,7 +198,7 @@ class EntryUpToDateMediaMixed(TestCase):
     out of sync."""
 
     entry_archival_informer: 'EntryArchivalInformer'
-    response: 'Response'
+    response: 'HttpResponse'
 
     @classmethod
     def setUpTestData(cls):
@@ -251,4 +251,4 @@ class EntryUpToDateMediaMixed(TestCase):
         self.assertTrue(self.entry_archival_informer.has_changed)
 
     def test_response(self):
-        self.assertTrue(self.response.data)
+        self.assertTrue(json.loads(self.response.content.decode('utf-8')))
