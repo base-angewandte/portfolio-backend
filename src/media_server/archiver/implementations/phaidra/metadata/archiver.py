@@ -37,11 +37,10 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self._translator = None
 
     def validate(self) -> None:
-        data = self._translate_data(self.archive_object.entry)
+        self.data = self._translate_data(self.archive_object.entry)
         schema = self.schema
-        result = schema.load(data)
+        result = schema.load(self.data)
         errors: dict = result.errors
-        self.data = schema.dump(result.data).data
         errors = self._translate_errors(errors)
         self.throw_validation_errors(errors)
 
