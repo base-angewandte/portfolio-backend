@@ -162,7 +162,7 @@ class MediaArchiver(AbstractArchiver):
         return response
 
     def _update_archive(self) -> requests.Response:
-        uri = create_phaidra_update_url(self.media_object.mime_type)
+        uri = create_phaidra_update_url(self.media_object.archive_id)
         response = requests.post(
             uri,
             files={
