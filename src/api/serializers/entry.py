@@ -54,6 +54,9 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     class Meta:
         model = Entry
         fields = '__all__'
+        read_only_fields = [
+            'archive_id', 'archive_URI', 'archive_date', 'date_created', 'date_changed'
+        ]
         swagger_meta_attrs = {
             'id': OrderedDict([('hidden', True)]),
             'date_created': OrderedDict([('hidden', True)]),
