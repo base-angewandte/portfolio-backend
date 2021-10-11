@@ -86,7 +86,6 @@ class MediaArchiveHandler(AbstractArchiver):
 
     def validate(self) -> None:
         """
-        Nothing to validate here
         :return:
         """
         for media_object in self.archive_object.media_objects:
