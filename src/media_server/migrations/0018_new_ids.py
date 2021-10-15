@@ -13,7 +13,7 @@ def set_new_ids(apps, schema_editor):
         new_entry_id = m.entry_id[::-1]
         old_path = os.path.join(os.path.dirname(m.file.path), old_id)
         new_path = os.path.join(os.path.dirname(m.file.path), new_id)
-        Media.objects.filter(id=old_id).update(id=new_id, entry_id=new_entry_id, date_changed=m.date_changed)
+        Media.objects.filter(id=old_id).update(id=new_id, entry_id=new_entry_id, modified=m.modified)
         try:
             shutil.move(old_path, new_path)
         except FileNotFoundError:
