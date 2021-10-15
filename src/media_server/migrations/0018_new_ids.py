@@ -28,5 +28,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(code=set_new_ids),
+        migrations.RunPython(code=set_new_ids, reverse_code=set_new_ids),
     ]
