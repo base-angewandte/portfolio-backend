@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess  # nosec
+from typing import Tuple
 
 import django_rq
 import magic
@@ -414,29 +415,44 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 )
 
 
+def delete_rq_job(job_id: str) -> None:
+    """
+    Stop and delete a redis queue job.
+
+    This is refactoring of the old function, due to the bug: https://basedev.uni-ak.ac.at/redmine/issues/1563
+    :param job_id:
+    :return:
+    """
+    connection = django_rq.get_connection()
+    try:
+        job = Job.fetch(job_id, connection=connection)
+    except NoSuchJobError:
+        # nothing to do, return early
+        #  (in our implementation, the job id is created dynamically and does indicate, if there is a job or not)
+        return
+    try:
+        send_stop_job_command(connection, job_id)
+    except InvalidJobOperation:
+        # Will be raised if the "Job is not currently executing", which does not concern us
+        pass
+
+    job.delete()
+
+
 @receiver(pre_delete, sender=Media)
 def media_pre_delete(sender, instance, *args, **kwargs):
-    conn = django_rq.get_connection()
-    try:
-        job = Job.fetch(instance.get_job_id(), connection=conn)
-        if job.get_status() == 'started':
-            try:
-                send_stop_job_command(conn, instance.get_job_id())
-            except InvalidJobOperation:
-                pass
-        job.delete()
-    except NoSuchJobError:
-        pass
-    try:
-        archive_job = Job.fetch(instance.get_archive_job_id(), connection=conn)
-        if job.get_status() == 'started':
-            try:
-                send_stop_job_command(conn, instance.get_archive_job_id())
-            except InvalidJobOperation:
-                pass
-        archive_job.delete()
-    except NoSuchJobError:
-        pass
+    """
+    Stop and delete all media redis queue jobs on media deletion, since they are not needed anymore
+
+    :param sender:
+    :param instance:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    job_ids: Tuple[str, str] = (instance.get_job_id(), instance.get_archive_job_id())
+    for job_id in job_ids:
+        delete_rq_job(job_id)
 
 
 @receiver(post_delete, sender=Media)
