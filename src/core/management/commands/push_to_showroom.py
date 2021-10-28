@@ -31,13 +31,17 @@ class Command(BaseCommand):
             if len(id) != 22 or not match(r'^[0-9a-zA-Z]{22}$', id):
                 raise CommandError(f'This does not look like a valid ShortUUID: {id}')
 
-        # TODO: should we also check for duplicated ids? or just push them twice/several times?
-
         # Now fetch our entries
         if options['all']:
             entries = Entry.objects.all()
+            if not entries:
+                self.stdout.write(self.style.WARNING('Your portfolio does not contain any entries'))
+                return
         else:
             entries = Entry.objects.filter(pk__in=options['id'])
+            if not entries:
+                self.stdout.write(self.style.WARNING('No entries found with provided IDs'))
+                return
 
         created = []
         updated = []
