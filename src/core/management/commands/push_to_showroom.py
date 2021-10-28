@@ -82,9 +82,11 @@ class Command(BaseCommand):
                 # we extract the created/updated as if we would submit multiple
                 # entries and extend our aggregated lists
                 result = r.json()
-                if result_created := result.get('created'):
+                result_created = result.get('created')
+                if result_created:
                     created.extend([(entry['id'], entry['showroom_id']) for entry in result_created])
-                if result_updated := result.get('updated'):
+                result_updated = result.get('updated')
+                if result_updated:
                     updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
             else:
                 raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
@@ -157,9 +159,11 @@ class Command(BaseCommand):
                     # we extract the created/updated as if we would submit multiple
                     # entries and extend our aggregated lists
                     result = r.json()
-                    if result_created := result.get('created'):
+                    result_created = result.get('created')
+                    if result_created:
                         media_created.extend([(m['id'], m['showroom_id']) for m in result_created])
-                    if result_updated := result.get('updated'):
+                    result_updated = result.get('updated')
+                    if result_updated:
                         media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
                 else:
                     raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
@@ -200,9 +204,11 @@ class Command(BaseCommand):
             # but we should also check for anything unexpected to happen
             elif r.status_code == 201:
                 result = r.json()
-                if created := result.get('created'):
+                created = result.get('created')
+                if created:
                     relations_created.extend((entry.id, id) for id in created)
-                if not_found := result.get('not_found'):
+                not_found = result.get('not_found')
+                if not_found:
                     relations_not_pushed.extend((entry.id, id) for id in not_found)
             else:
                 raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
