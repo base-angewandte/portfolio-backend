@@ -233,7 +233,7 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         # Bail early, if this field is NULL
         if model.texts is None:
             return []
-        texts = self._filter_not_abstract_text_type(model)
+        texts = model.texts
         translated = []
         for text in texts:
             translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(
