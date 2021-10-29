@@ -676,22 +676,6 @@ class StaticGenericPersonTestCase(TestCase):
             ],
         )
 
-    def test_translate_faulty_data(self):
-        entry = Entry(
-            data={
-                'authors': [
-                    {
-                        'label-got-wrong': 'Universität für Angewandte Kunst Wien',
-                        'source': 'http://d-nb.info/gnd/5299671-2',
-                    }
-                ]
-            }
-        )
-        translator = GenericStaticPersonTranslator(
-            primary_level_data_key='authors', role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/author'
-        )
-        self.assertRaises(KeyError, lambda: translator.translate_data(entry))
-
     def test_validate_data_correct(self):
         person_schema = PersonSchema()
         self.assertEqual(

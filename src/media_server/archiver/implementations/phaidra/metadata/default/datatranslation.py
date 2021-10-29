@@ -298,6 +298,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         return [
             create_person_object(name=person['label'], source=person['source'])
             for person in model.data[self.primary_level_data_key]
+            if ('label' in person) and ('source' in person)
         ]
 
     def _get_contributors(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
