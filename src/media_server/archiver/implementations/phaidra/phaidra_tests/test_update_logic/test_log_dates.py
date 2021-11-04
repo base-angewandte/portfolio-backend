@@ -1,7 +1,7 @@
 """The time of archival of entries and media should be logged in the
 database."""
-from datetime import date
-from time import sleep
+from datetime import date, datetime, timedelta
+from freezegun import freeze_time
 
 import django_rq
 
@@ -78,22 +78,25 @@ class SavedAfterArchivalTestCase(TestCase):
         :return:
         """
         model_provider = ModelProvider()
-        cls.entry = model_provider.get_entry()
-        cls.media = model_provider.get_media(entry=cls.entry, file_type='pdf', mime_type='application/pdf')
-        client_provider = ClientProvider(model_provider)
-        client_provider.get_media_primary_key_response(cls.media, only_validate=False)
-        worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-        worker.work(burst=True)  # wait until it is done
+        now = datetime(2013, 4, 13, 17, 12)
+        with freeze_time(now):
+            cls.entry = model_provider.get_entry()
+            cls.media = model_provider.get_media(entry=cls.entry, file_type='pdf', mime_type='application/pdf')
+            client_provider = ClientProvider(model_provider)
+            client_provider.get_media_primary_key_response(cls.media, only_validate=False)
+            worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
+            worker.work(burst=True)  # wait until it is done
         cls.time_gone = 1
-        sleep(cls.time_gone)  # currently I do not see any other way, to test this. Field is not editable
-        cls.entry.refresh_from_db()
-        cls.media.refresh_from_db()
-        cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
-        cls.entry.save()
-        cls.entry.refresh_from_db()
-        cls.media.published = not cls.media.published  # just to change anything. I am not sure, if it is saved, if not
-        cls.media.save()
-        cls.media.refresh_from_db()
+        time_gone = timedelta(seconds=cls.time_gone)
+        with freeze_time(now + time_gone):
+            cls.entry.refresh_from_db()
+            cls.media.refresh_from_db()
+            cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
+            cls.entry.save()
+            cls.entry.refresh_from_db()
+            cls.media.published = not cls.media.published  # just to change anything. I am not sure, if it is saved, if not
+            cls.media.save()
+            cls.media.refresh_from_db()
 
     def test_entry_archival_date_differs_from_save_date(self):
         date_time_comparator = DateTimeComparator(max_seconds=self.time_gone)
@@ -137,34 +140,36 @@ class UpdatedArchivalTestCase(TestCase):
         :return:
         """
         model_provider = ModelProvider()
-        cls.entry = model_provider.get_entry()
-        cls.media = model_provider.get_media(entry=cls.entry, file_type='pdf', mime_type='application/pdf')
-        client_provider = ClientProvider(model_provider)
-        client_provider.get_media_primary_key_response(cls.media, only_validate=False)
-        worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-        worker.work(burst=True)  # wait until it is done
-        cls.entry.refresh_from_db()
-        cls.media.refresh_from_db()
+        now = datetime(1995, 12, 24, 19, 15)
+        with freeze_time(now):
+            cls.entry = model_provider.get_entry()
+            cls.media = model_provider.get_media(entry=cls.entry, file_type='pdf', mime_type='application/pdf')
+            client_provider = ClientProvider(model_provider)
+            client_provider.get_media_primary_key_response(cls.media, only_validate=False)
+            worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
+            worker.work(burst=True)  # wait until it is done
         cls.time_gone = 1
-        sleep(cls.time_gone)  # currently I do not see any other way, to test this. Field is not editable
-        cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
-        cls.entry.save()
-        # just to change anything. I am not sure, if it is saved, if not
-        cls.media.license = {
-            'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'},
-            'source': 'http://base.uni-ak.ac.at/portfolio/licenses/copyright',
-        }
-        cls.media.save()
-        response = client_provider.get_update_entry_archival_response(cls.entry)
-        if response.status_code != 200:
-            raise RuntimeError(
-                f'Update call returned '
-                f'response.status_code={response.status_code} '
-                f'and response.content={response.content}')
-        worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-        worker.work(burst=True)  # wait until it is done
-        cls.entry.refresh_from_db()
-        cls.media.refresh_from_db()
+        with freeze_time(now + timedelta(seconds=cls.time_gone)):
+            cls.entry.refresh_from_db()
+            cls.media.refresh_from_db()
+            cls.entry.title += ' changed!'  # just to change anything. I am not sure, if it is saved, if not
+            cls.entry.save()
+            # just to change anything. I am not sure, if it is saved, if not
+            cls.media.license = {
+                'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'},
+                'source': 'http://base.uni-ak.ac.at/portfolio/licenses/copyright',
+            }
+            cls.media.save()
+            response = client_provider.get_update_entry_archival_response(cls.entry)
+            if response.status_code != 200:
+                raise RuntimeError(
+                    f'Update call returned '
+                    f'response.status_code={response.status_code} '
+                    f'and response.content={response.content}')
+            worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
+            worker.work(burst=True)  # wait until it is done
+            cls.entry.refresh_from_db()
+            cls.media.refresh_from_db()
 
     def test_entry_archival_and_save_date_are_the_same(self):
         self.assertTrue(
