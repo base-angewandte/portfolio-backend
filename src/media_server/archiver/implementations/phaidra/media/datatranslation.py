@@ -1,4 +1,5 @@
-from typing import Dict, Optional, Set
+from pathlib import Path
+from typing import Dict, Optional, Set, List
 
 import marshmallow
 
@@ -67,14 +68,11 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
             else []
         )
 
-    def _get_file_name(self, media: Media):
-        return (
-            [
-                media.file.name,
-            ]
-            if media.file
-            else []
-        )
+    def _get_file_name(self, media: Media) -> List[str]:
+        if not media.file:
+            return []
+        path = Path(media.file.name)
+        return [path.name, ]
 
     def _get_licenses(self, media: Media):
         phaidra_licenses = (

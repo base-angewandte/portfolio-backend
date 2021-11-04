@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import django_rq
 import requests
 
@@ -107,7 +109,7 @@ class ArchiveEntryWithOnePdfFile(TestCase):
         )
         data = response.json()
         self.assertEqual(data['status'], 200)
-        self.assertEqual(data['metadata']['JSON-LD']['ebucore:filename'][0], self.media.file.name)
+        self.assertEqual(data['metadata']['JSON-LD']['ebucore:filename'][0], Path(self.media.file.name).name)
 
     def test_phaidra_entry_index_successful(self):
         response = requests.get(
@@ -241,14 +243,14 @@ class ArchiveEntryWithTwoPdfFiles(TestCase):
         )
         data_1 = response_1.json()
         self.assertEqual(data_1['status'], 200)
-        self.assertEqual(data_1['metadata']['JSON-LD']['ebucore:filename'][0], self.media_1.file.name)
+        self.assertEqual(data_1['metadata']['JSON-LD']['ebucore:filename'][0], Path(self.media_1.file.name).name)
 
         response_2 = requests.get(
             f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.media_2.archive_id}/metadata'
         )
         data_2 = response_2.json()
         self.assertEqual(data_2['status'], 200)
-        self.assertEqual(data_2['metadata']['JSON-LD']['ebucore:filename'][0], self.media_2.file.name)
+        self.assertEqual(data_2['metadata']['JSON-LD']['ebucore:filename'][0], Path(self.media_2.file.name).name)
 
     def test_phaidra_entry_index_successful(self):
         response = requests.get(
@@ -411,14 +413,14 @@ class AddOnePdfFileToEntryWithOnePdfFile(TestCase):
         )
         data_1 = response_1.json()
         self.assertEqual(data_1['status'], 200)
-        self.assertEqual(data_1['metadata']['JSON-LD']['ebucore:filename'][0], self.media_1.file.name)
+        self.assertEqual(data_1['metadata']['JSON-LD']['ebucore:filename'][0], Path(self.media_1.file.name).name)
 
         response_2 = requests.get(
             f'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.media_2.archive_id}/metadata'
         )
         data_2 = response_2.json()
         self.assertEqual(data_2['status'], 200)
-        self.assertEqual(data_2['metadata']['JSON-LD']['ebucore:filename'][0], self.media_2.file.name)
+        self.assertEqual(data_2['metadata']['JSON-LD']['ebucore:filename'][0], Path(self.media_2.file.name).name)
 
     def test_phaidra_entry_index_successful(self):
         response = requests.get(
