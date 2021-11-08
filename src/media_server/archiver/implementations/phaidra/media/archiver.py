@@ -138,7 +138,9 @@ class MediaArchiver(AbstractArchiver):
             self.validate()
         self._check_for_consistency()
         self._update_archive()
-        self.media_object.archive_date = timezone.now()
+        now = timezone.now()
+        self.media_object.archive_date = now
+        self.media_object.modified = now
         self.media_object.archive_status = STATUS_ARCHIVED
         self.media_object.save(update_fields=['archive_date', 'modified', 'archive_status'])
         return SuccessfulArchiveResponse(
@@ -174,7 +176,7 @@ class MediaArchiver(AbstractArchiver):
     def _handle_media_push_response(self, media_push_response: requests.Response) -> str:
         if media_push_response.status_code != 200:
             self.media_object.archive_status = STATUS_ARCHIVE_ERROR
-            self.media_object.save()
+            self.media_object.save(update_fields=['archive_status', ])
         self._handle_external_server_response(media_push_response)
         try:
             return media_push_response.json()['pid'].strip()
@@ -189,8 +191,12 @@ class MediaArchiver(AbstractArchiver):
         self.media_object.archive_URI = urllib.parse.urljoin(uris.get('IDENTIFIER_BASE'), pid)
         self.media_object.archive_id = pid
         self.media_object.archive_status = STATUS_ARCHIVED
-        self.media_object.archive_date = timezone.now()
-        self.media_object.save()
+        now = timezone.now()
+        self.media_object.archive_date = now
+        self.media_object.modified = now
+        self.media_object.save(
+            update_fields=['archive_URI', 'archive_id', 'archive_status', 'archive_date', 'modified']
+        )
 
     def link_entry_to_media(self) -> requests.Response:
         uri = uris.get('BASE_URI') + f'object/{self.archive_object.entry.archive_id}/relationship/add'
