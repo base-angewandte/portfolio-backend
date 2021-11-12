@@ -125,12 +125,13 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license])
+    order = models.PositiveIntegerField(default=2147483647)
 
     class Meta:
         indexes = [
             models.Index(fields=['entry_id']),
         ]
-        ordering = ['-created']
+        ordering = ['order', '-created']
 
     @property
     def metadata(self):
