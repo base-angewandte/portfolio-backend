@@ -114,6 +114,9 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     if serializer.validated_data:
+                        # unset old featured media if a new one is selected
+                        if 'featured' in serializer.validated_data and serializer.validated_data['featured']:
+                            Media.objects.filter(entry_id=m.entry_id, featured=True).update(featured=False)
                         Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
