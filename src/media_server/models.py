@@ -205,6 +205,7 @@ class Media(models.Model):
             'type': self.type,
             'original': self.file.url,
             'published': self.published,
+            'featured': self.featured,
             'license': self.license,
         }
         return data
