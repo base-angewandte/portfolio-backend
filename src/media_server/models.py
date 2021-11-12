@@ -321,31 +321,25 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id, flat=True, published=None):
+def get_media_for_entry(entry_id, flat: bool = True, published: bool = None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
-    exclude = []
 
-    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+    query = Media.objects.filter(entry_id=entry_id)
     if published is not None:
         query = query.filter(published=published)
 
     for m in query:
-        exclude.append(m.pk)
-        data = m.get_data()
-        data.update({'response_code': 200})
-        ret.append(data)
-
-    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
-    if published is not None:
-        query = query.filter(published=published)
-
-    for m in query:
-        data = m.get_minimal_data()
-        data.update({'response_code': 202})
-        ret.append(data)
+        if m.status == STATUS_CONVERTED:
+            data = m.get_data()
+            data.update({'response_code': 200})
+            ret.append(data)
+        else:
+            data = m.get_minimal_data()
+            data.update({'response_code': 202})
+            ret.append(data)
 
     return ret
 
