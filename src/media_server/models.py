@@ -125,6 +125,7 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license])
+    featured = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=2147483647)
 
     class Meta:
