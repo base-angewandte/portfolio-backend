@@ -350,6 +350,11 @@ def get_image_for_entry(entry_id):
             return m.get_image()
 
 
+def update_media_order_for_entry(entry_id, order_list):
+    for i, d in enumerate(order_list):
+        Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
+
+
 def get_type_for_mime_type(mime_type):
     try:
         return MIME_TYPE_TO_TYPE[mime_type]
