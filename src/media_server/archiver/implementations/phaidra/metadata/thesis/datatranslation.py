@@ -14,7 +14,6 @@ from media_server.archiver.implementations.phaidra.metadata.mappings.contributor
     extract_phaidra_role_code,
 )
 from media_server.archiver.interface.exceptions import InternalValidationError
-from media_server.archiver.messages.validation.thesis import MISSING_SUPERVISOR
 
 
 class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
@@ -55,27 +54,6 @@ class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
         return {'data': {self.primary_level_data_key: errors}}
 
 
-class AdvisorSupervisorTranslator(GenericStaticPersonTranslator):
-    def __init__(self):
-        super().__init__(None, 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor')
-
-    def translate_errors(self, errors: Union[Dict, List]) -> Dict:
-        """Empty or missing: Always send the same message.
-
-        :param errors:
-        :return:
-        """
-        if not errors:
-            return {}
-        return {
-            'data': {
-                'contributors': [
-                    MISSING_SUPERVISOR,
-                ],
-            }
-        }
-
-
 class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
     def __init__(self):
         super().__init__()
@@ -95,7 +73,6 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
             raise_on_not_found_error=False,
         )
 
-        self._key_translator_mapping['role:supervisor'] = AdvisorSupervisorTranslator()
         self._key_translator_mapping['bf:note'] = ResponsiveBfNoteTranslator()
 
     def _translate_errors_with_dynamic_structure(
