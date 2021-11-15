@@ -1,3 +1,4 @@
+import typing
 from collections import defaultdict
 from typing import Dict, List, Optional, Union
 
@@ -55,6 +56,7 @@ class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
 
 
 class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
+
     def __init__(self):
         super().__init__()
 
@@ -113,26 +115,12 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
     def _get_data_with_dynamic_structure(
         self, model: 'Entry', contributor_role_mapping: 'BidirectionalConceptsMapper'
     ) -> Dict:
-        if (model.data is None) or ('contributors' not in model.data):
-            return self.data_with_dynamic_structure
-        contributors: List[Dict] = model.data['contributors']
-        for contributor in contributors:
-            if 'roles' not in contributor:
-                continue
-            for role in contributor['roles']:
-                if 'source' not in role:
-                    continue
-                phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
-                for phaidra_role in phaidra_roles:
-                    if 'loc.gov' not in phaidra_role:
-                        continue
-                    phaidra_role_code = extract_phaidra_role_code(phaidra_role)
-                    self.data_with_dynamic_structure[phaidra_role_code].append(
-                        create_person_object(
-                            name=contributor['label'],
-                            source=contributor['source'] if 'source' in contributor else None,
-                        )
-                    )
+        self._extract_data_with_dynamic_structure(model, contributor_role_mapping)
+        # add keys in mapping aka must-use to data:
+        for concept_mapping in contributor_role_mapping.concept_mappings.values():
+            for phaidra_role_code in self.yield_phaidra_role_codes(concept_mapping.owl_sameAs):
+                if phaidra_role_code not in self.data_with_dynamic_structure:
+                    self.data_with_dynamic_structure[phaidra_role_code] = []
         return self.data_with_dynamic_structure
 
     def translate_errors(self, errors: Optional[Dict], mapping: 'BidirectionalConceptsMapper') -> Dict:
@@ -147,3 +135,31 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
         dynamic_data = self._get_data_with_dynamic_structure(model, mapping)
         all_data = self._merge(static_data, dynamic_data)
         return self._wrap_in_container(all_data)
+
+    def _extract_data_with_dynamic_structure(self, model: 'Entry',
+                                             contributor_role_mapping: 'BidirectionalConceptsMapper'
+                                             ) -> Dict[str, List]:
+        if (model.data is None) or ('contributors' not in model.data):
+            return self.data_with_dynamic_structure
+        contributors: List[Dict] = model.data['contributors']
+        for contributor in contributors:
+            if 'roles' not in contributor:
+                continue
+            for role in contributor['roles']:
+                if 'source' not in role:
+                    continue
+                phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
+                for phaidra_role_code in self.yield_phaidra_role_codes(phaidra_roles):
+                    self.data_with_dynamic_structure[phaidra_role_code].append(
+                        create_person_object(
+                            name=contributor['label'],
+                            source=contributor['source'] if 'source' in contributor else None,
+                        )
+                    )
+        return self.data_with_dynamic_structure
+
+    def yield_phaidra_role_codes(self, phaidra_roles: typing.Iterable[str]) -> typing.Generator[str, None, None]:
+        for phaidra_role in phaidra_roles:
+            if 'loc.gov' not in phaidra_role:
+                continue
+            yield extract_phaidra_role_code(phaidra_role)

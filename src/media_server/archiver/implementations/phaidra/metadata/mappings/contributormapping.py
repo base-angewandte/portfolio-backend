@@ -71,6 +71,11 @@ class BidirectionalConceptsMapper:
             self.concept_mappings[uri] = ConceptMapper.from_base_uri(uri)
         return self
 
+    def add_uris(self, uris: typing.Set[str]) -> 'BidirectionalConceptsMapper':
+        for uri in uris:
+            self.add_uri(uri)
+        return self
+
     @classmethod
     def from_entry(cls, entry: 'Entry') -> 'BidirectionalConceptsMapper':
         if (entry.data is None) or ('contributors' not in entry.data):

@@ -35,12 +35,12 @@ code requirements:
 import typing
 from dataclasses import dataclass, field
 
-import IPython
 from rest_framework.test import APITestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
     PhaidraThesisMetaDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.thesis.must_use import DYNAMIC_ROLES
 
 if typing.TYPE_CHECKING:
     from core.models import Entry
@@ -99,6 +99,11 @@ class FakeBidirectionalConceptsMapper:
     def add_uri(self, uri: str) -> 'FakeBidirectionalConceptsMapper':
         if uri not in self.concept_mappings:
             self.concept_mappings[uri] = FakeConceptMapper.from_base_uri(uri)
+        return self
+
+    def add_uris(self, uris: typing.Set[str]) -> 'FakeBidirectionalConceptsMapper':
+        for uri in uris:
+            self.add_uri(uri)
         return self
 
     @classmethod
@@ -188,6 +193,7 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping.add_uris(DYNAMIC_ROLES)
 
     def test_no_role_supervisor_in_generated_data(self):
         self.assertNotIn(
@@ -217,6 +223,7 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
         cls.translator = cls.translator_class()
         cls.entry = add_other_role(cls.entry)
         cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping.add_uris(DYNAMIC_ROLES)
 
 
 class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRoleTestCase):
