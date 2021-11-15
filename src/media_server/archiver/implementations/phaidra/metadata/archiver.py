@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
+from .thesis.must_use import DYNAMIC_ROLES
 
 from .... import credentials
 from ....interface.exceptions import ExternalServerError
@@ -145,6 +146,7 @@ class ThesisMetadataArchiver(DefaultMetadataArchiver):
     def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
         if self._concepts_mapper is None:
             self._concepts_mapper = BidirectionalConceptsMapper.from_entry(entry=self.archive_object.entry)
+            self._concepts_mapper.add_uris(DYNAMIC_ROLES)
         return self._concepts_mapper
 
     @property
