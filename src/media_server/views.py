@@ -325,8 +325,6 @@ def archive(request: Request, *args, **kwargs):
     media_objects: Collection['Media'] = (
         Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
     )
-    if len(media_objects) == 0:
-        raise APIException('Did not find any assets with status archived for entry.')
 
     media_objects: Set['Media'] = set(media_objects)
 
