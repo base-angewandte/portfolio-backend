@@ -33,12 +33,12 @@ code requirements:
 
 """
 import typing
+from dataclasses import dataclass, field
 
+import IPython
 from rest_framework.test import APITestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
-    BidirectionalConceptsMapper, ConceptMapper
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
     PhaidraThesisMetaDataTranslator
 
@@ -50,8 +50,15 @@ if typing.TYPE_CHECKING:
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
 
 
-class FakeConceptMapper(ConceptMapper):
+@dataclass
+class FakeConceptMapper:
     """Fake-Map an concept (uri) to others from skosmos."""
+
+    '''Base uri, eg https://voc.uni-ak.ac.at/skosmos/povoc/en/page/advisor'''
+    uri: str
+
+    '''comparables, eg  {'http://vocab.getty.edu/aat/300160216', 'http://d-nb.info/gnd/4005565-6'}'''
+    owl_sameAs: typing.Set[str]
 
     class Utils:
         fakes = {
@@ -66,8 +73,46 @@ class FakeConceptMapper(ConceptMapper):
             owl_sameAs=cls.Utils.fakes[uri]
         )
 
+    def to_dict(self) -> dict:
+        return {
+            'uri': self.uri,
+            'owl:sameAs': self.owl_sameAs,
+        }
 
-ConceptMapper = FakeConceptMapper
+
+@dataclass
+class FakeBidirectionalConceptsMapper:
+    concept_mappings: typing.Dict[str, FakeConceptMapper] = field(default_factory=dict)
+
+    @classmethod
+    def from_base_uris(cls, uris: typing.Set[str]) -> 'FakeBidirectionalConceptsMapper':
+        return cls(concept_mappings={uri: FakeConceptMapper.from_base_uri(uri) for uri in uris})
+
+    def get_owl_sameAs_from_uri(self, uri: str) -> typing.Set[str]:
+        return self.concept_mappings[uri].owl_sameAs
+
+    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> typing.Set[str]:
+        return {
+            uri for uri, concept_mapper in self.concept_mappings.items() if owl_sameAs in concept_mapper.owl_sameAs
+        }
+
+    def add_uri(self, uri: str) -> 'FakeBidirectionalConceptsMapper':
+        if uri not in self.concept_mappings:
+            self.concept_mappings[uri] = FakeConceptMapper.from_base_uri(uri)
+        return self
+
+    @classmethod
+    def from_entry(cls, entry: 'Entry') -> 'FakeBidirectionalConceptsMapper':
+        if (entry.data is None) or ('contributors' not in entry.data):
+            return cls.from_base_uris(set())
+        contributors = entry.data['contributors']
+        roles = []
+        for contributor in contributors:
+            if 'roles' in contributor:
+                for role in contributor['roles']:
+                    if 'source' in role:
+                        roles.append(role['source'])
+        return cls.from_base_uris(set(roles))
 
 
 def add_other_role(entry: 'Entry') -> 'Entry':
@@ -80,7 +125,7 @@ def add_other_role(entry: 'Entry') -> 'Entry':
             'roles': [
                 {
                     'label': {'de': 'Supervisor', 'en': 'supervisor'},
-                    'source': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
+                    'source': 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role',
                 }
             ],
         },
@@ -113,13 +158,27 @@ class NoThesisNoRolesTestCase(APITestCase):
             self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """Since this is no thesis, this role is not required"""
+        self.assertNotIn(
+            'role:dgs',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
+
 
 class NoThesisSupervisorTestCase(NoThesisNoRolesTestCase):
     entry_kwargs = {'supervisor': True, 'thesis_type': False}
 
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """No dynamic translation here"""
+        self.assertNotIn(
+            'role:dgs',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
+
 
 class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
-    mapping: BidirectionalConceptsMapper
+    mapping: FakeBidirectionalConceptsMapper
     translator: PhaidraThesisMetaDataTranslator
 
     entry_kwargs = {'supervisor': False, 'thesis_type': True}
@@ -128,11 +187,18 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.mapping = BidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
 
     def test_no_role_supervisor_in_generated_data(self):
         self.assertNotIn(
             'role:supervisor',
+            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+        )
+
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """The field is required in the schema"""
+        self.assertIn(
+            'role:dgs',
             self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
         )
 
@@ -150,7 +216,7 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
         cls.entry = model_provider.get_entry(**cls.entry_kwargs)
         cls.translator = cls.translator_class()
         cls.entry = add_other_role(cls.entry)
-        cls.mapping = BidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
 
 
 class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRoleTestCase):
@@ -158,3 +224,10 @@ class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRol
     Next TestCase will be called SupercalifragilisticexpialidociousTestCase. Hey, that has the same length *sigh*
     """
     entry_kwargs = {'supervisor': False, 'thesis_type': True}
+
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """The field is required in the schema"""
+        self.assertIn(
+            'role:dgs',
+            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+        )
