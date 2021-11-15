@@ -319,7 +319,11 @@ class Media(models.Model):
         return f'job_media_info_and_convert_{self.pk}'
 
     def get_archive_job_id(self):
-        return f'job_archive_{self.pk}'
+        return self.create_archive_job_id(self.pk)
+
+    @staticmethod
+    def create_archive_job_id(pk) -> str:
+        return f'job_archive_{pk}'
 
 
 MIME_TYPE_TO_TYPE = {

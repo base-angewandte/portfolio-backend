@@ -1,26 +1,35 @@
-from typing import Callable, Set
+from datetime import datetime
+from typing import Callable, Set, TYPE_CHECKING, Optional, List
 
 import django_rq
+from rq.job import Job
 
 from portfolio import settings
-
-from ...models import Media
+if TYPE_CHECKING:
+    from ..implementations.phaidra.media.archiver import MediaArchiver
 
 
 class AsyncMediaHandler:
-    queue_name = 'high'
 
-    def __init__(self, media_objects: Set[Media], job: Callable):
-        self.media_objects = media_objects
+    run_at: Optional[datetime] = None
+    queue_name = 'high'
+    enqueued_jobs: List[Job]
+
+    def __init__(self, media_archivers: Set['MediaArchiver'], job: Callable, run_at: Optional[datetime] = None):
+        self.media_archivers = media_archivers
         self.job = job
-        self.queue_name = 'high'
         self.queue: django_rq.queues.Queue = django_rq.get_queue(self.queue_name)
+        self.enqueued_jobs = []
+        if run_at:
+            self.run_at = run_at
 
     def enqueue(self):
-        for media_object in self.media_objects:
-            self.queue.enqueue(
-                self.job,
-                media_object,
-                job_id=media_object.get_archive_job_id(),
-                failure_ttl=settings.RQ_FAILURE_TTL,
-            )
+        for media_archiver in self.media_archivers:
+            args = [self.run_at, self.job, media_archiver] if self.run_at else [self.job, media_archiver]
+            kwargs = {
+                'job_id': media_archiver.media_object.get_archive_job_id(),
+                'failure_ttl': settings.RQ_FAILURE_TTL,
+            }
+            function = self.queue.enqueue_at if self.run_at else self.queue.enqueue
+            self.enqueued_jobs.append((function(*args, **kwargs), function, args, kwargs))
+

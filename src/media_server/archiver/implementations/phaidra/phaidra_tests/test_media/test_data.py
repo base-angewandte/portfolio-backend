@@ -178,6 +178,6 @@ class TestUpperDataStructure(TestCase):
         self.archive_object.media_objects.add(self.media)
 
     def test_data_is_object(self):
-        archiver = MediaArchiver(self.archive_object)
+        archiver = MediaArchiver.from_archive_object(self.archive_object)
         archiver.validate()  # generates data
         self.assertIsInstance(archiver.data, dict)

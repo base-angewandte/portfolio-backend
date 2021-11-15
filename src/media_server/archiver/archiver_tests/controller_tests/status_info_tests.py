@@ -92,6 +92,12 @@ class EntryWithMediaSavedAfterArchival(TestCase):
 
     entry_archival_informer: 'EntryArchivalInformer'
     response: 'HttpResponse'
+    time_of_entry_creation: datetime
+    time_of_media_creation: datetime
+    timedelta_between_steps: timedelta
+    time_of_archival: datetime
+    time_of_media_update: datetime
+    time_of_check_if_up_to_date: datetime
 
     @classmethod
     def setUpTestData(cls):
@@ -128,9 +134,8 @@ class EntryWithMediaSavedAfterArchival(TestCase):
             media.save(update_fields=['license', 'modified'])
             media.refresh_from_db()
         with freeze_time(cls.time_of_check_if_up_to_date):
-            threshold = int(cls.timedelta_between_steps.total_seconds() // 2)
-            cls.entry_archival_informer = EntryArchivalInformer(entry, threshold, threshold)
-            cls.response = client_provider.get_is_changed_response(entry, threshold, threshold)
+            cls.entry_archival_informer = EntryArchivalInformer(entry)
+            cls.response = client_provider.get_is_changed_response(entry)
 
     def test_entry_data(self):
         self.assertFalse(self.entry_archival_informer.data.entry.changed_since_archival)
@@ -149,6 +154,16 @@ class EntrySavedAfterArchivalMediaUpToDate(TestCase):
 
     entry_archival_informer: 'EntryArchivalInformer'
     response: 'HttpResponse'
+    time_of_entry_creation: datetime
+    time_of_media_creation: datetime
+    timedelta_between_steps: timedelta
+    time_of_archival: datetime
+    time_of_media_update: datetime
+    time_of_check_if_up_to_date: datetime
+    creation_time: datetime
+    archival_time: datetime
+    update_time: datetime
+    check_if_changed_time: datetime
 
     @classmethod
     def setUpTestData(cls):
@@ -178,7 +193,7 @@ class EntrySavedAfterArchivalMediaUpToDate(TestCase):
             entry.refresh_from_db()
         with freeze_time(cls.check_if_changed_time):
             threshold = int(cls.timedelta_between_steps.total_seconds() // 2)
-            cls.entry_archival_informer = EntryArchivalInformer(entry, threshold, threshold)
+            cls.entry_archival_informer = EntryArchivalInformer(entry)
             cls.response = client_provider.get_is_changed_response(entry, threshold, threshold)
 
     def test_entry_data(self):
@@ -199,6 +214,17 @@ class EntryUpToDateMediaMixed(TestCase):
 
     entry_archival_informer: 'EntryArchivalInformer'
     response: 'HttpResponse'
+    time_of_entry_creation: datetime
+    time_of_media_creation: datetime
+    timedelta_between_steps: timedelta
+    time_of_archival: datetime
+    time_of_media_update: datetime
+    time_of_check_if_up_to_date: datetime
+    creation_time: datetime
+    archival_time: datetime
+    update_time: datetime
+    check_if_changed_time: datetime
+    look_up_time: datetime
 
     @classmethod
     def setUpTestData(cls):
@@ -221,10 +247,10 @@ class EntryUpToDateMediaMixed(TestCase):
             media_out_of_sync = model_provider.get_media(entry)
 
         with freeze_time(cls.archival_time):
-            client_provider.get_media_primary_key_response(media_in_sync, only_validate=False)
-            client_provider.get_media_primary_key_response(media_out_of_sync, only_validate=False)
+            r1 = client_provider.get_media_primary_key_response(media_in_sync, only_validate=False)
+            r2 = client_provider.get_media_primary_key_response(media_out_of_sync, only_validate=False)
             worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-            worker.work(burst=True)  # wait until it is done
+            w = worker.work(burst=True)  # wait until it is done
 
         with freeze_time(cls.update_time):
             media_out_of_sync.license = {
@@ -235,9 +261,8 @@ class EntryUpToDateMediaMixed(TestCase):
 
         with freeze_time(cls.look_up_time):
             entry.refresh_from_db()
-            threshold = int(cls.timedelta_between_steps.total_seconds() / 2)
-            cls.entry_archival_informer = EntryArchivalInformer(entry, threshold, threshold)
-            cls.response = client_provider.get_is_changed_response(entry, threshold, threshold)
+            cls.entry_archival_informer = EntryArchivalInformer(entry)
+            cls.response = client_provider.get_is_changed_response(entry)
 
     def test_entry_data(self):
         self.assertFalse(self.entry_archival_informer.data.entry.changed_since_archival)

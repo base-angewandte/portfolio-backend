@@ -1,4 +1,3 @@
-import json
 import logging
 import mimetypes
 from os.path import basename, join
@@ -13,6 +12,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
+from django.http.response import JsonResponse
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
@@ -325,15 +325,18 @@ def archive(request: Request, *args, **kwargs):
     media_objects: Collection['Media'] = (
         Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
     )
-
     if len(media_objects) == 0:
         raise APIException('Did not find any assets with status archived for entry.')
 
     media_objects: Set['Media'] = set(media_objects)
 
+    # Set archive status on the objects for the script
     for media_object in media_objects:
         media_object.archive_status = STATUS_ARCHIVE_IN_UPDATE
-        media_object.save()
+    # but use djangos update method to change the data in the database, since we have to bypass autonow
+    Media.objects.\
+        filter(pk__in={media_object.id for media_object in media_objects})\
+        .update(archive_status=STATUS_ARCHIVE_IN_UPDATE)
 
     controller = DefaultArchiveController(user=request.user, media_objects=media_objects)
     return controller.update_archive()
@@ -350,13 +353,5 @@ def archive_is_changed(request: Request, *args, **kwargs):
     except Entry.DoesNotExist:
         raise ValidationError(f'Entry {entry_pk} does not exist')
 
-    entry_threshold = request.query_params.get('entry_threshold', None)
-    entry_threshold = entry_threshold if entry_threshold is None else int(entry_threshold)
-    asset_threshold = request.query_params.get('asset_threshold', None)
-    asset_threshold = asset_threshold if asset_threshold is None else int(asset_threshold)
-    archival_informer = EntryArchivalInformer(entry, entry_threshold, asset_threshold)
-    return HttpResponse(
-        json.dumps(
-            archival_informer.has_changed
-        )
-    )
+    archival_informer = EntryArchivalInformer(entry)
+    return JsonResponse(archival_informer.has_changed, safe=False)

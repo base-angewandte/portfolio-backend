@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import django_rq
@@ -13,9 +13,11 @@ from media_server.archiver.implementations.phaidra.phaidra_tests.utillities impo
 
 if TYPE_CHECKING:
     from rest_framework.response import Response
+    from core.models import Entry
+    from media_server.models import Media
 
 
-class EntryWithMediaSavedAfterArchival(TestCase):
+class EntryWithMediaSaveAfterArchival(TestCase):
     """An entry with media.
 
     The media is saved after archival.
@@ -23,6 +25,14 @@ class EntryWithMediaSavedAfterArchival(TestCase):
 
     entry_archival_informer: 'EntryArchivalInformer'
     response: 'Response'
+    time_of_entry_creation: datetime
+    timedelta_between_steps: timedelta
+    time_of_media_creation: datetime
+    time_of_archival: datetime
+    time_of_media_update: datetime
+    time_of_archive_update: datetime
+    entry: 'Entry'
+    media: 'Media'
 
     @classmethod
     def setUpTestData(cls):
@@ -32,7 +42,7 @@ class EntryWithMediaSavedAfterArchival(TestCase):
         """
         # Create 1. Timeline
         cls.timedelta_between_steps = timedelta(seconds=60)
-        cls.time_of_entry_creation = datetime(2021, 1, 1, 0, 0)
+        cls.time_of_entry_creation = datetime(2021, 1, 1, 0, 0, tzinfo=timezone.utc)
         cls.time_of_media_creation = cls.time_of_entry_creation + cls.timedelta_between_steps
         cls.time_of_archival = cls.time_of_media_creation + cls.timedelta_between_steps
         cls.time_of_media_update = cls.time_of_archival + cls.timedelta_between_steps
@@ -69,3 +79,6 @@ class EntryWithMediaSavedAfterArchival(TestCase):
 
     def test_media_archive_status(self):
         self.assertEqual(self.media.archive_status, STATUS_ARCHIVED)
+
+    def test_media_archive_time(self):
+        self.assertEqual(self.media.archive_date, self.time_of_archive_update)

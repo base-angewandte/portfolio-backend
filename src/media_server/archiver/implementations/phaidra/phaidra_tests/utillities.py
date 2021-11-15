@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, Set
 from rest_framework.test import APIClient
 
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
@@ -151,7 +152,10 @@ class ModelProvider:
     def __init__(self):
         self.username = 'Φαίδρα'
         self.peeword = 'peeword'  # Yes, I am trying to trick some git hook …
-        self.user = User.objects.create_user(username=self.username, password=self.peeword)
+        try:
+            self.user = User.objects.create_user(username=self.username, password=self.peeword)
+        except IntegrityError:
+            self.user = User.objects.get_by_natural_key(username=self.username)
 
     def get_media(
         self, entry: 'Entry', license_: bool = True, mime_type: Optional[str] = 'text/plain', file_type='pdf'

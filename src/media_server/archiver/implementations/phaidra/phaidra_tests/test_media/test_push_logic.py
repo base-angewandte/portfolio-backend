@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Optional
 import django_rq
 
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
-from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver, _push_to_archive_job
+from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver, _push_to_archive_job, \
+    MediaArchiveHandler
 from media_server.archiver.interface.responses import SuccessfulArchiveResponse
 
 if TYPE_CHECKING:
@@ -45,7 +46,7 @@ class MediaArchivalInternalLogicTestCase(TestCase):
         In the code
         :return:
         """
-        archiver = MediaArchiver(self.archive_object)
+        archiver = MediaArchiver.from_archive_object(self.archive_object)
         response = archiver.push_to_archive()
         self.assertIsInstance(response, SuccessfulArchiveResponse)
         self.assertEqual(response.data['object'], f'Media <{self.media.archive_id}>')
@@ -55,7 +56,9 @@ class MediaArchivalInternalLogicTestCase(TestCase):
         `media_server.archiver.controller.asyncmedia.AsyncMediaHandler.enqueue`
         :return:
         """
-        async_media_handler = AsyncMediaHandler(self.archive_object.media_objects, _push_to_archive_job)
+        media_handler = MediaArchiveHandler(self.archive_object)
+        media_handler.generate_data()
+        async_media_handler = AsyncMediaHandler(set(media_handler.generated_media_data.values()), _push_to_archive_job)
         async_media_handler.enqueue()
         worker = django_rq.get_worker(async_media_handler.queue_name)
         worker.work(burst=True)  # wait until it is done

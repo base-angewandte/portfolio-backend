@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Set
+from datetime import datetime
+from typing import Set, Union
 
 from django.contrib.auth.models import User
 
@@ -23,4 +24,19 @@ class ArchiveObject:
     media_objects: Set[Media]
     """
     The media to be archived
+    """
+
+
+@dataclass
+class ArchiveData:
+    """
+    Contains generated data for archival (at a latter point)
+    """
+    archive_date: datetime
+    """
+    The timestamp, when the user requested archival – to be used later in saving
+    """
+    data: Union[dict, list]
+    """
+    The data for archival, validated and in the format, the provider expects
     """

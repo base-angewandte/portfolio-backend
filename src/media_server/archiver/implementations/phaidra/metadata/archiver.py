@@ -18,10 +18,10 @@ from ..uris import create_phaidra_update_url
 from .mappings.contributormapping import BidirectionalConceptsMapper
 from .thesis.datatranslation import PhaidraThesisMetaDataTranslator
 from .thesis.schemas import PhaidraThesisContainer, create_dynamic_phaidra_thesis_meta_data_schema
+from core.models import Entry
 
 if TYPE_CHECKING:
     from ....interface.archiveobject import ArchiveObject
-    from core.models import Entry
 
 from ....interface.abstractarchiver import AbstractArchiver
 
@@ -93,12 +93,19 @@ class DefaultMetadataArchiver(AbstractArchiver):
             return data['pid']
 
     def _update_entry_archival_success_in_db(self, pid: str):
-        self.archive_object.entry.archive_id = pid
-        self.archive_object.entry.archive_URI = urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid)
         now = timezone.now()
-        self.archive_object.entry.archive_date = now
-        self.archive_object.entry.date_changed = now
-        self.archive_object.entry.save(update_fields=['archive_URI', 'archive_id', 'archive_date', 'date_changed'])
+        data = {
+            'archive_id': pid,
+            'archive_URI': urljoin(settings.ARCHIVE_URIS['IDENTIFIER_BASE'], pid),
+            'archive_date': now,
+            'date_changed': now,
+        }
+        Entry.objects\
+            .filter(id=self.archive_object.entry.id)\
+            .update(**data)
+        # Methods expect data on entry object, since Entry.save was used before
+        for field, value in data.items():
+            setattr(self.archive_object.entry, field, value)
 
     def _create_user_feedback(self, pid: str):
         return SuccessfulArchiveResponse(
