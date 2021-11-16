@@ -208,9 +208,37 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
             self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
         )
 
+    def test_correct_translated_supervisor_value_in_generated_data(self):
+        """No supervisor -> empty data"""
+        self.assertEqual(
+            [],
+            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+        )
+
 
 class ThesisWithSupervisorTestCase(ThesisNoRolesTestCase):
     entry_kwargs = {'supervisor': True, 'thesis_type': True}
+
+    def test_correct_translated_supervisor_value_in_generated_data(self):
+        """A supervisor must be translated"""
+        expected = [
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [
+                        {
+                            '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
+                            '@type': 'ids:uri'
+                        },
+                    ],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        },
+                    ]
+                }
+            ]
+        generated = self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+        self.assertEqual(expected, generated)
 
 
 class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
@@ -225,6 +253,27 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
         cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
         cls.mapping.add_uris(DYNAMIC_ROLES)
 
+    def test_correct_translated_supervisor_value_in_generated_data(self):
+        """A supervisor must be translated"""
+        expected = [
+                {
+                    '@type': 'schema:Person',
+                    'skos:exactMatch': [
+                        {
+                            '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
+                            '@type': 'ids:uri'
+                        },
+                    ],
+                    'schema:name': [
+                        {
+                            '@value': 'Universität für Angewandte Kunst Wien',
+                        },
+                    ]
+                }
+            ]
+        generated = self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+        self.assertEqual(expected, generated)
+
 
 class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRoleTestCase):
     """
@@ -237,4 +286,11 @@ class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRol
         self.assertIn(
             'role:dgs',
             self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+        )
+
+    def test_correct_translated_supervisor_value_in_generated_data(self):
+        """No supervisor -> empty data"""
+        self.assertEqual(
+            [],
+            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
         )
