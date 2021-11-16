@@ -829,7 +829,12 @@ class DynamicPersonsTestCase(TestCase):
                 'role:act': [
                     {
                         '@type': 'schema:Person',
-                        'skos:exactMatch': [],
+                        'skos:exactMatch': [
+                            {
+                                '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
+                                 '@type': 'ids:uri'
+                            },
+                        ],
                         'schema:name': [
                             {
                                 '@value': 'Universität für Angewandte Kunst Wien',

@@ -150,12 +150,13 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
                     continue
                 phaidra_roles = contributor_role_mapping.get_owl_sameAs_from_uri(role['source'])
                 for phaidra_role_code in self.yield_phaidra_role_codes(phaidra_roles):
-                    self.data_with_dynamic_structure[phaidra_role_code].append(
-                        create_person_object(
+                    person_object = create_person_object(
                             name=contributor['label'],
-                            source=contributor['source'] if 'source' in contributor else None,
+                            source=role['source'] if 'source' in role else None,
                         )
-                    )
+                    if person_object not in self.data_with_dynamic_structure[phaidra_role_code]:
+                        self.data_with_dynamic_structure[phaidra_role_code].append(person_object)
+
         return self.data_with_dynamic_structure
 
     def yield_phaidra_role_codes(self, phaidra_roles: typing.Iterable[str]) -> typing.Generator[str, None, None]:
