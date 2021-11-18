@@ -1,4 +1,6 @@
+import typing
 from copy import deepcopy
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, Set
 
 from rest_framework.test import APIClient
@@ -120,7 +122,7 @@ class PhaidraContainerGenerator:
         cls,
         respect_author_rule: bool = True,
         respect_language_rule: bool = True,
-        respect_contributor_role: bool = True,
+        respect_supervisor_role: bool = True,
         respect_english_abstract_rule: bool = True,
         respect_german_abstract_rule: bool = True,
     ) -> dict:
@@ -130,10 +132,10 @@ class PhaidraContainerGenerator:
         if respect_language_rule:
             phaidra_container['dcterms:language'].append(cls.language)
 
-        if respect_contributor_role:
-            if 'role:supervisor' not in phaidra_container:
-                phaidra_container['role:supervisor'] = []
-            phaidra_container['role:supervisor'].append(cls.supervisor)
+        if respect_supervisor_role:
+            if 'role:dgs' not in phaidra_container:
+                phaidra_container['role:dgs'] = []
+            phaidra_container['role:dgs'].append(cls.supervisor)
 
         if respect_english_abstract_rule:
             if 'bf:note' not in phaidra_container:
@@ -360,3 +362,114 @@ class ClientProvider:
         if asset_threshold is not None:
             url += f'&asset_threshold={asset_threshold}'
         return self.client.get(url)
+
+
+@dataclass
+class FakeConceptMapper:
+    """Fake-Map an concept (uri) to others from skosmos."""
+
+    '''Base uri, eg https://voc.uni-ak.ac.at/skosmos/povoc/en/page/advisor'''
+    uri: str
+
+    '''comparables, eg  {'http://vocab.getty.edu/aat/300160216', 'http://d-nb.info/gnd/4005565-6'}'''
+    owl_sameAs: typing.Set[str]
+
+    class Utils:
+        fakes = {
+            'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role': {'http://id.loc.gov/vocabulary/relators/csl'},
+            'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor': {'http://id.loc.gov/vocabulary/relators/dgs'},
+            'http://base.uni-ak.ac.at/portfolio/vocabulary/author': {'http://id.loc.gov/vocabulary/relators/aut'}
+        }
+
+    @classmethod
+    def from_base_uri(cls, uri: str) -> 'FakeConceptMapper':
+        return cls(
+            uri=uri,
+            owl_sameAs=cls.Utils.fakes[uri]
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            'uri': self.uri,
+            'owl:sameAs': self.owl_sameAs,
+        }
+
+
+@dataclass
+class FakeBidirectionalConceptsMapper:
+    concept_mappings: typing.Dict[str, FakeConceptMapper] = field(default_factory=dict)
+
+    @classmethod
+    def from_base_uris(cls, uris: typing.Set[str]) -> 'FakeBidirectionalConceptsMapper':
+        return cls(concept_mappings={uri: FakeConceptMapper.from_base_uri(uri) for uri in uris})
+
+    def get_owl_sameAs_from_uri(self, uri: str) -> typing.Set[str]:
+        return self.concept_mappings[uri].owl_sameAs
+
+    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> typing.Set[str]:
+        return {
+            uri for uri, concept_mapper in self.concept_mappings.items() if owl_sameAs in concept_mapper.owl_sameAs
+        }
+
+    def add_uri(self, uri: str) -> 'FakeBidirectionalConceptsMapper':
+        if uri not in self.concept_mappings:
+            self.concept_mappings[uri] = FakeConceptMapper.from_base_uri(uri)
+        return self
+
+    def add_uris(self, uris: typing.Iterable[str]) -> 'FakeBidirectionalConceptsMapper':
+        for uri in uris:
+            self.add_uri(uri)
+        return self
+
+    @classmethod
+    def from_entry(cls, entry: 'Entry') -> 'FakeBidirectionalConceptsMapper':
+        if (entry.data is None) or ('contributors' not in entry.data):
+            return cls.from_base_uris(set())
+        contributors = entry.data['contributors']
+        roles = []
+        for contributor in contributors:
+            if 'roles' in contributor:
+                for role in contributor['roles']:
+                    if 'source' in role:
+                        roles.append(role['source'])
+        return cls.from_base_uris(set(roles))
+
+
+def add_other_role(entry: 'Entry') -> 'Entry':
+    if 'contributors' not in entry.data:
+        entry.data['contributors'] = []
+
+    entry.data['contributors'].append(
+        {
+            'label': 'Universität für Angewandte Kunst Wien',
+            'roles': [
+                {
+                    'label': {'de': 'Supervisor', 'en': 'supervisor'},
+                    'source': 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role',
+                }
+            ],
+        },
+    )
+    entry.save()
+    entry.refresh_from_db()
+    return entry
+
+
+def add_other_phaidra_role(data: dict) -> dict:
+    data['metadata']['json-ld']['role:csl'] = [
+        {
+            '@type': 'schema:Person',
+            'skos:exactMatch': [
+                {
+                    '@value': 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role',
+                    '@type': 'ids:uri'
+                },
+            ],
+            'schema:name': [
+                {
+                    '@value': 'Universität für Angewandte Kunst Wien',
+                },
+            ]
+        }
+    ]
+    return data

@@ -1,4 +1,7 @@
-from marshmallow.validate import Length
+import typing
+from typing import Hashable
+
+from marshmallow.validate import Length, Validator, ValidationError
 
 from media_server.archiver.messages import validation as validation_messages
 
@@ -32,3 +35,26 @@ class ValidateSupervisor(ValidateLength1):
     so I'll write a validate class for Supervisor."""
 
     message_min = validation_messages.thesis.MISSING_SUPERVISOR
+
+
+class NotFalsyValidator(Validator):
+    """
+    If key not present in data, or not data[key] raise validation error.
+    """
+    message: str
+    key: Hashable
+    error: str
+
+    def __init__(self, key: typing.Hashable, message: str):
+        self.key = key
+        self.message = message
+        self.error = 'No error yet!'
+
+    def __call__(self, value: dict) -> dict:
+        return self.validate(value)
+
+    def validate(self, value: dict) -> dict:
+        if (self.key not in value) or (not value[self.key]):
+            self.error = self.message
+            raise ValidationError(self.message, [self.key, ])
+        return value

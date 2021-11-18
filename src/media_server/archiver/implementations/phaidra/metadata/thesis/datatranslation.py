@@ -91,8 +91,6 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
 
         for concept_mapping in contributor_role_mapping.concept_mappings.values():
             for phaidra_role in concept_mapping.owl_sameAs:
-                if 'loc.gov' not in phaidra_role:
-                    continue
                 phaidra_role_code = extract_phaidra_role_code(phaidra_role)
                 if phaidra_role_code in errors:
                     dynamic_errors[phaidra_role_code] = errors[phaidra_role_code]
@@ -161,6 +159,4 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
 
     def yield_phaidra_role_codes(self, phaidra_roles: typing.Iterable[str]) -> typing.Generator[str, None, None]:
         for phaidra_role in phaidra_roles:
-            if 'loc.gov' not in phaidra_role:
-                continue
             yield extract_phaidra_role_code(phaidra_role)

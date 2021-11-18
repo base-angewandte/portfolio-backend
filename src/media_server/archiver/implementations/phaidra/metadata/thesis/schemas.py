@@ -1,9 +1,12 @@
+import typing
 from typing import TYPE_CHECKING, Dict, List, Set
+
+from media_server.archiver.implementations.phaidra.metadata.thesis import must_use
 
 if TYPE_CHECKING:
     from marshmallow.base import FieldABC
 
-from marshmallow import Schema, ValidationError, fields, validates
+from marshmallow import Schema, ValidationError, fields, validates, validates_schema
 
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
     PersonSchema,
@@ -18,13 +21,23 @@ from media_server.archiver.implementations.phaidra.metadata.mappings.contributor
 from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
 from media_server.archiver.implementations.phaidra.utillities.validate import (
     ValidateAuthor,
-    ValidateLanguage,
-    ValidateSupervisor,
+    ValidateLanguage, NotFalsyValidator,
 )
 from media_server.archiver.messages.validation.thesis import MISSING_ENGLISH_ABSTRACT, MISSING_GERMAN_ABSTRACT
 
 
 class PhaidraThesisContainer(PhaidraContainer):
+
+    def __init__(self,
+                 *args,
+                 custom_validation_callables: typing.Optional[typing.List[typing.Callable]] = None,
+                 **kwargs
+                 ):
+
+        self.custom_validation_callables = custom_validation_callables \
+            if custom_validation_callables.__class__ is list else []
+        super(PhaidraThesisContainer, self).__init__(*args, **kwargs)
+
     role_aut = PortfolioNestedField(
         PersonSchema, many=True, validate=ValidateAuthor(), load_from='role:aut', dump_to='role:aut'
     )
@@ -38,14 +51,10 @@ class PhaidraThesisContainer(PhaidraContainer):
         required=True,
     )
 
-    role_supervisor = PortfolioNestedField(
-        PersonSchema,
-        many=True,
-        load_from='role:supervisor',
-        dump_to='role:supervisor',
-        validate=ValidateSupervisor(),
-        required=True,
-    )
+    @validates_schema(pass_original=True)
+    def validate_must_use_dynamic_fields(self, _, original_data):
+        for custom_validation_callable in self.custom_validation_callables:
+            custom_validation_callable(original_data)
 
     @validates('bf_note')
     def must_have_an_english_and_german_abstract(self, field_data: List[Dict]):
@@ -89,9 +98,18 @@ def _create_dynamic_phaidra_meta_data_schema(
             marshmallow_fields: Dict[str, 'FieldABC'] = schema.fields
             '''Do not overwrite static field definitions'''
             if schema_attribute not in marshmallow_fields:
-                marshmallow_fields[schema_attribute] = PortfolioNestedField(
+                # If there is a field in default/must use roles for validation get it
+                if concept_mapper.uri in must_use.DEFAULT_DYNAMIC_ROLES:
+                    schema.custom_validation_callables.append(
+                        NotFalsyValidator(
+                            key=phaidra_role_code,
+                            message=must_use.DEFAULT_DYNAMIC_ROLES[concept_mapper.uri].missing_message)
+                    )
+
+                field = PortfolioNestedField(
                     PersonSchema, many=True, required=False, load_from=phaidra_role_code, dump_to=phaidra_role_code
                 )
+                marshmallow_fields[schema_attribute] = field
     return schema
 
 

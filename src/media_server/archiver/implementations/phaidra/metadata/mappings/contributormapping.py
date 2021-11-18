@@ -18,7 +18,14 @@ class ConceptMapper:
     owl_sameAs: typing.Set[str]
 
     @classmethod
-    def from_base_uri(cls, uri: str) -> 'ConceptMapper':
+    def from_base_uri(cls, uri: str, must_includes: typing.Optional[typing.Set[str]] = None) -> 'ConceptMapper':
+        """
+        
+        :param uri: 
+        :param must_includes: if none of the words in the set are contained in a owl:sameAs, ignore entry.
+        Defaults to library of congress: {'loc.gov'}, pass empty set to bypass
+        :return: 
+        """
         graph = get_json_data(uri)['graph']
         for node in graph:
             if node['uri'] == uri:
@@ -38,6 +45,14 @@ class ConceptMapper:
                 f'with type {node["owl:sameAs"].__class__} '
                 f'and value {node["owl:sameAs"]}'
             )
+
+        must_includes = must_includes if must_includes.__class__ is set else {'loc.gov', }
+        if len(must_includes) > 0:
+            owl_sameAs = {
+                element for element in owl_sameAs
+                if any((must_include in element for must_include in must_includes))
+            }
+
         return cls(
             uri=node['uri'],
             owl_sameAs=owl_sameAs,
@@ -71,7 +86,7 @@ class BidirectionalConceptsMapper:
             self.concept_mappings[uri] = ConceptMapper.from_base_uri(uri)
         return self
 
-    def add_uris(self, uris: typing.Set[str]) -> 'BidirectionalConceptsMapper':
+    def add_uris(self, uris: typing.Iterable[str]) -> 'BidirectionalConceptsMapper':
         for uri in uris:
             self.add_uri(uri)
         return self
