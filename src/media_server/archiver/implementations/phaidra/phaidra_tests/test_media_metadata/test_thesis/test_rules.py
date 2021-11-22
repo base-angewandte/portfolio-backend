@@ -307,24 +307,21 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertEqual({}, errors)
 
     def test_error_transformation_missing_field(self):
-        return  # TODO reinstate after changes made
         translator = PhaidraThesisMetaDataTranslator()
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, self.mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, self.mapping)
         self.assertEqual(
             portfolio_errors,
             self.expected_portfolio_errors,
         )
 
     def test_error_transformation_empty_field(self):
-        return  # TODO reinstate after changes made
         translator = PhaidraThesisMetaDataTranslator()
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_empty_field, self.mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, self.mapping)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
-        return  # TODO reinstate after changes made
         media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=False))
         controller = DefaultArchiveController(
             media.owner,
@@ -348,7 +345,6 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertIsNone(controller.validate())
 
     def test_endpoint_validation_fail(self):
-        return  # TODO reinstate after changes made
         media = self.model_provider.get_media(self.model_provider.get_entry(supervisor=False))
         response = self.client_provider.get_media_primary_key_response(media)
         self.assertEqual(response.status_code, 400)
@@ -410,6 +406,9 @@ class EmptyThesisTestCase(TestCase):
         ],
     }
 
+    model_provider: 'ModelProvider'
+    client_provider: 'ClientProvider'
+
     @classmethod
     def setUpTestData(cls):
         cls.model_provider = ModelProvider()
@@ -435,7 +434,6 @@ class EmptyThesisTestCase(TestCase):
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 
     def test_error_transformation(self):
-        return  # TODO reinstate after changes made
         translator = PhaidraThesisMetaDataTranslator()
         # Need to test dynamic here
         entry = self.model_provider.get_entry(
@@ -451,7 +449,6 @@ class EmptyThesisTestCase(TestCase):
         )
 
     def test_endpoint_validation_fail(self):
-        return  # TODO reinstate after changes made
         media = self.model_provider.get_media(
             self.model_provider.get_entry(
                 supervisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
@@ -460,7 +457,7 @@ class EmptyThesisTestCase(TestCase):
         response = self.client_provider.get_media_primary_key_response(media)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.data,
+            response.json(),
             self.expected_portfolio_errors,
         )
 
@@ -481,6 +478,9 @@ class MustHaveEnglishAbstractTestCase(TestCase):
             MISSING_ENGLISH_ABSTRACT,
         ]
     }
+
+    model_provider: 'ModelProvider'
+    client_provider: 'ClientProvider'
 
     @classmethod
     def setUpTestData(cls):
@@ -535,6 +535,9 @@ class MustHaveGermanAbstractTestCase(TestCase):
             MISSING_GERMAN_ABSTRACT,
         ]
     }
+
+    model_provider: 'ModelProvider'
+    client_provider: 'ClientProvider'
 
     @classmethod
     def setUpTestData(cls):

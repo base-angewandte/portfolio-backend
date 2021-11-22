@@ -982,21 +982,14 @@ class DynamicPersonsTestCase(TestCase):
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraThesisMetaDataTranslator()
-        self.assertRaises(
-            InternalValidationError,
-            lambda: translator._translate_errors_with_dynamic_structure(
+        portfolio_errors = translator._translate_errors_with_dynamic_structure(
                 contributor_role_mapping=mapping,
                 errors={
-                    'role:act': {
-                        'skos:exactMatch': {
-                            0: {
-                                '@value': [MISSING_DATA_FOR_REQUIRED_FIELD],
-                            },
-                        },
-                    }
+                    'role:act': [MISSING_DATA_FOR_REQUIRED_FIELD],
                 },
-            ),
-        )
+            )
+        expected_errors = {'data': {'contributors': [MISSING_DATA_FOR_REQUIRED_FIELD, ]}}
+        self.assertEqual(expected_errors, portfolio_errors)
 
 
 class StaticDataTestCase(TestCase):

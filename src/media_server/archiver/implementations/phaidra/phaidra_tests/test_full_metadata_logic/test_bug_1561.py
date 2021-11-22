@@ -1,6 +1,11 @@
 """
 https://basedev.uni-ak.ac.at/redmine/issues/1561
 
+This file contains two parts: One, that tests the issue itself and later on a part with a lot of test classes, that
+check the steps to solve the issue.
+
+Here is description, of what is to do:
+
 After having a talk with Christoph Hoffmann, we came to the agreement, that the following is required:
 
 - Removal of static role:supervisor
@@ -16,8 +21,7 @@ code requirements:
       - [] on no supervisor
       - [object, …] on supervisor-translation
   - error translation:
-    # TODO: match previous result
-    - translate {role:supervisor-translation: [Error-Codes] ro {role:supervisor: [Error-Codes]} 
+    - translate {role:supervisor-translation: [Error-Codes] ro {role:supervisor: [Error-Codes]}
 
 - Schema:
     - on role:supervisor-translation = [] return   role:supervisor-translation: [MISSING_SUPERVISOR]
@@ -32,6 +36,8 @@ code requirements:
 
 """
 import typing
+
+import requests
 from rest_framework.test import APITestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
@@ -47,12 +53,56 @@ if typing.TYPE_CHECKING:
     from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
         PhaidraThesisContainer, PhaidraThesisMetaData
 
-# Utilities
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, \
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider, \
     FakeBidirectionalConceptsMapper, PhaidraContainerGenerator, add_other_role, add_other_phaidra_role
 
 
-# Tests!
+# --------------------------
+# Issue TestCase
+# --------------------------
+
+class ArchivedSupervisorRole(APITestCase):
+
+    entry_archive_id: str
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        entry = model_provider.get_entry(supervisor=True)
+        media = model_provider.get_media(entry)
+        client_provider = ClientProvider(model_provider)
+        response = client_provider.get_media_primary_key_response(media, only_validate=False)
+        if response.status_code != 200:
+            raise RuntimeError(
+                f'Failed to set up test data. Server responded with status code {response.status_code} '
+                f'and content {response.content}'
+            )
+        entry.refresh_from_db()
+        archive_id = entry.archive_id
+        response = requests.get(f'https://services.phaidra-sandbox.univie.ac.at/api/object/{archive_id}/jsonld')
+        if response.status_code != 200:
+            raise RuntimeError(
+                f'Failed to set up test data. Phaidra responded with status code {response.status_code} '
+                f'and content {response.content}'
+            )
+        cls.phaidra_data = response.json()
+
+    def test_no_role_supervisor_in_phaidra(self):
+        self.assertNotIn(
+            'role:supervisor',
+            self.phaidra_data
+        )
+
+    def test_translated_supervisor_in_phaidra(self):
+        self.assertIn(
+            'role:dgs',
+            self.phaidra_data
+        )
+
+
+# -------------------------------
+# Steps to solve issue test cases
+# -------------------------------
 
 
 class NoThesisNoRolesTestCase(APITestCase):
@@ -104,6 +154,20 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
     entry_kwargs = {'supervisor': False, 'thesis_type': True}
     phaidra_container_kwargs = {'respect_supervisor_role': False}
     translator_class: typing.Type[PhaidraThesisMetaDataTranslator] = PhaidraThesisMetaDataTranslator
+
+    expected_phaidra_error = {
+                'metadata': {
+                    'json-ld': {
+                        'role:dgs': [MISSING_SUPERVISOR, ]
+                    }
+                }
+            }
+
+    expected_portfolio_error = {
+        'data': {
+            'contributors': [MISSING_SUPERVISOR, ]
+        }
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -164,13 +228,15 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
         """A schema should return a validation error for missing supervisor"""
         self.assertEqual(
             self.phaidra_errors,
-            {
-                'metadata': {
-                    'json-ld': {
-                        'role:dgs': [MISSING_SUPERVISOR, ]
-                    }
-                }
-            }
+            self.expected_phaidra_error,
+        )
+
+    def test_error_translation(self):
+        """The phaidra error from marshmallow should be mapped to the portfolio scheme"""
+        # noinspection PyTypeChecker
+        self.assertEqual(
+            self.expected_portfolio_error,
+            self.translator.translate_errors(self.expected_phaidra_error, self.mapping)
         )
 
 
@@ -209,6 +275,14 @@ class ThesisWithSupervisorTestCase(ThesisNoRolesTestCase):
         self.assertNotIn(
             'role:dgs',
             self.phaidra_errors['metadata']['json-ld']
+        )
+
+    def test_error_translation(self):
+        """There should be no supervisor error in the translated errors (and therefore no parent property data)"""
+        # noinspection PyTypeChecker
+        self.assertNotIn(
+            'data',
+            self.translator.translate_errors(self.phaidra_errors, self.mapping)
         )
 
 
@@ -266,6 +340,14 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
             self.phaidra_errors['metadata']['json-ld']
         )
 
+    def test_error_translation(self):
+        """There should be no supervisor in the translated error result (and therefore no parent property data)"""
+        # noinspection PyTypeChecker
+        self.assertNotIn(
+            'data',
+            self.translator.translate_errors(self.phaidra_errors, self.mapping)
+        )
+
 
 class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRoleTestCase):
     """
@@ -298,4 +380,14 @@ class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRol
         self.assertEqual(
             inner_errors['role:dgs'],
             [MISSING_SUPERVISOR, ]
+        )
+
+    def test_error_translation(self):
+        """There should be an missing supervisor error message in the translated errors"""
+        # noinspection PyTypeChecker
+        errors = self.translator.translate_errors(self.phaidra_errors, self.mapping)
+        self.assertIn('contributors', errors['data'])
+        self.assertEqual(
+            [MISSING_SUPERVISOR, ],
+            errors['data']['contributors'],
         )

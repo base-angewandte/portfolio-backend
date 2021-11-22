@@ -92,5 +92,5 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
         ]
 
     def _translate_license(self, phaidra_license: str) -> Set[str]:
-        concept_mapper = ConceptMapper.from_base_uri(phaidra_license)
+        concept_mapper = ConceptMapper.from_base_uri(phaidra_license, set())
         return concept_mapper.owl_sameAs

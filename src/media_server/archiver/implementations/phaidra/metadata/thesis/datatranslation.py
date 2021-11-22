@@ -87,16 +87,22 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
         :return:
         """
 
-        dynamic_errors = {}
-
+        contributor_errors = []
         for concept_mapping in contributor_role_mapping.concept_mappings.values():
             for phaidra_role in concept_mapping.owl_sameAs:
                 phaidra_role_code = extract_phaidra_role_code(phaidra_role)
-                if phaidra_role_code in errors:
-                    dynamic_errors[phaidra_role_code] = errors[phaidra_role_code]
+                if phaidra_role_code not in errors:
+                    continue
+                this_errors = errors[phaidra_role_code]
+                if this_errors.__class__ is not list:
+                    raise RuntimeError(f'Expected errors at this level with class list, got {errors.__class__}')
+                for error in this_errors:
+                    if error.__class__ is not str:
+                        raise InternalValidationError(error)
+                    contributor_errors.append(error)
 
-        if dynamic_errors:
-            raise InternalValidationError(str(dynamic_errors))
+        if contributor_errors:
+            return {'data': {'contributors': contributor_errors, }, }
         else:
             return {}
 
@@ -106,8 +112,15 @@ class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
                 data_with_static_structure[key] = value
             elif data_with_static_structure[key].__class__ is list and value.__class__ is list:
                 data_with_static_structure[key] += value
+            elif data_with_static_structure[key].__class__ is dict and value.__class__ is dict:
+                data_with_static_structure[key] = self._merge(
+                    data_with_static_structure[key], data_with_dynamic_structure[key]
+                )
             else:
-                pass  # All we do right now
+                raise RuntimeError(
+                    f'Can not merge dynamic data of type {value.__class__} '
+                    f'with static data of type {data_with_static_structure[key].__class__}'
+                )
         return data_with_static_structure
 
     def _get_data_with_dynamic_structure(
