@@ -33,14 +33,14 @@ class Command(BaseCommand):
 
         # Now fetch our entries
         if options['all']:
-            entries = Entry.objects.all()
+            entries = Entry.objects.filter(published=True)
             if not entries:
-                self.stdout.write(self.style.WARNING('Your portfolio does not contain any entries'))
+                self.stdout.write(self.style.WARNING('Your portfolio does not contain any published entries'))
                 return
         else:
-            entries = Entry.objects.filter(pk__in=options['id'])
+            entries = Entry.objects.filter(pk__in=options['id'], published=True)
             if not entries:
-                self.stdout.write(self.style.WARNING('No entries found with provided IDs'))
+                self.stdout.write(self.style.WARNING('No published entries found with provided IDs'))
                 return
 
         created = []
