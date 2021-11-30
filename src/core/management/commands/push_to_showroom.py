@@ -128,6 +128,7 @@ class Command(BaseCommand):
                     }
                 elif medium.type == VIDEO_TYPE:
                     data['specifics'] = {
+                        'duration': medium_data['metadata'].get('Duration'),
                         'cover': medium_data.get('cover'),
                         'playlist': medium_data.get('playlist'),
                     }
