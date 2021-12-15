@@ -69,7 +69,7 @@ def _create_value_language_objects_from_label_dict(container: Dict, raise_=False
     return value_language_objects
 
 
-def create_person_object(source: str, name: str) -> Dict[str, List[Dict[str, str]]]:
+def create_person_object(source: Optional[str], name: str) -> Dict[str, List[Dict[str, str]]]:
     person_object = {
         **_create_type_object('schema:Person'),
         'skos:exactMatch': [],
@@ -303,9 +303,12 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         if self.primary_level_data_key not in model.data:
             return []
         return [
-            create_person_object(name=person['label'], source=person['source'])
+            create_person_object(
+                name=person['label'],
+                source=person['source'] if 'source' in person else None
+            )
             for person in model.data[self.primary_level_data_key]
-            if ('label' in person) and ('source' in person)
+            if ('label' in person)
         ]
 
     def _get_contributors(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
