@@ -189,12 +189,10 @@ class Bug1671TestCase(TestCase):
         model_provider = ModelProvider()
         entry = model_provider.get_entry(thesis_type=True, supervisor=True)
         entry.data['contributors'].append(
-            [
                 {
                     'label': 'Willy',
                     'roles': []
                 }
-            ]
         )
         entry.save()
         entry.refresh_from_db()

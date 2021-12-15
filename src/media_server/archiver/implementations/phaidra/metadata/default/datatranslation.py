@@ -532,22 +532,30 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
             return self.data_with_dynamic_structure
         contributors: List[Dict] = model.data['contributors']
         for contributor in contributors:
-            if 'roles' not in contributor:
-                continue
-            for role in contributor['roles']:
-                if 'source' not in role:
-                    continue
-                phaidra_roles = self.mapping.get_owl_sameAs_from_uri(role['source'])
-                for phaidra_role_code in self.yield_phaidra_role_codes(phaidra_roles):
-                    person_object = create_person_object(
-                        name=contributor['label'],
-                        source=role['source'] if 'source' in role else None,
+            contributor_source = contributor['source'] if 'source' in contributor else None
+            contributor_label = contributor['label']
+            # Either generate a role:XXX entry for every role of the contributor, or default role:ctb
+            phaidra_role_codes = self.yield_phaidra_role_codes_from_roles(contributor['roles']) \
+                if 'roles' in contributor and contributor['roles']\
+                else ['role:ctb']
+
+            for phaidra_role_code in phaidra_role_codes:
+                person_object = create_person_object(
+                        name=contributor_label,
+                        source=contributor_source,
                     )
-                    if person_object not in self.data_with_dynamic_structure[phaidra_role_code]:
-                        self.data_with_dynamic_structure[phaidra_role_code].append(person_object)
+                if person_object not in self.data_with_dynamic_structure[phaidra_role_code]:
+                    self.data_with_dynamic_structure[phaidra_role_code].append(person_object)
 
         return self.data_with_dynamic_structure
 
     def yield_phaidra_role_codes(self, phaidra_roles: typing.Iterable[str]) -> typing.Generator[str, None, None]:
         for phaidra_role in phaidra_roles:
             yield extract_phaidra_role_code(phaidra_role)
+
+    def yield_phaidra_role_codes_from_roles(self, roles: typing.Iterable[Dict]):
+        for role in roles:
+            if 'source' not in role:
+                continue
+            phaidra_roles = self.mapping.get_owl_sameAs_from_uri(role['source'])
+            yield from self.yield_phaidra_role_codes(phaidra_roles)

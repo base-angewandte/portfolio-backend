@@ -834,12 +834,7 @@ class DynamicPersonsTestCase(TestCase):
                 'role:act': [
                     {
                         '@type': 'schema:Person',
-                        'skos:exactMatch': [
-                            {
-                                '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor',
-                                 '@type': 'ids:uri'
-                            },
-                        ],
+                        'skos:exactMatch': [],
                         'schema:name': [
                             {
                                 '@value': 'Universität für Angewandte Kunst Wien',
@@ -850,7 +845,7 @@ class DynamicPersonsTestCase(TestCase):
             },
         )
 
-    def test_translate_faulty_data(self):
+    def test_translate_no_role_contributors(self):
         entry = Entry(
             data={
                 'contributors': [
@@ -864,10 +859,15 @@ class DynamicPersonsTestCase(TestCase):
 
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraThesisMetaDataTranslator(mapping)
-        self.assertEqual(
-            translator._get_data_with_dynamic_structure(entry),
-            {},
+        data = translator._get_data_with_dynamic_structure(entry)
+        self.assertIn(
+            'role:ctb',
+            data,
         )
+        ctbs = data['role:ctb']
+        self.assertEqual(len(ctbs), 1)
+        ctb = ctbs[0]
+        self.assertEqual(ctb['schema:name'][0]['@value'], 'Universität für Angewandte Kunst Wien')
 
     def test_validate_data_correct(self):
         entry = Entry(

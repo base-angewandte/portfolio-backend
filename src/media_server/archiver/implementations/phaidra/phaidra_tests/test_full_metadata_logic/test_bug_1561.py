@@ -307,12 +307,7 @@ class ThesisWithSupervisorTestCase(APITestCase):
         expected = [
                 {
                     '@type': 'schema:Person',
-                    'skos:exactMatch': [
-                        {
-                            '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
-                            '@type': 'ids:uri'
-                        },
-                    ],
+                    'skos:exactMatch': [],
                     'schema:name': [
                         {
                             '@value': 'Universität für Angewandte Kunst Wien',
@@ -404,12 +399,7 @@ class ThesisWithSupervisorAndOtherRoleTestCase(APITestCase):
         expected = [
                 {
                     '@type': 'schema:Person',
-                    'skos:exactMatch': [
-                        {
-                            '@value': 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor',
-                            '@type': 'ids:uri'
-                        },
-                    ],
+                    'skos:exactMatch': [],
                     'schema:name': [
                         {
                             '@value': 'Universität für Angewandte Kunst Wien',
