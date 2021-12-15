@@ -7,6 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from core.models import Entry
+from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
     PhaidraThesisMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
@@ -229,4 +230,66 @@ class Bug1671TestCase(TestCase):
         self.assertEqual(
             {},
             self.validation
+        )
+
+
+class Bug1672TestCase(TestCase):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1672
+
+    Contributors get source of role assigned to phaidra
+
+    Thy should get the source of the contributor
+    """
+
+    role_source = 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role'
+    contributor_source = 'http://d-nb.info/gnd/5299671-2'
+    translated_data: dict
+
+    @classmethod
+    def setUpTestData(cls):
+        entry = Entry(
+            title='AnyContributor',
+            data={
+                'contributors': [
+                    {
+                        'label': 'Universität für Angewandte Kunst Wien',
+                        'source': cls.contributor_source,
+                        'roles': [
+                            {
+                                'source': cls.role_source,
+                                'label': {'en': 'Actor', 'de': 'Darsteller*in'}
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        # noinspection PyTypeChecker
+        cls.translated_data = PhaidraMetaDataTranslator(
+            FakeBidirectionalConceptsMapper.from_entry(entry)
+        ).translate_data(entry)['metadata']['json-ld']
+
+    def test_right_source_chosen(self):
+        self.assertIn(
+            'role:csl',
+            self.translated_data,
+            'Key for fake role has not been generated'
+        )
+        csls = self.translated_data['role:csl']
+        self.assertEqual(
+            len(csls),
+            1,
+            'To many persons for fake role have been generated'
+        )
+        csl = csls[0]
+        self.assertEqual(
+            len(csl['skos:exactMatch']),
+            1,
+            'More then one match was generated'
+        )
+        match = csl['skos:exactMatch'][0]
+        self.assertEqual(
+            match['@value'],
+            self.contributor_source
         )
