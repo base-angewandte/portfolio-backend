@@ -5,7 +5,7 @@ A couple of different bugs / missing features concerning contributor translation
 from django.test import TestCase
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import PhaidraThesisMetaDataTranslator
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
     ModelProvider
 
@@ -25,7 +25,7 @@ class Bug1659TranslationTestCase(TestCase):
     """
 
     entry: 'Entry'
-    translator: 'PhaidraMetaDataTranslator'
+    translator: 'PhaidraThesisMetaDataTranslator'
 
     @classmethod
     def setUpTestData(cls):
@@ -45,7 +45,7 @@ class Bug1659TranslationTestCase(TestCase):
         cls.entry.save()
         cls.entry.refresh_from_db()
         # noinspection PyTypeChecker
-        cls.translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(cls.entry))
+        cls.translator = PhaidraThesisMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(cls.entry))
         cls.translated_data = cls.translator.translate_data(cls.entry)
 
     def test_free_contributor_in_translation(self):
@@ -57,5 +57,7 @@ class Bug1659TranslationTestCase(TestCase):
             len(self.translated_data['metadata']['json-ld']['role:aut']),
             1
         )
+
+
 
 
