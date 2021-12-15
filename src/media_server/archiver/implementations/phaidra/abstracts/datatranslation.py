@@ -5,21 +5,26 @@ from media_server.archiver.interface.exceptions import InternalValidationError
 
 if TYPE_CHECKING:
     from django.db.models import Model
+    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
+        BidirectionalConceptsMapper
 
 
 class AbstractDataTranslator(ABC):
     @abstractmethod
     def translate_data(self, model: 'Model') -> Union[Dict, List]:
-        """Return Data without the top most level key of target.
-
-        User will take care of it
-        todo: change
+        """
+        Extract and translate data from a django model to phaidra's data model
         """
         pass
 
     @abstractmethod
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        """Return data including the top most level data key."""
+        """
+        Translate error schema validation messages to portfolio's data schema, so that the user can adjust the data
+
+        :param errors: 
+        :return: 
+        """
         if (errors is None) or len(errors) == 0:
             return {}
 
@@ -34,6 +39,16 @@ class AbstractDataTranslator(ABC):
             sub_target = sub_target[key]
         sub_target[last_key] = value
         return target
+    
+    
+class AbstractConceptMappingDataTranslator(AbstractDataTranslator, ABC):
+    """
+    Use a concept mapper to extend translation capabilities.
+    """
+    mapping: 'BidirectionalConceptsMapper'
+
+    def __init__(self, mapping: 'BidirectionalConceptsMapper'):
+        self.mapping = mapping
 
 
 class AbstractUserUnrelatedDataTranslator(AbstractDataTranslator, ABC):

@@ -45,7 +45,8 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, \
+    FakeBidirectionalConceptsMapper
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 
@@ -352,7 +353,10 @@ class MissingTypeTestCase(TestCase):
 
     def test_translate_data(self):
         entry = self.entry
-        translated_data = PhaidraMetaDataTranslator().translate_data(entry)
+        # noinspection PyTypeChecker
+        translated_data = PhaidraMetaDataTranslator(
+            FakeBidirectionalConceptsMapper.from_entry(entry)
+        ).translate_data(entry)
         self.assertEqual(translated_data, self.expected_translated_data)
 
     def test_validate_data(self):
@@ -745,7 +749,8 @@ class StaticGenericPersonTestCase(TestCase):
 
 
 class RecursiveErrorFilterTestCase(TestCase):
-    translator = PhaidraMetaDataTranslator()
+    # noinspection PyTypeChecker
+    translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_base_uris(set()))
 
     def test_normal_errors(self):
         some_errors = {
@@ -795,9 +800,9 @@ class RecursiveErrorFilterTestCase(TestCase):
 class DynamicPersonsTestCase(TestCase):
     def test_translate_empty_data(self):
         entry = Entry()
-        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        dynamic_data = translator._get_data_with_dynamic_structure(entry)
         self.assertEqual(
             {},
             dynamic_data,
@@ -820,9 +825,9 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
 
-        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        dynamic_data = translator._get_data_with_dynamic_structure(entry, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        dynamic_data = translator._get_data_with_dynamic_structure(entry)
         self.assertEqual(
             dynamic_data,
             {
@@ -857,10 +862,10 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
 
-        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
         self.assertEqual(
-            translator._get_data_with_dynamic_structure(entry, mapping),
+            translator._get_data_with_dynamic_structure(entry),
             {},
         )
 
@@ -945,7 +950,6 @@ class DynamicPersonsTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        translator = PhaidraThesisMetaDataTranslator()
         entry = Entry(
             data={
                 'contributors': [
@@ -962,7 +966,8 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        self.assertEqual({}, translator._translate_errors_with_dynamic_structure({}, mapping))
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        self.assertEqual({}, translator._translate_errors_with_dynamic_structure({}))
 
     def test_translate_error_not_empty(self):
         entry = Entry(
@@ -981,9 +986,8 @@ class DynamicPersonsTestCase(TestCase):
             }
         )
         mapping = BidirectionalConceptsMapper.from_entry(entry)
-        translator = PhaidraThesisMetaDataTranslator()
+        translator = PhaidraThesisMetaDataTranslator(mapping)
         portfolio_errors = translator._translate_errors_with_dynamic_structure(
-                contributor_role_mapping=mapping,
                 errors={
                     'role:act': [MISSING_DATA_FOR_REQUIRED_FIELD],
                 },
@@ -995,7 +999,8 @@ class DynamicPersonsTestCase(TestCase):
 class StaticDataTestCase(TestCase):
     def test_translate_empty_data(self):
         entry = Entry()
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         # does not raise anything :-( title is '' default, but not nullable …
         # self.assertRaises(TypeError, lambda: translator.translate_data(entry))
         data = translator.translate_data(entry)
@@ -1031,7 +1036,8 @@ class StaticDataTestCase(TestCase):
         :return:
         """
         entry = Entry(title='A Book With A Cover And No Pages At All.')
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         data = translator.translate_data(entry)
         data = translator._extract_from_container(data)
         self.assertEqual(
@@ -1070,7 +1076,8 @@ class StaticDataTestCase(TestCase):
                 'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/installation',
             },
         )
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         data = translator.translate_data(entry)
         # we do not want to deal with the outer scope
         data = translator._extract_from_container(data)
@@ -1104,7 +1111,8 @@ class StaticDataTestCase(TestCase):
 
     def test_translate_faulty_data(self):
         entry = Entry()
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         # does not raise anything :-( title is '' default, but not nullable …
         # self.assertRaises(TypeError, lambda: translator.translate_data(entry))
         data = translator.translate_data(entry)
@@ -1185,7 +1193,8 @@ class StaticDataTestCase(TestCase):
         )
 
     def test_translate_errors_empty(self):
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_base_uris(set()))
         self.assertEqual({}, translator.translate_errors({}))
 
 
@@ -1217,7 +1226,8 @@ class PhaidraRuleTest(TestCase):
         :param entry:
         :return: errors
         """
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         schema = PhaidraMetaData()
         phaidra_data = translator.translate_data(entry)
         phaidra_errors = schema.validate(phaidra_data)
@@ -1232,7 +1242,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_translate_only_not_implemented(self):
         entry = self.model_provider.get_entry(german_abstract=False, english_abstract=False, french_abstract=True)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1241,7 +1252,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_mixed(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=True)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1250,7 +1262,8 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
 
     def test_implemented(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=False)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1265,7 +1278,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_akan(self):
         entry = self.model_provider.get_entry(akan_language=True, german_language=False)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1276,7 +1290,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_german(self):
         entry = self.model_provider.get_entry(german_language=True, akan_language=False)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1287,7 +1302,8 @@ class TranslateLanguageTestCase(TestCase):
 
     def test_akan_and_german(self):
         entry = self.model_provider.get_entry(german_language=True, akan_language=True)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
@@ -1412,12 +1428,12 @@ class AllDataTestCase(TestCase):
 
     def test_incorrect_data_thesis(self):
         entry = self.model_provider.get_entry(author=False, type_=True, thesis_type=True)
-        translator = PhaidraThesisMetaDataTranslator()
         mapping = BidirectionalConceptsMapper.from_entry(entry)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
         schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
-        phaidra_data = translator.translate_data(entry, mapping)
+        phaidra_data = translator.translate_data(entry)
         phaidra_errors = schema.validate(phaidra_data)
-        errors = translator.translate_errors(phaidra_errors, mapping)
+        errors = translator.translate_errors(phaidra_errors)
         self.assertEqual(
             errors,
             {

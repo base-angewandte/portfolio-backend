@@ -87,12 +87,12 @@ class AtLeastOneAuthorTestCase(TestCase):
         self.assertEqual({}, errors)
 
     def test_error_transformation(self):
-        translator = PhaidraThesisMetaDataTranslator()
         entry = self.model_provider.get_entry(author=False)
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
         mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_error, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_error)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -197,12 +197,12 @@ class MustHaveALanguageTestCase(TestCase):
         self.assertEqual(errors, {})
 
     def test_error_transformation(self):
-        translator = PhaidraThesisMetaDataTranslator()
         entry = self.model_provider.get_entry(german_language=False, akan_language=False)
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
         mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -307,18 +307,18 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertEqual({}, errors)
 
     def test_error_transformation_missing_field(self):
-        translator = PhaidraThesisMetaDataTranslator()
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, self.mapping)
+        translator = PhaidraThesisMetaDataTranslator(self.mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors)
         self.assertEqual(
             portfolio_errors,
             self.expected_portfolio_errors,
         )
 
     def test_error_transformation_empty_field(self):
-        translator = PhaidraThesisMetaDataTranslator()
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors, self.mapping)
+        translator = PhaidraThesisMetaDataTranslator(self.mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors)
         self.assertEqual(self.expected_portfolio_errors, portfolio_errors)
 
     def test_implementation_validation_fail(self):
@@ -434,15 +434,14 @@ class EmptyThesisTestCase(TestCase):
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 
     def test_error_transformation(self):
-        translator = PhaidraThesisMetaDataTranslator()
-        # Need to test dynamic here
         entry = self.model_provider.get_entry(
             supervisor=False, author=False, german_language=False, english_abstract=False, german_abstract=False
         )
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
         mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field)
         self.assertEqual(
             portfolio_errors,
             self.expected_portfolio_errors,
@@ -498,12 +497,12 @@ class MustHaveEnglishAbstractTestCase(TestCase):
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 
     def test_error_transformation(self):
-        translator = PhaidraThesisMetaDataTranslator()
         entry = self.model_provider.get_entry(english_abstract=False)
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
         mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field)
         self.assertEqual(
             portfolio_errors,
             self.expected_portfolio_errors,
@@ -555,12 +554,12 @@ class MustHaveGermanAbstractTestCase(TestCase):
         self.assertEqual(errors, self.expected_phaidra_errors_missing_field)
 
     def test_error_transformation(self):
-        translator = PhaidraThesisMetaDataTranslator()
         entry = self.model_provider.get_entry(german_abstract=False)
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
         mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
-        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field, mapping)
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        portfolio_errors = translator.translate_errors(self.expected_phaidra_errors_missing_field)
         self.assertEqual(
             portfolio_errors,
             self.expected_portfolio_errors,

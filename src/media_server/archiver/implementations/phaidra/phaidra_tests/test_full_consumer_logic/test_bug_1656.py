@@ -12,7 +12,8 @@ from rest_framework.test import APITestCase
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider, \
+    FakeBidirectionalConceptsMapper
 
 
 class NotThesisContributorsTestCase(APITestCase):
@@ -66,7 +67,8 @@ class NotThesisWithContributorDataTranslationTestCase(TestCase):
         model_provider = ModelProvider()
         # The supervisor is a part of the contributors
         entry = model_provider.get_entry(thesis_type=False, supervisor=True)
-        translator = PhaidraMetaDataTranslator()
+        # noinspection PyTypeChecker
+        translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry))
         cls.translated_data = translator.translate_data(entry)
 
     def test_contributors_should_appear_in_data_for_phaidra(self):

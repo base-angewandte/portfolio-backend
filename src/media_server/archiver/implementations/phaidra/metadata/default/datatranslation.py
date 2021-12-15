@@ -1,18 +1,24 @@
 """Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
 st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
+import typing
+from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
 from urllib.parse import urlparse
 
+from media_server.archiver.interface.exceptions import InternalValidationError
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
-
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import extract_phaidra_role_code
 if TYPE_CHECKING:
     from media_server.models import Entry
+    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
+        BidirectionalConceptsMapper
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import (
     AbstractDataTranslator,
     AbstractUserUnrelatedDataTranslator,
+    AbstractConceptMappingDataTranslator
 )
 
 
@@ -186,7 +192,8 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
     json_keys: List[Hashable]
 
     def __init__(
-        self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None, raise_on_not_found_error: bool = False
+            self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None,
+            raise_on_not_found_error: bool = False
     ):
         self.entry_attribute = entry_attribute
         self.raise_on_not_found_error = raise_on_not_found_error
@@ -313,7 +320,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         return contributors
 
 
-class PhaidraMetaDataTranslator(AbstractDataTranslator):
+class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
     See .schemas.
@@ -335,7 +342,9 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
 
     _key_translator_mapping: Dict[str, AbstractDataTranslator]
 
-    def __init__(self):
+    def __init__(self, mapping: 'BidirectionalConceptsMapper'):
+        super().__init__(mapping)
+        self.data_with_dynamic_structure = defaultdict(list)
         self._key_translator_mapping = {
             'edm:hasType': EdmHasTypeTranslator(),
             'dce:title': DCTitleTranslator(),
@@ -364,15 +373,18 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             ),
         }
 
-    def translate_data(self, model: 'Entry') -> dict:
-        data = self._translate_data(model)
-        data = self._wrap_in_container(data)
-        return data
+    def translate_data(self, model: 'Entry') -> Dict:
+        static_data = self._translate_data(model)
+        dynamic_data = self._get_data_with_dynamic_structure(model)
+        all_data = self._merge(static_data, dynamic_data)
+        return self._wrap_in_container(all_data)
 
     def translate_errors(self, errors: Optional[Dict]) -> Dict:
         errors = self._extract_from_container(errors)
-        errors = self._translate_errors(errors)
-        return self._filter_errors(errors)
+        static_errors = self._translate_errors(errors)
+        dynamic_errors = self._translate_errors_with_dynamic_structure(errors)
+        all_errors = self._merge(static_errors, dynamic_errors)
+        return self._filter_errors(all_errors)
 
     def _translate_data(self, model: 'Entry') -> Dict:
         return {
@@ -459,3 +471,80 @@ class PhaidraMetaDataTranslator(AbstractDataTranslator):
             return data['metadata']['json-ld']
         except KeyError:
             return {}
+
+    def _translate_errors_with_dynamic_structure(self, errors: Dict):
+        """
+
+        :param errors:
+        :return:
+        """
+
+        contributor_errors = []
+        for concept_mapping in self.mapping.concept_mappings.values():
+            for phaidra_role in concept_mapping.owl_sameAs:
+                phaidra_role_code = extract_phaidra_role_code(phaidra_role)
+                if phaidra_role_code not in errors:
+                    continue
+                this_errors = errors[phaidra_role_code]
+                if this_errors.__class__ is not list:
+                    raise RuntimeError(f'Expected errors at this level with class list, got {errors.__class__}')
+                for error in this_errors:
+                    if error.__class__ is not str:
+                        raise InternalValidationError(error)
+                    contributor_errors.append(error)
+
+        if contributor_errors:
+            return {'data': {'contributors': contributor_errors, }, }
+        else:
+            return {}
+
+    def _merge(self, data_with_static_structure: dict, data_with_dynamic_structure: dict):
+        for key, value in data_with_dynamic_structure.items():
+            if key not in data_with_static_structure:
+                data_with_static_structure[key] = value
+            elif data_with_static_structure[key].__class__ is list and value.__class__ is list:
+                data_with_static_structure[key] += value
+            elif data_with_static_structure[key].__class__ is dict and value.__class__ is dict:
+                data_with_static_structure[key] = self._merge(
+                    data_with_static_structure[key], data_with_dynamic_structure[key]
+                )
+            else:
+                raise RuntimeError(
+                    f'Can not merge dynamic data of type {value.__class__} '
+                    f'with static data of type {data_with_static_structure[key].__class__}'
+                )
+        return data_with_static_structure
+
+    def _get_data_with_dynamic_structure(self, model: 'Entry') -> Dict:
+        self._extract_data_with_dynamic_structure(model)
+        # add keys in mapping aka must-use to data:
+        for concept_mapping in self.mapping.concept_mappings.values():
+            for phaidra_role_code in self.yield_phaidra_role_codes(concept_mapping.owl_sameAs):
+                if phaidra_role_code not in self.data_with_dynamic_structure:
+                    self.data_with_dynamic_structure[phaidra_role_code] = []
+        return self.data_with_dynamic_structure
+
+    def _extract_data_with_dynamic_structure(self, model: 'Entry') -> Dict[str, List]:
+        if (model.data is None) or ('contributors' not in model.data):
+            return self.data_with_dynamic_structure
+        contributors: List[Dict] = model.data['contributors']
+        for contributor in contributors:
+            if 'roles' not in contributor:
+                continue
+            for role in contributor['roles']:
+                if 'source' not in role:
+                    continue
+                phaidra_roles = self.mapping.get_owl_sameAs_from_uri(role['source'])
+                for phaidra_role_code in self.yield_phaidra_role_codes(phaidra_roles):
+                    person_object = create_person_object(
+                        name=contributor['label'],
+                        source=role['source'] if 'source' in role else None,
+                    )
+                    if person_object not in self.data_with_dynamic_structure[phaidra_role_code]:
+                        self.data_with_dynamic_structure[phaidra_role_code].append(person_object)
+
+        return self.data_with_dynamic_structure
+
+    def yield_phaidra_role_codes(self, phaidra_roles: typing.Iterable[str]) -> typing.Generator[str, None, None]:
+        for phaidra_role in phaidra_roles:
+            yield extract_phaidra_role_code(phaidra_role)

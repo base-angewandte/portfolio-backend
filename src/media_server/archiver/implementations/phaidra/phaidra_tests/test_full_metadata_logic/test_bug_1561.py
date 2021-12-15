@@ -110,14 +110,12 @@ class NoThesisNoRolesTestCase(APITestCase):
     entry: 'Entry'
     translator: 'PhaidraMetaDataTranslator'
 
-    entry_kwargs = {'supervisor': False, 'thesis_type': False}
-    translator_class: typing.Type['PhaidraMetaDataTranslator'] = PhaidraMetaDataTranslator
-
     @classmethod
     def setUpTestData(cls):
         model_provider = ModelProvider()
-        cls.entry = model_provider.get_entry(**cls.entry_kwargs)
-        cls.translator = cls.translator_class()        
+        cls.entry = model_provider.get_entry(supervisor=False, thesis_type=False)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(cls.entry))
 
     def test_no_role_supervisor_in_generated_data(self):
         self.assertNotIn(
@@ -133,27 +131,40 @@ class NoThesisNoRolesTestCase(APITestCase):
         )
 
 
-class NoThesisSupervisorTestCase(NoThesisNoRolesTestCase):
-    entry_kwargs = {'supervisor': True, 'thesis_type': False}
+class NoThesisSupervisorTestCase(APITestCase):
+
+    entry: 'Entry'
+    translator: 'PhaidraMetaDataTranslator'
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.entry = model_provider.get_entry(supervisor=True, thesis_type=False)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(cls.entry))
+
+    def test_no_role_supervisor_in_generated_data(self):
+        self.assertNotIn(
+            'role:supervisor',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
 
     def test_correct_translated_supervisor_property_in_generated_data(self):
-        """No dynamic translation here"""
-        self.assertNotIn(
+        """Still dynamic translation here"""
+        self.assertIn(
             'role:dgs',
             self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
 
-class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
+class ThesisNoRolesTestCase(APITestCase):
+    entry: 'Entry'
+    translator: 'PhaidraMetaDataTranslator'
     mapping: FakeBidirectionalConceptsMapper
     translator: PhaidraThesisMetaDataTranslator
     schema: 'PhaidraThesisMetaData'
     inner_schema: 'PhaidraThesisContainer'
     phaidra_errors: dict
-
-    entry_kwargs = {'supervisor': False, 'thesis_type': True}
-    phaidra_container_kwargs = {'respect_supervisor_role': False}
-    translator_class: typing.Type[PhaidraThesisMetaDataTranslator] = PhaidraThesisMetaDataTranslator
 
     expected_phaidra_error = {
                 'metadata': {
@@ -171,38 +182,38 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super().setUpTestData()
+        mode_provider = ModelProvider()
+        cls.entry = mode_provider.get_entry(supervisor=False, thesis_type=False)
         cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
         cls.mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraThesisMetaDataTranslator(cls.mapping)
         # noinspection PyTypeChecker
         cls.schema = create_dynamic_phaidra_thesis_meta_data_schema(cls.mapping)
         # to not have to this in every test
         cls.inner_schema = cls.schema.fields['metadata'].nested.fields['json_ld'].nested
         cls.phaidra_errors = cls.schema.validate(
-            PhaidraContainerGenerator().create_phaidra_container(**cls.phaidra_container_kwargs)
+            PhaidraContainerGenerator().create_phaidra_container(respect_supervisor_role=False)
         )
 
     def test_no_role_supervisor_in_generated_data(self):
-        # noinspection PyTypeChecker
         self.assertNotIn(
             'role:supervisor',
-            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
     def test_correct_translated_supervisor_property_in_generated_data(self):
         """The field is required in the schema"""
-        # noinspection PyTypeChecker
         self.assertIn(
             'role:dgs',
-            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
     def test_correct_translated_supervisor_value_in_generated_data(self):
         """No supervisor -> empty data"""
-        # noinspection PyTypeChecker
         self.assertEqual(
             [],
-            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+            self.translator.translate_data(self.entry)['metadata']['json-ld']['role:dgs']
         )
 
     def test_schema_has_no_supervisor_field(self):
@@ -233,20 +244,63 @@ class ThesisNoRolesTestCase(NoThesisNoRolesTestCase):
 
     def test_error_translation(self):
         """The phaidra error from marshmallow should be mapped to the portfolio scheme"""
-        # noinspection PyTypeChecker
         self.assertEqual(
             self.expected_portfolio_error,
-            self.translator.translate_errors(self.expected_phaidra_error, self.mapping)
+            self.translator.translate_errors(self.expected_phaidra_error)
         )
 
 
-class ThesisWithSupervisorTestCase(ThesisNoRolesTestCase):
-    entry_kwargs = {'supervisor': True, 'thesis_type': True}
-    phaidra_container_kwargs = {
-        'respect_supervisor_role': True,
-        # by adding another error, we can specifically look up the supervisor error, instead of comparing to {}/no error
-        'respect_german_abstract_rule': False,
-    }
+class ThesisWithSupervisorTestCase(APITestCase):
+    entry: 'Entry'
+    translator: 'PhaidraMetaDataTranslator'
+    mapping: FakeBidirectionalConceptsMapper
+    translator: PhaidraThesisMetaDataTranslator
+    schema: 'PhaidraThesisMetaData'
+    inner_schema: 'PhaidraThesisContainer'
+    phaidra_errors: dict
+
+    @classmethod
+    def setUpTestData(cls):
+        mode_provider = ModelProvider()
+        cls.entry = mode_provider.get_entry(supervisor=True, thesis_type=True)
+        cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraThesisMetaDataTranslator(cls.mapping)
+        # noinspection PyTypeChecker
+        cls.schema = create_dynamic_phaidra_thesis_meta_data_schema(cls.mapping)
+        # to not have to this in every test
+        cls.inner_schema = cls.schema.fields['metadata'].nested.fields['json_ld'].nested
+        cls.phaidra_errors = cls.schema.validate(
+            PhaidraContainerGenerator().create_phaidra_container(
+                respect_supervisor_role=True, respect_german_abstract_rule=False
+            )
+        )
+
+    def test_custom_validation_mechanism_added_in_schema(self):
+        """The field should differ from other dynamic fields: required=True, validator=MissingSupervisorValidator"""
+        self.assertEqual(len(self.inner_schema.custom_validation_callables), 1)
+        self.assertEqual(self.inner_schema.custom_validation_callables[0].key, 'role:dgs')
+
+    def test_schema_has_no_supervisor_field(self):
+        """The schema should not have NOT translated supervisor field"""
+        self.assertNotIn(
+            'role_supervisor',
+            self.inner_schema.fields
+        )
+
+    def test_schema_has_translated_supervisor_field(self):
+        """The schema should have the dynamically translated supervisor field"""
+        self.assertIn(
+            'role_dgs',
+            self.inner_schema.fields
+        )
+
+    def test_no_role_supervisor_in_generated_data(self):
+        self.assertNotIn(
+            'role:supervisor',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
 
     def test_correct_translated_supervisor_value_in_generated_data(self):
         """A supervisor must be translated"""
@@ -266,8 +320,7 @@ class ThesisWithSupervisorTestCase(ThesisNoRolesTestCase):
                     ]
                 }
             ]
-        # noinspection PyTypeChecker
-        generated = self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+        generated = self.translator.translate_data(self.entry)['metadata']['json-ld']['role:dgs']
         self.assertEqual(expected, generated)
 
     def test_schema_validation(self):
@@ -279,37 +332,72 @@ class ThesisWithSupervisorTestCase(ThesisNoRolesTestCase):
 
     def test_error_translation(self):
         """There should be no supervisor error in the translated errors (and therefore no parent property data)"""
-        # noinspection PyTypeChecker
         self.assertNotIn(
             'data',
-            self.translator.translate_errors(self.phaidra_errors, self.mapping)
+            self.translator.translate_errors(self.phaidra_errors)
+        )
+
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """Since this is a thesis, this role is required"""
+        self.assertIn(
+            'role:dgs',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
 
-class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
-    entry_kwargs = {'supervisor': True, 'thesis_type': True}
-    phaidra_container_kwargs = {
-        'respect_supervisor_role': True,
-        'respect_english_abstract_rule': False,
-        # Provoke validation error, to explicitly for supervisor key
-    }
+class ThesisWithSupervisorAndOtherRoleTestCase(APITestCase):
+    entry: 'Entry'
+    translator: 'PhaidraMetaDataTranslator'
+    mapping: FakeBidirectionalConceptsMapper
+    translator: PhaidraThesisMetaDataTranslator
+    schema: 'PhaidraThesisMetaData'
+    inner_schema: 'PhaidraThesisContainer'
+    phaidra_errors: dict
 
     @classmethod
     def setUpTestData(cls):
-        """I know, it's not DRY, but it is just a test … ?"""
         model_provider = ModelProvider()
-        cls.entry = model_provider.get_entry(**cls.entry_kwargs)
-        cls.translator = cls.translator_class()
+        cls.entry = model_provider.get_entry(supervisor=True, thesis_type=True)
         cls.entry = add_other_role(cls.entry)
         cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
         cls.mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
         # noinspection PyTypeChecker
+        cls.translator = PhaidraThesisMetaDataTranslator(cls.mapping)
+        # noinspection PyTypeChecker
         cls.schema = create_dynamic_phaidra_thesis_meta_data_schema(cls.mapping)
         # to not have to this in every test
         cls.inner_schema = cls.schema.fields['metadata'].nested.fields['json_ld'].nested
-        phaidra_container = PhaidraContainerGenerator().create_phaidra_container(**cls.phaidra_container_kwargs)
+        phaidra_container = PhaidraContainerGenerator().create_phaidra_container(
+            respect_supervisor_role=True,
+            respect_english_abstract_rule=False  # Provoke validation error
+        )
         phaidra_container = add_other_phaidra_role(phaidra_container)
         cls.phaidra_errors = cls.schema.validate(phaidra_container)
+
+    def test_no_role_supervisor_in_generated_data(self):
+        self.assertNotIn(
+            'role:supervisor',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
+
+    def test_custom_validation_mechanism_added_in_schema(self):
+        """The field should differ from other dynamic fields: required=True, validator=MissingSupervisorValidator"""
+        self.assertEqual(len(self.inner_schema.custom_validation_callables), 1)
+        self.assertEqual(self.inner_schema.custom_validation_callables[0].key, 'role:dgs')
+
+    def test_schema_has_no_supervisor_field(self):
+        """The schema should not have NOT translated supervisor field"""
+        self.assertNotIn(
+            'role_supervisor',
+            self.inner_schema.fields
+        )
+
+    def test_schema_has_translated_supervisor_field(self):
+        """The schema should have the dynamically translated supervisor field"""
+        self.assertIn(
+            'role_dgs',
+            self.inner_schema.fields
+        )
 
     def test_correct_translated_supervisor_value_in_generated_data(self):
         """A supervisor must be translated"""
@@ -329,8 +417,7 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
                     ]
                 }
             ]
-        # noinspection PyTypeChecker
-        generated = self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+        generated = self.translator.translate_data(self.entry)['metadata']['json-ld']['role:dgs']
         self.assertEqual(expected, generated)
 
     def test_schema_validation(self):
@@ -342,36 +429,76 @@ class ThesisWithSupervisorAndOtherRoleTestCase(ThesisNoRolesTestCase):
 
     def test_error_translation(self):
         """There should be no supervisor in the translated error result (and therefore no parent property data)"""
-        # noinspection PyTypeChecker
         self.assertNotIn(
             'data',
-            self.translator.translate_errors(self.phaidra_errors, self.mapping)
+            self.translator.translate_errors(self.phaidra_errors)
+        )
+
+    def test_correct_translated_supervisor_property_in_generated_data(self):
+        """Since this is a thesis, this role is required"""
+        self.assertIn(
+            'role:dgs',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
         )
 
 
-class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRoleTestCase):
+class ThesisWithNoSupervisorButOtherRoleTestCase(APITestCase):
     """
     Next TestCase will be called SupercalifragilisticexpialidociousTestCase. Hey, that has the same length *sigh*
     """
-    entry_kwargs = {'supervisor': False, 'thesis_type': True}
-    phaidra_container_kwargs = {
-        'respect_supervisor_role': False,
-    }
+
+    entry: 'Entry'
+    translator: 'PhaidraMetaDataTranslator'
+    mapping: FakeBidirectionalConceptsMapper
+    translator: PhaidraThesisMetaDataTranslator
+    schema: 'PhaidraThesisMetaData'
+    inner_schema: 'PhaidraThesisContainer'
+    phaidra_errors: dict
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.entry = model_provider.get_entry(supervisor=False, thesis_type=True)
+        cls.entry = add_other_role(cls.entry)
+        cls.mapping = FakeBidirectionalConceptsMapper.from_entry(cls.entry)
+        cls.mapping.add_uris(DEFAULT_DYNAMIC_ROLES)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraThesisMetaDataTranslator(cls.mapping)
+        # noinspection PyTypeChecker
+        cls.schema = create_dynamic_phaidra_thesis_meta_data_schema(cls.mapping)
+        # to not have to this in every test
+        cls.inner_schema = cls.schema.fields['metadata'].nested.fields['json_ld'].nested
+        phaidra_container = PhaidraContainerGenerator().create_phaidra_container(
+            respect_supervisor_role=False,
+        )
+        phaidra_container = add_other_phaidra_role(phaidra_container)
+        cls.phaidra_errors = cls.schema.validate(phaidra_container)
 
     def test_correct_translated_supervisor_property_in_generated_data(self):
         """The field is required in the schema"""
-        # noinspection PyTypeChecker
         self.assertIn(
             'role:dgs',
-            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
+
+    def test_no_role_supervisor_in_generated_data(self):
+        self.assertNotIn(
+            'role:supervisor',
+            self.translator.translate_data(self.entry)['metadata']['json-ld']
+        )
+
+    def test_schema_has_no_supervisor_field(self):
+        """The schema should not have NOT translated supervisor field"""
+        self.assertNotIn(
+            'role_supervisor',
+            self.inner_schema.fields
         )
 
     def test_correct_translated_supervisor_value_in_generated_data(self):
         """No supervisor -> empty data"""
-        # noinspection PyTypeChecker
         self.assertEqual(
             [],
-            self.translator.translate_data(self.entry, self.mapping)['metadata']['json-ld']['role:dgs']
+            self.translator.translate_data(self.entry)['metadata']['json-ld']['role:dgs']
         )
 
     def test_schema_validation(self):
@@ -384,10 +511,21 @@ class ThesisWithNoSupervisorButOtherRoleTestCase(ThesisWithSupervisorAndOtherRol
 
     def test_error_translation(self):
         """There should be an missing supervisor error message in the translated errors"""
-        # noinspection PyTypeChecker
-        errors = self.translator.translate_errors(self.phaidra_errors, self.mapping)
+        errors = self.translator.translate_errors(self.phaidra_errors)
         self.assertIn('contributors', errors['data'])
         self.assertEqual(
             [MISSING_SUPERVISOR, ],
             errors['data']['contributors'],
+        )
+
+    def test_custom_validation_mechanism_added_in_schema(self):
+        """The field should differ from other dynamic fields: required=True, validator=MissingSupervisorValidator"""
+        self.assertEqual(len(self.inner_schema.custom_validation_callables), 1)
+        self.assertEqual(self.inner_schema.custom_validation_callables[0].key, 'role:dgs')
+
+    def test_schema_has_translated_supervisor_field(self):
+        """The schema should have the dynamically translated supervisor field"""
+        self.assertIn(
+            'role_dgs',
+            self.inner_schema.fields
         )

@@ -29,6 +29,7 @@ from ....interface.abstractarchiver import AbstractArchiver
 
 class DefaultMetadataArchiver(AbstractArchiver):
     data: Optional[Dict] = None
+    translator_class = PhaidraMetaDataTranslator
 
     def __init__(self, archive_object: 'ArchiveObject'):
         super().__init__(archive_object)
@@ -36,6 +37,19 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self.is_update = None
         self._schema = None
         self._translator = None
+        self._concepts_mapper = None
+
+    @property
+    def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
+        if self._concepts_mapper is None:
+            self._concepts_mapper = BidirectionalConceptsMapper.from_entry(entry=self.archive_object.entry)
+        return self._concepts_mapper
+
+    @property
+    def translator(self) -> 'PhaidraMetaDataTranslator':
+        if self._translator is None:
+            self._translator = self.translator_class(self.concepts_mapper)
+        return self._translator
 
     def validate(self) -> None:
         self.data = self._translate_data(self.archive_object.entry)
@@ -127,25 +141,15 @@ class DefaultMetadataArchiver(AbstractArchiver):
             self._schema = PhaidraMetaData()
         return self._schema
 
-    @property
-    def translator(self) -> 'PhaidraMetaDataTranslator':
-        if self._translator is None:
-            self._translator = PhaidraMetaDataTranslator()
-        return self._translator
-
 
 class ThesisMetadataArchiver(DefaultMetadataArchiver):
     translator_class = PhaidraThesisMetaDataTranslator
     base_schema_class = PhaidraThesisContainer
 
-    def __init__(self, archive_object: 'ArchiveObject'):
-        super().__init__(archive_object)
-        self._concepts_mapper = None
-
     @property
     def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
         if self._concepts_mapper is None:
-            self._concepts_mapper = BidirectionalConceptsMapper.from_entry(entry=self.archive_object.entry)
+            self._concepts_mapper = super().concepts_mapper
             self._concepts_mapper.add_uris(DEFAULT_DYNAMIC_ROLES)
         return self._concepts_mapper
 
@@ -154,15 +158,3 @@ class ThesisMetadataArchiver(DefaultMetadataArchiver):
         if self._schema is None:
             self._schema = create_dynamic_phaidra_thesis_meta_data_schema(self.concepts_mapper)
         return self._schema
-
-    @property
-    def translator(self) -> 'PhaidraThesisMetaDataTranslator':
-        if self._translator is None:
-            self._translator = PhaidraThesisMetaDataTranslator()
-        return self._translator
-
-    def _translate_data(self, entry: 'Entry') -> Dict:
-        return self.translator.translate_data(entry, self.concepts_mapper)
-
-    def _translate_errors(self, errors: Dict) -> Dict:
-        return self.translator.translate_errors(errors, self.concepts_mapper)
