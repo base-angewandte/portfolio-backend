@@ -1,21 +1,13 @@
 import os
-import pytz
-import csv
-# import googlemaps
 import bibtexparser
 from bibtexparser.bibdatabase import as_text
 from datetime import datetime
 from marshmallow import Schema, ValidationError, fields, pprint
-from requests.exceptions import HTTPError
-from skosmos_client import *
-from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from core.models import *
 from core.schemas import *
 from core.schemas.entries.document import *
-from core.schemas.entries.research_project import *
 from core.schemas.general import *
 from core.schemas.models import *
 
@@ -26,20 +18,7 @@ class Command(BaseCommand):
         # Open Bibtex-File
         with open(os.path.join(settings.BASE_DIR, 'migration/test.bib')) as bibtex_file:
             bib_database = bibtexparser.load(bibtex_file)
-        #print(bib_database.entries)
         for entry in bib_database.entries:
-            document_date_begin, document_date_end, document_url = [None] * 3
-            entity_title = "No title"
-            entity_type = "No type"
-            authors = []
-            partners = []
-            artists = []
-            foerdergeber = []
-            locations = []
-            keywordslist = []
-            keywordlist = []
-            entity_keywords = []
-            e_keywords = []
             published = False
             texts_all = None
 
@@ -86,6 +65,7 @@ class Command(BaseCommand):
                 texts = TextSchema()
                 text_allg_type = SourceMultilingualLabelSchema()
                 text_allg_type.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/abstract"
+                mlstring1 = None
                 mlstring1 = MultilingualStringSchema()
                 mlstring1.de = "Abstract"
                 mlstring1.en = "abstract"
@@ -93,6 +73,7 @@ class Command(BaseCommand):
                 text_data_allg = TextDataSchema()
                 text_data_allg_language = LanguageDataSchema()
                 text_data_allg_language.source = "http://base.uni-ak.ac.at/portfolio/languages/de"
+                mlstring1 = None
                 mlstring1 = MultilingualStringSchema()
                 mlstring1.de = "Deutsch"
                 mlstring1.en = "German"
@@ -108,9 +89,11 @@ class Command(BaseCommand):
                 pass
 
             ###### ENTITY OWNER ######
+            #Todo: Zuordnung zu User
             django_user, created = User.objects.get_or_create(username=1)
 
             # create PublishedInSchema
+            # Todo: Wird das Schema benötigt?
             #### SCHEMA #####
             # schema = PublishedInSchema()
             # publishedIn = PublishedInSchema()
@@ -138,6 +121,7 @@ class Command(BaseCommand):
             # publishedIn.editor = editor
 
             ### Publisher ####
+            # Todo: Wird das Schema benötigt?
             # publisher = None
             # publisher = ContributorSchema()
             # publisher.label = personname['firstname'] + " " + personname['secondname']
@@ -164,11 +148,14 @@ class Command(BaseCommand):
             document = DocumentSchema()
 
             ### DATE ###
+            #TODO FEHLERHAFT (REGEXP)
             try:
                 date = DateTimeSchema()
                 date_document = as_text(entry['year']) + '-' + as_text(entry['month']) + '-' + as_text(entry['day'])
                 date.date = datetime.strptime(date_document, '%Y-%m-%d').date()
+                print(date.date)
                 document.date = date
+
             except KeyError as err:
                 pass
 
@@ -177,6 +164,7 @@ class Command(BaseCommand):
                 language = LanguageDataSchema()
                 if as_text(entry['language']) == 'Deutsch':
                     language.source = "http://base.uni-ak.ac.at/portfolio/languages/de"
+                    mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
                     mlstring1.de = "Deutsch"
                     mlstring1.en = "German"
@@ -185,6 +173,7 @@ class Command(BaseCommand):
                     document.language = language
                 if as_text(entry['language']) == 'English':
                     language.source = "http://base.uni-ak.ac.at/portfolio/languages/en"
+                    mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
                     mlstring1.de = "Englisch"
                     mlstring1.en = "English"
@@ -221,6 +210,8 @@ class Command(BaseCommand):
                 document.doi = as_text(entry['doi'])
             except KeyError as err:
                 pass
+
+            ### ÜBERBLICK DOCUMENTSCHEMA
             # authors = get_contributors_field_for_role('author', {'order': 1})
             # editors = get_contributors_field_for_role('editor', {'order': 2})
             # publishers = get_contributors_field_for_role('publisher', {'order': 3})
@@ -266,6 +257,7 @@ class Command(BaseCommand):
             document.authors = authors
 
             ### Editor ####
+            # Todo: Wird das Schema benötigt?
             # editors = []
             # editor = None
             # editor = ContributorSchema()
@@ -284,31 +276,6 @@ class Command(BaseCommand):
             # editor.roles = role
             # editors.append(editor)
 
-            ### PUBLISHERS ###
-            #publishers = publishers
-
-            ### other fields
-            # date = get_date_field({'order': 4})
-            # location = get_location_field({'order': 5})
-            # # isbn/issn
-            # isbn = get_string_field(get_preflabel_lazy('isbn'), {'field_format': 'half', 'order': 6})
-            # doi = get_string_field(get_preflabel_lazy('doi'), {'field_format': 'half', 'order': 7})
-            # url = get_url_field({'order': 8})
-            # published_in = fields.List(
-            #     fields.Nested(PublishedInSchema, additionalProperties=False),
-            #     title=get_preflabel_lazy('published_in'),
-            #     **{'x-attrs': {'field_type': 'group', 'show_label': True, 'order': 9}},
-            # )
-            # volume = get_string_field(get_preflabel_lazy('volume_issue'), {'field_format': 'half', 'order': 10})
-            # pages = get_string_field(get_preflabel_lazy('pages'), {'field_format': 'half', 'order': 11})
-            # contributors = get_contributors_field({'order': 12})
-            # language = get_language_list_field({'order': 13})
-            # material = get_material_field({'order': 14, 'field_format': 'half'})
-            # format = get_format_field({'order': 15})
-            # edition = get_string_field(get_preflabel_lazy('edition'), {'field_format': 'half', 'order': 16})
-
-            # create Entry
-
             keywordschema = KeywordsModelSchema()
             e_keywords = KeywordsModelSchema()
             try:
@@ -316,6 +283,7 @@ class Command(BaseCommand):
             except KeyError as err:
                 pass
 
+            # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
             try:
                 schema.load(schema.dumps(document))
@@ -327,7 +295,7 @@ class Command(BaseCommand):
             entity_keywords = keywordschema.dump(e_keywords).data
 
             # quick fix for invalid data
-            #texts_all = [texts_all] if texts_all else None
+            texts_all = [texts_all] if texts_all else None
             if entity_keywords:
                 entity_keywords = entity_keywords['keywords']
 
@@ -339,7 +307,7 @@ class Command(BaseCommand):
                                              #owner_id=1,
                                              published=published,
                                              data=entity_data)
-    #                                   owner_id=entity_owner)
+                                             #owner_id=entity_owner)
 
             # publication.clean()
             texts_all = None
