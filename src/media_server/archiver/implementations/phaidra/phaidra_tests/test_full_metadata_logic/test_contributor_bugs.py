@@ -7,7 +7,8 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import PhaidraThesisMetaDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
+    PhaidraThesisMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
     create_dynamic_phaidra_thesis_meta_data_schema
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
@@ -170,7 +171,62 @@ class Bug1659FullIntegrationTestCase(APITestCase):
         )
 
 
+class Bug1671TestCase(TestCase):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1671
 
+    Contributors with no role do not get committed to phaidra
 
+    They should get the default role role:ctb
+    """
 
+    translated_data: dict
+    validation: dict
 
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        entry = model_provider.get_entry(thesis_type=True, supervisor=True)
+        entry.data['contributors'].append(
+            [
+                {
+                    'label': 'Willy',
+                    'roles': []
+                }
+            ]
+        )
+        entry.save()
+        entry.refresh_from_db()
+        mapping = FakeBidirectionalConceptsMapper.from_entry(entry)
+        # noinspection PyTypeChecker
+        translator = PhaidraThesisMetaDataTranslator(mapping)
+        cls.translated_data = translator.translate_data(entry)
+        # noinspection PyTypeChecker
+        schema = create_dynamic_phaidra_thesis_meta_data_schema(mapping)
+        cls.validation = schema.validate(cls.translated_data)
+
+    def test_free_willy_in_translated_data(self):
+        self.assertIn(
+            'role:ctb',
+            self.translated_data['metadata']['json-ld']
+        )
+        ctbs = self.translated_data['metadata']['json-ld']['role:ctb']
+        self.assertEqual(
+            len(ctbs),
+            1
+        )
+        ctb = ctbs[0]
+        self.assertEqual(
+            [],  # He's free
+            ctb['skos:exactMatch']
+        )
+        self.assertEqual(
+            'Willy',  # He's Willy
+            ctb['schema:name'][0]['@value']
+        )
+
+    def test_free_role_less_is_ok(self):
+        self.assertEqual(
+            {},
+            self.validation
+        )
