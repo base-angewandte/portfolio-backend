@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from media_server.archiver.interface.exceptions import InternalValidationError
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import extract_phaidra_role_code
+
 if TYPE_CHECKING:
     from media_server.models import Entry
     from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
@@ -335,6 +336,26 @@ class LocationTranslator(AbstractUserUnrelatedDataTranslator):
         ]
 
 
+class UrlTranslator(AbstractUserUnrelatedDataTranslator):
+    """
+    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
+    """
+
+    def translate_data(self, model: 'Entry') -> List[Dict]:
+        if (model.data is None) or ('url' not in model.data):
+            return []
+        url = model.data['url']
+        return [
+            {
+                **_create_type_object('schema:URL'),
+                'schema:url': [url, ],
+                'skos:prefLabel': [
+                    _create_value_language_object(url, 'und')
+                ]
+            },
+        ]
+
+
 class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -387,6 +408,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
             ),
             'bf:physicalLocation': LocationTranslator(),
+            'rdfs:seeAlso': UrlTranslator()
         }
 
     def translate_data(self, model: 'Entry') -> Dict:
@@ -549,14 +571,14 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
             contributor_label = contributor['label']
             # Either generate a role:XXX entry for every role of the contributor, or default role:ctb
             phaidra_role_codes = self.yield_phaidra_role_codes_from_roles(contributor['roles']) \
-                if 'roles' in contributor and contributor['roles']\
+                if 'roles' in contributor and contributor['roles'] \
                 else ['role:ctb']
 
             for phaidra_role_code in phaidra_role_codes:
                 person_object = create_person_object(
-                        name=contributor_label,
-                        source=contributor_source,
-                    )
+                    name=contributor_label,
+                    source=contributor_source,
+                )
                 if person_object not in self.data_with_dynamic_structure[phaidra_role_code]:
                     self.data_with_dynamic_structure[phaidra_role_code].append(person_object)
 
