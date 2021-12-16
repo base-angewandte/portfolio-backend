@@ -108,7 +108,6 @@ class TestFeature1677(TestCase):
             FakeBidirectionalConceptsMapper.from_entry(entry_with_no_location)
         )
 
-
     def test_translated_data(self):
         self.assertIn('bf:physicalLocation', self.translated_data_with_no_location['metadata']['json-ld'])
         self.assertIn('bf:physicalLocation', self.translated_data_with_one_location['metadata']['json-ld'])
