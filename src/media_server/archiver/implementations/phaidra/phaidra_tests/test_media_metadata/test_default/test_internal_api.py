@@ -334,6 +334,7 @@ class MissingTypeTestCase(TestCase):
                 'role:aut': [],
                 'role:pbl': [],
                 'bf:physicalLocation': [],
+                'rdfs:seeAlso': [],
             }
         }
     }
@@ -1028,6 +1029,7 @@ class StaticDataTestCase(TestCase):
                 'role:aut': [],
                 'role:pbl': [],
                 'bf:physicalLocation': [],
+                'rdfs:seeAlso': [],
             },
         )
 
@@ -1068,6 +1070,7 @@ class StaticDataTestCase(TestCase):
                 'role:aut': [],
                 'role:pbl': [],
                 'bf:physicalLocation': [],
+                'rdfs:seeAlso': [],
             },
         )
 
@@ -1110,6 +1113,7 @@ class StaticDataTestCase(TestCase):
                 'role:aut': [],
                 'role:pbl': [],
                 'bf:physicalLocation': [],
+                'rdfs:seeAlso': [],
             },
         )
 
@@ -1143,6 +1147,7 @@ class StaticDataTestCase(TestCase):
                 'role:aut': [],
                 'role:pbl': [],
                 'bf:physicalLocation': [],
+                'rdfs:seeAlso': [],
             },
         )
 
