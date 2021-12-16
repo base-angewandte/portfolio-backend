@@ -326,7 +326,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
 class  LocationTranslator(AbstractUserUnrelatedDataTranslator):
 
     def translate_data(self, model: 'Entry') -> List[Dict[str, str]]:
-        if 'location' not in model.data:
+        if (model.data.__class__ is not dict) or ('location' not in model.data):
             return []
         return [
             _create_value_language_object(location['label'], 'und')
