@@ -323,6 +323,18 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         return contributors
 
 
+class  LocationTranslator(AbstractUserUnrelatedDataTranslator):
+
+    def translate_data(self, model: 'Entry') -> List[Dict[str, str]]:
+        if 'location' not in model.data:
+            return []
+        return [
+            _create_value_language_object(location['label'], 'und')
+            for location in model.data['location']
+            if 'label' in location
+        ]
+
+
 class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -374,6 +386,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 primary_level_data_key='publishers',
                 role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
             ),
+            'bf:physicalLocation': LocationTranslator(),
         }
 
     def translate_data(self, model: 'Entry') -> Dict:
