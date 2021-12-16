@@ -4,11 +4,13 @@ New metadata is added to the containers. Check it
 
 from django.test import TestCase
 
-from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
+    ValueLanguageBaseSchema
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import create_dynamic_phaidra_thesis_meta_data_schema
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
-    BidirectionalConceptsMapper
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
 
 
 class TestFeature1677(TestCase):
@@ -76,12 +78,15 @@ class TestFeature1677(TestCase):
         entry_with_two_locations.save()
         entry_with_two_locations.refresh_from_db()
 
-        mapping_with_no_location = BidirectionalConceptsMapper.from_entry(entry_with_no_location)
-        mapping_with_one_location = BidirectionalConceptsMapper.from_entry(entry_with_one_location)
-        mapping_with_two_locations = BidirectionalConceptsMapper.from_entry(entry_with_two_locations)
+        mapping_with_no_location = FakeBidirectionalConceptsMapper.from_entry(entry_with_no_location)
+        mapping_with_one_location = FakeBidirectionalConceptsMapper.from_entry(entry_with_one_location)
+        mapping_with_two_locations = FakeBidirectionalConceptsMapper.from_entry(entry_with_two_locations)
 
+        # noinspection PyTypeChecker
         translator_0_locations = PhaidraMetaDataTranslator(mapping_with_no_location)
+        # noinspection PyTypeChecker
         translator_1_location = PhaidraMetaDataTranslator(mapping_with_one_location)
+        # noinspection PyTypeChecker
         translator_2_locations = PhaidraMetaDataTranslator(mapping_with_two_locations)
 
         schema_0_locations = PhaidraMetaData()
@@ -95,6 +100,14 @@ class TestFeature1677(TestCase):
         cls.validation_with_no_location = schema_0_locations.validate(cls.translated_data_with_no_location)
         cls.validation_with_one_location = schema_1_location.validate(cls.translated_data_with_one_location)
         cls.validation_with_two_locations = schema_2_locations.validate(cls.translated_data_with_two_locations)
+
+        # Also check that the schemas check the correct form of the data
+        cls.normal_schema = PhaidraMetaData()
+        # noinspection PyTypeChecker
+        cls.thesis_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            FakeBidirectionalConceptsMapper.from_entry(entry_with_no_location)
+        )
+
 
     def test_translated_data(self):
         self.assertIn('bf:physicalLocation', self.translated_data_with_no_location['metadata']['json-ld'])
@@ -115,3 +128,33 @@ class TestFeature1677(TestCase):
         self.assertEqual({}, self.validation_with_no_location)
         self.assertEqual({}, self.validation_with_two_locations)
         self.assertEqual({}, self.validation_with_two_locations)
+
+    def test_schema_contains_location_fields(self):
+        # There is a schema …
+        self.assertIn(
+            'bf_physicalLocation',
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+        )
+        self.assertIn(
+            'bf_physicalLocation',
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+        )
+        # It checks for an array of objects
+        self.assertIsInstance(
+            PortfolioNestedField,
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation']
+        )
+        self.assertIsInstance(
+            PortfolioNestedField,
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation']
+        )
+        # And checks for objects of the correct type
+        self.assertIsInstance(
+            ValueLanguageBaseSchema,
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested
+        )
+
+        self.assertIsInstance(
+            ValueLanguageBaseSchema,
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested
+        )
