@@ -333,6 +333,7 @@ class MissingTypeTestCase(TestCase):
                 'role:edt': [],
                 'role:aut': [],
                 'role:pbl': [],
+                'bf:physicalLocation': [],
             }
         }
     }
@@ -1026,6 +1027,7 @@ class StaticDataTestCase(TestCase):
                 'role:edt': [],
                 'role:aut': [],
                 'role:pbl': [],
+                'bf:physicalLocation': [],
             },
         )
 
@@ -1065,6 +1067,7 @@ class StaticDataTestCase(TestCase):
                 'role:edt': [],
                 'role:aut': [],
                 'role:pbl': [],
+                'bf:physicalLocation': [],
             },
         )
 
@@ -1106,6 +1109,7 @@ class StaticDataTestCase(TestCase):
                 'role:edt': [],
                 'role:aut': [],
                 'role:pbl': [],
+                'bf:physicalLocation': [],
             },
         )
 
@@ -1138,6 +1142,7 @@ class StaticDataTestCase(TestCase):
                 'role:edt': [],
                 'role:aut': [],
                 'role:pbl': [],
+                'bf:physicalLocation': [],
             },
         )
 
