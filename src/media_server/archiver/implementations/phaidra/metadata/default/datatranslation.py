@@ -323,7 +323,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         return contributors
 
 
-class  LocationTranslator(AbstractUserUnrelatedDataTranslator):
+class LocationTranslator(AbstractUserUnrelatedDataTranslator):
 
     def translate_data(self, model: 'Entry') -> List[Dict[str, str]]:
         if (model.data.__class__ is not dict) or ('location' not in model.data):
