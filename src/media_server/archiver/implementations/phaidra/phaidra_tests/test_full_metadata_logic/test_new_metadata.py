@@ -265,6 +265,7 @@ class TestFeature1678(TestCase):
         cls.thesis_schema = create_dynamic_phaidra_thesis_meta_data_schema(
             FakeBidirectionalConceptsMapper.from_entry(entry_0_url)
         )
+        return  # This is a intermediary return, so I can work on, until I can use the univie-vpn again. TODO
         entries = (entry_0_url, entry_1_url)
         media_objects = [model_provider.get_media(entry) for entry in entries]
         client = ClientProvider(model_provider)
@@ -345,6 +346,8 @@ class TestFeature1678(TestCase):
         )
 
     def test_phaidra(self):
+        raise NotImplementedError() # This is a intermediary error, so I can work on, until I can use the univie-vpn
+        # again. TODO
         self.assertIn(
             'bf:physicalLocation',
             self.phaidra_data_0_url
