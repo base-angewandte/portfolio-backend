@@ -1,13 +1,13 @@
 """
 New metadata is added to the containers. Check it
 """
-import IPython
 import requests as requests
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
     ValueLanguageBaseSchema
-from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import create_dynamic_phaidra_thesis_meta_data_schema
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
+    create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
     ClientProvider
@@ -196,6 +196,168 @@ class TestFeature1677(TestCase):
             self.phaidra_data_with_1_location['bf:physicalLocation']
         )
         self.assertEqual(
-            [self.location_1_phaidra, self.location_2_phaidra ],
+            [self.location_1_phaidra, self.location_2_phaidra],
             self.phaidra_data_with_2_locations['bf:physicalLocation']
+        )
+
+
+class TestFeature1678(TestCase):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1678
+
+
+
+    URL - not currently mapped, map to rdfs:seeAlso
+
+    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
+
+    """
+    # Test this data
+    translated_data_0_url: dict
+    translated_data_1_url: dict
+    validation_0_url: dict
+    validation_1_url: dict
+    phaidra_data_0_url: dict
+    phaidra_data_1_url: dict
+    normal_schema: PhaidraMetaData
+    thesis_schema: PhaidraThesisMetaData
+
+    # Constant test data
+    url = 'http://example.com/'
+    expected_phaidra_data_0_url = []
+    expected_phaidra_data_1_url = [
+        {
+            "@type": "schema:URL",
+            "schema:url": [url, ],
+            "skos:prefLabel": [
+                {
+                    "@value": url,
+                    "@language": "und"
+                }
+            ]
+        },
+    ]
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+
+        entry_0_url = model_provider.get_entry(thesis_type=False)
+
+        entry_1_url = model_provider.get_entry(thesis_type=False)
+        entry_1_url.data['url'] = cls.url
+        entry_1_url.save()
+        entry_1_url.refresh_from_db()
+
+        mapping_0_url = FakeBidirectionalConceptsMapper.from_entry(entry_0_url)
+        mapping_1_url = FakeBidirectionalConceptsMapper.from_entry(entry_1_url)
+
+        # noinspection PyTypeChecker
+        cls.translated_data_0_url = PhaidraMetaDataTranslator(mapping_0_url).translate_data(entry_0_url)
+        # noinspection PyTypeChecker
+        cls.translated_data_1_url = PhaidraMetaDataTranslator(mapping_1_url).translate_data(entry_1_url)
+
+        cls.validation_0_url = PhaidraMetaData().validate(cls.translated_data_0_url)
+        cls.validation_1_url = PhaidraMetaData().validate(cls.translated_data_1_url)
+
+        cls.normal_schema = PhaidraMetaData()
+        # noinspection PyTypeChecker
+        cls.thesis_schema = create_dynamic_phaidra_thesis_meta_data_schema(
+            FakeBidirectionalConceptsMapper.from_entry(entry_0_url)
+        )
+        entries = (entry_0_url, entry_1_url)
+        media_objects = [model_provider.get_media(entry) for entry in entries]
+        client = ClientProvider(model_provider)
+        portfolio_responses = [client.get_media_primary_key_response(media, False) for media in media_objects]
+        if any([response.status_code != 200 for response in portfolio_responses]):
+            raise RuntimeError(
+                f'Could not archive assets: ' +
+                '\n'.join((f'{response.status_code} {response.content}'
+                           for response in portfolio_responses
+                           if response.status_code != 200
+                           )
+                          )
+            )
+        for entry in entries:
+            entry.refresh_from_db()
+
+        phaidra_responses = [
+            requests.get(f'https://services.phaidra-sandbox.univie.ac.at/api/object/{entry.archive_id}/jsonld')
+            for entry in entries
+        ]
+
+        if any([response.status_code != 200 for response in phaidra_responses]):
+            raise RuntimeError(
+                f'Could not archive assets: ' +
+                '\n'.join((f'{response.status_code} {response.content}'
+                           for response in phaidra_responses
+                           if response.status_code != 200
+                           )
+                          )
+            )
+
+        phaidra_data = [response.json() for response in phaidra_responses]
+
+        cls.phaidra_data_0_url, cls.phaidra_data_1_url = phaidra_data
+
+    def test_translated_data(self):
+        self.assertIn('rdfs:seeAlso', self.translated_data_0_url['metadata']['json-ld'])
+        self.assertIn('rdfs:seeAlso', self.translated_data_1_url['metadata']['json-ld'])
+        self.assertEqual([], self.translated_data_0_url['metadata']['json-ld']['rdfs:seeAlso'])
+        self.assertEqual(self.expected_phaidra_data_1_url,
+                         self.translated_data_0_url['metadata']['json-ld']['rdfs:seeAlso']
+                         )
+
+    def test_validation(self):
+        self.assertEqual({}, self.validation_0_url)
+        self.assertEqual({}, self.validation_1_url)
+
+    def test_schema(self):
+        # There is a schema …
+        self.assertIn(
+            'rdfs_seeAlso',
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+        )
+        self.assertIn(
+            'rdfs_seeAlso',
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+        )
+        # It checks for an array of objects
+        self.assertIsInstance(
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'],
+            PortfolioNestedField,
+        )
+        self.assertIsInstance(
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'],
+            PortfolioNestedField,
+        )
+        # And checks for objects of the correct type
+        self.assertEqual(
+            'RdfSeeAlsoSchema',
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested
+                .__class__.__name__,
+        )
+
+        self.assertEqual(
+            'RdfSeeAlsoSchema',
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested
+                .__class__.__name__,
+        )
+
+    def test_phaidra(self):
+        self.assertIn(
+            'bf:physicalLocation',
+            self.phaidra_data_0_url
+        )
+        self.assertIn(
+            'bf:physicalLocation',
+            self.phaidra_data_1_url
+        )
+        self.assertEqual(
+            self.expected_phaidra_data_0_url,
+            self.phaidra_data_0_url
+        )
+        self.assertEqual(
+            self.expected_phaidra_data_1_url,
+            self.phaidra_data_1_url
         )
