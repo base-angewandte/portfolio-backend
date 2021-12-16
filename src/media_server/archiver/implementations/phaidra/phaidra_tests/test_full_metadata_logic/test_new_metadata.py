@@ -140,20 +140,20 @@ class TestFeature1677(TestCase):
         )
         # It checks for an array of objects
         self.assertIsInstance(
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'],
             PortfolioNestedField,
-            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation']
         )
         self.assertIsInstance(
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'],
             PortfolioNestedField,
-            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation']
         )
         # And checks for objects of the correct type
-        self.assertIsInstance(
+        self.assertIs(
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested,
             ValueLanguageBaseSchema,
-            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested
         )
 
-        self.assertIsInstance(
+        self.assertIs(
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested,
             ValueLanguageBaseSchema,
-            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['bf_physicalLocation'].nested
         )

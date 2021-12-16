@@ -152,6 +152,10 @@ class PhaidraContainer(Schema):
 
     role_pbl = PortfolioNestedField(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl', validate=None)
 
+    bf_physicalLocation = PortfolioNestedField(ValueLanguageBaseSchema, many=True, validate=None,
+                                               load_from='bf:physicalLocation', dump_to='bf:physicalLocation'
+                                               )
+
 
 class JsonLd(Schema):
     # it is important, that the nested schema is initialized here
