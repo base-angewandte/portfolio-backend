@@ -132,8 +132,6 @@ class TestFeature1677(TestCase):
         phaidra_data = [response.json() for response in phaidra_responses]
         cls.phaidra_data_with_1_location, cls.phaidra_data_with_2_locations = phaidra_data
 
-
-
     def test_translated_data(self):
         self.assertIn('bf:physicalLocation', self.translated_data_with_no_location['metadata']['json-ld'])
         self.assertIn('bf:physicalLocation', self.translated_data_with_one_location['metadata']['json-ld'])
