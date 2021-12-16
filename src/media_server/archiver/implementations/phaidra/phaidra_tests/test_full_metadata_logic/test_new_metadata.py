@@ -306,7 +306,7 @@ class TestFeature1678(TestCase):
         self.assertIn('rdfs:seeAlso', self.translated_data_1_url['metadata']['json-ld'])
         self.assertEqual([], self.translated_data_0_url['metadata']['json-ld']['rdfs:seeAlso'])
         self.assertEqual(self.expected_phaidra_data_1_url,
-                         self.translated_data_0_url['metadata']['json-ld']['rdfs:seeAlso']
+                         self.translated_data_1_url['metadata']['json-ld']['rdfs:seeAlso']
                          )
 
     def test_validation(self):
