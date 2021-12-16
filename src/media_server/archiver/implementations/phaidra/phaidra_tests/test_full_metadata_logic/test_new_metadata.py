@@ -5,7 +5,7 @@ import requests as requests
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
-    ValueLanguageBaseSchema
+    ValueLanguageBaseSchema, RdfSeeAlsoSchema
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
     create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
@@ -333,16 +333,14 @@ class TestFeature1678(TestCase):
             PortfolioNestedField,
         )
         # And checks for objects of the correct type
-        self.assertEqual(
-            'RdfSeeAlsoSchema',
-            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested
-                .__class__.__name__,
+        self.assertIs(
+            RdfSeeAlsoSchema,
+            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested,
         )
 
-        self.assertEqual(
-            'RdfSeeAlsoSchema',
-            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested
-                .__class__.__name__,
+        self.assertIs(
+            RdfSeeAlsoSchema,
+            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'].nested,
         )
 
     def test_phaidra(self):
