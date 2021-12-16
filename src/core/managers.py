@@ -25,4 +25,4 @@ class EntryManager(models.Manager):
         search_rank = SearchRank(search_vectors, search_query)
         trigram_similarity_title = TrigramSimilarity('title', text)
         rank = search_rank + trigram_similarity_title
-        return self.get_queryset().annotate(rank=rank).filter(rank__gte=0.2).order_by('-rank')
+        return self.get_queryset().annotate(rank=rank).filter(rank__gte=0.1).order_by('-rank')

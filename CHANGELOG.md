@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.4
+
+### Fixed
+- Fixed build error due to exiftool.org being down - thanks to Benjamin Höglinger-Stelzer [nefarius]
+
+## 1.1.3
+
+### Changed
+- Optimized docker-compose builds
+
+### Fixed
+- Fixed error during preview creation of documents containing umlauts
+
 ## 1.1.2
 
 ### Added
