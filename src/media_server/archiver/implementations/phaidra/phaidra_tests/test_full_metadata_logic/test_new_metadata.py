@@ -69,12 +69,12 @@ class TestFeature1677(TestCase):
         entry_with_no_location = model_provider.get_entry(thesis_type=False)
 
         entry_with_one_location = model_provider.get_entry(thesis_type=False)
-        entry_with_one_location.data['locations'] = [cls.location_1_portfolio, ]
+        entry_with_one_location.data['location'] = [cls.location_1_portfolio, ]
         entry_with_one_location.save()
         entry_with_one_location.refresh_from_db()
 
         entry_with_two_locations = model_provider.get_entry(thesis_type=False)
-        entry_with_two_locations.data['locations'] = [cls.location_1_portfolio, cls.location_2_portfolio]
+        entry_with_two_locations.data['location'] = [cls.location_1_portfolio, cls.location_2_portfolio]
         entry_with_two_locations.save()
         entry_with_two_locations.refresh_from_db()
 
