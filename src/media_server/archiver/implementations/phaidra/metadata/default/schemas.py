@@ -80,6 +80,20 @@ class DceTitleSchema(Schema):
     )
 
 
+class RdfSeeAlsoSchema(TypeLabelSchema):
+    """
+    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
+    """
+    type = PortfolioConstantField('schema:URL', load_from='@type', dump_to='@type')
+    schema_url = PortfolioListField(fields.Url(), load_from='schema:url', dump_to='schema:url')
+    skos_prefLabel = PortfolioNestedField(
+        ValueLanguageBaseSchema,
+        many=True,
+        load_from='skos:prefLabel',
+        dump_to='skos:prefLabel',
+    )
+
+
 class PhaidraContainer(Schema):
     dcterms_type = PortfolioConstantField(
         [
@@ -155,6 +169,9 @@ class PhaidraContainer(Schema):
     bf_physicalLocation = PortfolioNestedField(ValueLanguageBaseSchema, many=True, validate=None,
                                                load_from='bf:physicalLocation', dump_to='bf:physicalLocation'
                                                )
+    rdfs_seeAlso = PortfolioNestedField(RdfSeeAlsoSchema, many=True, validate=None,
+                                        load_from='rdfs:seeAlso', dump_to='rdfs:seeAlso',
+                                        )
 
 
 class JsonLd(Schema):
