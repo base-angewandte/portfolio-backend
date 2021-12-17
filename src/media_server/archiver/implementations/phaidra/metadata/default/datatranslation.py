@@ -23,10 +23,6 @@ from media_server.archiver.implementations.phaidra.abstracts.datatranslation imp
 )
 
 
-class LanguageNotInTranslationMappingError(NotImplementedError):
-    pass
-
-
 def _convert_two_to_three_letter_language_code(language_code: str) -> str:
     """
     Convert 2 to 3 letter language code. We only have a few though 
@@ -51,17 +47,11 @@ def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
     return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
 
 
-def _create_value_language_objects_from_label_dict(container: Dict, raise_=False) -> List:
+def _create_value_language_objects_from_label_dict(container: Dict) -> List:
     labels: Dict = container['label']
     value_language_objects = []
     for language, label in labels.items():
-        try:
-            value_language_object = _create_value_language_object(label, language)
-        except LanguageNotInTranslationMappingError as error:
-            if raise_:
-                raise error
-            else:
-                continue
+        value_language_object = _create_value_language_object(label, language)
         value_language_objects.append(value_language_object)
     return value_language_objects
 
@@ -243,10 +233,7 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
             translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(
                 'bf:Summary' if 'type' in text else 'bf:Note'
             )
-            try:
-                translated_text['skos:prefLabel'] = self._get_data_from_skos_prefLabel_from_text_type(text)
-            except LanguageNotInTranslationMappingError:
-                continue  # if not available in target, do not translate
+            translated_text['skos:prefLabel'] = self._get_data_from_skos_prefLabel_from_text_type(text)
             translated.append(translated_text)
         return translated
 
