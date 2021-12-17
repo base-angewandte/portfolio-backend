@@ -1,4 +1,4 @@
-import os
+import argparse
 from datetime import datetime
 
 import bibtexparser
@@ -6,7 +6,7 @@ from bibtexparser.bibdatabase import as_text
 from marshmallow import ValidationError
 
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from core.models import Entry
 from core.schemas import TypeModelSchema
@@ -19,17 +19,26 @@ from core.schemas.general import (
     SourceMultilingualLabelSchema,
 )
 from core.schemas.models import KeywordsModelSchema, TextDataSchema, TextSchema
-from portfolio import settings
 
 
 class Command(BaseCommand):
-    help = 'Creates new entries from entries in a BibTex file'
+    help = 'Creates new entries from entries in a BibTeX file'
+
+    def add_arguments(self, parser):
+        parser.add_argument('user', type=str, help='Username of the user to import entries for')
+        parser.add_argument('file', type=argparse.FileType('r'), help='BibTeX file to import from')
 
     def handle(self, *args, **options):
 
-        # Open Bibtex-File
-        with open(os.path.join(settings.BASE_DIR, 'migration/test.bib')) as bibtex_file:
-            bib_database = bibtexparser.load(bibtex_file)
+        try:
+            user = User.objects.get(username=options['user'])
+        except User.DoesNotExist:
+            raise CommandError('User does not exist')
+        print(options['file'])
+
+        # Parse BibTeX-File
+        bib_database = bibtexparser.load(options['file'])
+
         for entry in bib_database.entries:
             published = False
             texts_all = None
@@ -99,10 +108,6 @@ class Command(BaseCommand):
                 print('Texte: ', texts_all)
             except KeyError:
                 pass
-
-            # ENTITY OWNER ######
-            # Todo: Zuordnung zu User
-            django_user, created = User.objects.get_or_create(username=1)
 
             # create PublishedInSchema
             # Todo: Wird das Schema benötigt?
@@ -316,7 +321,7 @@ class Command(BaseCommand):
                 type=entity_type_json,
                 texts=texts_all,
                 keywords=entity_keywords,
-                owner_id=django_user.id,
+                owner_id=user.id,
                 # owner_id=1,
                 published=published,
                 data=entity_data,
