@@ -1,17 +1,29 @@
 import os
+from datetime import datetime
+
 import bibtexparser
 from bibtexparser.bibdatabase import as_text
-from datetime import datetime
-from marshmallow import Schema, ValidationError, fields, pprint
+from marshmallow import ValidationError
+
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand, CommandError
-from core.models import *
-from core.schemas import *
-from core.schemas.entries.document import *
-from core.schemas.general import *
-from core.schemas.models import *
+from django.core.management.base import BaseCommand
+
+from core.models import Entry
+from core.schemas import TypeModelSchema
+from core.schemas.entries.document import DocumentSchema
+from core.schemas.general import (
+    ContributorSchema,
+    DateTimeSchema,
+    LanguageDataSchema,
+    MultilingualStringSchema,
+    SourceMultilingualLabelSchema,
+)
+from core.schemas.models import KeywordsModelSchema, TextDataSchema, TextSchema
+from portfolio import settings
+
 
 class Command(BaseCommand):
+    help = 'Creates new entries from entries in a BibTex file'
 
     def handle(self, *args, **options):
 
@@ -27,9 +39,9 @@ class Command(BaseCommand):
                 entity_type = TypeModelSchema()
                 sml = SourceMultilingualLabelSchema()
                 ml = MultilingualStringSchema()
-                ml.en = "article"
-                ml.de = "Artikel"
-                sml.source = "http://base.uni-ak.ac.at/portfolio/taxonomy/article"
+                ml.en = 'article'
+                ml.de = 'Artikel'
+                sml.source = 'http://base.uni-ak.ac.at/portfolio/taxonomy/article'
                 sml.label = ml
                 entity_type.type = sml
                 # type_schema = TypeModelSchema()
@@ -42,9 +54,9 @@ class Command(BaseCommand):
                 entity_type = TypeModelSchema()
                 sml = SourceMultilingualLabelSchema()
                 ml = MultilingualStringSchema()
-                ml.en = "chapter"
-                ml.de = "Beitrag in Sammelband"
-                sml.source = "http://base.uni-ak.ac.at/portfolio/taxonomy/chapter"
+                ml.en = 'chapter'
+                ml.de = 'Beitrag in Sammelband'
+                sml.source = 'http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'
                 sml.label = ml
                 entity_type.type = sml
                 # type_schema = TypeModelSchema()
@@ -53,60 +65,60 @@ class Command(BaseCommand):
                 entity_type_json = type_schema.dump(sml).data
                 # print("Typ: Dokument")
 
-            ###### Titel ######
+            # Titel ######
             entity_title = as_text(entry['title'])
-            print("Entity.Title = ", entity_title)
+            print('Entity.Title = ', entity_title)
 
-            ###### TEXT #######
+            # TEXT #######
             try:
                 document_text_text = as_text(entry['abstract'])
                 # print("document_text_text", document_text_text)
                 text_allg = TextSchema()
                 texts = TextSchema()
                 text_allg_type = SourceMultilingualLabelSchema()
-                text_allg_type.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/abstract"
+                text_allg_type.source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
                 mlstring1 = None
                 mlstring1 = MultilingualStringSchema()
-                mlstring1.de = "Abstract"
-                mlstring1.en = "abstract"
+                mlstring1.de = 'Abstract'
+                mlstring1.en = 'abstract'
                 text_allg_type.label = mlstring1
                 text_data_allg = TextDataSchema()
                 text_data_allg_language = LanguageDataSchema()
-                text_data_allg_language.source = "http://base.uni-ak.ac.at/portfolio/languages/de"
+                text_data_allg_language.source = 'http://base.uni-ak.ac.at/portfolio/languages/de'
                 mlstring1 = None
                 mlstring1 = MultilingualStringSchema()
-                mlstring1.de = "Deutsch"
-                mlstring1.en = "German"
-                mlstring1.fr = "allemand"
+                mlstring1.de = 'Deutsch'
+                mlstring1.en = 'German'
+                mlstring1.fr = 'allemand'
                 text_data_allg_language.label = mlstring1
                 text_data_allg.text = document_text_text
                 text_data_allg.language = text_data_allg_language
                 text_allg.data = text_data_allg
                 text_allg.type = text_allg_type
                 texts_all = texts.dump(text_allg).data
-                print("Texte: ", texts_all)
-            except KeyError as err:
+                print('Texte: ', texts_all)
+            except KeyError:
                 pass
 
-            ###### ENTITY OWNER ######
-            #Todo: Zuordnung zu User
+            # ENTITY OWNER ######
+            # Todo: Zuordnung zu User
             django_user, created = User.objects.get_or_create(username=1)
 
             # create PublishedInSchema
             # Todo: Wird das Schema benötigt?
-            #### SCHEMA #####
+            # SCHEMA #####
             # schema = PublishedInSchema()
             # publishedIn = PublishedInSchema()
-            ### title = get_string_field(get_preflabel_lazy('title'), {'field_format': 'half', 'order': 1})
-            ### subtitle = get_string_field(get_preflabel_lazy('subtitle'), {'field_format': 'half', 'order': 2})
-            ### editor = get_contributors_field_for_role('editor', {'order': 3})
-            ### publisher = get_contributors_field_for_role('publisher', {'order': 4})
-            #title =
-            #subtitle =
+            # # title = get_string_field(get_preflabel_lazy('title'), {'field_format': 'half', 'order': 1})
+            # # subtitle = get_string_field(get_preflabel_lazy('subtitle'), {'field_format': 'half', 'order': 2})
+            # # editor = get_contributors_field_for_role('editor', {'order': 3})
+            # # publisher = get_contributors_field_for_role('publisher', {'order': 4})
+            # title =
+            # subtitle =
             # editor = None
             # editor = ContributorSchema()
-            #editor.label = personname['firstname'] + " " + personname['secondname']
-            #editor.source = entity_owner_uuid
+            # editor.label = personname['firstname'] + " " + personname['secondname']
+            # editor.source = entity_owner_uuid
             # role = None
             # role = SourceMultilingualLabelSchema()
             # mlstring1 = None
@@ -120,7 +132,7 @@ class Command(BaseCommand):
             # editor.roles = role
             # publishedIn.editor = editor
 
-            ### Publisher ####
+            # Publisher ####
             # Todo: Wird das Schema benötigt?
             # publisher = None
             # publisher = ContributorSchema()
@@ -139,7 +151,7 @@ class Command(BaseCommand):
             # publisher.roles = role
             # publishedIn.publisher = publisher
 
-            ### KEYWORDS ###
+            # KEYWORDS ###
             keywordschema = KeywordsModelSchema()
             e_keywords = KeywordsModelSchema()
 
@@ -147,8 +159,8 @@ class Command(BaseCommand):
             schema = DocumentSchema()
             document = DocumentSchema()
 
-            ### DATE ###
-            #TODO FEHLERHAFT (REGEXP)
+            # DATE ###
+            # TODO FEHLERHAFT (REGEXP)
             try:
                 date = DateTimeSchema()
                 date_document = as_text(entry['year']) + '-' + as_text(entry['month']) + '-' + as_text(entry['day'])
@@ -156,62 +168,62 @@ class Command(BaseCommand):
                 print(date.date)
                 document.date = date
 
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### LANGUAGE ###
+            # LANGUAGE ###
             try:
                 language = LanguageDataSchema()
                 if as_text(entry['language']) == 'Deutsch':
-                    language.source = "http://base.uni-ak.ac.at/portfolio/languages/de"
+                    language.source = 'http://base.uni-ak.ac.at/portfolio/languages/de'
                     mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
-                    mlstring1.de = "Deutsch"
-                    mlstring1.en = "German"
-                    mlstring1.fr = "allemand"
+                    mlstring1.de = 'Deutsch'
+                    mlstring1.en = 'German'
+                    mlstring1.fr = 'allemand'
                     language.label = mlstring1
                     document.language = language
                 if as_text(entry['language']) == 'English':
-                    language.source = "http://base.uni-ak.ac.at/portfolio/languages/en"
+                    language.source = 'http://base.uni-ak.ac.at/portfolio/languages/en'
                     mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
-                    mlstring1.de = "Englisch"
-                    mlstring1.en = "English"
-                    mlstring1.fr = "anglais"
+                    mlstring1.de = 'Englisch'
+                    mlstring1.en = 'English'
+                    mlstring1.fr = 'anglais'
                     language.label = mlstring1
                     document.language = language
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### VOLUME ###
+            # VOLUME ###
             try:
                 document.volume = as_text(entry['volume'])
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### PAGES ###
+            # PAGES ###
             try:
                 document.pages = as_text(entry['pages'])
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### ISSN/ISBN ###
+            # ISSN/ISBN ###
             try:
                 document.isbn = as_text(entry['isbn'])
-            except KeyError as err:
+            except KeyError:
                 pass
             try:
                 document.isbn = as_text(entry['issn'])
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### DOI ###
+            # DOI ###
             try:
                 document.doi = as_text(entry['doi'])
-            except KeyError as err:
+            except KeyError:
                 pass
 
-            ### ÜBERBLICK DOCUMENTSCHEMA
+            # ÜBERBLICK DOCUMENTSCHEMA
             # authors = get_contributors_field_for_role('author', {'order': 1})
             # editors = get_contributors_field_for_role('editor', {'order': 2})
             # publishers = get_contributors_field_for_role('publisher', {'order': 3})
@@ -234,7 +246,7 @@ class Command(BaseCommand):
             # format = get_format_field({'order': 15})
             # edition = get_string_field(get_preflabel_lazy('edition'), {'field_format': 'half', 'order': 16})
 
-            ### AUTHOR ###
+            # AUTHOR ###
             authors = []
             author = None
             author = ContributorSchema()
@@ -245,18 +257,18 @@ class Command(BaseCommand):
                 role = SourceMultilingualLabelSchema()
                 mlstring1 = None
                 mlstring1 = MultilingualStringSchema()
-                mlstring1.de = "Author*in"
-                mlstring1.en = "author"
+                mlstring1.de = 'Author*in'
+                mlstring1.en = 'author'
                 role.label = mlstring1
-                role.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/author"
+                role.source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
                 roles.append(role)
                 author.roles = role
                 authors.append(author)
-            except KeyError as err:
+            except KeyError:
                 pass
             document.authors = authors
 
-            ### Editor ####
+            # Editor ####
             # Todo: Wird das Schema benötigt?
             # editors = []
             # editor = None
@@ -280,7 +292,7 @@ class Command(BaseCommand):
             e_keywords = KeywordsModelSchema()
             try:
                 e_keywords.keywords = as_text(entry['keywords'])
-            except KeyError as err:
+            except KeyError:
                 pass
 
             # CREATE ENTRY
@@ -299,18 +311,22 @@ class Command(BaseCommand):
             if entity_keywords:
                 entity_keywords = entity_keywords['keywords']
 
-            publication = Entry.objects.create_clean(title=entity_title,
-                                             type=entity_type_json,
-                                             texts=texts_all,
-                                             keywords=entity_keywords,
-                                             owner_id=django_user.id,
-                                             #owner_id=1,
-                                             published=published,
-                                             data=entity_data)
-                                             #owner_id=entity_owner)
+            publication = Entry.objects.create_clean(
+                title=entity_title,
+                type=entity_type_json,
+                texts=texts_all,
+                keywords=entity_keywords,
+                owner_id=django_user.id,
+                # owner_id=1,
+                published=published,
+                data=entity_data,
+            )
+            # owner_id=entity_owner)
 
             # publication.clean()
-            texts_all = None
-            e_keywords = []
-            keywordslist = []
-            published = False
+            # texts_all = None
+            # e_keywords = []
+            # keywordslist = []
+            # published = False
+
+            publication.save()
