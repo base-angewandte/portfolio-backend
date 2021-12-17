@@ -1258,7 +1258,7 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
-        self.assertEqual(0, len(bf_note))
+        self.assertEqual(1, len(bf_note))
 
     def test_mixed(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=True)
@@ -1268,7 +1268,7 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         # only check dynamic part
         translation = translator._extract_from_container(translation)
         bf_note: List[Dict] = translation['bf:note']
-        self.assertEqual(2, len(bf_note))
+        self.assertEqual(3, len(bf_note))
 
     def test_implemented(self):
         entry = self.model_provider.get_entry(german_abstract=True, english_abstract=True, french_abstract=False)
