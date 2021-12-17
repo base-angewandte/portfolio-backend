@@ -13,7 +13,6 @@ from core.schemas import TypeModelSchema
 from core.schemas.entries.document import DocumentSchema
 from core.schemas.general import (
     ContributorSchema,
-    DateTimeSchema,
     LanguageDataSchema,
     MultilingualStringSchema,
     SourceMultilingualLabelSchema,
@@ -34,7 +33,6 @@ class Command(BaseCommand):
             user = User.objects.get(username=options['user'])
         except User.DoesNotExist:
             raise CommandError('User does not exist')
-        print(options['file'])
 
         # Parse BibTeX-File
         bib_database = bibtexparser.load(options['file'])
@@ -57,7 +55,6 @@ class Command(BaseCommand):
                 type_schema = SourceMultilingualLabelSchema()
                 # entity_type_json = type_schema.dump(entity_type).data
                 entity_type_json = type_schema.dump(sml).data
-                # print("Typ: Dokument")
 
             if as_text(entry['ENTRYTYPE']) == 'inbook':
                 entity_type = TypeModelSchema()
@@ -72,16 +69,13 @@ class Command(BaseCommand):
                 type_schema = SourceMultilingualLabelSchema()
                 # entity_type_json = type_schema.dump(entity_type).data
                 entity_type_json = type_schema.dump(sml).data
-                # print("Typ: Dokument")
 
             # Titel ######
             entity_title = as_text(entry['title'])
-            print('Entity.Title = ', entity_title)
 
             # TEXT #######
             try:
                 document_text_text = as_text(entry['abstract'])
-                # print("document_text_text", document_text_text)
                 text_allg = TextSchema()
                 texts = TextSchema()
                 text_allg_type = SourceMultilingualLabelSchema()
@@ -105,7 +99,6 @@ class Command(BaseCommand):
                 text_allg.data = text_data_allg
                 text_allg.type = text_allg_type
                 texts_all = texts.dump(text_allg).data
-                print('Texte: ', texts_all)
             except KeyError:
                 pass
 
@@ -165,16 +158,20 @@ class Command(BaseCommand):
             document = DocumentSchema()
 
             # DATE ###
-            # TODO FEHLERHAFT (REGEXP)
-            try:
-                date = DateTimeSchema()
-                date_document = as_text(entry['year']) + '-' + as_text(entry['month']) + '-' + as_text(entry['day'])
-                date.date = datetime.strptime(date_document, '%Y-%m-%d').date()
-                print(date.date)
-                document.date = date
-
-            except KeyError:
-                pass
+            # TODO: review: how do we want to handle dates where only year or year and month are set?
+            year = entry.get('year')
+            month = entry.get('month')
+            day = entry.get('day')
+            if year is not None:
+                date_string = year
+                date_format = '%Y'
+                if month:
+                    date_string += f'-{month}'
+                    date_format += '-%m'
+                    if day:
+                        date_string += f'-{day}'
+                        date_format += '-%d'
+                document.date = datetime.strptime(date_string, date_format).date()
 
             # LANGUAGE ###
             try:
