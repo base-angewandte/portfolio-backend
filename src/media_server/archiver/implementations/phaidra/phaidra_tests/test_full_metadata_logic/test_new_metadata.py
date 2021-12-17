@@ -8,7 +8,8 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
     ValueLanguageBaseSchema, RdfSeeAlsoSchema
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
     create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
-from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
+from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator, \
+    _convert_two_to_three_letter_language_code
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
     ClientProvider
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
@@ -359,3 +360,21 @@ class TestFeature1678(TestCase):
             self.expected_phaidra_data_1_url,
             self.phaidra_data_1_url['rdfs:seeAlso']
         )
+
+
+class TestImprovement1686(TestCase):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1686
+
+    1) If a language code can not be translated, default to und
+    2) Do not skip records, where language codes can not be translated
+    """
+
+    def test_language_code_translation(self):
+        """
+        Unit test for 1) If a language code can not be translated, default to und
+        """
+        self.assertEqual('deu', _convert_two_to_three_letter_language_code('de'))
+        self.assertEqual('eng', _convert_two_to_three_letter_language_code('en'))
+        self.assertEqual('und', _convert_two_to_three_letter_language_code('unknown'))
+        self.assertEqual('und', _convert_two_to_three_letter_language_code('xxx'))
