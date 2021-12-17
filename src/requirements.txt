@@ -10,6 +10,8 @@ apispec==0.39.0
     # via -r src/requirements.in
 attrs==20.3.0
     # via jsonschema
+bibtexparser==1.2.0
+    # via -r src/requirements.in
 certifi==2020.12.5
     # via requests
 chardet==4.0.0
@@ -63,6 +65,8 @@ djangorestframework==3.9.4
     #   drf-yasg
 drf-yasg[validation]==1.17.1
     # via -r src/requirements.in
+future==0.18.2
+    # via bibtexparser
 gunicorn==20.1.0
     # via -r src/requirements.in
 hashids==1.3.1
@@ -71,11 +75,6 @@ idna==2.10
     # via
     #   jsonschema
     #   requests
-importlib-metadata==4.0.1
-    # via
-    #   jsonschema
-    #   markdown
-    #   pep517
 inflection==0.5.1
     # via drf-yasg
 isodate==0.6.0
@@ -116,6 +115,7 @@ psycopg2-binary==2.8.6
     # via -r src/requirements.in
 pyparsing==2.4.7
     # via
+    #   bibtexparser
     #   packaging
     #   rdflib
 pyrsistent==0.17.3
@@ -188,8 +188,6 @@ swagger-spec-validator==2.7.3
     # via drf-yasg
 toml==0.10.2
     # via pep517
-typing-extensions==3.10.0.0
-    # via importlib-metadata
 uritemplate==3.0.1
     # via
     #   coreapi
@@ -202,10 +200,6 @@ werkzeug==1.0.1
     # via -r src/requirements.in
 xmltodict==0.12.0
     # via -r src/requirements.in
-zipp==3.4.1
-    # via
-    #   importlib-metadata
-    #   pep517
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

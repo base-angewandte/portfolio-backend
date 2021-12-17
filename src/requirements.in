@@ -4,6 +4,7 @@
 
 apimapper==0.7.8
 apispec==0.39.0
+bibtexparser==1.2.0
 concurrent-log-handler==0.9.19
 django~=2.2
 django-cas-ng==4.1.1
