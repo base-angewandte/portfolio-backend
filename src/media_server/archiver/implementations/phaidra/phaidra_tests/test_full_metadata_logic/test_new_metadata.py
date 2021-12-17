@@ -4,12 +4,13 @@ New metadata is added to the containers. Check it
 import requests as requests
 from django.test import TestCase
 
+from core.models import Entry
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
     ValueLanguageBaseSchema, RdfSeeAlsoSchema
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
     create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator, \
-    _convert_two_to_three_letter_language_code
+    _convert_two_to_three_letter_language_code, BfNoteTranslator
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
     ClientProvider
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
@@ -378,3 +379,67 @@ class TestImprovement1686(TestCase):
         self.assertEqual('eng', _convert_two_to_three_letter_language_code('en'))
         self.assertEqual('und', _convert_two_to_three_letter_language_code('unknown'))
         self.assertEqual('und', _convert_two_to_three_letter_language_code('xxx'))
+
+    def test_bf_note_translation_known_language(self):
+        """
+        Integration test for both:
+        1) If a language code can not be translated, default to und
+        2) Do not skip records, where language codes can not be translated
+        """
+        entry = Entry(
+            texts=[
+                {
+                    'data': [
+                        {'text': 'Any Text', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/en'}}
+                    ]
+                },
+            ]
+        )
+        translator = BfNoteTranslator()
+        data = translator.translate_data(entry)
+        self.assertEqual(
+            data,
+            [
+                {
+                    '@type': 'bf:Note',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Any Text',
+                            '@language': 'eng',
+                        }
+                    ],
+                },
+            ],
+        )
+
+    def test_bf_note_translation_unknown_language(self):
+        """
+        Integration test for both:
+        1) If a language code can not be translated, default to und
+        2) Do not skip records, where language codes can not be translated
+        """
+        entry = Entry(
+            texts=[
+                {
+                    'data': [
+                        {'text': 'Any Text', 'language': {'source': 'http://base.uni-ak.ac.at/portfolio/languages/xx'}}
+                    ]
+                },
+            ]
+        )
+        translator = BfNoteTranslator()
+        data = translator.translate_data(entry)
+        self.assertEqual(
+            data,
+            [
+                {
+                    '@type': 'bf:Note',
+                    'skos:prefLabel': [
+                        {
+                            '@value': 'Any Text',
+                            '@language': 'und',
+                        }
+                    ],
+                },
+            ],
+        )
