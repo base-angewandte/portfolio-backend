@@ -28,19 +28,15 @@ class LanguageNotInTranslationMappingError(NotImplementedError):
 
 
 def _convert_two_to_three_letter_language_code(language_code: str) -> str:
-    """To do :-) ?!"""
-    if len(language_code) == 3:
-        return language_code
-    language_mapping = {
+    """
+    Convert 2 to 3 letter language code. We only have a few though 
+    :param language_code: 
+    :return: eng|deu|und
+    """""
+    return {
         'en': 'eng',
         'de': 'deu',
-    }
-    if language_code in language_mapping:
-        return language_mapping[language_code]
-    else:
-        raise LanguageNotInTranslationMappingError(
-            f'Can not translate language code {language_code}, only {set(language_mapping.keys())} are supported'
-        )
+    }.get(language_code, 'und')
 
 
 def _create_type_object(type_: str) -> Dict[str, str]:
