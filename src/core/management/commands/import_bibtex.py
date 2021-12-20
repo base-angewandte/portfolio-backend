@@ -324,10 +324,7 @@ class Command(BaseCommand):
                 published=False,
                 data=entry_data,
             )
-            # owner_id=entity_owner)
 
-            # publication.clean()
             # texts_all = None
             # e_keywords = []
             # keywordslist = []
-            # published = False
