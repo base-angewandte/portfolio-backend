@@ -75,6 +75,11 @@ idna==2.10
     # via
     #   jsonschema
     #   requests
+importlib-metadata==4.10.0
+    # via
+    #   jsonschema
+    #   markdown
+    #   pep517
 inflection==0.5.1
     # via drf-yasg
 isodate==0.6.0
@@ -188,6 +193,8 @@ swagger-spec-validator==2.7.3
     # via drf-yasg
 toml==0.10.2
     # via pep517
+typing-extensions==4.0.1
+    # via importlib-metadata
 uritemplate==3.0.1
     # via
     #   coreapi
@@ -200,6 +207,10 @@ werkzeug==1.0.1
     # via -r src/requirements.in
 xmltodict==0.12.0
     # via -r src/requirements.in
+zipp==3.6.0
+    # via
+    #   importlib-metadata
+    #   pep517
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
