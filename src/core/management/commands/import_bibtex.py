@@ -51,7 +51,7 @@ class Command(BaseCommand):
             raise CommandError('User does not exist')
 
         # Parse BibTeX-File
-        bib_database = bibtexparser.load(options['file'])
+        bibtex_database = bibtexparser.load(options['file'])
 
         # type mapping
         # bibtex type as keys
@@ -65,18 +65,18 @@ class Command(BaseCommand):
         for _k, v in type_mapping.items():
             TypeModelSchema().load({'type': v})
 
-        for entry in bib_database.entries:
+        for bibtex_entry in bibtex_database.entries:
             texts_all = None
 
             # Type
-            entity_type = type_mapping[as_text(entry['ENTRYTYPE'])]
+            entry_type = type_mapping[as_text(bibtex_entry['ENTRYTYPE'])]
 
             # Title
-            entity_title = as_text(entry['title'])
+            entry_title = as_text(bibtex_entry['title'])
 
             # TEXT #######
             try:
-                document_text_text = as_text(entry['abstract'])
+                document_text_text = as_text(bibtex_entry['abstract'])
                 text_allg = TextSchema()
                 texts = TextSchema()
                 text_allg_type = SourceMultilingualLabelSchema()
@@ -160,9 +160,9 @@ class Command(BaseCommand):
 
             # DATE ###
             # TODO: review: how do we want to handle dates where only year or year and month are set?
-            year = entry.get('year')
-            month = entry.get('month')
-            day = entry.get('day')
+            year = bibtex_entry.get('year')
+            month = bibtex_entry.get('month')
+            day = bibtex_entry.get('day')
             if year is not None:
                 date_string = year
                 date_format = '%Y'
@@ -177,7 +177,7 @@ class Command(BaseCommand):
             # LANGUAGE ###
             try:
                 language = LanguageDataSchema()
-                if as_text(entry['language']) == 'Deutsch':
+                if as_text(bibtex_entry['language']) == 'Deutsch':
                     language.source = 'http://base.uni-ak.ac.at/portfolio/languages/de'
                     mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
@@ -186,7 +186,7 @@ class Command(BaseCommand):
                     mlstring1.fr = 'allemand'
                     language.label = mlstring1
                     document.language = language
-                if as_text(entry['language']) == 'English':
+                if as_text(bibtex_entry['language']) == 'English':
                     language.source = 'http://base.uni-ak.ac.at/portfolio/languages/en'
                     mlstring1 = None
                     mlstring1 = MultilingualStringSchema()
@@ -200,29 +200,29 @@ class Command(BaseCommand):
 
             # VOLUME ###
             try:
-                document.volume = as_text(entry['volume'])
+                document.volume = as_text(bibtex_entry['volume'])
             except KeyError:
                 pass
 
             # PAGES ###
             try:
-                document.pages = as_text(entry['pages'])
+                document.pages = as_text(bibtex_entry['pages'])
             except KeyError:
                 pass
 
             # ISSN/ISBN ###
             try:
-                document.isbn = as_text(entry['isbn'])
+                document.isbn = as_text(bibtex_entry['isbn'])
             except KeyError:
                 pass
             try:
-                document.isbn = as_text(entry['issn'])
+                document.isbn = as_text(bibtex_entry['issn'])
             except KeyError:
                 pass
 
             # DOI ###
             try:
-                document.doi = as_text(entry['doi'])
+                document.doi = as_text(bibtex_entry['doi'])
             except KeyError:
                 pass
 
@@ -254,7 +254,7 @@ class Command(BaseCommand):
             author = None
             author = ContributorSchema()
             try:
-                author.label = as_text(entry['author'])
+                author.label = as_text(bibtex_entry['author'])
                 roles = []
                 role = None
                 role = SourceMultilingualLabelSchema()
@@ -294,7 +294,7 @@ class Command(BaseCommand):
             keywordschema = KeywordsModelSchema()
             e_keywords = KeywordsModelSchema()
             try:
-                e_keywords.keywords = as_text(entry['keywords'])
+                e_keywords.keywords = as_text(bibtex_entry['keywords'])
             except KeyError:
                 pass
 
@@ -306,23 +306,23 @@ class Command(BaseCommand):
                 err.messages['_schema']
                 print(err.messages)
 
-            entity_data = schema.dump(document).data
-            entity_keywords = keywordschema.dump(e_keywords).data
+            entry_data = schema.dump(document).data
+            entry_keywords = keywordschema.dump(e_keywords).data
 
             # quick fix for invalid data
             texts_all = [texts_all] if texts_all else None
-            if entity_keywords:
-                entity_keywords = entity_keywords['keywords']
+            if entry_keywords:
+                entry_keywords = entry_keywords['keywords']
 
             publication = Entry.objects.create_clean(
-                title=entity_title,
-                type=entity_type,
+                title=entry_title,
+                type=entry_type,
                 texts=texts_all,
-                keywords=entity_keywords,
+                keywords=entry_keywords,
                 owner_id=user.id,
                 # owner_id=1,
                 published=False,
-                data=entity_data,
+                data=entry_data,
             )
             # owner_id=entity_owner)
 
