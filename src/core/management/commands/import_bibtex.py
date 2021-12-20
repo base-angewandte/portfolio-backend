@@ -5,6 +5,7 @@ import bibtexparser
 from bibtexparser.bibdatabase import as_text
 from marshmallow import ValidationError
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
@@ -18,6 +19,21 @@ from core.schemas.general import (
     SourceMultilingualLabelSchema,
 )
 from core.schemas.models import KeywordsModelSchema, TextDataSchema, TextSchema
+from core.skosmos import get_preflabel
+
+
+def get_label(uri, lang):
+    return get_preflabel(uri.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=lang)
+
+
+def get_type_object(uri):
+    return {
+        'source': uri,
+        'label': {
+            'de': get_label(uri, 'de'),
+            'en': get_label(uri, 'en'),
+        },
+    }
 
 
 class Command(BaseCommand):
@@ -37,39 +53,25 @@ class Command(BaseCommand):
         # Parse BibTeX-File
         bib_database = bibtexparser.load(options['file'])
 
+        # type mapping
+        # bibtex type as keys
+        # type object as values
+        type_mapping = {
+            'article': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/article'),
+            'inbook': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'),
+        }
+
+        # ensure type objects are still valid
+        for _k, v in type_mapping.items():
+            TypeModelSchema().load({'type': v})
+
         for entry in bib_database.entries:
             texts_all = None
 
-            # Zuordnung Publikationsart -- entity.type
-            if as_text(entry['ENTRYTYPE']) == 'article':
-                entity_type = TypeModelSchema()
-                sml = SourceMultilingualLabelSchema()
-                ml = MultilingualStringSchema()
-                ml.en = 'article'
-                ml.de = 'Artikel'
-                sml.source = 'http://base.uni-ak.ac.at/portfolio/taxonomy/article'
-                sml.label = ml
-                entity_type.type = sml
-                # type_schema = TypeModelSchema()
-                type_schema = SourceMultilingualLabelSchema()
-                # entity_type_json = type_schema.dump(entity_type).data
-                entity_type_json = type_schema.dump(sml).data
+            # Type
+            entity_type = type_mapping[as_text(entry['ENTRYTYPE'])]
 
-            if as_text(entry['ENTRYTYPE']) == 'inbook':
-                entity_type = TypeModelSchema()
-                sml = SourceMultilingualLabelSchema()
-                ml = MultilingualStringSchema()
-                ml.en = 'chapter'
-                ml.de = 'Beitrag in Sammelband'
-                sml.source = 'http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'
-                sml.label = ml
-                entity_type.type = sml
-                # type_schema = TypeModelSchema()
-                type_schema = SourceMultilingualLabelSchema()
-                # entity_type_json = type_schema.dump(entity_type).data
-                entity_type_json = type_schema.dump(sml).data
-
-            # Titel ######
+            # Title
             entity_title = as_text(entry['title'])
 
             # TEXT #######
@@ -314,7 +316,7 @@ class Command(BaseCommand):
 
             publication = Entry.objects.create_clean(
                 title=entity_title,
-                type=entity_type_json,
+                type=entity_type,
                 texts=texts_all,
                 keywords=entity_keywords,
                 owner_id=user.id,
