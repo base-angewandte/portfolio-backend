@@ -314,7 +314,7 @@ class Command(BaseCommand):
             if entry_keywords:
                 entry_keywords = entry_keywords['keywords']
 
-            publication = Entry.objects.create_clean(
+            Entry.objects.create_clean(
                 title=entry_title,
                 type=entry_type,
                 texts=texts_all,
@@ -331,5 +331,3 @@ class Command(BaseCommand):
             # e_keywords = []
             # keywordslist = []
             # published = False
-
-            publication.save()
