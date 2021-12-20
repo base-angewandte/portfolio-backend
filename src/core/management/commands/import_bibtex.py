@@ -38,7 +38,6 @@ class Command(BaseCommand):
         bib_database = bibtexparser.load(options['file'])
 
         for entry in bib_database.entries:
-            published = False
             texts_all = None
 
             # Zuordnung Publikationsart -- entity.type
@@ -320,7 +319,7 @@ class Command(BaseCommand):
                 keywords=entity_keywords,
                 owner_id=user.id,
                 # owner_id=1,
-                published=published,
+                published=False,
                 data=entity_data,
             )
             # owner_id=entity_owner)
