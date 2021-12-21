@@ -19,7 +19,7 @@ from core.schemas.general import (
     MultilingualStringSchema,
     SourceMultilingualLabelSchema,
 )
-from core.schemas.models import KeywordsModelSchema, TextDataSchema, TextSchema
+from core.schemas.models import TextDataSchema, TextSchema
 from core.skosmos import get_preflabel
 
 
@@ -182,10 +182,6 @@ class Command(BaseCommand):
             # publisher.roles = role
             # publishedIn.publisher = publisher
 
-            # KEYWORDS ###
-            keywordschema = KeywordsModelSchema()
-            e_keywords = KeywordsModelSchema()
-
             # create DocumentSchema
             schema = DocumentSchema()
             document = DocumentSchema()
@@ -322,13 +318,6 @@ class Command(BaseCommand):
             # editor.roles = role
             # editors.append(editor)
 
-            keywordschema = KeywordsModelSchema()
-            e_keywords = KeywordsModelSchema()
-            try:
-                e_keywords.keywords = as_text(bibtex_entry['keywords'])
-            except KeyError:
-                pass
-
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
             try:
@@ -338,12 +327,23 @@ class Command(BaseCommand):
                 print(err.messages)
 
             entry_data = schema.dump(document).data
-            entry_keywords = keywordschema.dump(e_keywords).data
+
+            entry_keywords = []
+            if 'keywords' in bibtex_entry:
+                for kw in bibtex_entry.get('keywords'):
+                    # TODO: here we could check first if a keyword in out taxonomy already
+                    #       exists, and then use this concept and its translations
+                    entry_keywords.append(
+                        {
+                            'label': {
+                                'de': kw,
+                                'en': kw,
+                            },
+                        }
+                    )
 
             # quick fix for invalid data
             texts_all = [texts_all] if texts_all else None
-            if entry_keywords:
-                entry_keywords = entry_keywords['keywords']
 
             Entry.objects.create_clean(
                 title=entry_title,
@@ -351,7 +351,6 @@ class Command(BaseCommand):
                 texts=texts_all,
                 keywords=entry_keywords,
                 owner_id=user.id,
-                # owner_id=1,
                 published=False,
                 data=entry_data,
             )
