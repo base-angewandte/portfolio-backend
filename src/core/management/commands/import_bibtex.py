@@ -1,4 +1,5 @@
 import argparse
+import re
 from datetime import datetime
 
 import bibtexparser
@@ -36,6 +37,35 @@ def get_type_object(uri):
     }
 
 
+def customizations(record):
+    """Wrapper for all bibtexparser customizations used in this importer."""
+    record = bibtexparser.customization.convert_to_unicode(record)
+    record = bibtexparser.customization.author(record)
+    record = bibtexparser.customization.editor(record)
+    record = bibtexparser.customization.keyword(record)
+    record = keywords(record)
+    return record
+
+
+def keywords(record, sep=',|;'):
+    """Split keywords field into a list.
+
+    For some reason the bibtexparser.customization only contains a keyword function,
+    operating on a 'keyword' key in the record. So we add the same code here for
+    a 'keywords' key.
+
+    :param record: the record.
+    :type record: dict
+    :param sep: pattern used for the splitting regexp.
+    :type record: string, optional
+    :returns: dict -- the modified record.
+    """
+    if 'keywords' in record:
+        record['keywords'] = [i.strip() for i in re.split(sep, record['keywords'].replace('\n', ''))]
+
+    return record
+
+
 class Command(BaseCommand):
     help = 'Creates new entries from entries in a BibTeX file'
 
@@ -51,7 +81,9 @@ class Command(BaseCommand):
             raise CommandError('User does not exist')
 
         # Parse BibTeX-File
-        bibtex_database = bibtexparser.load(options['file'])
+        parser = bibtexparser.bparser.BibTexParser()
+        parser.customization = customizations
+        bibtex_database = bibtexparser.load(options['file'], parser=parser)
 
         # type mapping
         # bibtex type as keys
@@ -251,24 +283,23 @@ class Command(BaseCommand):
 
             # AUTHOR ###
             authors = []
-            author = None
-            author = ContributorSchema()
-            try:
-                author.label = as_text(bibtex_entry['author'])
-                roles = []
-                role = None
-                role = SourceMultilingualLabelSchema()
-                mlstring1 = None
-                mlstring1 = MultilingualStringSchema()
-                mlstring1.de = 'Author*in'
-                mlstring1.en = 'author'
-                role.label = mlstring1
-                role.source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
-                roles.append(role)
-                author.roles = role
-                authors.append(author)
-            except KeyError:
-                pass
+            if 'author' in bibtex_entry:
+                for bibtex_author in bibtex_entry['author']:
+                    author = ContributorSchema()
+                    author.label = ' '.join(bibtex_author.split(', ')[::-1])
+                    if author.label == user.get_full_name():
+                        author.source = user.username
+                    author_concept = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                    author.roles = [
+                        {
+                            'source': author_concept,
+                            'label': {
+                                'de': get_label(author_concept, 'de'),
+                                'en': get_label(author_concept, 'en'),
+                            },
+                        }
+                    ]
+                    authors.append(author)
             document.authors = authors
 
             # Editor ####
