@@ -183,6 +183,10 @@ class Command(BaseCommand):
                     }
                 )
 
+            # Annotation
+            if 'annotation' in bibtex_entry:
+                notes_list.append(f'\nAnnotation: {bibtex_entry["annotation"]}')
+
             # Authors
             authors = []
             if 'author' in bibtex_entry:
