@@ -13,7 +13,6 @@ from django.core.management.base import BaseCommand, CommandError
 from core.models import Entry
 from core.schemas import TypeModelSchema
 from core.schemas.entries.document import DocumentSchema
-from core.schemas.general import ContributorSchema
 from core.skosmos import get_preflabel
 
 
@@ -153,6 +152,28 @@ class Command(BaseCommand):
             schema = DocumentSchema()
             document = DocumentSchema()
 
+            # Authors
+            authors = []
+            if 'author' in bibtex_entry:
+                author_concept = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                for bibtex_author in bibtex_entry['author']:
+                    author = {
+                        'label': ' '.join(bibtex_author.split(', ')[::-1]),
+                        'roles': [
+                            {
+                                'source': author_concept,
+                                'label': {
+                                    'de': get_label(author_concept, 'de'),
+                                    'en': get_label(author_concept, 'en'),
+                                },
+                            }
+                        ],
+                    }
+                    if author['label'] == user.get_full_name():
+                        author['source'] = user.username
+                    authors.append(author)
+            document.authors = authors
+
             # Date
             # TODO: review: how do we want to handle dates where only year or year and month are set?
             year = bibtex_entry.get('year')
@@ -206,27 +227,6 @@ class Command(BaseCommand):
                 document.doi = as_text(bibtex_entry['doi'])
             except KeyError:
                 pass
-
-            # AUTHOR ###
-            authors = []
-            if 'author' in bibtex_entry:
-                for bibtex_author in bibtex_entry['author']:
-                    author = ContributorSchema()
-                    author.label = ' '.join(bibtex_author.split(', ')[::-1])
-                    if author.label == user.get_full_name():
-                        author.source = user.username
-                    author_concept = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
-                    author.roles = [
-                        {
-                            'source': author_concept,
-                            'label': {
-                                'de': get_label(author_concept, 'de'),
-                                'en': get_label(author_concept, 'en'),
-                            },
-                        }
-                    ]
-                    authors.append(author)
-            document.authors = authors
 
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
