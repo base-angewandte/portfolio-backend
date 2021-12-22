@@ -17,6 +17,10 @@ from core.skosmos import get_preflabel
 
 
 def get_label(uri, lang):
+    return get_preflabel(uri.split('/')[-1], lang=lang)
+
+
+def get_type_label(uri, lang):
     return get_preflabel(uri.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=lang)
 
 
@@ -25,12 +29,22 @@ def get_language_label(lang, label_lang):
     return get_preflabel(lang, project=settings.LANGUAGES_VOCID, graph=graph, lang=label_lang)
 
 
-def get_type_object(uri):
+def get_role_object(uri):
     return {
         'source': uri,
         'label': {
             'de': get_label(uri, 'de'),
             'en': get_label(uri, 'en'),
+        },
+    }
+
+
+def get_type_object(uri):
+    return {
+        'source': uri,
+        'label': {
+            'de': get_type_label(uri, 'de'),
+            'en': get_type_label(uri, 'en'),
         },
     }
 
@@ -127,6 +141,7 @@ class Command(BaseCommand):
             texts = []
             notes_list = [f'Imported from {options["file"].name}']
             location = []
+            contributors = []
 
             # create DocumentSchema
             schema = DocumentSchema()
@@ -159,22 +174,22 @@ class Command(BaseCommand):
                 # TODO: should we also check for hits against PELIAS or just use the label?
                 location.append({'label': bibtex_entry['address']})
 
+            # Affiliation
+            if 'affiliation' in bibtex_entry:
+                contributors.append(
+                    {
+                        'label': bibtex_entry['affiliation'],
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                    }
+                )
+
             # Authors
             authors = []
             if 'author' in bibtex_entry:
-                author_concept = 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
                 for bibtex_author in bibtex_entry['author']:
                     author = {
                         'label': ' '.join(bibtex_author.split(', ')[::-1]),
-                        'roles': [
-                            {
-                                'source': author_concept,
-                                'label': {
-                                    'de': get_label(author_concept, 'de'),
-                                    'en': get_label(author_concept, 'en'),
-                                },
-                            }
-                        ],
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/author')],
                     }
                     if author['label'] == user.get_full_name():
                         author['source'] = user.username
@@ -240,9 +255,11 @@ class Command(BaseCommand):
             except KeyError:
                 pass
 
-            # in case locations have been added while parsing, add them to document
+            # in case locations and contributors have been added, add them to document
             if location:
                 document.location = location
+            if contributors:
+                document.contributors = contributors
 
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
