@@ -280,6 +280,17 @@ class Command(BaseCommand):
                     editors.append(editor)
                 document.editors = editors
 
+            # Institution
+            if 'institution' in bibtex_entry:
+                contributors.append(
+                    {
+                        'label': bibtex_entry['institution'],
+                        'roles': [
+                            get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/partner_institution')
+                        ],
+                    }
+                )
+
             # ISSN/ISBN
             isbn = bibtex_entry.get('isbn')
             issn = bibtex_entry.get('issn')
@@ -314,6 +325,15 @@ class Command(BaseCommand):
                 document.volume = volume
             elif number:
                 document.volume = f'({number})'
+
+            # Organization
+            if 'organization' in bibtex_entry:
+                contributors.append(
+                    {
+                        'label': bibtex_entry['organization'],
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                    }
+                )
 
             # Pages
             if 'pages' in bibtex_entry:
