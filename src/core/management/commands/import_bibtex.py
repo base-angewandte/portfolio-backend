@@ -125,6 +125,7 @@ class Command(BaseCommand):
 
         for bibtex_entry in bibtex_database.entries:
             texts = []
+            notes_list = [f'Imported from {options["file"].name}']
 
             # Type
             try:
@@ -137,7 +138,7 @@ class Command(BaseCommand):
                 entry_title = bibtex_entry['title']
             else:
                 entry_title = 'no title'
-                # TODO: add note that there was no title for this entry
+                notes_list.append('\nWarning: no title was set in this BibTeX entry')
 
             # Abstract
             if 'abstract' in bibtex_entry:
@@ -252,7 +253,6 @@ class Command(BaseCommand):
                         }
                     )
 
-            notes_list = [f'Imported from {options["file"].name}']
             if entry_type is None:
                 notes_list.append('\nNo matching type found for this entry. Collected data:')
                 for key in bibtex_entry:
