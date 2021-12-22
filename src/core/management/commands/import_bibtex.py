@@ -90,7 +90,16 @@ class Command(BaseCommand):
         # type object as values
         type_mapping = {
             'article': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/article'),
+            'book': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'),
+            'booklet': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'),
+            'conference': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'),
+            'inproceedings': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'),
             'inbook': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'),
+            'incollection': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series'),
+            'manual': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'),
+            'masterthesis': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis'),
+            'phdthesis': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation'),
+            'proceedings': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'),
         }
 
         # ensure type objects are still valid
@@ -101,7 +110,10 @@ class Command(BaseCommand):
             texts_all = None
 
             # Type
-            entry_type = type_mapping[as_text(bibtex_entry['ENTRYTYPE'])]
+            try:
+                entry_type = type_mapping[bibtex_entry['ENTRYTYPE']]
+            except KeyError:
+                entry_type = None
 
             # Title
             entry_title = as_text(bibtex_entry['title'])
@@ -345,6 +357,12 @@ class Command(BaseCommand):
             # quick fix for invalid data
             texts_all = [texts_all] if texts_all else None
 
+            notes_list = [f'Imported from {options["file"].name}']
+            if entry_type is None:
+                notes_list.append('\nNo matching type found for this entry. Collected data:')
+                for key in bibtex_entry:
+                    notes_list.append(f'{key}: {bibtex_entry[key]}')
+
             Entry.objects.create_clean(
                 title=entry_title,
                 type=entry_type,
@@ -352,9 +370,6 @@ class Command(BaseCommand):
                 keywords=entry_keywords,
                 owner_id=user.id,
                 published=False,
-                data=entry_data,
+                data=entry_data if entry_type else None,
+                notes='\n'.join(notes_list),
             )
-
-            # texts_all = None
-            # e_keywords = []
-            # keywordslist = []
