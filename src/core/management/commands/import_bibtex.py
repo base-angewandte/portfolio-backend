@@ -136,6 +136,9 @@ class Command(BaseCommand):
         for _k, v in type_mapping.items():
             TypeModelSchema().load({'type': v})
 
+        # list to track imported items
+        imported = []
+
         for bibtex_entry in bibtex_database.entries:
             texts = []
             notes_list = [f'Imported from {options["file"].name}']
@@ -331,3 +334,10 @@ class Command(BaseCommand):
                 data=entry_data if entry_type else None,
                 notes='\n'.join(notes_list),
             )
+
+            imported.append((bibtex_entry['ID'], bibtex_entry['ENTRYTYPE']))
+
+        # after all imports print success message with number of items
+        # TODO: we could also display how many entries of each type.
+        #       do we want to have that? maybe if a -v flag was set?
+        self.stdout.write(self.style.SUCCESS(f'Successfuly imported {len(imported)} entries'))
