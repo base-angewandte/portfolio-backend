@@ -211,6 +211,15 @@ class Command(BaseCommand):
             if 'chapter' in bibtex_entry:
                 notes_list.append(f'\nUnmappable: chapter: {bibtex_entry["chapter"]}')
 
+            # Contents
+            if 'contents' in bibtex_entry:
+                texts.append(
+                    {
+                        'data': get_text_object(bibtex_entry['contents']),
+                        'type': get_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/description'),
+                    }
+                )
+
             # Date
             # TODO: review: how do we want to handle dates where only year or year and month are set?
             year = bibtex_entry.get('year')
