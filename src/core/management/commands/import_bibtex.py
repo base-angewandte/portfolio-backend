@@ -343,6 +343,15 @@ class Command(BaseCommand):
             if 'pages' in bibtex_entry:
                 document.pages = bibtex_entry['pages']
 
+            # Publisher
+            if 'publisher' in bibtex_entry:
+                document.publishers = [
+                    {
+                        'label': bibtex_entry['publisher'],
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/publisher')],
+                    }
+                ]
+
             # School
             if 'school' in bibtex_entry:
                 contributors.append(
