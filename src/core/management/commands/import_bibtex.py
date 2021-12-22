@@ -267,6 +267,18 @@ class Command(BaseCommand):
             if 'doi' in bibtex_entry:
                 document.doi = bibtex_entry['doi']
 
+            # Edition and Series
+            edition = bibtex_entry.get('edition')
+            series = bibtex_entry.get('series')
+            if series and edition:
+                # TODO: discuss how to format if both are set
+                #       and shouldn't series in a monographic series rather be the published_in['title']
+                document.edition = f'{series}. {edition}'
+            elif series:
+                document.edition = series
+            elif edition:
+                document.edition = edition
+
             # Editors
             if 'editor' in bibtex_entry:
                 editors = []
@@ -310,6 +322,13 @@ class Command(BaseCommand):
                     document.language = get_language_object('de')
                 elif lang_string in ['en', 'eng', 'english']:
                     document.language = get_language_object('en')
+
+            # Journal
+            # TODO: discuss how to handle cases where booktitle and journal are set
+            #       currently journal will overwrite booktitle, but we could use
+            #       the title/subtitle pair of published_in to store both
+            if 'journal' in bibtex_entry:
+                published_in['title'] = bibtex_entry['journal']
 
             # Location
             if 'location' in bibtex_entry:
@@ -361,6 +380,11 @@ class Command(BaseCommand):
                         'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
                     }
                 )
+
+            # Size
+            if 'size' in bibtex_entry:
+                # TODO: check first against formats in our vocabulary?
+                document.format = [{'label': {lang: bibtex_entry['size'] for lang in ['de', 'en']}}]
 
             # URL
             if 'url' in bibtex_entry:
