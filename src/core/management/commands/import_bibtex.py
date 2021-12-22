@@ -69,6 +69,7 @@ def get_language_object(lang):
 
 def customizations(record):
     """Wrapper for all bibtexparser customizations used in this importer."""
+    record = month_to_numbers(record)
     record = bibtexparser.customization.convert_to_unicode(record)
     record = bibtexparser.customization.author(record)
     record = bibtexparser.customization.editor(record)
@@ -96,6 +97,27 @@ def keywords(record, sep=',|;'):
     return record
 
 
+def month_to_numbers(record):
+    month_map = {
+        'January': '1',
+        'February': '2',
+        'March': '3',
+        'April': '4',
+        'May': '5',
+        'June': '6',
+        'July': '7',
+        'August': '8',
+        'September': '9',
+        'October': '10',
+        'November': '11',
+        'December': '12',
+    }
+    if 'month' in record:
+        if record['month'] in month_map:
+            record['month'] = month_map[record['month']]
+    return record
+
+
 class Command(BaseCommand):
     help = 'Creates new entries from entries in a BibTeX file'
 
@@ -111,9 +133,12 @@ class Command(BaseCommand):
             raise CommandError('User does not exist')
 
         # Parse BibTeX-File
-        parser = bibtexparser.bparser.BibTexParser()
+        parser = bibtexparser.bparser.BibTexParser(common_strings=True)
         parser.customization = customizations
-        bibtex_database = bibtexparser.load(options['file'], parser=parser)
+        try:
+            bibtex_database = bibtexparser.load(options['file'], parser=parser)
+        except Exception as err:
+            raise CommandError(f'Error when loading BibTeX database: {repr(err)}')
 
         # type mapping
         # bibtex type as keys
