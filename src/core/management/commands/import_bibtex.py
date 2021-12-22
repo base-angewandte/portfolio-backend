@@ -274,7 +274,7 @@ class Command(BaseCommand):
                 document.isbn = f'ISBN: {isbn} ISSN: {issn}'
             elif isbn:
                 document.isbn = isbn
-            else:
+            elif issn:
                 document.isbn = issn
 
             # Language
@@ -299,7 +299,7 @@ class Command(BaseCommand):
                 document.volume = f'{volume} ({number})'
             elif volume:
                 document.volume = volume
-            else:
+            elif number:
                 document.volume = f'({number})'
 
             # Pages
