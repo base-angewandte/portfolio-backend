@@ -316,6 +316,10 @@ class Command(BaseCommand):
                 # TODO: should we also check for hits against PELIAS or just use the label?
                 location.append({'label': bibtex_entry['location']})
 
+            # Note
+            if 'note' in bibtex_entry:
+                notes_list.append(f'\nNote: {bibtex_entry["note"]}')
+
             # Number and volume
             volume = bibtex_entry.get('volume')
             number = bibtex_entry.get('number')
@@ -338,6 +342,10 @@ class Command(BaseCommand):
             # Pages
             if 'pages' in bibtex_entry:
                 document.pages = bibtex_entry['pages']
+
+            # URL
+            if 'url' in bibtex_entry:
+                document.url = bibtex_entry['url']
 
             # in case locations and contributors have been added, add them to document
             if location:
