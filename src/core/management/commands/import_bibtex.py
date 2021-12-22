@@ -343,6 +343,16 @@ class Command(BaseCommand):
             if 'pages' in bibtex_entry:
                 document.pages = bibtex_entry['pages']
 
+            # School
+            if 'school' in bibtex_entry:
+                contributors.append(
+                    {
+                        'label': bibtex_entry['school'],
+                        # TODO: this should become university/college when new vocabulary is deployed
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                    }
+                )
+
             # URL
             if 'url' in bibtex_entry:
                 document.url = bibtex_entry['url']
