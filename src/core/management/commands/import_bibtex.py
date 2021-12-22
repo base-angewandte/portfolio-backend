@@ -13,18 +13,17 @@ from django.core.management.base import BaseCommand, CommandError
 from core.models import Entry
 from core.schemas import TypeModelSchema
 from core.schemas.entries.document import DocumentSchema
-from core.schemas.general import (
-    ContributorSchema,
-    LanguageDataSchema,
-    MultilingualStringSchema,
-    SourceMultilingualLabelSchema,
-)
-from core.schemas.models import TextDataSchema, TextSchema
+from core.schemas.general import ContributorSchema
 from core.skosmos import get_preflabel
 
 
 def get_label(uri, lang):
     return get_preflabel(uri.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=lang)
+
+
+def get_language_label(lang, label_lang):
+    graph = 'http://base.uni-ak.ac.at/portfolio/languages/'
+    return get_preflabel(lang, project=settings.LANGUAGES_VOCID, graph=graph, lang=label_lang)
 
 
 def get_type_object(uri):
@@ -34,6 +33,25 @@ def get_type_object(uri):
             'de': get_label(uri, 'de'),
             'en': get_label(uri, 'en'),
         },
+    }
+
+
+def get_text_object(text):
+    return [
+        {
+            'text': text,
+            'language': {
+                'source': f'http://base.uni-ak.ac.at/portfolio/languages/{lang}',
+            },
+        }
+        for lang in ['de', 'en']
+    ]
+
+
+def get_language_object(lang):
+    return {
+        'source': f'http://base.uni-ak.ac.at/portfolio/languages/{lang}',
+        'label': {label_lang: get_language_label(lang, label_lang) for label_lang, _lstring in settings.LANGUAGES},
     }
 
 
@@ -107,7 +125,7 @@ class Command(BaseCommand):
             TypeModelSchema().load({'type': v})
 
         for bibtex_entry in bibtex_database.entries:
-            texts_all = None
+            texts = []
 
             # Type
             try:
@@ -116,89 +134,26 @@ class Command(BaseCommand):
                 entry_type = None
 
             # Title
-            entry_title = as_text(bibtex_entry['title'])
+            if 'title' in bibtex_entry:
+                entry_title = bibtex_entry['title']
+            else:
+                entry_title = 'no title'
+                # TODO: add note that there was no title for this entry
 
-            # TEXT #######
-            try:
-                document_text_text = as_text(bibtex_entry['abstract'])
-                text_allg = TextSchema()
-                texts = TextSchema()
-                text_allg_type = SourceMultilingualLabelSchema()
-                text_allg_type.source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
-                mlstring1 = None
-                mlstring1 = MultilingualStringSchema()
-                mlstring1.de = 'Abstract'
-                mlstring1.en = 'abstract'
-                text_allg_type.label = mlstring1
-                text_data_allg = TextDataSchema()
-                text_data_allg_language = LanguageDataSchema()
-                text_data_allg_language.source = 'http://base.uni-ak.ac.at/portfolio/languages/de'
-                mlstring1 = None
-                mlstring1 = MultilingualStringSchema()
-                mlstring1.de = 'Deutsch'
-                mlstring1.en = 'German'
-                mlstring1.fr = 'allemand'
-                text_data_allg_language.label = mlstring1
-                text_data_allg.text = document_text_text
-                text_data_allg.language = text_data_allg_language
-                text_allg.data = text_data_allg
-                text_allg.type = text_allg_type
-                texts_all = texts.dump(text_allg).data
-            except KeyError:
-                pass
-
-            # create PublishedInSchema
-            # Todo: Wird das Schema benötigt?
-            # SCHEMA #####
-            # schema = PublishedInSchema()
-            # publishedIn = PublishedInSchema()
-            # # title = get_string_field(get_preflabel_lazy('title'), {'field_format': 'half', 'order': 1})
-            # # subtitle = get_string_field(get_preflabel_lazy('subtitle'), {'field_format': 'half', 'order': 2})
-            # # editor = get_contributors_field_for_role('editor', {'order': 3})
-            # # publisher = get_contributors_field_for_role('publisher', {'order': 4})
-            # title =
-            # subtitle =
-            # editor = None
-            # editor = ContributorSchema()
-            # editor.label = personname['firstname'] + " " + personname['secondname']
-            # editor.source = entity_owner_uuid
-            # role = None
-            # role = SourceMultilingualLabelSchema()
-            # mlstring1 = None
-            # mlstring1 = MultilingualStringSchema()
-            # mlstring1.de = "Künstler*in"
-            # mlstring1.en = "artist"
-            # role.label = mlstring1
-            # role.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/artist"
-            # roles.append(role)
-            # artist1.source = entity_owner_uuid
-            # editor.roles = role
-            # publishedIn.editor = editor
-
-            # Publisher ####
-            # Todo: Wird das Schema benötigt?
-            # publisher = None
-            # publisher = ContributorSchema()
-            # publisher.label = personname['firstname'] + " " + personname['secondname']
-            # publisher.source = entity_owner_uuid
-            # role = None
-            # role = SourceMultilingualLabelSchema()
-            # mlstring1 = None
-            # mlstring1 = MultilingualStringSchema()
-            # mlstring1.de = "Künstler*in"
-            # mlstring1.en = "artist"
-            # role.label = mlstring1
-            # role.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/artist"
-            # roles.append(role)
-            # artist1.source = entity_owner_uuid
-            # publisher.roles = role
-            # publishedIn.publisher = publisher
+            # Abstract
+            if 'abstract' in bibtex_entry:
+                texts.append(
+                    {
+                        'data': get_text_object(bibtex_entry['abstract']),
+                        'type': get_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'),
+                    }
+                )
 
             # create DocumentSchema
             schema = DocumentSchema()
             document = DocumentSchema()
 
-            # DATE ###
+            # Date
             # TODO: review: how do we want to handle dates where only year or year and month are set?
             year = bibtex_entry.get('year')
             month = bibtex_entry.get('month')
@@ -214,29 +169,15 @@ class Command(BaseCommand):
                         date_format += '-%d'
                 document.date = datetime.strptime(date_string, date_format).date()
 
-            # LANGUAGE ###
-            try:
-                language = LanguageDataSchema()
-                if as_text(bibtex_entry['language']) == 'Deutsch':
-                    language.source = 'http://base.uni-ak.ac.at/portfolio/languages/de'
-                    mlstring1 = None
-                    mlstring1 = MultilingualStringSchema()
-                    mlstring1.de = 'Deutsch'
-                    mlstring1.en = 'German'
-                    mlstring1.fr = 'allemand'
-                    language.label = mlstring1
-                    document.language = language
-                if as_text(bibtex_entry['language']) == 'English':
-                    language.source = 'http://base.uni-ak.ac.at/portfolio/languages/en'
-                    mlstring1 = None
-                    mlstring1 = MultilingualStringSchema()
-                    mlstring1.de = 'Englisch'
-                    mlstring1.en = 'English'
-                    mlstring1.fr = 'anglais'
-                    language.label = mlstring1
-                    document.language = language
-            except KeyError:
-                pass
+            # Language
+            if 'language' in bibtex_entry:
+                # TODO: check if there is a good language string parser, so we can
+                #       cater for all languages, we have in our vocabulary
+                lang_string = bibtex_entry['language'].lower()
+                if lang_string in ['de', 'deu', 'deutsch', 'german']:
+                    document.language = get_language_object('de')
+                elif lang_string in ['en', 'eng', 'english']:
+                    document.language = get_language_object('en')
 
             # VOLUME ###
             try:
@@ -266,29 +207,6 @@ class Command(BaseCommand):
             except KeyError:
                 pass
 
-            # ÜBERBLICK DOCUMENTSCHEMA
-            # authors = get_contributors_field_for_role('author', {'order': 1})
-            # editors = get_contributors_field_for_role('editor', {'order': 2})
-            # publishers = get_contributors_field_for_role('publisher', {'order': 3})
-            # date = get_date_field({'order': 4})
-            # location = get_location_field({'order': 5})
-            # isbn/issn
-            # isbn = get_string_field(get_preflabel_lazy('isbn'), {'field_format': 'half', 'order': 6})
-            # doi = get_string_field(get_preflabel_lazy('doi'), {'field_format': 'half', 'order': 7})
-            # url = get_url_field({'order': 8})
-            # published_in = fields.List(
-            #     fields.Nested(PublishedInSchema, additionalProperties=False),
-            #     title=get_preflabel_lazy('published_in'),
-            #     **{'x-attrs': {'field_type': 'group', 'show_label': True, 'order': 9}},
-            # )
-            # volume = get_string_field(get_preflabel_lazy('volume_issue'), {'field_format': 'half', 'order': 10})
-            # pages = get_string_field(get_preflabel_lazy('pages'), {'field_format': 'half', 'order': 11})
-            # contributors = get_contributors_field({'order': 12})
-            # language = get_language_list_field({'order': 13})
-            # material = get_material_field({'order': 14, 'field_format': 'half'})
-            # format = get_format_field({'order': 15})
-            # edition = get_string_field(get_preflabel_lazy('edition'), {'field_format': 'half', 'order': 16})
-
             # AUTHOR ###
             authors = []
             if 'author' in bibtex_entry:
@@ -309,26 +227,6 @@ class Command(BaseCommand):
                     ]
                     authors.append(author)
             document.authors = authors
-
-            # Editor ####
-            # Todo: Wird das Schema benötigt?
-            # editors = []
-            # editor = None
-            # editor = ContributorSchema()
-            # editor.label = personname['firstname'] + " " + personname['secondname']
-            # editor.source = entity_owner_uuid
-            # role = None
-            # role = SourceMultilingualLabelSchema()
-            # mlstring1 = None
-            # mlstring1 = MultilingualStringSchema()
-            # mlstring1.de = "Künstler*in"
-            # mlstring1.en = "artist"
-            # role.label = mlstring1
-            # role.source = "http://base.uni-ak.ac.at/portfolio/vocabulary/artist"
-            # roles.append(role)
-            # artist1.source = entity_owner_uuid
-            # editor.roles = role
-            # editors.append(editor)
 
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
@@ -354,9 +252,6 @@ class Command(BaseCommand):
                         }
                     )
 
-            # quick fix for invalid data
-            texts_all = [texts_all] if texts_all else None
-
             notes_list = [f'Imported from {options["file"].name}']
             if entry_type is None:
                 notes_list.append('\nNo matching type found for this entry. Collected data:')
@@ -366,7 +261,7 @@ class Command(BaseCommand):
             Entry.objects.create_clean(
                 title=entry_title,
                 type=entry_type,
-                texts=texts_all,
+                texts=texts,
                 keywords=entry_keywords,
                 owner_id=user.id,
                 published=False,
