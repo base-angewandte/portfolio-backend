@@ -216,8 +216,8 @@ class Command(BaseCommand):
                 notes_list.append(f'\nAnnotation: {bibtex_entry["annotation"]}')
 
             # Authors
-            authors = []
             if 'author' in bibtex_entry:
+                authors = []
                 for bibtex_author in bibtex_entry['author']:
                     author = {
                         'label': ' '.join(bibtex_author.split(', ')[::-1]),
@@ -226,7 +226,7 @@ class Command(BaseCommand):
                     if author['label'] == user.get_full_name():
                         author['source'] = user.username
                     authors.append(author)
-            document.authors = authors
+                document.authors = authors
 
             # Booktitle - The title of the book, if only part of it is being cited
             if 'booktitle' in bibtex_entry:
@@ -266,6 +266,19 @@ class Command(BaseCommand):
             # DOI
             if 'doi' in bibtex_entry:
                 document.doi = bibtex_entry['doi']
+
+            # Editors
+            if 'editor' in bibtex_entry:
+                editors = []
+                for bibtex_editor in bibtex_entry['editor']:
+                    editor = {
+                        'label': ' '.join(bibtex_editor['name'].split(', ')[::-1]),
+                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/editor')],
+                    }
+                    if editor['label'] == user.get_full_name():
+                        editor['source'] = user.username
+                    editors.append(editor)
+                document.editors = editors
 
             # ISSN/ISBN
             isbn = bibtex_entry.get('isbn')
