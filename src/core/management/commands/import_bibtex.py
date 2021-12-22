@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 
 import bibtexparser
-from bibtexparser.bibdatabase import as_text
 from marshmallow import ValidationError
 
 from django.conf import settings
@@ -236,6 +235,20 @@ class Command(BaseCommand):
                         date_format += '-%d'
                 document.date = datetime.strptime(date_string, date_format).date()
 
+            # DOI
+            if 'doi' in bibtex_entry:
+                document.doi = bibtex_entry['doi']
+
+            # ISSN/ISBN
+            isbn = bibtex_entry.get('isbn')
+            issn = bibtex_entry.get('issn')
+            if isbn and issn:
+                document.isbn = f'ISBN: {isbn} ISSN: {issn}'
+            elif isbn:
+                document.isbn = isbn
+            else:
+                document.isbn = issn
+
             # Language
             if 'language' in bibtex_entry:
                 # TODO: check if there is a good language string parser, so we can
@@ -251,33 +264,19 @@ class Command(BaseCommand):
                 # TODO: should we also check for hits against PELIAS or just use the label?
                 location.append({'label': bibtex_entry['location']})
 
-            # VOLUME ###
-            try:
-                document.volume = as_text(bibtex_entry['volume'])
-            except KeyError:
-                pass
+            # Number and volume
+            volume = bibtex_entry.get('volume')
+            number = bibtex_entry.get('number')
+            if volume and number:
+                document.volume = f'{volume} ({number})'
+            elif volume:
+                document.volume = volume
+            else:
+                document.volume = f'({number})'
 
-            # PAGES ###
-            try:
-                document.pages = as_text(bibtex_entry['pages'])
-            except KeyError:
-                pass
-
-            # ISSN/ISBN ###
-            try:
-                document.isbn = as_text(bibtex_entry['isbn'])
-            except KeyError:
-                pass
-            try:
-                document.isbn = as_text(bibtex_entry['issn'])
-            except KeyError:
-                pass
-
-            # DOI ###
-            try:
-                document.doi = as_text(bibtex_entry['doi'])
-            except KeyError:
-                pass
+            # Pages
+            if 'pages' in bibtex_entry:
+                document.pages = bibtex_entry['pages']
 
             # in case locations and contributors have been added, add them to document
             if location:
