@@ -126,6 +126,11 @@ class Command(BaseCommand):
         for bibtex_entry in bibtex_database.entries:
             texts = []
             notes_list = [f'Imported from {options["file"].name}']
+            location = []
+
+            # create DocumentSchema
+            schema = DocumentSchema()
+            document = DocumentSchema()
 
             # Type
             try:
@@ -149,9 +154,10 @@ class Command(BaseCommand):
                     }
                 )
 
-            # create DocumentSchema
-            schema = DocumentSchema()
-            document = DocumentSchema()
+            # Address
+            if 'address' in bibtex_entry:
+                # TODO: should we also check for hits against PELIAS or just use the label?
+                location.append({'label': bibtex_entry['address']})
 
             # Authors
             authors = []
@@ -201,6 +207,11 @@ class Command(BaseCommand):
                 elif lang_string in ['en', 'eng', 'english']:
                     document.language = get_language_object('en')
 
+            # Location
+            if 'location' in bibtex_entry:
+                # TODO: should we also check for hits against PELIAS or just use the label?
+                location.append({'label': bibtex_entry['location']})
+
             # VOLUME ###
             try:
                 document.volume = as_text(bibtex_entry['volume'])
@@ -229,12 +240,15 @@ class Command(BaseCommand):
             except KeyError:
                 pass
 
+            # in case locations have been added while parsing, add them to document
+            if location:
+                document.location = location
+
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
             try:
                 schema.load(schema.dumps(document))
             except ValidationError as err:
-                err.messages['_schema']
                 print(err.messages)
 
             entry_data = schema.dump(document).data
