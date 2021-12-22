@@ -299,7 +299,12 @@ class Command(BaseCommand):
 
             entry_keywords = []
             if 'keywords' in bibtex_entry:
+                # filter out duplicate keywords
+                kw_labels = set()
                 for kw in bibtex_entry.get('keywords'):
+                    kw_labels.add(kw)
+                # generate keyword labels with unique keywords
+                for kw in kw_labels:
                     # TODO: here we could check first if a keyword in out taxonomy already
                     #       exists, and then use this concept and its translations
                     entry_keywords.append(
