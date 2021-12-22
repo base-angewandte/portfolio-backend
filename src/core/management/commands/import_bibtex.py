@@ -205,6 +205,12 @@ class Command(BaseCommand):
             if 'booktitle' in bibtex_entry:
                 published_in['title'] = bibtex_entry['booktitle']
 
+            # Chapter
+            # TODO: this seems not reasonably mappable, so putting it in notes
+            #       but discuss if this is the way and update mapping document
+            if 'chapter' in bibtex_entry:
+                notes_list.append(f'\nUnmappable: chapter: {bibtex_entry["chapter"]}')
+
             # Date
             # TODO: review: how do we want to handle dates where only year or year and month are set?
             year = bibtex_entry.get('year')
