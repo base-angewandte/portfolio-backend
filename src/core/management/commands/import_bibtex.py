@@ -142,6 +142,7 @@ class Command(BaseCommand):
             notes_list = [f'Imported from {options["file"].name}']
             location = []
             contributors = []
+            published_in = {}
 
             # create DocumentSchema
             schema = DocumentSchema()
@@ -199,6 +200,10 @@ class Command(BaseCommand):
                         author['source'] = user.username
                     authors.append(author)
             document.authors = authors
+
+            # Booktitle - The title of the book, if only part of it is being cited
+            if 'booktitle' in bibtex_entry:
+                published_in['title'] = bibtex_entry['booktitle']
 
             # Date
             # TODO: review: how do we want to handle dates where only year or year and month are set?
@@ -264,6 +269,10 @@ class Command(BaseCommand):
                 document.location = location
             if contributors:
                 document.contributors = contributors
+
+            # if some published_in info was set, we add that too as a single item
+            if published_in:
+                document.published_in = [published_in]
 
             # CREATE ENTRY
             # CHECK SCHEMA COMPLIANCE
