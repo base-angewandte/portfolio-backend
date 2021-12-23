@@ -48,6 +48,16 @@ def get_type_object(uri):
     }
 
 
+def get_text_type_object(uri):
+    return {
+        'source': uri,
+        'label': {
+            'de': get_label(uri, 'de'),
+            'en': get_label(uri, 'en'),
+        },
+    }
+
+
 def get_text_object(text):
     return [
         {
@@ -193,7 +203,7 @@ class Command(BaseCommand):
                 texts.append(
                     {
                         'data': get_text_object(bibtex_entry['abstract']),
-                        'type': get_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'),
+                        'type': get_text_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'),
                     }
                 )
 
@@ -243,7 +253,7 @@ class Command(BaseCommand):
                 texts.append(
                     {
                         'data': get_text_object(bibtex_entry['contents']),
-                        'type': get_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/description'),
+                        'type': get_text_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/description'),
                     }
                 )
 
