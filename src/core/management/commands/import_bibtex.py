@@ -261,7 +261,9 @@ class Command(BaseCommand):
                     if day:
                         date_string += f'-{day}'
                         date_format += '-%d'
-                document.date = datetime.strptime(date_string, date_format).date()
+                    document.date = datetime.strptime(date_string, date_format).date()
+                else:
+                    document.date = date_string
 
             # DOI
             if 'doi' in bibtex_entry:
