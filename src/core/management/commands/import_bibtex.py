@@ -445,6 +445,11 @@ class Command(BaseCommand):
                 for key in bibtex_entry:
                     notes_list.append(f'{key}: {bibtex_entry[key]}')
 
+            if len(entry_title) > 255:
+                notes_list.append('\nTitle too long! Original title was:')
+                notes_list.append(entry_title)
+                entry_title = entry_title[:254] + '…'
+
             Entry.objects.create_clean(
                 title=entry_title,
                 type=entry_type,
