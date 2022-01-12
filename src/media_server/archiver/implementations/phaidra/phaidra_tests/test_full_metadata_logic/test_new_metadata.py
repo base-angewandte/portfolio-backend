@@ -15,6 +15,8 @@ from media_server.archiver.implementations.phaidra.phaidra_tests.utillities impo
     ClientProvider
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
 from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
+from media_server.archiver.interface.exceptions import InternalValidationError
+from media_server.models import Media
 
 
 class TestFeature1677(TestCase):
@@ -442,4 +444,63 @@ class TestImprovement1686(TestCase):
                     ],
                 },
             ],
+        )
+
+
+class TestBug1693(TestCase):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1693
+
+    At the time of writing tests, malformed urls from Entry.data['url'] will lead to an InternalServerError.
+
+    Desired behavior is to throw a validation error, so that the user can correct the uri
+    """
+
+    translator: 'PhaidraMetaDataTranslator'
+    media: 'Media'
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        entry = model_provider.get_entry(thesis_type=False)
+        entry.data['url'] = 'this is not a valid url'
+        entry.save()
+        entry.refresh_from_db()
+
+        cls.media = model_provider.get_media(entry)
+
+        mapper = FakeBidirectionalConceptsMapper.from_entry(entry)
+        # noinspection PyTypeChecker
+        cls.translator = PhaidraMetaDataTranslator(mapper)
+        generated_data = cls.translator.translate_data(entry)
+        # noinspection PyTypeChecker
+        validator = create_dynamic_phaidra_thesis_meta_data_schema(mapper)
+        cls.validation = validator.validate(generated_data)
+
+        cls.custom_client = ClientProvider(model_provider)
+
+    def test_validation_does_not_throw_internal_server_error(self):
+        exception = None
+        try:
+            self.translator.translate_errors(self.validation)
+        except InternalValidationError as error:
+            exception = error
+        self.assertNotIsInstance(exception, InternalValidationError)
+
+    def test_validation_does_translate_validation_errors(self):
+        errors = self.translator.translate_errors(self.validation)
+        self.assertIn('data', errors)
+        self.assertIn('url', errors['data'])
+        self.assertEqual(['Not a valid URL.', ], errors['data']['url'])
+
+    def test_server_returns_validation_errors(self):
+        response = self.custom_client.get_media_primary_key_response(media=self.media, only_validate=True)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            response.data,
+            {
+                'data': {
+                    'url': ['Not a valid URL.', ]
+                }
+            }
         )

@@ -319,7 +319,7 @@ class LocationTranslator(AbstractUserUnrelatedDataTranslator):
         ]
 
 
-class UrlTranslator(AbstractUserUnrelatedDataTranslator):
+class UrlTranslator(AbstractDataTranslator):
     """
     https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
     """
@@ -337,6 +337,15 @@ class UrlTranslator(AbstractUserUnrelatedDataTranslator):
                 ]
             },
         ]
+
+    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+        if not errors:
+            return {}
+        return {
+            'data':  {
+                'url': ['Not a valid URL.', ],
+            }
+        }
 
 
 class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
