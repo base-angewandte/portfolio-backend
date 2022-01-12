@@ -343,7 +343,7 @@ class UrlTranslator(AbstractDataTranslator):
             return {}
         return {
             'data':  {
-                'url': ['Not a valid URL.', ],
+                'url': errors[0]['schema:url'][0],
             }
         }
 

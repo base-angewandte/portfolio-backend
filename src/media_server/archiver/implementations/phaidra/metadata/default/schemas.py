@@ -11,8 +11,10 @@ from media_server.archiver.implementations.phaidra.utillities.fields import (
     PortfolioStringField,
 )
 from media_server.archiver.implementations.phaidra.utillities.validate import ValidateLength1
+from media_server.archiver.messages.validation.default import INVALID_URL
 
 value_field = PortfolioStringField(required=True, load_from='@value', dump_to='@value')
+url_field = fields.Url(error_messages={'invalid': INVALID_URL})
 
 
 class ValueSchema(Schema):
@@ -85,7 +87,7 @@ class RdfSeeAlsoSchema(TypeLabelSchema):
     https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
     """
     type = PortfolioConstantField('schema:URL', load_from='@type', dump_to='@type')
-    schema_url = PortfolioListField(fields.Url(), load_from='schema:url', dump_to='schema:url')
+    schema_url = PortfolioListField(url_field, load_from='schema:url', dump_to='schema:url')
     skos_prefLabel = PortfolioNestedField(
         ValueLanguageBaseSchema,
         many=True,

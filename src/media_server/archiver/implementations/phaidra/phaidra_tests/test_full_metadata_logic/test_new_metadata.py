@@ -16,6 +16,7 @@ from media_server.archiver.implementations.phaidra.phaidra_tests.utillities impo
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
 from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
 from media_server.archiver.interface.exceptions import InternalValidationError
+from media_server.archiver.messages.validation.default import INVALID_URL
 from media_server.models import Media
 
 
@@ -491,7 +492,7 @@ class TestBug1693(TestCase):
         errors = self.translator.translate_errors(self.validation)
         self.assertIn('data', errors)
         self.assertIn('url', errors['data'])
-        self.assertEqual(['Not a valid URL.', ], errors['data']['url'])
+        self.assertEqual([INVALID_URL, ], errors['data']['url'])
 
     def test_server_returns_validation_errors(self):
         response = self.custom_client.get_media_primary_key_response(media=self.media, only_validate=True)
@@ -500,7 +501,7 @@ class TestBug1693(TestCase):
             response.data,
             {
                 'data': {
-                    'url': ['Not a valid URL.', ]
+                    'url': [INVALID_URL, ]
                 }
             }
         )
