@@ -33,8 +33,10 @@ This command exports published entries for a specific year as CSV. Exported CSV 
 This command imports all entries from a BibTeX file and creates according Portfolio
 entries for a specific user.
 
-Note, that this is still a beta feature, and implementation as well as mappings of
+```{note}
+This is still an experimental feature, and implementation as well as mappings of
 BibTeX types to Portfolio schemas might change in the future.
+```
 
 #### Arguments
 
@@ -57,10 +59,8 @@ But relative paths can be used as well. So in a local dev environment you might
 want to use something like `~/Documents/references.bib`.
 
 For a containerized setup, the easiest soultion is to copy your file into the
-`src` folder, and then execute a bash inside the django container:
+`src` folder, and then execute the command via `docker-compose exec`:
 
 ```
-sudo docker exec -it portfolio-django bash
+docker-compose exec portfolio-django python manage.py import_bibtex 12345ABCD67890EF12AB3456CD7890F0 references.bib
 ```
-
-Then inside the container the common usage example from above should work fine.
