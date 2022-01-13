@@ -372,7 +372,7 @@ class Command(BaseCommand):
 
             # Pages
             if 'pages' in bibtex_entry:
-                document.pages = bibtex_entry['pages']
+                document.pages = bibtex_entry['pages'].replace('--', '–')
 
             # Publisher
             if 'publisher' in bibtex_entry:
