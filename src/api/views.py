@@ -188,8 +188,8 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
             ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
             return Response(ret)
-        except Entry.DoesNotExist:
-            raise exceptions.NotFound(_('Entry does not exist'))
+        except Entry.DoesNotExist as e:
+            raise exceptions.NotFound(_('Entry does not exist')) from e
 
     @swagger_auto_schema(responses={200: openapi.Response('')})
     @action(detail=False, filter_backends=[], pagination_class=None)
@@ -308,8 +308,8 @@ def user_data(request, pk=None, *args, **kwargs):
 
     try:
         user = UserModel.objects.get(username=pk)
-    except UserModel.DoesNotExist:
-        raise exceptions.NotFound(_('User does not exist'))
+    except UserModel.DoesNotExist as e:
+        raise exceptions.NotFound(_('User does not exist')) from e
 
     lang = get_language() or 'en'
 
@@ -782,13 +782,13 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 
     try:
         user = UserModel.objects.get(username=pk)
-    except UserModel.DoesNotExist:
-        raise exceptions.NotFound(_('User does not exist'))
+    except UserModel.DoesNotExist as e:
+        raise exceptions.NotFound(_('User does not exist')) from e
 
     try:
         e = Entry.objects.get(pk=entry, owner=user, published=True)
-    except Entry.DoesNotExist:
-        raise exceptions.NotFound(_('Entry does not exist'))
+    except Entry.DoesNotExist as e:
+        raise exceptions.NotFound(_('Entry does not exist')) from e
 
     ret = e.data_display
     ret['media'] = get_media_for_entry_public(entry)
@@ -816,8 +816,8 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 def entry_data(request, pk=None, *args, **kwargs):
     try:
         e = Entry.objects.get(pk=pk, published=True)
-    except Entry.DoesNotExist:
-        raise exceptions.NotFound(_('Entry does not exist'))
+    except Entry.DoesNotExist as e:
+        raise exceptions.NotFound(_('Entry does not exist')) from e
 
     ret = e.data_display
     ret['media'] = get_media_for_entry_public(pk)
