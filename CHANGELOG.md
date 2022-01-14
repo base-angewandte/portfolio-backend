@@ -1,14 +1,16 @@
 # Changelog
 
-## unreleased
+## 1.1.5
 
 ### Added
 - **EXPERIMENTAL**: Added `import_bibtex` management command for importing entries from BibTeX files
+
 
 ## 1.1.4
 
 ### Fixed
 - Fixed build error due to exiftool.org being down - thanks to Benjamin Höglinger-Stelzer [nefarius]
+
 
 ## 1.1.3
 
@@ -17,6 +19,7 @@
 
 ### Fixed
 - Fixed error during preview creation of documents containing umlauts
+
 
 ## 1.1.2
 
