@@ -4,8 +4,8 @@ export
 
 start:
 	docker-compose pull
-	docker-compose build --no-cache --pull
-	docker-compose up -d
+	docker-compose build --no-cache --pull portfolio-django
+	docker-compose up -d --build
 
 stop:
 	docker-compose down
@@ -44,7 +44,6 @@ update: git-update init init-rq init-static restart-gunicorn restart-rq build-do
 
 start-dev:
 	docker-compose pull --ignore-pull-failures
-	docker-compose build --no-cache --pull
 	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
@@ -52,7 +51,7 @@ start-dev:
 
 start-dev-docker:
 	docker-compose pull --ignore-pull-failures
-	docker-compose build --no-cache --pull
+	docker-compose build --no-cache --pull portfolio-django
 	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
