@@ -1,6 +1,5 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-django:
     build:
       context: ./src
