@@ -21,12 +21,11 @@ This command exports published entries for a specific year as CSV. Exported CSV 
 
 ##### Positional
 
-* `year` - Year of the export.
+- `year` - Year of the export.
 
 ##### Optional
 
-* `--lang` - Label language of the export. Allowed values: `de` and `en`
-
+- `--lang` - Label language of the export. Allowed values: `de` and `en`
 
 ### `import_bibtex`
 
@@ -42,9 +41,8 @@ BibTeX types to Portfolio schemas might change in the future.
 
 ##### Positional
 
-* `userid` - the ID of the user for whom the imported entries should be created
-* `file` - the full path to the BibTeX file to import entries from
-
+- `userid` - the ID of the user for whom the imported entries should be created
+- `file` - the full path to the BibTeX file to import entries from
 
 #### Usage examples
 
