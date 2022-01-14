@@ -1,5 +1,10 @@
 # Changelog
 
+## unreleased
+
+### Added
+- **EXPERIMENTAL**: Added `import_bibtex` management command for importing entries from BibTeX files
+
 ## 1.1.4
 
 ### Fixed
