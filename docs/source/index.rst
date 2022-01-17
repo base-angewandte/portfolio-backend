@@ -15,6 +15,7 @@ Welcome to base Portfolio Backend's documentation!
    create_forms
    management_commands
    rest_api
+   lists_logic
 
 
 .. Indices and tables
