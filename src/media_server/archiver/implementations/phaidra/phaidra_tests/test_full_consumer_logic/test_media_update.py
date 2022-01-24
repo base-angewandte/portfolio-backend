@@ -161,3 +161,10 @@ class EntryWithDeletedAttachmentUpdated(APITestCase):
             portfolio_response.status_code, 200,
             rf'Archival update for archived entry with deleted media returned message {portfolio_response.content}'
                          )
+
+        phaidra_response = requests.get(
+            rf'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.entry.archive_id}/jsonld'
+        )
+        phaidra_data = phaidra_response.json()
+        phaidra_title = phaidra_data['dce:title'][0]['bf:mainTitle'][0]['@value']
+        self.assertEqual(phaidra_title, self.title_2)
