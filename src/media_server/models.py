@@ -21,7 +21,7 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
-from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED
+from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
@@ -215,6 +215,7 @@ class Media(models.Model):
             'license': self.license,
             'archive_id': self.archive_id,
             'archive_URI': self.archive_URI,
+            'archival_in_progress': self.archive_status == STATUS_ARCHIVE_IN_PROGRESS,
         }
         return data
 
