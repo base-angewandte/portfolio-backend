@@ -106,7 +106,7 @@ class ValidateValidEntryEndpoint(APITestCase):
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, rf'Response {response} with {response.content}')
 
 
 class ValidateInvalidEntryEndpoint(APITestCase):
@@ -123,8 +123,8 @@ class ValidateInvalidEntryEndpoint(APITestCase):
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('title', response.data)
+        self.assertEqual(response.status_code, 400, rf'Response {response} with {response.content}')
+        self.assertIn('title', response.data, rf'title not found in {response.data}')
 
 
 class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
@@ -144,7 +144,7 @@ class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, rf'Response {response} with {response.content}')
 
 
 class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
@@ -163,5 +163,5 @@ class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('title', response.data)
+        self.assertEqual(response.status_code, 400, rf'Response is {response.content}')
+        self.assertIn('title', response.data, rf'title not found in {response.data}')
