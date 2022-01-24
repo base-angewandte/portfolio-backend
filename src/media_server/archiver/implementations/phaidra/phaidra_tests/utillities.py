@@ -344,6 +344,11 @@ class ClientProvider:
             f'/api/v1/{action}_assets/media/{media_keys}/',
         )
 
+    def get_validate_entry_response(self, entry: Entry):
+        return self.client.get((
+            rf'/api/v1/archive/validate_entry?entry={entry.id}'
+        ))
+
     def __del__(self):
         self.client.logout()  # Very important! ;-)
 

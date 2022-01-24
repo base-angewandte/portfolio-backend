@@ -2,6 +2,10 @@ from rest_framework.test import APITestCase
 
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.core.models import Entry
+
 
 class ArchiveAssetTestcase(APITestCase):
     @classmethod
@@ -87,3 +91,77 @@ class ArchiveSecondAsset(APITestCase):
     def test_archive_secondary_asset(self):
         response = self.client_provider.get_media_primary_key_response(self.asset_2, only_validate=False)
         self.assertEqual(response.status_code, 200)
+
+
+class ValidateValidEntryEndpoint(APITestCase):
+    """
+    With no attachment
+    https://basedev.uni-ak.ac.at/redmine/issues/1711
+    """
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.client_provider = ClientProvider(model_provider)
+        cls.entry = model_provider.get_entry()
+
+    def test_validation(self):
+        response = self.client_provider.get_validate_entry_response(self.entry)
+        self.assertEqual(response.status_code, 200)
+
+
+class ValidateInvalidEntryEndpoint(APITestCase):
+    """
+    With no attachment
+    https://basedev.uni-ak.ac.at/redmine/issues/1711
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.client_provider = ClientProvider(model_provider)
+        cls.entry = model_provider.get_entry(title=False)
+
+    def test_validation(self):
+        response = self.client_provider.get_validate_entry_response(self.entry)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('title', response.data)
+
+
+class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
+    """
+    With attachment
+    https://basedev.uni-ak.ac.at/redmine/issues/1711
+    """
+
+    entry: 'Entry'
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.client_provider = ClientProvider(model_provider)
+        cls.entry = model_provider.get_entry()
+        media = model_provider.get_media(entry=cls.entry)
+
+    def test_validation(self):
+        response = self.client_provider.get_validate_entry_response(self.entry)
+        self.assertEqual(response.status_code, 200)
+
+
+class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
+    """
+    With attachment
+    https://basedev.uni-ak.ac.at/redmine/issues/1711
+    """
+    entry: 'Entry'
+
+    @classmethod
+    def setUpTestData(cls):
+        model_provider = ModelProvider()
+        cls.client_provider = ClientProvider(model_provider)
+        cls.entry = model_provider.get_entry(title=False)
+        media = model_provider.get_media(entry=cls.entry)
+
+    def test_validation(self):
+        response = self.client_provider.get_validate_entry_response(self.entry)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('title', response.data)
