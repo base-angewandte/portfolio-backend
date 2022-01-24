@@ -6,6 +6,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import django_rq
 import requests
 
+from core.models import Entry
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider
 from media_server.models import Media
 
 
@@ -66,9 +68,9 @@ class OnePdfResaved(APITestCase):
         # change media
         media = Media.objects.get(pk=media_id)
         media.license = {
-                            'label': {'en': "Creative Commons Attribution Non-Commercial 4.0"},
-                            "source": self.second_portfolio_license,
-                        }
+            'label': {'en': "Creative Commons Attribution Non-Commercial 4.0"},
+            "source": self.second_portfolio_license,
+        }
         media.save()
 
         # update archive
@@ -93,3 +95,69 @@ class OnePdfResaved(APITestCase):
             phaidra_licenses,
             [self.second_phaidra_license, ]
         )
+
+
+class EntryWithDeletedAttachmentUpdated(APITestCase):
+    """
+    > Portfolio–Phaidra: "Update Archive" fails, if previously archived asset has been deleted
+    https://basedev.uni-ak.ac.at/redmine/issues/1654
+    """
+    entry: Entry
+
+    def setUp(self) -> None:
+        """
+        (Log in as a user)
+
+        Create an entry, and media
+        Archive them with the web api
+        Delete media,
+        Change entry,
+        Update archive with the web api
+        :return:
+        """
+        model_provider = ModelProvider()
+        client_provider = ClientProvider(model_provider)
+        # Tests will use the frameworks client
+        self.client.login(username=model_provider.username, password=model_provider.peeword)
+
+        # define title states for testing
+        self.title_1 = 'Title 1'
+        self.title_2 = 'Title 2'
+
+        # Logic
+        entry = model_provider.get_entry()
+        entry.title = self.title_1
+        entry.save()
+        entry.refresh_from_db()
+
+        media = model_provider.get_media(entry)
+        archival_response = client_provider.get_media_primary_key_response(media, False)
+        if archival_response.status_code != 200:
+            raise RuntimeError(
+                rf'Can not perform test {self.__class__}. ' \
+                + rf'Server responded with status {archival_response.status_code} ' \
+                + rf'and message {archival_response.content}'
+            )
+
+        worker = django_rq.get_worker('high')
+        worker.work(burst=True)  # wait until it is done
+        entry.refresh_from_db()
+        media.refresh_from_db()
+        media.delete(keep_parents=True)
+
+        entry.title = self.title_2
+        entry.save()
+        entry.refresh_from_db()
+
+        # Pass data to tests
+        self.entry = entry
+
+    def test_update_is_working(self):
+        # update archive
+        portfolio_response = self.client.put(
+            f'/api/v1/archive?entry={self.entry.id}',
+        )
+        self.assertEqual(
+            portfolio_response.status_code, 200,
+            rf'Archival update for archived entry with deleted media returned message {portfolio_response.content}'
+                         )
