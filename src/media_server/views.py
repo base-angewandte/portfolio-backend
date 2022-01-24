@@ -283,6 +283,26 @@ def validate_assets(request, media_pks, *args, **kwargs):
 
 
 @api_view(['GET'])
+def validate_entry(request, *args, **kwargs):
+    try:
+        entry_pk = request.query_params['entry']
+    except KeyError:
+        raise APIException('Entry param is not optional')
+    try:
+        entry_object: 'Entry' = Entry.objects.get(pk=entry_pk)
+    except Entry.DoesNotExist:
+        raise APIException('Entry not found')
+
+    media_objects: Collection['Media'] = (
+        Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
+    )
+    media_objects: Set['Media'] = set(media_objects)
+    controller = DefaultArchiveController(request.user, media_objects, entry=entry_object)
+    controller.validate()
+    return SuccessfulValidationResponse(_('Asset validation successful'))
+
+
+@api_view(['GET'])
 def archive_assets(request, media_pks, *args, **kwargs):
     """
     @media_pks: comma separated list of media pks

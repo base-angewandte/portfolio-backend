@@ -2,7 +2,8 @@ from rest_framework import routers
 
 from django.urls import include, path, re_path
 
-from media_server.views import MediaViewSet, archive, archive_assets, archive_is_changed, validate_assets
+from media_server.views import MediaViewSet, archive, archive_assets, archive_is_changed, validate_assets, \
+    validate_entry
 
 from . import views
 
@@ -35,4 +36,5 @@ urlpatterns = [
     ),
     path('archive', archive, name='archive'),
     path('archive/is-changed', archive_is_changed, name='archive-is-changed'),
+    path('archive/validate_entry', validate_entry, name='validate_entry'),
 ]
