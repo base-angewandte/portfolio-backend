@@ -119,12 +119,12 @@ class ValidateInvalidEntryEndpoint(APITestCase):
     def setUpTestData(cls):
         model_provider = ModelProvider()
         cls.client_provider = ClientProvider(model_provider)
-        cls.entry = model_provider.get_entry(title=False)
+        cls.entry = model_provider.get_entry(english_abstract=False)
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
         self.assertEqual(response.status_code, 400, rf'Response {response} with {response.content}')
-        self.assertIn('title', response.data, rf'title not found in {response.data}')
+        self.assertIn('texts', response.data, rf'texts not found in {response.data}')
 
 
 class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
@@ -158,10 +158,10 @@ class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
     def setUpTestData(cls):
         model_provider = ModelProvider()
         cls.client_provider = ClientProvider(model_provider)
-        cls.entry = model_provider.get_entry(title=False)
+        cls.entry = model_provider.get_entry(english_abstract=False)
         media = model_provider.get_media(entry=cls.entry)
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
         self.assertEqual(response.status_code, 400, rf'Response is {response.content}')
-        self.assertIn('title', response.data, rf'title not found in {response.data}')
+        self.assertIn('texts', response.data, rf'texts not found in {response.data}')
