@@ -21,7 +21,7 @@ class DefaultArchiveController:
 
     user: User
     media_objects: Set['Media']
-    _entry: Optional[Entry] = None
+    _entry: Optional[Entry]
 
     @property
     def entry(self) -> Entry:
@@ -37,13 +37,14 @@ class DefaultArchiveController:
             self._archiver = self._create_archiver()
         return self._archiver
 
-    def __init__(self, user: User, media_objects: Set['Media']):
+    def __init__(self, user: User, media_objects: Set['Media'], entry: Optional[Entry] = None):
         """
         :param user: The user, the request is coming from
         :param media_objects: the media to archive
         """
         self.media_objects = media_objects
         self.user = user
+        self._entry = entry
 
     def push_to_archive(self) -> 'SuccessfulArchiveResponse':
         """Validates the data and pushes to archive.

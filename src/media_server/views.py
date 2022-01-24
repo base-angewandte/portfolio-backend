@@ -336,7 +336,7 @@ def archive(request: Request, *args, **kwargs):
         filter(pk__in={media_object.id for media_object in media_objects})\
         .update(archive_status=STATUS_ARCHIVE_IN_UPDATE)
 
-    controller = DefaultArchiveController(user=request.user, media_objects=media_objects)
+    controller = DefaultArchiveController(user=request.user, media_objects=media_objects, entry=entry_object)
     return controller.update_archive()
 
 
