@@ -1,12 +1,19 @@
 """
 New metadata is added to the containers. Check it
 """
+from datetime import datetime
+
 import requests as requests
 from django.test import TestCase
-
+import django_rq
 from core.models import Entry
+from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
     ValueLanguageBaseSchema, RdfSeeAlsoSchema
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
+    BidirectionalConceptsMapper
+from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
+    PhaidraThesisMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
     create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator, \
@@ -505,3 +512,127 @@ class TestBug1693(TestCase):
                 }
             }
         )
+
+
+class TestNewFeatureBug1694(TestCase):
+    """
+    Basically `Entry.data.date` from `core.schemas.entries.document.DocumentSchema`
+    to `dcterms:date`
+
+    https://basedev.uni-ak.ac.at/redmine/issues/1694
+    """
+
+    valid_date = datetime(2000, 1, 1, 0, 0, 0).isoformat()
+    invalid_date = 'no-date'
+
+    generated_phaidra_data_valid_date: dict
+    generated_phaidra_data_invalid_date: dict
+    translated_portfolio_errors_valid_date: dict
+    translated_portfolio_errors_invalid_date: dict
+    pulled_phaidra_data_valid_date: dict
+    pulled_phaidra_data_invalid_date: dict
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        1. Create an entry with a date
+          and one with a date not conforming to https://www.loc.gov/standards/datetime/edtf.html
+        2. translate data to phaidra
+        3. translate errors to portfolio
+        4. create media
+        5. archive media
+        6. check for phaidra data to include date
+        :return:
+        """
+        # 1. Create an entry with a date and one with a date not conforming to EDTF
+        model_provider = ModelProvider()
+
+        entry_valid_date = model_provider.get_entry()
+        entry_valid_date.data['date'] = cls.valid_date
+        entry_valid_date.save()
+        entry_valid_date.refresh_from_db()
+        concepts_mapper_valid_date = BidirectionalConceptsMapper.from_entry(entry_valid_date)
+
+        entry_invalid_date = model_provider.get_entry()
+        entry_invalid_date.data['date'] = cls.invalid_date
+        entry_invalid_date.save()
+        entry_invalid_date.refresh_from_db()
+        concepts_mapper_invalid_date = BidirectionalConceptsMapper.from_entry(entry_valid_date)
+
+        # 2. translate data to phaidra
+        translator_valid_date = PhaidraThesisMetaDataTranslator(concepts_mapper_valid_date)
+        translator_invalid_date = PhaidraThesisMetaDataTranslator(concepts_mapper_invalid_date)
+
+        cls.generated_phaidra_data_valid_date = translator_valid_date.translate_data(entry_valid_date)
+        cls.generated_phaidra_data_invalid_date = translator_invalid_date.translate_data(entry_invalid_date)
+
+        # 3. translate errors to portfolio
+        cls.translated_portfolio_errors_valid_date = translator_valid_date.translate_errors(
+            create_dynamic_phaidra_thesis_meta_data_schema(
+                concepts_mapper_valid_date
+            ).load(
+                cls.generated_phaidra_data_valid_date
+            ).errors
+        )
+
+        cls.translated_portfolio_errors_invalid_date = translator_invalid_date.translate_errors(
+            create_dynamic_phaidra_thesis_meta_data_schema(
+                concepts_mapper_invalid_date
+            ).load(
+                cls.generated_phaidra_data_invalid_date
+            ).errors
+        )
+
+        # 4. create media
+        media_valid_date = model_provider.get_media(entry_valid_date)
+        media_invalid_date = model_provider.get_media(entry_invalid_date)
+
+        # 5. archive media
+        client_provider = ClientProvider(model_provider)
+        response_valid_date = client_provider.get_media_primary_key_response(media_valid_date, only_validate=False)
+        response_invalid_date = client_provider.get_media_primary_key_response(media_invalid_date, only_validate=False)
+
+        for response in (response_valid_date, response_invalid_date):
+            if not response.status_code == 200:
+                raise RuntimeError(f'Can not perform test. Server did not return 200: {response}')
+
+        django_rq.get_worker(AsyncMediaHandler.queue_name).work(burst=True)  # Wit until it's done
+        entry_valid_date.refresh_from_db()
+        entry_invalid_date.refresh_from_db()
+
+        # 6. check for phaidra data to include date
+        phaidra_response_valid_date = requests.get(
+            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{entry_valid_date.archive_id}/jsonld'
+        )
+        phaidra_response_invalid_date = requests.get(
+            f'https://services.phaidra-sandbox.univie.ac.at/api/object/{entry_invalid_date.archive_id}/jsonld'
+        )
+
+        for response in (phaidra_response_valid_date, phaidra_response_invalid_date):
+            if not response.status_code == 200:
+                raise RuntimeError(f'Can not perform test. Phaidra did not return 200: {response}')
+        cls.pulled_phaidra_data_valid_date = phaidra_response_valid_date.json()
+        cls.pulled_phaidra_data_invalid_date = phaidra_response_invalid_date.json()
+
+    def test_valid_date_generated(self):
+        inner_data = self.generated_phaidra_data_valid_date['metadata']['json-ld']
+        self.assertIn('dcterms:date', inner_data)
+        self.assertEqual(inner_data['dcterms:date'], self.valid_date)
+
+    def test_invalid_date_generated(self):
+        inner_data = self.generated_phaidra_data_invalid_date['metadata']['json-ld']
+        self.assertIn('dcterms:date', inner_data)
+        self.assertEqual(inner_data['dcterms:date'], self.invalid_date)
+
+    def test_no_errors_valid_date(self):
+        self.assertEqual({}, self.translated_portfolio_errors_valid_date)
+
+    def test_no_errors_invalid_date(self):
+        self.assertEqual({}, self.translated_portfolio_errors_invalid_date)
+
+    def test_valid_date_in_phaidra(self):
+        self.assertIn('dcterms:date', self.pulled_phaidra_data_valid_date)
+        self.assertEqual(self.pulled_phaidra_data_valid_date['dcterms:date'], self.valid_date)
+
+    def test_invalid_date_not_in_phaidra(self):
+        self.assertNotIn('dcterms:date', self.pulled_phaidra_data_invalid_date)
