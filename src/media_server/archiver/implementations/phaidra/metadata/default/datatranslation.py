@@ -230,9 +230,19 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         texts = model.texts
         translated = []
         for text in texts:
-            translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(
-                'bf:Summary' if 'type' in text else 'bf:Note'
-            )
+            # Determine the type of the text.
+            # Generally it is bf:Note, if it is not an abstract, which is not fast to tell.
+            type_ = 'bf:Note'   # Default
+            # little complicated rule, since the data structure is quite dynamic
+            if 'type' in text:
+                text_type = text['type']
+                if 'source' in text['type']:  # Never know for sure here
+                    source = str(text_type['source'])  # No more funny business!
+                    source_name = Path(urlparse(source).path).name
+                    if source_name == 'abstract':
+                        type_ = 'bf:Summary'
+
+            translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(type_)
             translated_text['skos:prefLabel'] = self._get_data_from_skos_prefLabel_from_text_type(text)
             translated.append(translated_text)
         return translated
@@ -342,7 +352,7 @@ class UrlTranslator(AbstractDataTranslator):
         if not errors:
             return {}
         return {
-            'data':  {
+            'data': {
                 'url': errors[0]['schema:url'][0],
             }
         }
