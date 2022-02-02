@@ -358,6 +358,17 @@ class UrlTranslator(AbstractDataTranslator):
         }
 
 
+class DctermsDateTranslator(AbstractUserUnrelatedDataTranslator):
+    """
+    https://basedev.uni-ak.ac.at/redmine/issues/1694#note-7
+    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#date
+    """
+    def translate_data(self, entry: 'Entry') -> List[str]:
+        if (entry.data is None) or ('date' not in entry.data):
+            return []
+        return [entry.data['date'], ]
+
+
 class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
     """This module translates data from Entry(.data) to phaidra metadata format
     and from the error messages of the validation process back to Entry(.data).
@@ -386,6 +397,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
         self._key_translator_mapping = {
             'edm:hasType': EdmHasTypeTranslator(),
             'dce:title': DCTitleTranslator(),
+            'dcterms:date': DctermsDateTranslator(),
             'dcterms:language': GenericSkosConceptTranslator(
                 'data',
                 [

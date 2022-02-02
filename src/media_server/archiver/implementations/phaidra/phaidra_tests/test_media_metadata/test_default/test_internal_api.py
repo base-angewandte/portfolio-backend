@@ -318,6 +318,7 @@ class MissingTypeTestCase(TestCase):
                         'skos:prefLabel': [{'@language': 'eng', '@value': 'container'}],
                     }
                 ],
+                'dcterms:date': [],
                 'edm:hasType': [],
                 'dce:title': [
                     {
@@ -1020,6 +1021,7 @@ class StaticDataTestCase(TestCase):
                 ],
                 'edm:hasType': [],
                 'dce:title': [{'@type': 'bf:Title', 'bf:mainTitle': [{'@value': '', '@language': 'und'}]}],
+                'dcterms:date': [],
                 'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
@@ -1061,6 +1063,7 @@ class StaticDataTestCase(TestCase):
                         'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
                     }
                 ],
+                'dcterms:date': [],
                 'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
@@ -1104,6 +1107,7 @@ class StaticDataTestCase(TestCase):
                         'bf:mainTitle': [{'@value': 'A Book With A Cover And No Pages At All.', '@language': 'und'}],
                     }
                 ],
+                'dcterms:date': [],
                 'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],
@@ -1138,6 +1142,7 @@ class StaticDataTestCase(TestCase):
                 ],
                 'edm:hasType': [],
                 'dce:title': [{'@type': 'bf:Title', 'bf:mainTitle': [{'@value': '', '@language': 'und'}]}],
+                'dcterms:date': [],
                 'dcterms:language': [],
                 'dcterms:subject': [],
                 'rdau:P60048': [],

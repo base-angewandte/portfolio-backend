@@ -126,6 +126,13 @@ class PhaidraContainer(Schema):
         dump_to='dce:title',
     )
 
+    dcterms_date = fields.List(
+        fields.String(),
+        required=False,
+        load_from='dcterms:date',
+        dump_to='dcterms:date'
+    )
+
     dcterms_language = PortfolioNestedField(
         SkosConceptSchema, many=True, load_from='dcterms:language', dump_to='dcterms:language', validate=None
     )

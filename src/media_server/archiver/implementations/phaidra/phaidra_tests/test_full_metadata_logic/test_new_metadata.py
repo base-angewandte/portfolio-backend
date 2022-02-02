@@ -617,12 +617,12 @@ class TestNewFeatureBug1694(TestCase):
     def test_valid_date_generated(self):
         inner_data = self.generated_phaidra_data_valid_date['metadata']['json-ld']
         self.assertIn('dcterms:date', inner_data)
-        self.assertEqual(inner_data['dcterms:date'], self.valid_date)
+        self.assertEqual(inner_data['dcterms:date'], [self.valid_date, ])
 
     def test_invalid_date_generated(self):
         inner_data = self.generated_phaidra_data_invalid_date['metadata']['json-ld']
         self.assertIn('dcterms:date', inner_data)
-        self.assertEqual(inner_data['dcterms:date'], self.invalid_date)
+        self.assertEqual(inner_data['dcterms:date'], [self.invalid_date, ])
 
     def test_no_errors_valid_date(self):
         self.assertEqual({}, self.translated_portfolio_errors_valid_date)
@@ -632,7 +632,7 @@ class TestNewFeatureBug1694(TestCase):
 
     def test_valid_date_in_phaidra(self):
         self.assertIn('dcterms:date', self.pulled_phaidra_data_valid_date)
-        self.assertEqual(self.pulled_phaidra_data_valid_date['dcterms:date'], self.valid_date)
+        self.assertEqual(self.pulled_phaidra_data_valid_date['dcterms:date'], [self.valid_date, ])
 
     def test_invalid_date_not_in_phaidra(self):
-        self.assertNotIn('dcterms:date', self.pulled_phaidra_data_invalid_date)
+        self.assertNotIn('dcterms:date', [self.pulled_phaidra_data_invalid_date, ])
