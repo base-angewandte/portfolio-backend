@@ -518,10 +518,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 this_errors = errors[phaidra_role_code]
                 if this_errors.__class__ is not list:
                     raise RuntimeError(f'Expected errors at this level with class list, got {errors.__class__}')
-                for error in this_errors:
-                    if error.__class__ is not str:
-                        raise InternalValidationError(error)
-                    contributor_errors.append(error)
+                contributor_errors += this_errors
 
         if contributor_errors:
             return {'data': {'contributors': contributor_errors, }, }

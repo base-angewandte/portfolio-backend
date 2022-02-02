@@ -276,6 +276,14 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
     return label or ''
 
 
+def get_preflabel_languages(concept: str) -> str:
+    return get_preflabel(
+        concept,
+        project=settings.LANGUAGES_VOCID,
+        graph='http://base.uni-ak.ac.at/portfolio/languages/',
+    )
+
+
 def get_collection_members(collection, maxhits=1000, use_cache=True):
     cache_key = f'get_collection_members_{collection}'
 
@@ -300,3 +308,4 @@ def get_equivalent_concepts(uri):
 
 get_altlabel_lazy = lazy(get_altlabel, str)
 get_preflabel_lazy = lazy(get_preflabel, str)
+get_preflabel_languages_lazy = lazy(get_preflabel_languages, str)

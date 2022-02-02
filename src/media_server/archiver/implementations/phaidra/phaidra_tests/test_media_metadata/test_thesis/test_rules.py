@@ -106,7 +106,7 @@ class AtLeastOneAuthorTestCase(TestCase):
         self.assertRaisesMessage(
             ValidationError,
             # This is str repr and not the exactly same as in the response
-            "{'data': {'authors': [ErrorDetail(string='" + MISSING_AUTHOR + "', code='invalid')]}}",
+            "{'data': {'authors': [ErrorDetail(string='" + str(MISSING_AUTHOR) + "', code='invalid')]}}",
             lambda: controller.validate(),
         )
 
@@ -216,7 +216,7 @@ class MustHaveALanguageTestCase(TestCase):
         self.assertRaisesMessage(
             ValidationError,
             # This is str repr and not the exactly same as in the response, f-string did not work immediately
-            "{'data': {'language': [ErrorDetail(string='" + MISSING_LANGUAGE + "', code='invalid')]}}",
+            "{'data': {'language': [ErrorDetail(string='" + str(MISSING_LANGUAGE) + "', code='invalid')]}}",
             lambda: controller.validate(),
         )
 
@@ -332,7 +332,7 @@ class MustHaveAnAdviserTestCase(TestCase):
         self.assertRaisesMessage(
             ValidationError,
             # This is str repr and not the exactly same as in the response
-            "{'data': {'contributors': [ErrorDetail(string='" + MISSING_SUPERVISOR + "'," " code='invalid')]}}",
+            "{'data': {'contributors': [ErrorDetail(string='" + str(MISSING_SUPERVISOR) + "'," " code='invalid')]}}",
             lambda: controller.validate(),
         )
 
