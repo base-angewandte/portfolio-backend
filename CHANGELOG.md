@@ -1,5 +1,11 @@
 # Changelog
 
+## unreleased
+
+### Changed
+
+- New API lists logic
+
 ## 1.1.5
 
 ### Added
