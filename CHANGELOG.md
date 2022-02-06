@@ -6,6 +6,10 @@
 
 - New API lists logic
 
+### Fixed
+
+- Corrected lang parameter for type label in `export_published` management command
+
 ## 1.1.5
 
 ### Added
