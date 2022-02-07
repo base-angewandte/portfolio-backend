@@ -650,8 +650,8 @@ def user_data(request, pk=None, *args, **kwargs):
                 i.source == user.username
                 and i.roles is not None
                 and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mediation' for r in i.roles)
+                for i in e_data.contributors
             )
-            for i in e_data.contributors
         ):
             mediation_data.append(entry_to_data(e))
             continue
