@@ -671,8 +671,16 @@ def user_data(request, pk=None, *args, **kwargs):
             # document, event, conference, audio, film/video types
             entry_type in journalistic_activity_types
             and (
-                (e_data.authors is not None and any(i.source == user.username for i in e_data.authors))
-                or (e_data.editors is not None and any(i.source == user.username for i in e_data.editors))
+                (
+                    hasattr(e_data, 'authors')
+                    and e_data.authors is not None
+                    and any(i.source == user.username for i in e_data.authors)
+                )
+                or (
+                    hasattr(e_data, 'editors')
+                    and e_data.editors is not None
+                    and any(i.source == user.username for i in e_data.editors)
+                )
                 or (
                     e_data.contributors is not None
                     and any(
