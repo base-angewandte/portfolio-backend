@@ -100,7 +100,7 @@ class Command(BaseCommand):
                         e.id,
                         e.title,
                         e.subtitle,
-                        e.type.get('label').get('de'),
+                        e.type.get('label').get(lang),
                         e.owner.get_full_name(),
                         ' // '.join(data),
                     ]

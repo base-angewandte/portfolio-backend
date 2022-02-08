@@ -139,8 +139,8 @@ class Command(BaseCommand):
 
         try:
             user = User.objects.get(username=options['user'])
-        except User.DoesNotExist:
-            raise CommandError('User does not exist')
+        except User.DoesNotExist as e:
+            raise CommandError('User does not exist') from e
 
         # Parse BibTeX-File
         parser = bibtexparser.bparser.BibTexParser(common_strings=True)
@@ -148,7 +148,7 @@ class Command(BaseCommand):
         try:
             bibtex_database = bibtexparser.load(options['file'], parser=parser)
         except Exception as err:
-            raise CommandError(f'Error when loading BibTeX database: {repr(err)}')
+            raise CommandError(f'Error when loading BibTeX database: {repr(err)}') from err
 
         # type mapping
         # bibtex type as keys

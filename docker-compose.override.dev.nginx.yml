@@ -1,6 +1,5 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-nginx:
     image: nginx:alpine
     container_name: portfolio-nginx
