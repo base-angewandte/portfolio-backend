@@ -58,7 +58,7 @@ subsections.
 - Now create the docker-compose override file:
 
   ```bash
-  cp docker-compose.override.dev-docker.yml docker-compose.override.yml
+  cp docker-compose.override.dev.docker.yml docker-compose.override.yml
   ```
 
 - Start everything:
