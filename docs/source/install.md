@@ -52,7 +52,7 @@ subsections.
 ### Everything inside docker
 
 - Make sure that the `DOCKER` variable in `./src/portfolio/.env` is set to
-  `TRUE`. Otherwise Django will assume that postgres and redis are accessible
+  `TRUE`. Otherwise Django will assume that the other services are accessible
   on localhost ports.
 
 - Now create the docker-compose override file:
@@ -78,14 +78,14 @@ subsections.
   might want to do the following to also get Django's debug output:
 
   ```bash
-  docker logs -f portfolio-django-dev
+  docker logs -f portfolio-django
   ```
 
   To stop all services again, use `make stop` or `docker-compose down`.
 
 ### The full developer setup
 
-- Install latest python 3.7 and create virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
+- Install latest python 3.7 and create a virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
 
 - Install pip-tools and requirements in your virtualenv:
 
