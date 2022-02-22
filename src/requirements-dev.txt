@@ -125,7 +125,7 @@ pip-tools==6.1.0
     # via -r src/requirements.in
 portalocker==2.3.0
     # via concurrent-log-handler
-pre-commit==2.11.1
+pre-commit==2.13.0
     # via -r src/requirements-dev.in
 progressbar2==3.53.1
     # via -r src/requirements.in

@@ -10,6 +10,7 @@ ENV PATH="$PYTHONUSERBASE/bin:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bc \
+        jq \
         ffmpeg \
         ghostscript \
         imagemagick \
@@ -18,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # hadolint ignore=DL3003
-RUN EXIFTOOL_VERSION="$(wget -qO- https://exiftool.org/ver.txt)" \
+RUN EXIFTOOL_VERSION="$(wget -qO- https://api.github.com/repos/exiftool/exiftool/tags | jq -r '.[0].name')" \
     && wget --progress=dot:giga https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && tar xvf Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
     && cd Image-ExifTool-"${EXIFTOOL_VERSION}"/ \
@@ -37,7 +38,7 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==21.1.1
+RUN pip install --upgrade pip==21.1.3
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 

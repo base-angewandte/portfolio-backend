@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.1.4
+
+### Fixed
+- Fixed build error due to exiftool.org being down - thanks to Benjamin Höglinger-Stelzer [nefarius]
+
+## 1.1.3
+
+### Changed
+- Optimized docker-compose builds
+
+### Fixed
+- Fixed error during preview creation of documents containing umlauts
+
+## 1.1.2
+
+### Added
+- Added status field to ResearchProjectSchema
+
+### Changed
+- New API lists logic
+- Pull docker images before build
+- Updated pre-commit and hooks
+- Clean up docs container after running
+- Returning additional metadata for media that hasn't been converted yet
+- Changed license to required for media objects
+
+### Fixed
+- Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
+
+
+## 1.1.1
+
+### Added
+- Added support for new INDEX vocabulary collections
+
+
 ## 1.1.0
 
 ### Added

@@ -17,7 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
 
 from .decorators import is_allowed
-from .models import DOCUMENT_TYPE, Media, get_type_for_mime_type
+from .models import DOCUMENT_TYPE, STATUS_CONVERTED, Media, get_type_for_mime_type
 from .serializers import MediaCreateSerializer, MediaPartialUpdateSerializer
 from .utils import check_quota
 
@@ -39,7 +39,7 @@ def protected_view(request, path, server):
             response['Content-Encoding'] = encoding
 
         if as_download:
-            response['Content-Disposition'] = 'attachment; filename={}'.format(basename(path))
+            response['Content-Disposition'] = f'attachment; filename={basename(path)}'
 
         response['X-Accel-Redirect'] = join(settings.PROTECTED_MEDIA_LOCATION, path).encode('utf8')
         return response
@@ -52,13 +52,24 @@ def protected_view(request, path, server):
 
 # DRF views
 
-license_param = openapi.Parameter(
+license_args = [
     'license',
     openapi.IN_FORM,
+]
+license_kwargs = dict(
     description='media license json object',
-    required=False,
     type=openapi.TYPE_STRING,
-    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}}
+    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}},
+)
+license_param = openapi.Parameter(
+    *license_args,
+    **license_kwargs,
+    required=False,
+)
+license_param_required = openapi.Parameter(
+    *license_args,
+    **license_kwargs,
+    required=True,
 )
 
 
@@ -117,7 +128,7 @@ class MediaViewSet(viewsets.GenericViewSet):
             415: openapi.Response('Unsupported media type'),
             422: openapi.Response('User quota exceeded'),
         },
-        manual_parameters=[license_param],
+        manual_parameters=[license_param_required],
     )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
@@ -179,8 +190,8 @@ class MediaViewSet(viewsets.GenericViewSet):
                         _('Current user is not the owner of this media object'),
                         status=status.HTTP_403_FORBIDDEN,
                     )
-                elif m.status != 2:
-                    return Response({'id': pk}, status=status.HTTP_202_ACCEPTED)
+                elif m.status != STATUS_CONVERTED:
+                    return Response(m.get_minimal_data(), status=status.HTTP_202_ACCEPTED)
 
                 return Response(m.get_data())
 
