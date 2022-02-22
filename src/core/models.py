@@ -1,3 +1,4 @@
+import django_rq
 from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
 
 from django.conf import settings
@@ -5,10 +6,11 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.translation import get_language, gettext_lazy as _
 
+from api.management import showroom
 from general.models import AbstractBaseModel, ShortUUIDField
 
 from .managers import EntryManager
@@ -169,3 +171,22 @@ class Relation(AbstractBaseModel):
 def relation_pre_save(sender, instance, *args, **kwargs):
     # ensure that there's only one relation between two entries
     instance.to_entry.remove_relation(instance.from_entry)
+
+
+@receiver(post_save, sender=Entry)
+def entry_post_save(sender, instance, *args, **kwargs):
+    queue = django_rq.get_queue('default')
+    if instance.published:
+        queue.enqueue(showroom.push_entry, entry=instance)
+        # TODO: discuss and implement failure handling
+    else:
+        queue.enqueue(showroom.delete_entry, entry=instance)
+        # TODO: discuss and implement failure handling
+
+
+@receiver(post_delete, sender=Entry)
+def entry_post_delete(sender, instance, *args, **kwargs):
+    if instance.published:
+        queue = django_rq.get_queue('default')
+        queue.enqueue(showroom.delete_entry, entry=instance)
+        # TODO: discuss and implement failure handling
