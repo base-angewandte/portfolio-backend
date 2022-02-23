@@ -174,12 +174,12 @@ def relation_pre_save(sender, instance, *args, **kwargs):
 
 
 @receiver(post_save, sender=Entry)
-def entry_post_save(sender, instance, *args, **kwargs):
+def entry_post_save(sender, instance, created, *args, **kwargs):
     queue = django_rq.get_queue('default')
     if instance.published:
         queue.enqueue(showroom.push_entry, entry=instance)
         # TODO: discuss and implement failure handling
-    else:
+    elif not created:
         queue.enqueue(showroom.delete_entry, entry=instance)
         # TODO: discuss and implement failure handling
 
