@@ -114,7 +114,8 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     if serializer.validated_data:
-                        Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                        serializer.instance = m
+                        serializer.save()
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

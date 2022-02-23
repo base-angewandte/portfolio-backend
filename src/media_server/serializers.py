@@ -45,5 +45,15 @@ class MediaPartialUpdateSerializer(serializers.Serializer):
     published = serializers.BooleanField(required=False)
     license = serializers.JSONField(required=False)
 
+    def update(self, instance, validated_data):
+        update_fields = []
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            update_fields.append(attr)
+        # we need the update_fields so the post_save event handler will know which
+        # fields have been actually updated
+        instance.save(update_fields=update_fields)
+        return instance
+
     def validate_license(self, value):
         return validate_license(value)
