@@ -402,13 +402,18 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 )
 
     else:
-        # only in the case published changed and the entry already is published, we
-        # have to sync the medium to showroom
-        if 'published' in kwargs['update_fields']:
-            entry = Entry.objects.get(pk=instance.entry_id)
-            if entry.published:
+        entry = Entry.objects.get(pk=instance.entry_id)
+        if entry.published:
+            queue = django_rq.get_queue('default')
+            # in case of a newly created medium we only want to sync it after it has
+            # been successfully converted
+            if not kwargs['update_fields']:
+                if instance.status == STATUS_CONVERTED and instance.published:
+                    queue.enqueue(sync.push_medium, medium=instance)
+            # in case of an update only in the case published changed and the entry
+            # is already published, we have to sync the medium to showroom
+            elif 'published' in kwargs['update_fields']:
                 if instance.published:
-                    queue = django_rq.get_queue('default')
                     queue.enqueue(sync.push_medium, medium=instance)
                     # TODO: discuss and implement failure handling
                 else:
