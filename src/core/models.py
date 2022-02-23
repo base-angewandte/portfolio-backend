@@ -10,8 +10,8 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.translation import get_language, gettext_lazy as _
 
-from api.management import showroom
 from general.models import AbstractBaseModel, ShortUUIDField
+from showroom_connector import sync
 
 from .managers import EntryManager
 from .schemas import ICON_DEFAULT, get_icon, get_jsonschema, get_schema
@@ -177,10 +177,10 @@ def relation_pre_save(sender, instance, *args, **kwargs):
 def entry_post_save(sender, instance, created, *args, **kwargs):
     queue = django_rq.get_queue('default')
     if instance.published:
-        queue.enqueue(showroom.push_entry, entry=instance)
+        queue.enqueue(sync.push_entry, entry=instance)
         # TODO: discuss and implement failure handling
     elif not created:
-        queue.enqueue(showroom.delete_entry, entry=instance)
+        queue.enqueue(sync.delete_entry, entry=instance)
         # TODO: discuss and implement failure handling
 
 
@@ -188,5 +188,5 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
 def entry_post_delete(sender, instance, *args, **kwargs):
     if instance.published:
         queue = django_rq.get_queue('default')
-        queue.enqueue(showroom.delete_entry, entry=instance)
+        queue.enqueue(sync.delete_entry, entry=instance)
         # TODO: discuss and implement failure handling

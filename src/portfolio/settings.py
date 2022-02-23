@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'api',
     'media_server',
     'docs',
+    'showroom_connector',
 ]
 
 AUTHENTICATION_BACKENDS = [
