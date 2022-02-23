@@ -18,6 +18,7 @@ from django.dispatch import receiver
 
 from core.models import Entry
 from general.models import ShortUUIDField
+from showroom_connector import sync
 
 from .apps import MediaServerConfig
 from .storages import ProtectedFileSystemStorage
@@ -399,6 +400,20 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                         failure_ttl=settings.RQ_FAILURE_TTL,
                     )
                 )
+
+    else:
+        # only in the case published changed and the entry already is published, we
+        # have to sync the medium to showroom
+        if 'published' in kwargs['update_fields']:
+            entry = Entry.objects.get(pk=instance.entry_id)
+            if entry.published:
+                if instance.published:
+                    queue = django_rq.get_queue('default')
+                    queue.enqueue(sync.push_medium, medium=instance)
+                    # TODO: discuss and implement failure handling
+                else:
+                    # TODO: delete medium from SR
+                    pass
 
 
 @receiver(pre_delete, sender=Media)
