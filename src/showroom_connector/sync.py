@@ -38,11 +38,7 @@ def push_entry(entry):
         },
     }
 
-    headers = {
-        'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-        'X-Api-Key': settings.SHOWROOM_API_KEY,
-    }
-    r = requests.post(settings.SHOWROOM_API_BASE + 'activities/', json=data, headers=headers)
+    r = requests.post(settings.SHOWROOM_API_BASE + 'activities/', json=data, headers=auth_headers)
 
     if r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
@@ -57,11 +53,7 @@ def push_entry(entry):
 
 
 def delete_entry(entry):
-    headers = {
-        'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-        'X-Api-Key': settings.SHOWROOM_API_KEY,
-    }
-    r = requests.delete(settings.SHOWROOM_API_BASE + f'activities/{entry.id}/', headers=headers)
+    r = requests.delete(settings.SHOWROOM_API_BASE + f'activities/{entry.id}/', headers=auth_headers)
     if r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 404:
@@ -109,11 +101,7 @@ def push_medium(medium):
             'thumbnail': medium_data.get('thumbnail'),
         }
 
-    headers = {
-        'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-        'X-Api-Key': settings.SHOWROOM_API_KEY,
-    }
-    r = requests.post(settings.SHOWROOM_API_BASE + 'media/', json=data, headers=headers)
+    r = requests.post(settings.SHOWROOM_API_BASE + 'media/', json=data, headers=auth_headers)
 
     if r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
