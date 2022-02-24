@@ -1,6 +1,7 @@
 import django_rq
 from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
@@ -179,6 +180,18 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
     if instance.published:
         queue.enqueue(sync.push_entry, entry=instance)
         # TODO: discuss and implement failure handling
+        # now check for all attached media that are also published and push those too
+        # TODO: discuss: it would be more efficient to only do this if the published
+        #       status itself has changed (vs. all the time anything in an already
+        #       published entry was changed), but we would need to write our own
+        #       update function in the serializer, to set the update_fields in kwargs
+        media_model = apps.get_model('media_server', 'Media')
+        published_media = media_model.objects.filter(entry_id=instance.id, published=True)
+        for medium in published_media:
+            queue.enqueue(sync.push_medium, medium=medium)
+    # if the instance was just created but not published, we do nothing. but if its
+    # published status (now) is false and it was not just created, we have to delete
+    # it from Showroom
     elif not created:
         queue.enqueue(sync.delete_entry, entry=instance)
         # TODO: discuss and implement failure handling
