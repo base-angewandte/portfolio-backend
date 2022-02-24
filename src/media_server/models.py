@@ -410,15 +410,15 @@ def media_post_save(sender, instance, created, *args, **kwargs):
             if not kwargs['update_fields']:
                 if instance.status == STATUS_CONVERTED and instance.published:
                     queue.enqueue(sync.push_medium, medium=instance)
-            # in case of an update only in the case published changed and the entry
-            # is already published, we have to sync the medium to showroom
-            elif 'published' in kwargs['update_fields']:
+            # in case of an update only push the updated medium if it is published,
+            # otherwise deleted it
+            else:
                 if instance.published:
                     queue.enqueue(sync.push_medium, medium=instance)
                     # TODO: discuss and implement failure handling
                 else:
-                    # TODO: delete medium from SR
-                    pass
+                    queue.enqueue(sync.delete_medium, medium=instance)
+                    # TODO: discuss and implement failure handling
 
 
 @receiver(pre_delete, sender=Media)
