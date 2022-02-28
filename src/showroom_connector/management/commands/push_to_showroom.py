@@ -1,12 +1,11 @@
 from re import match
 
-import requests
-
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from core.models import Entry
-from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE, Media
+from media_server.models import Media
+from showroom_connector import sync
 
 
 class Command(BaseCommand):
@@ -47,49 +46,25 @@ class Command(BaseCommand):
         updated = []
         not_pushed = []
         for entry in entries:
-            data = {
-                'source_repo_entry_id': entry.id,
-                'source_repo': settings.SHOWROOM_REPO_ID,
-                'source_repo_owner_id': str(entry.owner),
-                'data': {
-                    'title': entry.title,
-                    'subtitle': entry.subtitle,
-                    'type': entry.type,
-                    'keywords': entry.keywords,
-                    'texts': entry.texts,
-                    'data': entry.data,
-                },
-            }
-
-            headers = {
-                'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-                'X-Api-Key': settings.SHOWROOM_API_KEY,
-            }
-            r = requests.post(settings.SHOWROOM_API_BASE + 'activities/', json=data, headers=headers)
-
-            if r.status_code == 403:
-                raise CommandError(f'Authentication failed: {r.text}')
-
-            elif r.status_code == 400:
+            result = {}
+            try:
+                result = sync.push_entry(entry)
+            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                raise CommandError(e)
+            except sync.ShowroomError as e:
                 not_pushed.append(entry.id)
-                self.stdout.write(self.style.WARNING(f'Entry {entry.id} could not be pushed: 400: {r.text}'))
+                self.stdout.write(self.style.WARNING(e))
 
-            # according to the api spec the only other option is a 201 response when the entry was pushed
-            # but we should also check for anything unexpected to happen
-            elif r.status_code == 201:
-                # so far Showroom does only allow single entry POSTs, but the response
-                # format is already tailored towards multi entry POSTs. therefore
-                # we extract the created/updated as if we would submit multiple
-                # entries and extend our aggregated lists
-                result = r.json()
-                result_created = result.get('created')
-                if result_created:
-                    created.extend([(entry['id'], entry['showroom_id']) for entry in result_created])
-                result_updated = result.get('updated')
-                if result_updated:
-                    updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
-            else:
-                raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+            # so far Showroom does only allow single entry POSTs, but the response
+            # format is already tailored towards multi entry POSTs. therefore
+            # we extract the created/updated as if we would submit multiple
+            # entries and extend our aggregated lists
+            result_created = result.get('created')
+            if result_created:
+                created.extend([(entry['id'], entry['showroom_id']) for entry in result_created])
+            result_updated = result.get('updated')
+            if result_updated:
+                updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(created)+len(updated)} entries:'))
         self.stdout.write(f'Created: {len(created)}')
@@ -105,69 +80,25 @@ class Command(BaseCommand):
         for entry in entries:
             media = Media.objects.filter(entry_id=entry.id, published=True)
             for medium in media:
-                medium_data = medium.get_data()
-                data = {
-                    'file': medium.file.url,
-                    'type': medium.type,
-                    'mime_type': medium.mime_type,
-                    'exif': medium.exif,
-                    'license': medium.license,
-                    'source_repo_media_id': medium.id,
-                    'source_repo_entry_id': entry.id,
-                    'specifics': {},
-                }
-                if medium.type == IMAGE_TYPE:
-                    data['specifics'] = {
-                        'previews': medium_data.get('previews'),
-                        'thumbnail': medium_data.get('thumbnail'),
-                    }
-                elif medium.type == AUDIO_TYPE:
-                    data['specifics'] = {
-                        'duration': medium_data['metadata'].get('Duration'),
-                        'mp3': medium_data.get('mp3'),
-                    }
-                elif medium.type == VIDEO_TYPE:
-                    data['specifics'] = {
-                        'duration': medium_data['metadata'].get('Duration'),
-                        'cover': medium_data.get('cover'),
-                        'playlist': medium_data.get('playlist'),
-                    }
-                elif medium.type == DOCUMENT_TYPE:
-                    data['specifics'] = {
-                        'cover': medium_data.get('cover'),
-                        'pdf': medium_data.get('pdf'),
-                        'thumbnail': medium_data.get('thumbnail'),
-                    }
+                result = {}
+                try:
+                    result = sync.push_medium(medium)
+                except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                    raise CommandError(e)
+                except sync.ShowroomError as e:
+                    media_not_pushed.append(entry.id)
+                    self.stdout.write(self.style.WARNING(e))
 
-                headers = {
-                    'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-                    'X-Api-Key': settings.SHOWROOM_API_KEY,
-                }
-                r = requests.post(settings.SHOWROOM_API_BASE + 'media/', json=data, headers=headers)
-
-                if r.status_code == 403:
-                    raise CommandError(f'Authentication failed: {r.text}')
-
-                elif r.status_code == 400:
-                    media_not_pushed.append(medium.id)
-                    self.stdout.write(self.style.WARNING(f'Medium {medium.id} could not be pushed: 400: {r.text}'))
-
-                # according to the api spec the only other option is a 201 response when the entry was pushed
-                # but we should also check for anything unexpected to happen
-                elif r.status_code == 201:
-                    # so far Showroom does only allow single media POSTs, but the response
-                    # format is already tailored towards multi entry POSTs. therefore
-                    # we extract the created/updated as if we would submit multiple
-                    # entries and extend our aggregated lists
-                    result = r.json()
-                    result_created = result.get('created')
-                    if result_created:
-                        media_created.extend([(m['id'], m['showroom_id']) for m in result_created])
-                    result_updated = result.get('updated')
-                    if result_updated:
-                        media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
-                else:
-                    raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+                # so far Showroom does only allow single media POSTs, but the response
+                # format is already tailored towards multi entry POSTs. therefore
+                # we extract the created/updated as if we would submit multiple
+                # entries and extend our aggregated lists
+                result_created = result.get('created')
+                if result_created:
+                    media_created.extend([(m['id'], m['showroom_id']) for m in result_created])
+                result_updated = result.get('updated')
+                if result_updated:
+                    media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
 
         media_pushed = len(media_created) + len(media_updated)
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {media_pushed} media:'))
@@ -181,38 +112,21 @@ class Command(BaseCommand):
         relations_created = []
         relations_not_pushed = []
         for entry in entries:
-            data = {'related_to': []}
-            for related_entry in entry.relations.all():
-                data['related_to'].append(related_entry.id)
-            headers = {
-                'X-Api-Client': str(settings.SHOWROOM_REPO_ID),
-                'X-Api-Key': settings.SHOWROOM_API_KEY,
-            }
-            path = f'activities/{entry.id}/relations/'
-            r = requests.post(settings.SHOWROOM_API_BASE + path, json=data, headers=headers)
+            result = {}
+            try:
+                result = sync.push_relations(entry)
+            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                raise CommandError(e)
+            except sync.ShowroomError as e:
+                relations_not_pushed.append(entry.id)
+                self.stdout.write(self.style.WARNING(e))
 
-            if r.status_code == 403:
-                raise CommandError(f'Authentication failed: {r.text}')
-
-            elif r.status_code == 404 or r.status_code == 400:
-                relations_not_pushed.extend([(entry.id, r) for r in data['related_to']])
-                self.stdout.write(
-                    self.style.WARNING(f'Relations from {entry.id} could not be pushed: {r.status_code}: {r.text}')
-                )
-
-            # according to the api spec the only other option is a 201 response
-            # when the relationship was successfully added
-            # but we should also check for anything unexpected to happen
-            elif r.status_code == 201:
-                result = r.json()
-                created = result.get('created')
-                if created:
-                    relations_created.extend((entry.id, id) for id in created)
-                not_found = result.get('not_found')
-                if not_found:
-                    relations_not_pushed.extend((entry.id, id) for id in not_found)
-            else:
-                raise CommandError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+            created = result.get('created')
+            if created:
+                relations_created.extend((entry.id, id) for id in created)
+            not_found = result.get('not_found')
+            if not_found:
+                relations_not_pushed.extend((entry.id, id) for id in not_found)
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(relations_created)} relations.'))
         if len(relations_not_pushed) > 0:
