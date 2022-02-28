@@ -47,6 +47,7 @@ start-dev:
 	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
+		portfolio-clamav \
 		portfolio-lool
 
 start-dev-docker:
@@ -55,6 +56,7 @@ start-dev-docker:
 	docker-compose up -d \
 		portfolio-redis \
 		portfolio-postgres \
+		portfolio-clamav \
 		portfolio-lool \
 		portfolio-django
 	docker logs -f portfolio-django
