@@ -125,3 +125,20 @@ def delete_medium(medium):
         return True
     else:
         raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+
+
+def push_relations(entry):
+    data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.all()]}
+    r = requests.post(f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/', json=data, headers=auth_headers)
+
+    if r.status_code == 403:
+        raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
+    elif r.status_code == 400:
+        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 400: {r.text}')
+    elif r.status_code == 201:
+        # TODO: showroom is returning a dict with `created` and `not_found` arrays containing the
+        #       ids of those relations added and those entries that could not be found. in theory
+        #       `not_found` should be empty. but if not, how shall we handle this?
+        return True
+    else:
+        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
