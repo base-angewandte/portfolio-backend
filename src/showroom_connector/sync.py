@@ -13,7 +13,11 @@ class ShowroomAuthenticationError(ShowroomError):
     pass
 
 
-class ShowroomNotFoundError(Exception):
+class ShowroomUndefinedError(ShowroomError):
+    pass
+
+
+class ShowroomNotFoundError(ShowroomError):
     pass
 
 
@@ -47,9 +51,9 @@ def push_entry(entry):
         raise ShowroomError(f'Entry {entry.id} could not be pushed: 400: {r.text}')
 
     elif r.status_code == 201:
-        return True
+        return r.json()
     else:
-        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def delete_entry(entry):
@@ -63,7 +67,7 @@ def delete_entry(entry):
     elif r.status_code == 204:
         return True
     else:
-        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def push_medium(medium):
@@ -108,9 +112,9 @@ def push_medium(medium):
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be pushed: 400: {r.text}')
     elif r.status_code == 201:
-        return True
+        return r.json()
     else:
-        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def delete_medium(medium):
@@ -124,7 +128,7 @@ def delete_medium(medium):
     elif r.status_code == 204:
         return True
     else:
-        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def push_relations(entry):
@@ -139,6 +143,6 @@ def push_relations(entry):
         # TODO: showroom is returning a dict with `created` and `not_found` arrays containing the
         #       ids of those relations added and those entries that could not be found. in theory
         #       `not_found` should be empty. but if not, how shall we handle this?
-        return True
+        return r.json()
     else:
-        raise ShowroomError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
