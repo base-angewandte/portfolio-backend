@@ -20,6 +20,7 @@ from core.models import Entry
 from general.models import ShortUUIDField
 
 from .apps import MediaServerConfig
+from .clamav import validate_file_infection
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
 from .validators import validate_license
@@ -114,7 +115,9 @@ def user_directory_path(instance, filename):
 
 class Media(models.Model):
     id = ShortUUIDField(primary_key=True)
-    file = models.FileField(storage=ProtectedFileSystemStorage(), upload_to=user_directory_path)
+    file = models.FileField(
+        storage=ProtectedFileSystemStorage(), upload_to=user_directory_path, validators=[validate_file_infection]
+    )
     type = models.CharField(choices=TYPE_CHOICES, max_length=1, default=OTHER_TYPE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
