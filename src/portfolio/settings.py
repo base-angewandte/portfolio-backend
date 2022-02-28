@@ -720,6 +720,10 @@ ACTIVE_SOURCES = {
 
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
 
+CLAMAV_ENABLED = env.bool('CLAMAV_ENABLED', default=True)
+CLAMAV_TCP_PORT = env.int('CLAMAV_TCP_PORT', default=3310)
+CLAMAV_TCP_ADDR = f'{PROJECT_NAME}-clamav' if DOCKER else 'localhost'
+
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
 
 DOCS_USER = env('DOCS_USER', default=None)
