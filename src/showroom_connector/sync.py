@@ -1,8 +1,12 @@
+import logging
+
 import requests
 
 from django.conf import settings
 
 from . import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
+
+logger = logging.getLogger(__name__)
 
 
 class ShowroomError(Exception):
@@ -61,7 +65,9 @@ def delete_entry(entry):
     if r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 404:
-        raise ShowroomNotFoundError(f'Entry {entry.id} could not be found. 404')
+        # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
+        # because the desired state is already achieved, but something else seems to be off
+        logger.warning(f'Entry {entry.id} could not be deleted because not found in Showroom [404]')
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be deleted: 400: {r.text}')
     elif r.status_code == 204:
@@ -122,7 +128,9 @@ def delete_medium(medium):
     if r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 404:
-        raise ShowroomNotFoundError(f'Medium {medium.id} could not be found. 404')
+        # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
+        # because the desired state is already achieved, but something else seems to be off
+        logger.warning(f'Medium {medium.id} could not be deleted because not found in Showroom [404]')
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be deleted: 400: {r.text}')
     elif r.status_code == 204:
