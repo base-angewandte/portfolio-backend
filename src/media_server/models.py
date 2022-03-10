@@ -442,6 +442,13 @@ def media_post_delete(sender, instance, *args, **kwargs):
         shutil.rmtree(instance.get_protected_assets_path())
     except FileNotFoundError:
         pass
+    # check if both the entry and the medium itself have been published, we also
+    # have to sync this deletion to showroom
+    entry = Entry.objects.get(pk=instance.entry_id)
+    if entry.published and instance.published:
+        queue = django_rq.get_queue('default')
+        queue.enqueue(sync.delete_medium, medium=instance)
+        # TODO: discuss and implement failure handling
 
 
 @receiver(post_delete, sender=Entry)
