@@ -178,7 +178,7 @@ def relation_pre_save(sender, instance, *args, **kwargs):
 def entry_post_save(sender, instance, created, *args, **kwargs):
     queue = django_rq.get_queue('default')
     if instance.published:
-        queue.enqueue(sync.push_entry, entry=instance)
+        entry_sync = queue.enqueue(sync.push_entry, entry=instance)
         # TODO: discuss and implement failure handling
         # now check for all attached media that are also published and push those too
         # TODO: discuss: it would be more efficient to only do this if the published
@@ -188,11 +188,11 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
         media_model = apps.get_model('media_server', 'Media')
         published_media = media_model.objects.filter(entry_id=instance.id, published=True)
         for medium in published_media:
-            queue.enqueue(sync.push_medium, medium=medium)
+            queue.enqueue(sync.push_medium, medium=medium, depends_on=entry_sync)
         # TODO: similar to media also relations would only have to be pushed after
         #       publishing and not on every save
         if instance.from_entries.count():
-            queue.enqueue(sync.push_relations, entry=instance)
+            queue.enqueue(sync.push_relations, entry=instance, depends_on=entry_sync)
     # if the instance was just created but not published, we do nothing. but if its
     # published status (now) is false and it was not just created, we have to delete
     # it from Showroom
