@@ -222,6 +222,7 @@ class Media(models.Model):
                 {
                     'cover': {'gif': self.get_url('cover.gif'), 'jpg': self.get_image()},
                     'playlist': self.get_url('playlist.m3u8'),
+                    'poster': self.get_url('cover-orig.jpg'),
                 }
             )
 
