@@ -102,6 +102,7 @@ def push_medium(medium):
         data['specifics'] = {
             'duration': medium_data['metadata'].get('Duration'),
             'cover': medium_data.get('cover'),
+            'poster': medium_data.get('poster'),
             'playlist': medium_data.get('playlist'),
         }
     elif medium.type == DOCUMENT_TYPE:
