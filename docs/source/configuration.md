@@ -374,9 +374,16 @@ years an account already exists (1 in the first year)).
 
 ### Showroom settings
 
-The following settings are needed if you want to be able to push entries
+The following settings are needed if you want to be able to sync entries
 to a Showroom instance. This feature will only work if you set all of the
-following three settings.
+following settings.
+
+#### `SYNC_TO_SHOWROOM`
+
+Default: False
+
+This setting determines, whether to sync published Portfolio entries to a
+Showroom instance, that is configured by the following parameters.
 
 #### `SHOWROOM_API_BASE`
 
