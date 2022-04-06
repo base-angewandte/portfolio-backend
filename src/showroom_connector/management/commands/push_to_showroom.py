@@ -16,6 +16,10 @@ class Command(BaseCommand):
             'id', type=str, nargs='*', help='The ShortUUID of an entry to push (will be ignored when using --all'
         )
         parser.add_argument('--all', action='store_true', help='Use this to push all published entries to Showroom')
+        parser.add_argument('-l', '--limit', type=int, help='An optional limit to the numbers entries that are pushed')
+        parser.add_argument(
+            '-o', '--offset', type=int, help='An optional offset to first entry in the result set to be pushed'
+        )
 
     def handle(self, *args, **options):
         if None in [settings.SHOWROOM_API_BASE, settings.SHOWROOM_API_KEY, settings.SHOWROOM_REPO_ID]:
@@ -41,6 +45,23 @@ class Command(BaseCommand):
             if not entries:
                 self.stdout.write(self.style.WARNING('No published entries found with provided IDs'))
                 return
+
+        limit = None
+        offset = None
+        if options['limit']:
+            if options['limit'] <= 0:
+                raise CommandError('limit has to be a positive integer')
+            limit = options['limit']
+        if options['offset']:
+            if options['offset'] <= 0:
+                raise CommandError('offset has to be a positive integer')
+            offset = options['offset']
+        if offset and limit is None:
+            entries = entries[offset:]
+        elif limit and offset is None:
+            entries = entries[0:limit]
+        elif limit and offset:
+            entries = entries[offset : limit + offset]
 
         created = []
         updated = []
