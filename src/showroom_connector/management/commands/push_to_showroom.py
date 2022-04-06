@@ -20,6 +20,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '-o', '--offset', type=int, help='An optional offset to first entry in the result set to be pushed'
         )
+        parser.add_argument('-s', '--status', type=int, help='Log a status line after each STATUS entries are pushed.')
 
     def handle(self, *args, **options):
         if None in [settings.SHOWROOM_API_BASE, settings.SHOWROOM_API_KEY, settings.SHOWROOM_REPO_ID]:
@@ -48,6 +49,7 @@ class Command(BaseCommand):
 
         limit = None
         offset = None
+        limited = True
         if options['limit']:
             if options['limit'] <= 0:
                 raise CommandError('limit has to be a positive integer')
@@ -58,14 +60,27 @@ class Command(BaseCommand):
             offset = options['offset']
         if offset and limit is None:
             entries = entries[offset:]
+            limited = True
         elif limit and offset is None:
             entries = entries[0:limit]
+            limited = True
         elif limit and offset:
             entries = entries[offset : limit + offset]
+            limited = True
+
+        total = entries.count() if not limited else len(entries)
+
+        status = None
+        if options['status']:
+            if options['status'] <= 0:
+                raise CommandError('status has to be a positive integer')
+            status = options['status']
+            self.stdout.write(f'[status:] starting to push {total} entries')
 
         created = []
         updated = []
         not_pushed = []
+        count = 0
         for entry in entries:
             result = {}
             try:
@@ -86,6 +101,9 @@ class Command(BaseCommand):
             result_updated = result.get('updated')
             if result_updated:
                 updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
+            count += 1
+            if status and count % status == 0:
+                self.stdout.write(f'[status:] pushed {count} / {total} entries')
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(created)+len(updated)} entries:'))
         self.stdout.write(f'Created: {len(created)}')
@@ -98,6 +116,7 @@ class Command(BaseCommand):
         media_created = []
         media_updated = []
         media_not_pushed = []
+        count = 0
         for entry in entries:
             media = Media.objects.filter(entry_id=entry.id, published=True)
             for medium in media:
@@ -120,6 +139,9 @@ class Command(BaseCommand):
                 result_updated = result.get('updated')
                 if result_updated:
                     media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
+            count += 1
+            if status and count % status == 0:
+                self.stdout.write(f'[status:] pushed media for {count} / {total} entries')
 
         media_pushed = len(media_created) + len(media_updated)
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {media_pushed} media:'))
@@ -132,6 +154,7 @@ class Command(BaseCommand):
         self.stdout.write('Now pushing entry relations')
         relations_created = []
         relations_not_pushed = []
+        count = 0
         for entry in entries:
             result = {}
             try:
@@ -148,6 +171,10 @@ class Command(BaseCommand):
             not_found = result.get('not_found')
             if not_found:
                 relations_not_pushed.extend((entry.id, id) for id in not_found)
+
+            count += 1
+            if status and count % status == 0:
+                self.stdout.write(f'[status:] pushed relations for {count} / {total} entries')
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(relations_created)} relations.'))
         if len(relations_not_pushed) > 0:
