@@ -126,12 +126,14 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license])
+    featured = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=2147483647)
 
     class Meta:
         indexes = [
             models.Index(fields=['entry_id']),
         ]
-        ordering = ['-created']
+        ordering = ['order', '-created']
 
     @property
     def metadata(self):
@@ -204,6 +206,7 @@ class Media(models.Model):
             'type': self.type,
             'original': self.file.url,
             'published': self.published,
+            'featured': self.featured,
             'license': self.license,
         }
         return data
@@ -322,39 +325,40 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id, flat=True, published=None):
+def get_media_for_entry(entry_id, flat: bool = True, published: bool = None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
-    exclude = []
 
-    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+    query = Media.objects.filter(entry_id=entry_id)
     if published is not None:
         query = query.filter(published=published)
 
     for m in query:
-        exclude.append(m.pk)
-        data = m.get_data()
-        data.update({'response_code': 200})
-        ret.append(data)
-
-    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
-    if published is not None:
-        query = query.filter(published=published)
-
-    for m in query:
-        data = m.get_minimal_data()
-        data.update({'response_code': 202})
-        ret.append(data)
+        if m.status == STATUS_CONVERTED:
+            data = m.get_data()
+            data.update({'response_code': 200})
+            ret.append(data)
+        else:
+            data = m.get_minimal_data()
+            data.update({'response_code': 202})
+            ret.append(data)
 
     return ret
 
 
 def get_image_for_entry(entry_id):
-    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED).order_by('created'):
+    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED).order_by(
+        '-featured', 'order', 'created'
+    ):
         if m.get_image():
             return m.get_image()
+
+
+def update_media_order_for_entry(entry_id, order_list):
+    for i, d in enumerate(order_list):
+        Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
 
 
 def get_type_for_mime_type(mime_type):

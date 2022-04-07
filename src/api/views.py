@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import exceptions, permissions, viewsets
+from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, authentication_classes, parser_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -32,7 +32,7 @@ from core.schemas.entries.research_project import ResearchProjectSchema
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
-from media_server.models import get_media_for_entry
+from media_server.models import get_media_for_entry, update_media_order_for_entry
 from media_server.utils import get_free_space_for_user
 
 from .serializers.entry import EntrySerializer
@@ -188,6 +188,39 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
             ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
             return Response(ret)
+        except Entry.DoesNotExist:
+            raise exceptions.NotFound(_('Entry does not exist'))
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+        responses={
+            204: openapi.Response(''),
+            400: openapi.Response('Bad Request'),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Entry not found'),
+        },
+    )
+    @action(detail=True, methods=['post'], url_path='media/order', filter_backends=[], pagination_class=None)
+    def media_order(self, request, pk=None, *args, **kwargs):
+        """Set media order for an entry."""
+
+        try:
+            entry = Entry.objects.get(pk=pk)
+            if entry.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+            # validate request body
+            if not type(request.data) is list or not all(type(i) is dict and 'id' in i for i in request.data):
+                raise exceptions.ValidationError
+            update_media_order_for_entry(entry.pk, request.data)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Entry.DoesNotExist:
             raise exceptions.NotFound(_('Entry does not exist'))
 
