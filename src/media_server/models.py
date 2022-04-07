@@ -359,6 +359,14 @@ def get_image_for_entry(entry_id):
 def update_media_order_for_entry(entry_id, order_list):
     for i, d in enumerate(order_list):
         Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
+    if settings.SYNC_TO_SHOWROOM:
+        entry = Entry.objects.get(pk=entry_id)
+        if entry.published:
+            media = Media.objects.filter(entry_id=entry_id, published=True)
+            queue = django_rq.get_queue('default')
+            for m in media:
+                queue.enqueue(sync.push_medium, medium=m)
+                # TODO: discuss and implement failure handling
 
 
 def get_type_for_mime_type(mime_type):

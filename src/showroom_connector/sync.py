@@ -84,6 +84,8 @@ def push_medium(medium):
         'mime_type': medium.mime_type,
         'exif': medium.exif,
         'license': medium.license,
+        'featured': medium.featured,
+        'order': medium.order,
         'source_repo_media_id': medium.id,
         'source_repo_entry_id': medium.entry_id,
         'specifics': {},
