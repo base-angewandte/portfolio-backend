@@ -8,7 +8,7 @@ import media_server.storages
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('media_server', '0017_auto_20210721_1643'),
+        ('media_server', '0019_new_ids'),
     ]
 
     operations = [
