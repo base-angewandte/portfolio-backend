@@ -23,7 +23,7 @@ def set_new_ids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('media_server', '0018_auto_20220316_1725'),
+        ('media_server', '0018_auto_20211112_1424'),
         ('core', '0017_entry_new_id'),
     ]
 
