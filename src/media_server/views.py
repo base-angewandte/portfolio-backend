@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.static import serve
@@ -122,7 +123,9 @@ class MediaViewSet(viewsets.GenericViewSet):
                         # unset old featured media if a new one is selected
                         if 'featured' in serializer.validated_data and serializer.validated_data['featured']:
                             Media.objects.filter(entry_id=m.entry_id, featured=True).update(featured=False)
-                        Media.objects.filter(pk=m.pk).update(**serializer.validated_data)
+                        serializer.instance = m
+                        serializer.validated_data['modified'] = timezone.now()
+                        serializer.save()
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
