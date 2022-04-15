@@ -95,7 +95,6 @@ importlib-metadata==4.11.3
     #   markdown
     #   pep517
     #   pre-commit
-    #   rdflib
     #   redis
     #   virtualenv
 inflection==0.5.1
@@ -173,8 +172,10 @@ pyyaml==6.0
     #   vcrpy
 rainbow-saddle==0.4.0
     # via -r src/requirements.in
-rdflib==6.1.1
-    # via skosmos-client
+rdflib==5.0.0
+    # via
+    #   -r src/requirements.in
+    #   skosmos-client
 redis==4.2.2
     # via
     #   django-redis
@@ -208,6 +209,7 @@ six==1.16.0
     #   progressbar2
     #   python-cas
     #   python-dateutil
+    #   rdflib
     #   swagger-spec-validator
     #   vcrpy
     #   virtualenv
