@@ -712,6 +712,7 @@ ACTIVE_SOURCES = {
     'materials': 'core.skosmos.get_materials',
     'languages': 'core.skosmos.get_languages',
     'medialicenses': 'core.skosmos.get_media_licenses',
+    'statuses': 'core.skosmos.get_statuses',
     'softwarelicenses': 'core.skosmos.get_software_licenses',
     'texttypes': 'core.skosmos.get_text_types',
     'types': 'core.skosmos.get_entry_types',

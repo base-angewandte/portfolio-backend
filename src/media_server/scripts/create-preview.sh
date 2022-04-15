@@ -15,9 +15,14 @@ fi
 mkdir -p ${target}
 
 if [[ $(head -c 4 "${source}") = "%PDF" ]]; then
-    cp ${source} "${target}/preview.pdf"
+  cp ${source} "${target}/preview.pdf"
 else
-    curl -F "data=@${source}" "${host}/lool/convert-to/pdf" > "${target}/preview.pdf"
+  filename="${source##*/}"
+  extension="${filename##*.}"
+  tmpfile="${target}/preview_tmp.${extension}"
+  cp ${source} ${tmpfile}
+  curl -F "data=@${tmpfile}" "${host}/lool/convert-to/pdf" > "${target}/preview.pdf"
+  rm ${tmpfile}
 fi
 
 convert -density 270 -resize 20% -alpha remove "${target}/preview.pdf[0]" "${target}/preview.jpg"

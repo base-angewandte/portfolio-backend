@@ -176,6 +176,10 @@ def get_roles():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/vocabulary/role')
 
 
+def get_statuses():
+    return fetch_data('http://base.uni-ak.ac.at/vocabulary/collection_portfolio_project_status')
+
+
 def get_software_licenses():
     return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses')
 
@@ -241,6 +245,7 @@ def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.
         .replace('Sammlung', '')
         .replace('Collection', '')
         .replace('JART', '')
+        .replace('INDEX', '')
         .strip()
     )
 

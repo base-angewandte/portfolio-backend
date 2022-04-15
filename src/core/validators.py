@@ -13,7 +13,7 @@ def validate_type(value):
         validate(value, get_type_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
     except SchemaValidationError as e:
         msg = _('Invalid type: %(error)s') % {'error': e.message}  # noqa: B306
-        raise ValidationError(msg)
+        raise ValidationError(msg) from e
 
 
 def validate_keywords(value):
@@ -23,7 +23,7 @@ def validate_keywords(value):
             raise ValidationError(_('Keywords contains duplicate entries'))
     except SchemaValidationError as e:
         msg = _('Invalid keywords: %(error)s') % {'error': e.message}  # noqa: B306
-        raise ValidationError(msg)
+        raise ValidationError(msg) from e
 
 
 def validate_texts(value):
@@ -39,4 +39,4 @@ def validate_texts(value):
                     raise ValidationError(_('Same language is defined multiple times'))
     except SchemaValidationError as e:
         msg = _('Invalid texts: %(error)s') % {'error': e.message}  # noqa: B306
-        raise ValidationError(msg)
+        raise ValidationError(msg) from e

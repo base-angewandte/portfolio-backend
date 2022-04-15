@@ -2,12 +2,77 @@
 
 ## unreleased
 
+### Added
+
+- Send 301 for retrieve requests in EntryViewSet with old entry ids
+
+### Changed
+
+- **BREAKING**: Updated shortuuid to 1.0.1
+- **BREAKING**: Migrated all existing shortuuids to new format
+- **BREAKING**: Migrated all existing media directories
+
+## 1.1.6
+
+### Changed
+
+- New API lists logic
+
 ### Fixed
+
+- Corrected lang parameter for type label in `export_published` management command
+
+## 1.1.5
+
+### Added
+
+- **EXPERIMENTAL**: Added `import_bibtex` management command for importing entries from BibTeX files
+
+## 1.1.4
+
+### Fixed
+
+- Fixed build error due to exiftool.org being down - thanks to Benjamin Höglinger-Stelzer [nefarius]
+
+## 1.1.3
+
+### Changed
+
+- Optimized docker-compose builds
+
+### Fixed
+
+- Fixed error during preview creation of documents containing umlauts
+
+## 1.1.2
+
+### Added
+
+- Added status field to ResearchProjectSchema
+
+### Changed
+
+- New API lists logic
+- Pull docker images before build
+- Updated pre-commit and hooks
+- Clean up docs container after running
+- Returning additional metadata for media that hasn't been converted yet
+- Changed license to required for media objects
+
+### Fixed
+
 - Changed container name in `docker-compose.override.dev-docker.yml` to `portfolio-django`
+
+## 1.1.1
+
+### Added
+
+- Added support for new INDEX vocabulary collections
 
 ## 1.1.0
 
 ### Added
+
 - Changelog beginning with this version
 - Added sphinx documentation and possibility to build it via docker (`make build-docs`) and serve it via django
 - Added additional configuration possibilities via environment variables, see documentation for details
@@ -17,9 +82,9 @@
 - Added possibility to use docker during development
 - Added `pip-compile-upgrade` to Makefile
 - Added layers setting to Pelias
-- Using pyupgrade, black, double-quote-string-fixer, end-of-file-fixer, docformatter, flake8-bugbear, pep8-naming, 
+- Using pyupgrade, black, double-quote-string-fixer, end-of-file-fixer, docformatter, flake8-bugbear, pep8-naming,
   bandit, docker-compose-check and hadolint with pre-commit
-- Added possibility to get detailed results from `/api/v1/entry/{id}/media/` and adapted `get_media_for_entry` 
+- Added possibility to get detailed results from `/api/v1/entry/{id}/media/` and adapted `get_media_for_entry`
   accordingly
 - Added `/api/v1/entry/{id}/data` to API
 - Added `date_created` to relations in API
@@ -43,9 +108,10 @@
 - Stop and delete `media_info_and_convert` jobs if media asset is deleted
 
 ### Changed
+
 - **BREAKING**: CORS variables have been renamed:
-    - `CORS_ORIGIN_WHITELIST` -> `CORS_ALLOWED_ORIGINS`
-    - `CORS_ORIGIN_ALLOW_ALL` -> `CORS_ALLOW_ALL_ORIGINS`
+  - `CORS_ORIGIN_WHITELIST` -> `CORS_ALLOWED_ORIGINS`
+  - `CORS_ORIGIN_ALLOW_ALL` -> `CORS_ALLOW_ALL_ORIGINS`
 - **BREAKING**: Updated vcrpy – your cassettes may need to be re-recorded if you have run tests before
 - Updated requirements
 - Updated collabora/code
@@ -53,21 +119,23 @@
 - Adapted pip configuration in Dockerfile
 - Adapted flake8 configuration
 - Changed from seed-isort-config to isort
-- Use a configuration file for gunicorn 
+- Use a configuration file for gunicorn
 - exiftool is installed from source instead of from package
 - Reduced `failure_ttl` of rq jobs from 1 year to approx. 3 months
 - Changed event icon
 - Changed ExifField to JSONField
-- Changed ugettext_lazy to gettext_lazy 
+- Changed ugettext_lazy to gettext_lazy
 - Complete rewrite of `user_data` and adapted logic
 - Better caching in `skosmos.py`
 - Improved thumbnail creation for videos
 - Improved video conversion
 
 ### Removed
+
 - Removed ExifField
 
 ### Fixed
+
 - Added missing label to "award ceremony" and "funding category"
 - Added fallback for missing role label
 - Correct some mime types

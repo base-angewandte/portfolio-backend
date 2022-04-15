@@ -1,6 +1,5 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-redis:
     image: redis:5.0-alpine
     container_name: portfolio-redis
@@ -117,7 +116,6 @@ services:
       - ./docker/cron/crontab:/tmp/crontab
     network_mode: "none"
     restart: always
-
 
 networks:
   portfolionet:

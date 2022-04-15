@@ -5,6 +5,7 @@ from ..general import (
     get_contributors_field,
     get_contributors_field_for_role,
     get_date_range_field,
+    get_status_field,
     get_string_field,
     get_url_field,
 )
@@ -25,7 +26,8 @@ class ResearchProjectSchema(BaseSchema):
     funding_category = get_string_field(get_preflabel_lazy('funding_category'), {'order': 4})
     contributors = get_contributors_field({'order': 5})
     date_range = get_date_range_field({'order': 6, 'field_format': 'full'})
-    url = get_url_field({'order': 7})
+    status = get_status_field({'order': 7})
+    url = get_url_field({'order': 8, 'field_format': 'half'})
 
     def year_display(self, data):
         if data.get('date_range'):
