@@ -1,5 +1,17 @@
 # Changelog
 
+## unreleased
+
+### Added
+
+- Send 301 for retrieve requests in EntryViewSet with old entry ids
+
+### Changed
+
+- **BREAKING**: Updated shortuuid to 1.0.1
+- **BREAKING**: Migrated all existing shortuuids to new format
+- **BREAKING**: Migrated all existing media directories
+
 ## 1.1.6
 
 ### Changed
