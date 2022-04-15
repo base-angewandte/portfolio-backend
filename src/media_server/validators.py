@@ -15,7 +15,7 @@ def validate_license(value):
         validate(value, get_license_jsonschema(), cls=Draft4Validator, format_checker=FormatChecker())
     except SchemaValidationError as e:
         msg = _('Invalid license: %(error)s') % {'error': e.message}  # noqa: B306
-        raise ValidationError(msg)
+        raise ValidationError(msg) from e
 
     license_set = {json.dumps(d, sort_keys=True) for d in get_media_licenses()}
     if json.dumps(value, sort_keys=True) not in license_set:

@@ -8,7 +8,7 @@ The REST API can be used to display published content from base Portfolio.
 
 An access token is needed which has to be used as bearer authentication token in header of all requests.
 
-**Header Format:** Authorization Bearer <access_token>
+**Header Format:** Authorization Bearer \<access_token>
 
 ```{note}
 The access token can be created via management command: `python manage.py createapiuser <user_name>`
@@ -22,11 +22,11 @@ Fetch all published Portfolio entries of a user in which the user has any role.
 
 #### Request
 
-Parameter | Type | Required | In | Description
---- | --- | --- | --- | ---
-Authorization | Bearer | yes | Header | Access Token
-Accept-Language | String | no | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en
-UUID | String | yes | Path | UUID of user
+| Parameter       | Type   | Required | In     | Description                                                                        |
+| --------------- | ------ | -------- | ------ | ---------------------------------------------------------------------------------- |
+| Authorization   | Bearer | yes      | Header | Access Token                                                                       |
+| Accept-Language | String | no       | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en |
+| UUID            | String | yes      | Path   | UUID of user                                                                       |
 
 #### Response
 
@@ -34,20 +34,21 @@ UUID | String | yes | Path | UUID of user
 
 ##### Success
 
-Status | Description
---- | ---
-200 OK |
+| Status | Description |
+| ------ | ----------- |
+| 200 OK |             |
 
-Parameter | Type | Description
---- | --- | ---
-entry_labels | Object | Object containing localized labels of entries in format `key: label`.
-data | Array | Array containing all results as objects.
+| Parameter    | Type   | Description                                                           |
+| ------------ | ------ | --------------------------------------------------------------------- |
+| entry_labels | Object | Object containing localized labels of entries in format `key: label`. |
+| data         | Array  | Array containing all results as objects.                              |
+
 - label | String | Label of category.
 - data | Array | Array containing the entries or subcategories with entries.
 
 ###### Examples
 
-`GET /api/v1/user/7F4EF7F05E98435FAD27B40EC6DEEACC/data/`  
+`GET /api/v1/user/7F4EF7F05E98435FAD27B40EC6DEEACC/data/`\
 `Accept-Language: de`
 
 ```json
@@ -217,10 +218,10 @@ data | Array | Array containing all results as objects.
 
 ##### Error
 
-Status | Description
---- | ---
-403 FORBIDDEN | Access token invalid.
-404 NOT FOUND | User not found.
+| Status        | Description           |
+| ------------- | --------------------- |
+| 403 FORBIDDEN | Access token invalid. |
+| 404 NOT FOUND | User not found.       |
 
 ## User Entry Data
 
@@ -230,12 +231,12 @@ Fetch detailed information for a specific entry of a user.
 
 #### Request
 
-Parameter | Type | Required | In | Description
---- | --- | --- | --- | ---
-Authorization | Bearer | yes | Header | Access Token
-Accept-Language | String | no | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en
-UUID | String | yes | Path | UUID of user
-Entry ID | String | yes | Path | ID of entry
+| Parameter       | Type   | Required | In     | Description                                                                        |
+| --------------- | ------ | -------- | ------ | ---------------------------------------------------------------------------------- |
+| Authorization   | Bearer | yes      | Header | Access Token                                                                       |
+| Accept-Language | String | no       | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en |
+| UUID            | String | yes      | Path   | UUID of user                                                                       |
+| Entry ID        | String | yes      | Path   | ID of entry                                                                        |
 
 #### Response
 
@@ -243,35 +244,35 @@ Entry ID | String | yes | Path | ID of entry
 
 ##### Success
 
-Status | Description
---- | ---
-200 OK |
+| Status | Description |
+| ------ | ----------- |
+| 200 OK |             |
 
-Parameter | Type | Description
---- | --- | ---
-id | String | ID of entry
-data | Array | Array containing all data as objects.
-- label | String | Label of data item.
-- value | String/Array | String or Array containing the value/s of this data item.
-media | Array | Array containing all published media of this entry.
-- id | String | ID of media
-- type | String[1] | Type of media:<br>a … audio<br>d … document<br>i … image<br>v … video<br>x … other
-- original | URL Path | Path to originally uploaded file.
-- published | Boolean | Boolean indicating if media is published.
-- license | String | License of media
-- mp3 | URL Path | Path to mp3 (only for: audio)
-- thumbnail | URL Path | Path to thumbnail image (only for: document, image)
-- pdf | URL Path | Path to pdf (only for: document)
-- previews | Array | Array containing different sizes for inclusion as responsive image (only for: image)
-- cover | Object | Object containing paths to video cover in two formats:<br>gif … animated gif<br>jpg … static jpg<br><br>(only for: video)
-- playlist | URL Path | Path to hls m3u8 playlist (only for: video)
-relations | Object | Object with parents and children relations.
-- parents | Array | Array of parents containing objects with `id` and `title`.
-- to | Array | Array of children containing objects with `id` and `title`.
+| Parameter   | Type         | Description                                                                                                               |
+| ----------- | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| id          | String       | ID of entry                                                                                                               |
+| data        | Array        | Array containing all data as objects.                                                                                     |
+| - label     | String       | Label of data item.                                                                                                       |
+| - value     | String/Array | String or Array containing the value/s of this data item.                                                                 |
+| media       | Array        | Array containing all published media of this entry.                                                                       |
+| - id        | String       | ID of media                                                                                                               |
+| - type      | String\[1\]  | Type of media:<br>a … audio<br>d … document<br>i … image<br>v … video<br>x … other                                        |
+| - original  | URL Path     | Path to originally uploaded file.                                                                                         |
+| - published | Boolean      | Boolean indicating if media is published.                                                                                 |
+| - license   | String       | License of media                                                                                                          |
+| - mp3       | URL Path     | Path to mp3 (only for: audio)                                                                                             |
+| - thumbnail | URL Path     | Path to thumbnail image (only for: document, image)                                                                       |
+| - pdf       | URL Path     | Path to pdf (only for: document)                                                                                          |
+| - previews  | Array        | Array containing different sizes for inclusion as responsive image (only for: image)                                      |
+| - cover     | Object       | Object containing paths to video cover in two formats:<br>gif … animated gif<br>jpg … static jpg<br><br>(only for: video) |
+| - playlist  | URL Path     | Path to hls m3u8 playlist (only for: video)                                                                               |
+| relations   | Object       | Object with parents and children relations.                                                                               |
+| - parents   | Array        | Array of parents containing objects with `id` and `title`.                                                                |
+| - to        | Array        | Array of children containing objects with `id` and `title`.                                                               |
 
 ###### Examples
 
-`GET /api/v1/user/7F4EF7F05E98435FAD27B40EC6DEEACC/data/7GhrxScV86mMXdn4Ar8scf/`  
+`GET /api/v1/user/7F4EF7F05E98435FAD27B40EC6DEEACC/data/7GhrxScV86mMXdn4Ar8scf/`\
 `Accept-Language: de`
 
 ```json
@@ -288,10 +289,7 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Schlagwörter",
-      "value": [
-        "Kulturgeschichte",
-        "Kunstwissenschaften"
-      ]
+      "value": ["Kulturgeschichte", "Kunstwissenschaften"]
     },
     {
       "label": "Texte",
@@ -304,15 +302,11 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Autor*innen",
-      "value":[
-        "Florian Bettel"
-      ]
+      "value": ["Florian Bettel"]
     },
     {
       "label": "Verlage",
-      "value": [
-        "Technisches Museum Wien"
-      ]
+      "value": ["Technisches Museum Wien"]
     },
     {
       "label": "Datum",
@@ -320,9 +314,7 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Ort",
-      "value": [
-        "Wien (A)"
-      ]
+      "value": ["Wien (A)"]
     },
     {
       "label": "URL",
@@ -397,10 +389,10 @@ relations | Object | Object with parents and children relations.
 
 ##### Error
 
-Status | Description
---- | ---
-403 FORBIDDEN | Access token invalid.
-404 NOT FOUND | User or Entry not found.
+| Status        | Description              |
+| ------------- | ------------------------ |
+| 403 FORBIDDEN | Access token invalid.    |
+| 404 NOT FOUND | User or Entry not found. |
 
 ## Entry Data
 
@@ -410,11 +402,11 @@ Fetch detailed information for a specific entry.
 
 #### Request
 
-Parameter | Type | Required | In | Description
---- | --- | --- | --- | ---
-Authorization | Bearer | yes | Header | Access Token
-Accept-Language | String | no | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en
-Entry ID | String | yes | Path | ID of entry
+| Parameter       | Type   | Required | In     | Description                                                                        |
+| --------------- | ------ | -------- | ------ | ---------------------------------------------------------------------------------- |
+| Authorization   | Bearer | yes      | Header | Access Token                                                                       |
+| Accept-Language | String | no       | Header | Defines the language of the response.<br><br>Allowed values: de, en<br>Default: en |
+| Entry ID        | String | yes      | Path   | ID of entry                                                                        |
 
 #### Response
 
@@ -422,35 +414,35 @@ Entry ID | String | yes | Path | ID of entry
 
 ##### Success
 
-Status | Description
---- | ---
-200 OK |
+| Status | Description |
+| ------ | ----------- |
+| 200 OK |             |
 
-Parameter | Type | Description
---- | --- | ---
-id | String | ID of entry
-data | Array | Array containing all data as objects.
-- label | String | Label of data item.
-- value | String/Array | String or Array containing the value/s of this data item.
-media | Array | Array containing all published media of this entry.
-- id | String | ID of media
-- type | String[1] | Type of media:<br>a … audio<br>d … document<br>i … image<br>v … video<br>x … other
-- original | URL Path | Path to originally uploaded file.
-- published | Boolean | Boolean indicating if media is published.
-- license | String | License of media
-- mp3 | URL Path | Path to mp3 (only for: audio)
-- thumbnail | URL Path | Path to thumbnail image (only for: document, image)
-- pdf | URL Path | Path to pdf (only for: document)
-- previews | Array | Array containing different sizes for inclusion as responsive image (only for: image)
-- cover | Object | Object containing paths to video cover in two formats:<br>gif … animated gif<br>jpg … static jpg<br><br>(only for: video)
-- playlist | URL Path | Path to hls m3u8 playlist (only for: video)
-relations | Object | Object with parents and children relations.
-- parents | Array | Array of parents containing objects with `id` and `title`.
-- to | Array | Array of children containing objects with `id` and `title`.
+| Parameter   | Type         | Description                                                                                                               |
+| ----------- | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| id          | String       | ID of entry                                                                                                               |
+| data        | Array        | Array containing all data as objects.                                                                                     |
+| - label     | String       | Label of data item.                                                                                                       |
+| - value     | String/Array | String or Array containing the value/s of this data item.                                                                 |
+| media       | Array        | Array containing all published media of this entry.                                                                       |
+| - id        | String       | ID of media                                                                                                               |
+| - type      | String\[1\]  | Type of media:<br>a … audio<br>d … document<br>i … image<br>v … video<br>x … other                                        |
+| - original  | URL Path     | Path to originally uploaded file.                                                                                         |
+| - published | Boolean      | Boolean indicating if media is published.                                                                                 |
+| - license   | String       | License of media                                                                                                          |
+| - mp3       | URL Path     | Path to mp3 (only for: audio)                                                                                             |
+| - thumbnail | URL Path     | Path to thumbnail image (only for: document, image)                                                                       |
+| - pdf       | URL Path     | Path to pdf (only for: document)                                                                                          |
+| - previews  | Array        | Array containing different sizes for inclusion as responsive image (only for: image)                                      |
+| - cover     | Object       | Object containing paths to video cover in two formats:<br>gif … animated gif<br>jpg … static jpg<br><br>(only for: video) |
+| - playlist  | URL Path     | Path to hls m3u8 playlist (only for: video)                                                                               |
+| relations   | Object       | Object with parents and children relations.                                                                               |
+| - parents   | Array        | Array of parents containing objects with `id` and `title`.                                                                |
+| - to        | Array        | Array of children containing objects with `id` and `title`.                                                               |
 
 ###### Examples
 
-`GET /api/v1/entry/7GhrxScV86mMXdn4Ar8scf/data/`  
+`GET /api/v1/entry/7GhrxScV86mMXdn4Ar8scf/data/`\
 `Accept-Language: de`
 
 ```json
@@ -467,10 +459,7 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Schlagwörter",
-      "value": [
-        "Kulturgeschichte",
-        "Kunstwissenschaften"
-      ]
+      "value": ["Kulturgeschichte", "Kunstwissenschaften"]
     },
     {
       "label": "Texte",
@@ -483,15 +472,11 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Autor*innen",
-      "value":[
-        "Florian Bettel"
-      ]
+      "value": ["Florian Bettel"]
     },
     {
       "label": "Verlage",
-      "value": [
-        "Technisches Museum Wien"
-      ]
+      "value": ["Technisches Museum Wien"]
     },
     {
       "label": "Datum",
@@ -499,9 +484,7 @@ relations | Object | Object with parents and children relations.
     },
     {
       "label": "Ort",
-      "value": [
-        "Wien (A)"
-      ]
+      "value": ["Wien (A)"]
     },
     {
       "label": "URL",
@@ -576,10 +559,10 @@ relations | Object | Object with parents and children relations.
 
 ##### Error
 
-Status | Description
---- | ---
-403 FORBIDDEN | Access token invalid.
-404 NOT FOUND | User or Entry not found.
+| Status        | Description              |
+| ------------- | ------------------------ |
+| 403 FORBIDDEN | Access token invalid.    |
+| 404 NOT FOUND | User or Entry not found. |
 
 <style>
 table {

@@ -1,0 +1,128 @@
+# Hide nginx version information.
+server_tokens off;
+
+tcp_nopush on;
+tcp_nodelay on;
+
+gzip on;
+gzip_disable "msie6";
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 6;
+gzip_http_version 1.1;
+gzip_min_length 1000;
+gzip_types
+    application/atom+xml
+    application/javascript
+    application/json
+    application/ld+json
+    application/manifest+json
+    application/rss+xml
+    application/vnd.geo+json
+    application/vnd.ms-fontobject
+    application/x-javascript
+    application/x-font-ttf
+    application/x-web-app-manifest+json
+    application/xhtml+xml
+    application/xml
+    font/opentype
+    image/bmp
+    image/svg+xml
+    image/x-icon
+    text/cache-manifest
+    text/css
+    text/javascript
+    text/plain
+    text/vcard
+    text/vnd.rim.location.xloc
+    text/vtt
+    text/x-component
+    text/x-cross-domain-policy
+    text/xml;
+
+proxy_cache_path /var/www/imgcache levels=1 keys_zone=resized:1m max_size=256m;
+limit_req_zone "1" zone=2persec:32k rate=2r/s;
+
+upstream django {
+  server portfolio-django:8200 fail_timeout=0;
+}
+
+server {
+  listen 80;
+
+  merge_slashes off;
+
+  client_max_body_size 4G;
+
+  server_name localhost;
+
+  keepalive_timeout 300s;
+
+  location = /favicon.ico { access_log off; log_not_found off; }
+
+  location /m/ {
+    alias /assets/media/;
+  }
+
+  location /s/ {
+    alias /assets/static/;
+  }
+
+  location /internal/ {
+    internal;
+    sendfile on;
+    sendfile_max_chunk 512k;
+    aio threads;
+    alias /assets/protected/;
+  }
+
+  location ~ ^/(resize|crop)/ {
+    internal;
+    proxy_pass http://127.0.0.1:9001;
+    proxy_cache resized;
+    proxy_cache_valid 180m;
+  }
+
+  location ~ ^/(p|api|autosuggest|accounts|da)/ {
+    proxy_pass http://django;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port 80;
+
+    proxy_read_timeout 300s;
+
+    proxy_redirect off;
+  }
+
+  location / {
+      alias /portfolio-frontend/;
+      try_files $uri $uri/ /index.html;
+  }
+}
+
+server {
+    listen 9001;
+    allow 127.0.0.1;
+    deny all;
+    limit_req zone=2persec burst=10;
+
+    location ~* ^/resize/([\d\-]+)/([\d\-]+)/(.+)$ {
+        alias /assets/protected/$3;
+        image_filter_buffer 10M;
+        image_filter resize $1 $2;
+    }
+
+    location ~* ^/crop/([\d\-]+)/([\d\-]+)/(.+)$ {
+        alias /assets/protected/$3;
+        image_filter_buffer 10M;
+        image_filter crop $1 $2;
+    }
+}

@@ -8,9 +8,10 @@ def is_allowed(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         try:
             path_dict = kwargs['path'].split('/')
-            path_user_username = decode_user_hash(path_dict[0])
+            delta = 3 if path_dict[0] in ('resize', 'crop') else 0
+            path_user_username = decode_user_hash(path_dict[0 + delta])
             if (request.user and request.user.username == path_user_username) or Media.objects.get(
-                id=path_dict[1]
+                id=path_dict[1 + delta]
             ).published:
                 return view_func(request, *args, **kwargs)
         except IndexError:

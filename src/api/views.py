@@ -19,16 +19,21 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.cache import cache
 from django.db.models import Max, Q
+from django.http import Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, gettext_lazy as _
 
 from core.models import Entry, Relation
 from core.schemas import ACTIVE_TYPES_LIST, get_jsonschema, get_schema
+from core.schemas.entries.audio import AudioSchema
 from core.schemas.entries.conference import ConferenceSchema
+from core.schemas.entries.conference_contribution import ConferenceContributionSchema
 from core.schemas.entries.document import TYPES as DOCUMENT_TYPES, DocumentSchema
 from core.schemas.entries.event import EventSchema
+from core.schemas.entries.exhibition import ExhibitionSchema
 from core.schemas.entries.research_project import ResearchProjectSchema
+from core.schemas.entries.video import VideoSchema
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
@@ -163,6 +168,18 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Http404 as nfe:
+            reverse_pk = kwargs.get('pk', '')[::-1]
+            if self.get_queryset().filter(pk=reverse_pk).exists():
+                return Response(reverse_pk, status=301)
+            else:
+                raise nfe
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -188,8 +205,8 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
             ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
             return Response(ret)
-        except Entry.DoesNotExist:
-            raise exceptions.NotFound(_('Entry does not exist'))
+        except Entry.DoesNotExist as e:
+            raise exceptions.NotFound(_('Entry does not exist')) from e
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -341,8 +358,8 @@ def user_data(request, pk=None, *args, **kwargs):
 
     try:
         user = UserModel.objects.get(username=pk)
-    except UserModel.DoesNotExist:
-        raise exceptions.NotFound(_('User does not exist'))
+    except UserModel.DoesNotExist as e:
+        raise exceptions.NotFound(_('User does not exist')) from e
 
     lang = get_language() or 'en'
 
@@ -422,8 +439,12 @@ def user_data(request, pk=None, *args, **kwargs):
 
     document_schema = DocumentSchema()
     conference_schema = ConferenceSchema()
+    conference_contribution_schema = ConferenceContributionSchema()
     event_schema = EventSchema()
     research_project_schema = ResearchProjectSchema()
+    audio_schema = AudioSchema()
+    video_schema = VideoSchema()
+    exhibition_schema = ExhibitionSchema()
     publications_label = get_altlabel_collection('collection_document_publication', lang=lang)
     monographs_label = get_altlabel_collection('collection_monograph', lang=lang)
     monographs_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_monograph')
@@ -475,11 +496,11 @@ def user_data(request, pk=None, *args, **kwargs):
     teaching_label = get_altlabel_collection('collection_teaching', lang=lang)
     teaching_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_teaching')
     teaching_data = []
-    conferences_symposiums_label = get_altlabel_collection('collection_conference_symposium', lang=lang)
-    conferences_symposiums_types = get_collection_members(
+    conferences_symposia_label = get_altlabel_collection('collection_conference_symposium', lang=lang)
+    conferences_symposia_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference'
     )
-    conferences_symposiums_data = []
+    conferences_symposia_data = []
     conference_contributions_label = get_altlabel_collection('collection_conference_contribution', lang=lang)
     conference_contributions_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution'
@@ -504,15 +525,15 @@ def user_data(request, pk=None, *args, **kwargs):
     education_qualifications_data = []
     functions_practice_label = get_altlabel_collection('collection_functions_practice', lang=lang)
     events_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_event')
-    visual_and_verbal_presentations_label = get_altlabel_collection('collection_visual_verbal_presentation', lang=lang)
-    visual_and_verbal_presentations_types = get_collection_members(
-        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_visual_verbal_presentation'
-    )
-    visual_and_verbal_presentations_data = []
     memberships_label = get_altlabel_collection('collection_membership ', lang=lang)
     memberships_data = []
     expert_functions_label = get_altlabel_collection('collection_expert_function ', lang=lang)
     expert_functions_data = []
+    journalistic_activity_label = get_altlabel_collection('collection_journalistic_activity ', lang=lang)
+    journalistic_activity_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_journalistic_activity'
+    )
+    journalistic_activity_data = []
     general_functions_practice_label = get_altlabel_collection('general_function_and_practice', lang=lang)
     general_functions_practice_data = []
     festivals_label = get_altlabel_collection('collection_festival', lang=lang)
@@ -524,6 +545,28 @@ def user_data(request, pk=None, *args, **kwargs):
     performances_label = get_altlabel_collection('collection_performance', lang=lang)
     performances_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_performance')
     performances_data = []
+    science_to_public_label = get_altlabel_collection('collection_science_to_public', lang=lang)
+    science_to_public_data = []
+    public_appearance_label = get_altlabel_collection('collection_public_appearance', lang=lang)
+    public_appearance_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_public_appearance'
+    )
+    public_appearance_data = []
+    mediation_label = get_altlabel_collection('collection_mediation', lang=lang)
+    mediation_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_mediation')
+    mediation_data = []
+    visual_and_verbal_presentations_label = get_altlabel_collection('collection_visual_verbal_presentation', lang=lang)
+    visual_and_verbal_presentations_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_visual_verbal_presentation'
+    )
+    visual_and_verbal_presentations_data = []
+    general_activity_science_to_public_label = get_altlabel_collection(
+        'collection_general_activity_science_to_public', lang=lang
+    )
+    general_activity_science_to_public_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_general_activity_science_to_public'
+    )
+    general_activity_science_to_public_data = []
     sculptures_label = get_altlabel_collection('collection_sculpture', lang=lang)
     sculptures_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture')
     sculptures_data = []
@@ -540,9 +583,175 @@ def user_data(request, pk=None, *args, **kwargs):
 
     for e in published_entries:
         entry_type = e.type.get('source')
-        # Publications
+
         if entry_type in DOCUMENT_TYPES:
             e_data = document_schema.load(e.data).data
+        elif entry_type in conferences_symposia_types:
+            e_data = conference_schema.load(e.data).data
+        elif entry_type in events_types:
+            e_data = event_schema.load(e.data).data
+        elif entry_type in research_projects_types:
+            e_data = research_project_schema.load(e.data).data
+        elif entry_type in conference_contributions_types:
+            e_data = conference_contribution_schema.load(e.data).data
+        elif entry_type in audios_types:
+            e_data = audio_schema.load(e.data).data
+        elif entry_type in videos_types:
+            e_data = video_schema.load(e.data).data
+        elif entry_type in exhibitions_types:
+            e_data = exhibition_schema.load(e.data).data
+        else:
+            e_data = None
+
+        # science to public
+        #
+        # public appearances
+        if (
+            entry_type in public_appearance_types
+            or (
+                entry_type
+                in (
+                    # conference types
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/discussion',
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/panel_discussion',
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/roundtable',
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/panel',
+                )
+                and e_data.contributors is not None
+                and any(
+                    i.source == user.username
+                    and i.roles is not None
+                    and any(
+                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/discussion'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/panelist'
+                        for r in i.roles
+                    )
+                    for i in e_data.contributors
+                )
+            )
+            or (
+                # conference contribution type
+                entry_type == 'http://base.uni-ak.ac.at/portfolio/taxonomy/recitation'
+                and e_data.contributors is not None
+                and any(
+                    i.source == user.username
+                    and i.roles is not None
+                    and any(
+                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/reading'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performing_artist'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/artist'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performance'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/presentation'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speech'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/lecturer'
+                        for r in i.roles
+                    )
+                    for i in e_data.contributors
+                )
+            )
+            or (
+                entry_type
+                in (
+                    # event types
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/authors_presentation',
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/book_presentation',
+                )
+                and e_data.contributors is not None
+                and any(
+                    i.source == user.username
+                    and i.roles is not None
+                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author' for r in i.roles)
+                    for i in e_data.contributors
+                )
+            )
+            or (
+                # document, event, conference, audio, film/video types
+                entry_type in journalistic_activity_types
+                and e_data.contributors is not None
+                and any(
+                    i.source == user.username
+                    and i.roles is not None
+                    and any(
+                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mention'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/talk'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution'
+                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewee'
+                        for r in i.roles
+                    )
+                    for i in e_data.contributors
+                )
+            )
+        ):
+            public_appearance_data.append(entry_to_data(e))
+            continue
+
+        # mediation
+        if (
+            # event, exhibition, conference types
+            entry_type in mediation_types
+            and e_data.contributors is not None
+            and any(
+                i.source == user.username
+                and i.roles is not None
+                and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mediation' for r in i.roles)
+                for i in e_data.contributors
+            )
+        ):
+            mediation_data.append(entry_to_data(e))
+            continue
+
+        # visual and verbal presentations
+        if entry_type in visual_and_verbal_presentations_types:
+            visual_and_verbal_presentations_data.append(entry_to_data(e))
+            continue
+
+        # general activities science to public
+        if entry_type in general_activity_science_to_public_types:
+            general_activity_science_to_public_data.append(entry_to_data(e))
+            continue
+
+        # journalistic activity
+        if (
+            # document, event, conference, audio, film/video types
+            entry_type in journalistic_activity_types
+            and (
+                (
+                    hasattr(e_data, 'authors')
+                    and e_data.authors is not None
+                    and any(i.source == user.username for i in e_data.authors)
+                )
+                or (
+                    hasattr(e_data, 'editors')
+                    and e_data.editors is not None
+                    and any(i.source == user.username for i in e_data.editors)
+                )
+                or (
+                    e_data.contributors is not None
+                    and any(
+                        i.source == user.username
+                        and i.roles is not None
+                        and any(
+                            r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editing'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewer'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/photography'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
+                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/moderation'
+                            for r in i.roles
+                        )
+                        for i in e_data.contributors
+                    )
+                )
+            )
+        ):
+            journalistic_activity_data.append(entry_to_data(e))
+            continue
+
+        # Publications
+        if entry_type in DOCUMENT_TYPES:
             # Monographs
             if (
                 entry_type in monographs_types
@@ -550,11 +759,22 @@ def user_data(request, pk=None, *args, **kwargs):
                 and any(i.source == user.username for i in e_data.authors)
             ):
                 monographs_data.append(entry_to_data(e))
-            # Composite Volumes
+            # Edited Books
             elif (
                 entry_type in composite_volumes_types
-                and e_data.editors is not None
-                and any(i.source == user.username for i in e_data.editors)
+                and (e_data.editors is not None and any(i.source == user.username for i in e_data.editors))
+                or (
+                    e_data.contributors is not None
+                    and any(
+                        i.source == user.username
+                        and i.roles is not None
+                        and any(
+                            r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/series_and_journal_editorship'
+                            for r in i.roles
+                        )
+                        for i in e_data.contributors
+                    )
+                )
             ):
                 composite_volumes_data.append(entry_to_data(e))
             # Articles
@@ -597,8 +817,7 @@ def user_data(request, pk=None, *args, **kwargs):
             # General Documents/Publications
             else:
                 general_documents_publications_data.append(entry_to_data(e))
-        elif entry_type in conferences_symposiums_types:
-            e_data = conference_schema.load(e.data).data
+        elif entry_type in conferences_symposia_types:
             # Teaching
             if (
                 entry_type in teaching_types + education_qualifications_types
@@ -618,22 +837,23 @@ def user_data(request, pk=None, *args, **kwargs):
                 )
             ):
                 education_qualifications_data.append(entry_to_data(e))
-            # Conferences & Symposiums
+            # Conferences & Symposia
             else:
-                conferences_symposiums_data.append(entry_to_data(e))
+                conferences_symposia_data.append(entry_to_data(e))
         elif entry_type in events_types:
-            e_data = event_schema.load(e.data).data
-            # Visual and verbal presentations
-            if entry_type in visual_and_verbal_presentations_types:
-                visual_and_verbal_presentations_data.append(entry_to_data(e))
             # Memberships
-            elif e_data.contributors is not None and any(
+            if e_data.contributors is not None and any(
                 i.source == user.username
                 and i.roles is not None
                 and any(
                     r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/member'
                     or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_member'
                     or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisory_board'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/commissions_boards'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/appointment_committee'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/jury'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/chair'
+                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_of_directors'
                     for r in i.roles
                 )
                 for i in e_data.contributors
@@ -656,7 +876,6 @@ def user_data(request, pk=None, *args, **kwargs):
                 general_functions_practice_data.append(entry_to_data(e))
         # Research Projects
         elif entry_type in research_projects_types:
-            e_data = research_project_schema.load(e.data).data
             if (
                 e.type.get('source')
                 == 'http://base.uni-ak.ac.at/portfolio/taxonomy/teaching_project_teaching_research_project'
@@ -742,11 +961,21 @@ def user_data(request, pk=None, *args, **kwargs):
     for lbl, d in [
         (memberships_label, memberships_data),
         (expert_functions_label, expert_functions_data),
-        (visual_and_verbal_presentations_label, visual_and_verbal_presentations_data),
+        (journalistic_activity_label, journalistic_activity_data),
         (general_functions_practice_label, general_functions_practice_data),
     ]:
         if d:
             functions_practice_data.append(to_data_dict(lbl, d))
+
+    # Science to Public
+    for lbl, d in [
+        (public_appearance_label, public_appearance_data),
+        (mediation_label, mediation_data),
+        (visual_and_verbal_presentations_label, visual_and_verbal_presentations_data),
+        (general_activity_science_to_public_label, general_activity_science_to_public_data),
+    ]:
+        if d:
+            science_to_public_data.append(to_data_dict(lbl, d))
 
     # Create return data in desired order
     for lbl, d, sort in (
@@ -756,7 +985,7 @@ def user_data(request, pk=None, *args, **kwargs):
         (fellowships_visiting_affiliations_label, fellowships_visiting_affiliations_data, True),
         (exhibitions_label, exhibitions_data, True),
         (teaching_label, teaching_collected_data, False),
-        (conferences_symposiums_label, conferences_symposiums_data, True),
+        (conferences_symposia_label, conferences_symposia_data, True),
         (conference_contributions_label, conference_contributions_data, True),
         (architectures_label, architectures_data, True),
         (audios_label, audios_data, True),
@@ -767,6 +996,7 @@ def user_data(request, pk=None, *args, **kwargs):
         (festivals_label, festivals_data, True),
         (images_label, images_data, True),
         (performances_label, performances_data, True),
+        (science_to_public_label, science_to_public_data, False),
         (sculptures_label, sculptures_data, True),
         (software_label, software_data, True),
         (videos_label, videos_data, True),
@@ -815,13 +1045,13 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 
     try:
         user = UserModel.objects.get(username=pk)
-    except UserModel.DoesNotExist:
-        raise exceptions.NotFound(_('User does not exist'))
+    except UserModel.DoesNotExist as e:
+        raise exceptions.NotFound(_('User does not exist')) from e
 
     try:
         e = Entry.objects.get(pk=entry, owner=user, published=True)
-    except Entry.DoesNotExist:
-        raise exceptions.NotFound(_('Entry does not exist'))
+    except Entry.DoesNotExist as e:
+        raise exceptions.NotFound(_('Entry does not exist')) from e
 
     ret = e.data_display
     ret['media'] = get_media_for_entry_public(entry)
@@ -849,8 +1079,8 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
 def entry_data(request, pk=None, *args, **kwargs):
     try:
         e = Entry.objects.get(pk=pk, published=True)
-    except Entry.DoesNotExist:
-        raise exceptions.NotFound(_('Entry does not exist'))
+    except Entry.DoesNotExist as e:
+        raise exceptions.NotFound(_('Entry does not exist')) from e
 
     ret = e.data_display
     ret['media'] = get_media_for_entry_public(pk)
