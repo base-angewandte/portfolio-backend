@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('media_server', '0018_auto_20211112_1424'),
+        ('media_server', '0020_auto_20220316_1725'),
     ]
 
     operations = [

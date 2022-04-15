@@ -42,7 +42,12 @@ def protected_view(request, path, server):
         if as_download:
             response['Content-Disposition'] = f'attachment; filename={basename(path)}'
 
-        response['X-Accel-Redirect'] = join(settings.PROTECTED_MEDIA_LOCATION, path).encode('utf8')
+        if path.startswith(('resize', 'crop')):
+            root = settings.FORCE_SCRIPT_NAME or '/'
+        else:
+            root = settings.PROTECTED_MEDIA_LOCATION
+
+        response['X-Accel-Redirect'] = join(root, path).encode('utf8')
         return response
 
     elif server == 'django':
