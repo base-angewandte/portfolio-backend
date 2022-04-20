@@ -1,11 +1,11 @@
 import django_rq
 
-from django.apps import apps
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from core.models import Entry, Relation
+from media_server.models import STATUS_CONVERTED, Media
 
 from . import sync
 
@@ -22,8 +22,7 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
             #       status itself has changed (vs. all the time anything in an already
             #       published entry was changed), but we would need to write our own
             #       update function in the serializer, to set the update_fields in kwargs
-            media_model = apps.get_model('media_server', 'Media')
-            published_media = media_model.objects.filter(entry_id=instance.id, published=True)
+            published_media = Media.objects.filter(entry_id=instance.id, published=True, status=STATUS_CONVERTED)
             for medium in published_media:
                 queue.enqueue(sync.push_medium, medium=medium, depends_on=entry_sync)
             # TODO: similar to media also relations would only have to be pushed after
