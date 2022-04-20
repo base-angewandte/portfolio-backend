@@ -29,6 +29,10 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
             #       publishing and not on every save
             if instance.from_entries.count():
                 queue.enqueue(sync.push_relations, entry=instance, depends_on=entry_sync)
+            # TODO: this doesn't seem very performant, adapt Showroom API to be able
+            #       to push relations in both directions
+            for entry in instance.to_entries.all():
+                queue.enqueue(sync.push_relations, entry=entry, depends_on=entry_sync)
         # if the instance was just created but not published, we do nothing. but if its
         # published status (now) is false and it was not just created, we have to delete
         # it from Showroom
