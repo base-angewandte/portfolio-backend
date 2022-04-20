@@ -66,3 +66,14 @@ def relation_post_delete(sender, instance, *args, **kwargs):
             queue = django_rq.get_queue('default')
             queue.enqueue(sync.push_relations, entry=instance.from_entry)
             # TODO: discuss and implement failure handling
+
+
+@receiver(post_save, sender=Media)
+def media_post_save(sender, instance, *args, **kwargs):
+    if settings.SYNC_TO_SHOWROOM:
+        if (
+            instance.published
+            and instance.status == STATUS_CONVERTED
+            and Entry.objects.get(pk=instance.entry_id).published
+        ):
+            django_rq.enqueue(sync.push_medium, medium=instance)
