@@ -27,7 +27,7 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
                 queue.enqueue(sync.push_medium, medium=medium, depends_on=entry_sync)
             # TODO: similar to media also relations would only have to be pushed after
             #       publishing and not on every save
-            if instance.from_entries.count():
+            if instance.from_entries.exists():
                 queue.enqueue(sync.push_relations, entry=instance, depends_on=entry_sync)
             # TODO: this doesn't seem very performant, adapt Showroom API to be able
             #       to push relations in both directions
