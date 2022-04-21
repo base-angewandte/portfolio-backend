@@ -30,6 +30,7 @@ rdflib==5.0.0  # TODO: needed by skosmos-client, but 6.1.1 breaks concept retrie
 rq-scheduler==0.11.0
 shortuuid==1.0.1
 skosmos-client==0.3.0
+titlecase==2.3
 werkzeug==1.0.1  # for django-extensions
 xmltodict==0.12.0
 

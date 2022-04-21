@@ -223,6 +223,8 @@ strict-rfc3339==0.7
     # via jsonschema
 swagger-spec-validator==2.7.4
     # via drf-yasg
+titlecase==2.3
+    # via -r src/requirements.in
 toml==0.10.2
     # via pre-commit
 tomli==2.0.1
