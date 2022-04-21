@@ -1,5 +1,7 @@
 from re import match
 
+from progressbar import progressbar
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
@@ -20,7 +22,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '-o', '--offset', type=int, help='An optional offset to first entry in the result set to be pushed'
         )
-        parser.add_argument('-s', '--status', type=int, help='Log a status line after each STATUS entries are pushed.')
 
     def handle(self, *args, **options):
         if None in [settings.SHOWROOM_API_BASE, settings.SHOWROOM_API_KEY, settings.SHOWROOM_REPO_ID]:
@@ -31,9 +32,9 @@ class Command(BaseCommand):
                 'You have to provide at least one id. Use the --all flag, if you want to push all entries.'
             )
 
-        for id in options['id']:
-            if len(id) != 22 or not match(r'^[0-9a-zA-Z]{22}$', id):
-                raise CommandError(f'This does not look like a valid ShortUUID: {id}')
+        for entry_id in options['id']:
+            if len(entry_id) != 22 or not match(r'^[0-9a-zA-Z]{22}$', entry_id):
+                raise CommandError(f'This does not look like a valid ShortUUID: {entry_id}')
 
         # Now fetch our entries
         if options['all']:
@@ -49,7 +50,7 @@ class Command(BaseCommand):
 
         limit = None
         offset = None
-        limited = True
+        # limited = True
         if options['limit']:
             if options['limit'] <= 0:
                 raise CommandError('limit has to be a positive integer')
@@ -60,33 +61,23 @@ class Command(BaseCommand):
             offset = options['offset']
         if offset and limit is None:
             entries = entries[offset:]
-            limited = True
+            # limited = True
         elif limit and offset is None:
             entries = entries[0:limit]
-            limited = True
+            # limited = True
         elif limit and offset:
             entries = entries[offset : limit + offset]
-            limited = True
-
-        total = entries.count() if not limited else len(entries)
-
-        status = None
-        if options['status']:
-            if options['status'] <= 0:
-                raise CommandError('status has to be a positive integer')
-            status = options['status']
-            self.stdout.write(f'[status:] starting to push {total} entries')
+            # limited = True
 
         created = []
         updated = []
         not_pushed = []
-        count = 0
-        for entry in entries:
+        for entry in progressbar(entries):
             result = {}
             try:
                 result = sync.push_entry(entry)
             except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                raise CommandError(e)
+                raise CommandError(e) from e
             except sync.ShowroomError as e:
                 not_pushed.append(entry.id)
                 self.stdout.write(self.style.WARNING(e))
@@ -101,9 +92,6 @@ class Command(BaseCommand):
             result_updated = result.get('updated')
             if result_updated:
                 updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
-            count += 1
-            if status and count % status == 0:
-                self.stdout.write(f'[status:] pushed {count} / {total} entries')
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(created)+len(updated)} entries:'))
         self.stdout.write(f'Created: {len(created)}')
@@ -116,15 +104,14 @@ class Command(BaseCommand):
         media_created = []
         media_updated = []
         media_not_pushed = []
-        count = 0
-        for entry in entries:
+        for entry in progressbar(entries):
             media = Media.objects.filter(entry_id=entry.id, published=True)
             for medium in media:
                 result = {}
                 try:
                     result = sync.push_medium(medium)
                 except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                    raise CommandError(e)
+                    raise CommandError(e) from e
                 except sync.ShowroomError as e:
                     media_not_pushed.append(entry.id)
                     self.stdout.write(self.style.WARNING(e))
@@ -139,9 +126,6 @@ class Command(BaseCommand):
                 result_updated = result.get('updated')
                 if result_updated:
                     media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
-            count += 1
-            if status and count % status == 0:
-                self.stdout.write(f'[status:] pushed media for {count} / {total} entries')
 
         media_pushed = len(media_created) + len(media_updated)
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {media_pushed} media:'))
@@ -154,27 +138,22 @@ class Command(BaseCommand):
         self.stdout.write('Now pushing entry relations')
         relations_created = []
         relations_not_pushed = []
-        count = 0
-        for entry in entries:
+        for entry in progressbar(entries):
             result = {}
             try:
                 result = sync.push_relations(entry)
             except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                raise CommandError(e)
+                raise CommandError(e) from e
             except sync.ShowroomError as e:
                 relations_not_pushed.append(entry.id)
                 self.stdout.write(self.style.WARNING(e))
 
             created = result.get('created')
             if created:
-                relations_created.extend((entry.id, id) for id in created)
+                relations_created.extend((entry.id, entry_id) for entry_id in created)
             not_found = result.get('not_found')
             if not_found:
-                relations_not_pushed.extend((entry.id, id) for id in not_found)
-
-            count += 1
-            if status and count % status == 0:
-                self.stdout.write(f'[status:] pushed relations for {count} / {total} entries')
+                relations_not_pushed.extend((entry.id, entry_id) for entry_id in not_found)
 
         self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(relations_created)} relations.'))
         if len(relations_not_pushed) > 0:
