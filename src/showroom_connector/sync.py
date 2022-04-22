@@ -4,7 +4,7 @@ import requests
 
 from django.conf import settings
 
-from . import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
+from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
 
 logger = logging.getLogger(__name__)
 
