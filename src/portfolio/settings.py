@@ -120,7 +120,6 @@ INSTALLED_APPS = [
     'api',
     'media_server',
     'docs',
-    'showroom_connector',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -737,3 +736,6 @@ SYNC_TO_SHOWROOM = env.bool('SYNC_TO_SHOWROOM', default=False)
 SHOWROOM_API_BASE = env.str('SHOWROOM_API_BASE', default=None)
 SHOWROOM_API_KEY = env.str('SHOWROOM_API_KEY', default=None)
 SHOWROOM_REPO_ID = env.int('SHOWROOM_REPO_ID', default=None)
+
+if SYNC_TO_SHOWROOM:
+    INSTALLED_APPS.append('showroom_connector')
