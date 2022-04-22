@@ -4,6 +4,7 @@ import requests
 
 from django.conf import settings
 
+from core.models import Entry
 from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,9 @@ def push_entry(entry):
         raise ShowroomError(f'Entry {entry.id} could not be pushed: 400: {r.text}')
 
     elif r.status_code == 201:
-        return r.json()
+        response = r.json()
+        handle_push_entry_response(response)
+        return response
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
@@ -157,3 +160,14 @@ def push_relations(entry):
         return r.json()
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+
+
+def handle_push_entry_response(response):
+    created = response.get('created', [])
+    for item in created:
+        Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])
+
+    # TODO check if we really need to update showroom_id in this case
+    updated = response.get('updated', [])
+    for item in updated:
+        Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])
