@@ -1,11 +1,12 @@
 import django_rq
 
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from core.models import Entry, Relation
 from media_server.models import STATUS_CONVERTED, Media
+from media_server.signals import media_order_update
 
 from . import sync
 
@@ -69,11 +70,36 @@ def relation_post_delete(sender, instance, *args, **kwargs):
 
 
 @receiver(post_save, sender=Media)
-def media_post_save(sender, instance, *args, **kwargs):
+def media_post_save(sender, instance, created, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
-        if (
-            instance.published
-            and instance.status == STATUS_CONVERTED
-            and Entry.objects.get(pk=instance.entry_id).published
-        ):
-            django_rq.enqueue(sync.push_medium, medium=instance)
+        entry = Entry.objects.get(pk=instance.entry_id)
+        if entry.published:
+            if instance.published:
+                if instance.status == STATUS_CONVERTED:
+                    django_rq.enqueue(sync.push_medium, medium=instance)
+                    # TODO: discuss and implement failure handling
+            elif not created:
+                django_rq.enqueue(sync.delete_medium, medium=instance)
+                # TODO: discuss and implement failure handling
+
+
+@receiver(pre_delete, sender=Media)
+def media_pre_delete(sender, instance, *args, **kwargs):
+    if settings.SYNC_TO_SHOWROOM:
+        # check if both the entry and the medium itself have been published, we also
+        # have to sync this deletion to showroom
+        if instance.published and Entry.objects.get(pk=instance.entry_id).published:
+            django_rq.enqueue(sync.delete_medium, medium=instance)
+            # TODO: discuss and implement failure handling
+
+
+@receiver(media_order_update)
+def media_order_update(sender, entry_id, *args, **kwargs):
+    if settings.SYNC_TO_SHOWROOM:
+        entry = Entry.objects.get(pk=entry_id)
+        if entry.published:
+            media = Media.objects.filter(entry_id=entry_id, published=True, status=STATUS_CONVERTED)
+            queue = django_rq.get_queue('default')
+            for m in media:
+                queue.enqueue(sync.push_medium, medium=m)
+                # TODO: discuss and implement failure handling

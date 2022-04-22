@@ -18,8 +18,8 @@ from django.dispatch import receiver
 
 from core.models import Entry
 from general.models import ShortUUIDField
-from showroom_connector import sync
 
+from . import signals
 from .apps import MediaServerConfig
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
@@ -359,14 +359,7 @@ def get_image_for_entry(entry_id):
 def update_media_order_for_entry(entry_id, order_list):
     for i, d in enumerate(order_list):
         Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
-    if settings.SYNC_TO_SHOWROOM:
-        entry = Entry.objects.get(pk=entry_id)
-        if entry.published:
-            media = Media.objects.filter(entry_id=entry_id, published=True)
-            queue = django_rq.get_queue('default')
-            for m in media:
-                queue.enqueue(sync.push_medium, medium=m)
-                # TODO: discuss and implement failure handling
+    signals.media_order_update.send(sender='update_media_order_for_entry', entry_id=entry_id)
 
 
 def get_type_for_mime_type(mime_type):
@@ -414,25 +407,6 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                     )
                 )
 
-    elif settings.SYNC_TO_SHOWROOM:
-        entry = Entry.objects.get(pk=instance.entry_id)
-        if entry.published:
-            queue = django_rq.get_queue('default')
-            # in case of a newly created medium we only want to sync it after it has
-            # been successfully converted
-            if not kwargs['update_fields']:
-                if instance.status == STATUS_CONVERTED and instance.published:
-                    queue.enqueue(sync.push_medium, medium=instance)
-            # in case of an update only push the updated medium if it is published,
-            # otherwise deleted it
-            else:
-                if instance.published:
-                    queue.enqueue(sync.push_medium, medium=instance)
-                    # TODO: discuss and implement failure handling
-                else:
-                    queue.enqueue(sync.delete_medium, medium=instance)
-                    # TODO: discuss and implement failure handling
-
 
 @receiver(pre_delete, sender=Media)
 def media_pre_delete(sender, instance, *args, **kwargs):
@@ -455,14 +429,6 @@ def media_post_delete(sender, instance, *args, **kwargs):
         shutil.rmtree(instance.get_protected_assets_path())
     except FileNotFoundError:
         pass
-    if settings.SYNC_TO_SHOWROOM:
-        # check if both the entry and the medium itself have been published, we also
-        # have to sync this deletion to showroom
-        entry = Entry.objects.get(pk=instance.entry_id)
-        if entry.published and instance.published:
-            queue = django_rq.get_queue('default')
-            queue.enqueue(sync.delete_medium, medium=instance)
-            # TODO: discuss and implement failure handling
 
 
 @receiver(post_delete, sender=Entry)
