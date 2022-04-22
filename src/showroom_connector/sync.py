@@ -74,7 +74,7 @@ def delete_entry(entry):
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be deleted: 400: {r.text}')
     elif r.status_code == 204:
-        entry.update(showroom_id=None)
+        Entry.objects.filter(pk=entry.pk).update(showroom_id=None)
         return True
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
