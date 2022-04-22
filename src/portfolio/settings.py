@@ -739,3 +739,6 @@ SHOWROOM_REPO_ID = env.int('SHOWROOM_REPO_ID', default=None)
 
 if SYNC_TO_SHOWROOM:
     INSTALLED_APPS.append('showroom_connector')
+
+USER_PREFERENCES_API_BASE = env.str('USER_PREFERENCES_API_BASE', default=None)
+USER_PREFERENCES_API_KEY = env.str('USER_PREFERENCES_API_KEY', default=None)
