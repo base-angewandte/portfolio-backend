@@ -238,8 +238,8 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.ValidationError
             update_media_order_for_entry(entry.pk, request.data)
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Entry.DoesNotExist:
-            raise exceptions.NotFound(_('Entry does not exist'))
+        except Entry.DoesNotExist as e:
+            raise exceptions.NotFound(_('Entry does not exist')) from e
 
     @swagger_auto_schema(responses={200: openapi.Response('')})
     @action(detail=False, filter_backends=[], pagination_class=None)
@@ -1162,6 +1162,7 @@ def wb_data(request, *args, **kwargs):
             'subtitle',
             'type',
             'reference',
+            # TODO add showroom_id and test with wb tool
             'keywords',
             'texts',
             'data',

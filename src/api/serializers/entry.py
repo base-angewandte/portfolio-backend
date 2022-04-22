@@ -59,6 +59,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'date_created': OrderedDict([('hidden', True)]),
             'date_changed': OrderedDict([('hidden', True)]),
             'reference': OrderedDict([('hidden', True)]),
+            'showroom_id': OrderedDict([('hidden', True)]),
             'published': OrderedDict([('hidden', True)]),
             'data': OrderedDict([('hidden', True)]),
             # switched field type from autocomplete to text until autocomplete actually supported
