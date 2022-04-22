@@ -97,10 +97,10 @@ class Command(BaseCommand):
             # entries and extend our aggregated lists
             result_created = result.get('created')
             if result_created:
-                created.extend([(entry['id'], entry['showroom_id']) for entry in result_created])
+                created.extend([(item['id'], item['showroom_id']) for item in result_created])
             result_updated = result.get('updated')
             if result_updated:
-                updated.extend([(entry['id'], entry['showroom_id']) for entry in result_updated])
+                updated.extend([(item['id'], item['showroom_id']) for item in result_updated])
             count += 1
             if status and count % status == 0:
                 self.stdout.write(f'[status:] pushed {count} / {total} entries')
