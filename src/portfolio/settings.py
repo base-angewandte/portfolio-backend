@@ -408,7 +408,7 @@ ACTIVE_SCHEMAS = env.list(
 )
 
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
+    INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.insert(
         MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
         'debug_toolbar.middleware.DebugToolbarMiddleware',
