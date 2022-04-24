@@ -49,23 +49,25 @@ def push_entry(entry):
 
     r = requests.post(settings.SHOWROOM_API_BASE + 'activities/', json=data, headers=auth_headers)
 
-    if r.status_code == 403:
+    if r.status_code == 201:
+        response = r.json()
+        handle_push_entry_response(response)
+        return response
+    elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
 
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be pushed: 400: {r.text}')
-
-    elif r.status_code == 201:
-        response = r.json()
-        handle_push_entry_response(response)
-        return response
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def delete_entry(entry):
     r = requests.delete(settings.SHOWROOM_API_BASE + f'activities/{entry.id}/', headers=auth_headers)
-    if r.status_code == 403:
+    if r.status_code == 204:
+        Entry.objects.filter(pk=entry.pk).update(showroom_id=None)
+        return True
+    elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 404:
         # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
@@ -73,9 +75,6 @@ def delete_entry(entry):
         logger.warning(f'Entry {entry.id} could not be deleted because not found in Showroom [404]')
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be deleted: 400: {r.text}')
-    elif r.status_code == 204:
-        Entry.objects.filter(pk=entry.pk).update(showroom_id=None)
-        return True
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
@@ -120,19 +119,21 @@ def push_medium(medium):
 
     r = requests.post(settings.SHOWROOM_API_BASE + 'media/', json=data, headers=auth_headers)
 
-    if r.status_code == 403:
+    if r.status_code == 201:
+        return r.json()
+    elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be pushed: 400: {r.text}')
-    elif r.status_code == 201:
-        return r.json()
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
 
 def delete_medium(medium):
     r = requests.delete(settings.SHOWROOM_API_BASE + f'media/{medium.id}/', headers=auth_headers)
-    if r.status_code == 403:
+    if r.status_code == 204:
+        return True
+    elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 404:
         # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
@@ -140,8 +141,6 @@ def delete_medium(medium):
         logger.warning(f'Medium {medium.id} could not be deleted because not found in Showroom [404]')
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be deleted: 400: {r.text}')
-    elif r.status_code == 204:
-        return True
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
@@ -150,15 +149,15 @@ def push_relations(entry):
     data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.all()]}
     r = requests.post(f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/', json=data, headers=auth_headers)
 
-    if r.status_code == 403:
-        raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
-    elif r.status_code == 400:
-        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 400: {r.text}')
-    elif r.status_code == 201:
+    if r.status_code == 201:
         # TODO: showroom is returning a dict with `created` and `not_found` arrays containing the
         #       ids of those relations added and those entries that could not be found. in theory
         #       `not_found` should be empty. but if not, how shall we handle this?
         return r.json()
+    elif r.status_code == 403:
+        raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
+    elif r.status_code == 400:
+        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 400: {r.text}')
     else:
         raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
 
