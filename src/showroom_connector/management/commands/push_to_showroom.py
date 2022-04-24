@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from core.models import Entry
-from media_server.models import Media
+from media_server.models import STATUS_CONVERTED, Media
 from showroom_connector import sync
 
 
@@ -118,7 +118,7 @@ class Command(BaseCommand):
         media_not_pushed = []
         count = 0
         for entry in entries:
-            media = Media.objects.filter(entry_id=entry.id, published=True)
+            media = Media.objects.filter(entry_id=entry.id, published=True, status=STATUS_CONVERTED)
             for medium in media:
                 result = {}
                 try:
