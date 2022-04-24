@@ -1,10 +1,12 @@
 import requests
 from progressbar import progressbar
+from titlecase import titlecase
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from core.models import Entry
+from core.skosmos import get_preflabel
 
 
 class Command(BaseCommand):
@@ -36,6 +38,21 @@ class Command(BaseCommand):
                             self.stdout.write(
                                 self.style.WARNING(f'Could not fetch user information for {e.owner.username}')
                             )
+                    roles = contributor.get('roles', [])
+                    for role_idx, role in enumerate(roles):
+                        if not role.get('label'):
+                            if role.get('source'):
+                                need_to_save = True
+                                _graph, concept = role['source'].rsplit('/', 1)
+                                e.data['contributors'][idx]['roles'][role_idx]['label'] = {
+                                    'de': get_preflabel(concept, lang='de'),
+                                    'en': titlecase(get_preflabel(concept, lang='en')),
+                                }
+                        if role.get('label'):
+                            label_titlecase = titlecase(e.data['contributors'][idx]['roles'][role_idx]['label']['en'])
+                            if label_titlecase != e.data['contributors'][idx]['roles'][role_idx]['label']['en']:
+                                need_to_save = True
+                                e.data['contributors'][idx]['roles'][role_idx]['label']['en'] = label_titlecase
                 if need_to_save:
                     e.save()
         self.stdout.write(self.style.SUCCESS('Successfully fixed contributors'))
