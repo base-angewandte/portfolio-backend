@@ -1,5 +1,6 @@
 import logging
 
+import django_rq
 import requests
 
 from django.conf import settings
@@ -154,6 +155,11 @@ def push_relations(entry):
         #       ids of those relations added and those entries that could not be found. in theory
         #       `not_found` should be empty. but if not, how shall we handle this?
         return r.json()
+    elif r.status_code == 404:
+        # entry not found in Showroom, so push entry and relation again
+        entry_sync = django_rq.enqueue(push_entry, entry=entry)
+        django_rq.enqueue(push_relations, entry=entry, depends_on=entry_sync)
+        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 404: {r.text}')
     elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 400:
