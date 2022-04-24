@@ -199,7 +199,7 @@ ruamel.yaml.clib==0.2.6
     # via ruamel.yaml
 ruamel.yaml==0.17.21
     # via drf-yasg
-shortuuid==1.0.1
+shortuuid==1.0.8
     # via -r src/requirements.in
 six==1.16.0
     # via
