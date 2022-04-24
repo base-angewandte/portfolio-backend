@@ -1,4 +1,5 @@
 from progressbar import progressbar
+from titlecase import titlecase
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -26,10 +27,15 @@ class Command(BaseCommand):
                                 project = settings.VOC_ID
                             e.keywords[idx]['label'] = {
                                 'de': get_preflabel(concept, project=project, graph=f'{graph}/', lang='de'),
-                                'en': get_preflabel(concept, project=project, graph=f'{graph}/', lang='en'),
+                                'en': titlecase(get_preflabel(concept, project=project, graph=f'{graph}/', lang='en')),
                             }
                         else:
                             need_to_filter = True
+                    if kw.get('label'):
+                        label_titlecase = titlecase(e.keywords[idx]['label']['en'])
+                        if label_titlecase != e.keywords[idx]['label']['en']:
+                            need_to_save = True
+                            e.keywords[idx]['label']['en'] = label_titlecase
                 if need_to_filter:
                     e.keywords = list(filter(None, e.keywords)) or None
                 if need_to_save:
