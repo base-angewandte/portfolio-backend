@@ -565,7 +565,7 @@ SOURCES = {
     'PRIMO_IMPORT': {
         apiconfig.URL: PRIMO_API_URL,
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {'vid': 'OBV', 'scope': 'OBV_Gesamt'},
+        apiconfig.PAYLOAD: {'vid': 'OBV', 'scope': 'OBV_Gesamt', 'limit': 100},
         apiconfig.TIMEOUT: 10,
         apiconfig.HEADER: {'apikey': PRIMO_API_KEY},
     },
@@ -618,6 +618,11 @@ PRIMO_MAPPING = {
     'description': ('pnx', 'search', 'description'),
     'author': ('pnx', 'display', 'creator'),
     'pages': ('pnx', 'display', 'format'),
+    'creationdate': ('pnx', 'display', 'creationdate'),
+    'type': ('pnx', 'display', 'type'),
+    'lad24': ('pnx', 'addata', 'lad24'),
+    'language': ('pnx', 'display', 'language'),
+    'subject': ('pnx', 'display', 'subject'),
 }
 
 
