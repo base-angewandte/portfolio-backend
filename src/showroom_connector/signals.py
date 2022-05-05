@@ -88,7 +88,11 @@ def media_pre_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         # check if both the entry and the medium itself have been published, we also
         # have to sync this deletion to showroom
-        if instance.published and Entry.objects.get(pk=instance.entry_id).published:
+        if (
+            instance.published
+            and instance.status == STATUS_CONVERTED
+            and Entry.objects.get(pk=instance.entry_id).published
+        ):
             django_rq.enqueue(sync.delete_medium, medium=instance)
             # TODO: discuss and implement failure handling
 
