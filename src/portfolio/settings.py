@@ -753,14 +753,17 @@ SENTRY_TRACES_SAMPLE_RATE = env.float('SENTRY_TRACES_SAMPLE_RATE', default=0.2)
 
 if SENTRY_DSN:
     import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.redis import RedisIntegration
+    from sentry_sdk.integrations.rq import RqIntegration
 
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         environment=SENTRY_ENVIRONMENT,
         integrations=[
-            sentry_sdk.integrations.django.DjangoIntegration(),
-            sentry_sdk.integrations.redis.RedisIntegration(),
-            sentry_sdk.integrations.rq.RqIntegration(),
+            DjangoIntegration(),
+            RedisIntegration(),
+            RqIntegration(),
         ],
         traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         send_default_pii=True,
