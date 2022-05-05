@@ -28,6 +28,7 @@ psycopg2-binary==2.8.6
 python-magic==0.4.22
 rdflib==5.0.0  # TODO: needed by skosmos-client, but 6.1.1 breaks concept retrieval
 rq-scheduler==0.11.0
+sentry-sdk
 shortuuid==1.0.8
 skosmos-client==0.3.0
 titlecase==2.3
