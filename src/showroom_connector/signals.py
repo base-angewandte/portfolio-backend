@@ -11,7 +11,7 @@ from media_server.signals import media_order_update
 from . import sync
 
 
-@receiver(post_save, sender=Entry)
+@receiver(post_save, sender=Entry, dispatch_uid='showroom_connector_entry_post_save')
 def entry_post_save(sender, instance, created, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         queue = django_rq.get_queue('default')
@@ -42,7 +42,7 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
             # TODO: discuss and implement failure handling
 
 
-@receiver(post_delete, sender=Entry)
+@receiver(post_delete, sender=Entry, dispatch_uid='showroom_connector_entry_post_delete')
 def entry_post_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         if instance.published:
@@ -51,7 +51,7 @@ def entry_post_delete(sender, instance, *args, **kwargs):
             # TODO: discuss and implement failure handling
 
 
-@receiver(post_save, sender=Relation)
+@receiver(post_save, sender=Relation, dispatch_uid='showroom_connector_relation_post_save')
 def relation_post_save(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         if instance.from_entry.published and instance.to_entry.published:
@@ -60,7 +60,7 @@ def relation_post_save(sender, instance, *args, **kwargs):
             # TODO: discuss and implement failure handling
 
 
-@receiver(post_delete, sender=Relation)
+@receiver(post_delete, sender=Relation, dispatch_uid='showroom_connector_relation_post_delete')
 def relation_post_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         if instance.from_entry.published and instance.to_entry.published:
@@ -69,7 +69,7 @@ def relation_post_delete(sender, instance, *args, **kwargs):
             # TODO: discuss and implement failure handling
 
 
-@receiver(post_save, sender=Media)
+@receiver(post_save, sender=Media, dispatch_uid='showroom_connector_media_post_save')
 def media_post_save(sender, instance, created, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         entry = Entry.objects.get(pk=instance.entry_id)
@@ -83,7 +83,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 # TODO: discuss and implement failure handling
 
 
-@receiver(pre_delete, sender=Media)
+@receiver(pre_delete, sender=Media, dispatch_uid='showroom_connector_media_pre_delete')
 def media_pre_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         # check if both the entry and the medium itself have been published, we also
@@ -97,7 +97,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
             # TODO: discuss and implement failure handling
 
 
-@receiver(media_order_update)
+@receiver(media_order_update, dispatch_uid='showroom_connector_media_order_update')
 def media_order_update(sender, entry_id, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         entry = Entry.objects.get(pk=entry_id)

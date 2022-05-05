@@ -380,7 +380,7 @@ def repair():
 # Signal handling
 
 
-@receiver(post_save, sender=Media)
+@receiver(post_save, sender=Media, dispatch_uid='media_post_save')
 def media_post_save(sender, instance, created, *args, **kwargs):
     if created:
         if instance.type == VIDEO_TYPE:
@@ -408,7 +408,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 )
 
 
-@receiver(pre_delete, sender=Media)
+@receiver(pre_delete, sender=Media, dispatch_uid='media_pre_delete')
 def media_pre_delete(sender, instance, *args, **kwargs):
     try:
         conn = django_rq.get_connection()
@@ -423,7 +423,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_delete, sender=Media)
+@receiver(post_delete, sender=Media, dispatch_uid='media_post_delete')
 def media_post_delete(sender, instance, *args, **kwargs):
     try:
         shutil.rmtree(instance.get_protected_assets_path())
@@ -431,6 +431,6 @@ def media_post_delete(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_delete, sender=Entry)
+@receiver(post_delete, sender=Entry, dispatch_uid='entry_post_delete')
 def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()

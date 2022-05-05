@@ -167,7 +167,7 @@ class Relation(AbstractBaseModel):
             raise ValidationError(_('Both entries must belong to the same user'))
 
 
-@receiver(pre_save, sender=Relation)
+@receiver(pre_save, sender=Relation, dispatch_uid='relation_pre_save')
 def relation_pre_save(sender, instance, *args, **kwargs):
     # ensure that there's only one relation between two entries
     instance.to_entry.remove_relation(instance.from_entry)
