@@ -63,10 +63,16 @@ def relation_post_save(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=Relation, dispatch_uid='showroom_connector_relation_post_delete')
 def relation_post_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
-        if instance.from_entry.published and instance.to_entry.published:
-            queue = django_rq.get_queue('default')
-            queue.enqueue(sync.push_relations, entry=instance.from_entry)
-            # TODO: discuss and implement failure handling
+        try:
+            if instance.from_entry.published and instance.to_entry.published:
+                queue = django_rq.get_queue('default')
+                queue.enqueue(sync.push_relations, entry=instance.from_entry)
+                # TODO: discuss and implement failure handling
+        except Entry.DoesNotExist:
+            # Entry has already been deleted, so the corresponding request to
+            # Showroom should already have deleted all corresponding relations
+            # there as well, so it's not necessary to do anything further
+            pass
 
 
 @receiver(post_save, sender=Media, dispatch_uid='showroom_connector_media_post_save')
