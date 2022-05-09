@@ -86,15 +86,21 @@ def media_post_save(sender, instance, created, *args, **kwargs):
 @receiver(pre_delete, sender=Media, dispatch_uid='showroom_connector_media_pre_delete')
 def media_pre_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
-        # check if both the entry and the medium itself have been published, we also
-        # have to sync this deletion to showroom
-        if (
-            instance.published
-            and instance.status == STATUS_CONVERTED
-            and Entry.objects.get(pk=instance.entry_id).published
-        ):
-            django_rq.enqueue(sync.delete_medium, medium=instance)
-            # TODO: discuss and implement failure handling
+        try:
+            # check if both the entry and the medium itself have been published, we also
+            # have to sync this deletion to showroom
+            if (
+                instance.published
+                and instance.status == STATUS_CONVERTED
+                and Entry.objects.get(pk=instance.entry_id).published
+            ):
+                django_rq.enqueue(sync.delete_medium, medium=instance)
+                # TODO: discuss and implement failure handling
+        except Entry.DoesNotExist:
+            # Entry has already been deleted, so the corresponding request to
+            # Showroom should already have deleted all corresponding media there
+            # as well, so it's not necessary to do anything further
+            pass
 
 
 @receiver(media_order_update, dispatch_uid='showroom_connector_media_order_update')
