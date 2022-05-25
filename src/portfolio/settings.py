@@ -623,6 +623,8 @@ PRIMO_MAPPING = {
     'lad24': ('pnx', 'addata', 'lad24'),
     'language': ('pnx', 'display', 'language'),
     'subject': ('pnx', 'display', 'subject'),
+    'contributors': ('pnx', 'display', 'contributor'),
+    'ispartof': ('pnx', 'display', 'ispartof'),
 }
 
 
