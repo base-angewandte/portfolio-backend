@@ -621,6 +621,7 @@ PRIMO_MAPPING = {
     'creationdate': ('pnx', 'display', 'creationdate'),
     'type': ('pnx', 'display', 'type'),
     'lad24': ('pnx', 'addata', 'lad24'),
+    'lds16': ('pnx', 'display', 'lds16'),
     'language': ('pnx', 'display', 'language'),
     'subject': ('pnx', 'display', 'subject'),
     'contributors': ('pnx', 'display', 'contributor'),
