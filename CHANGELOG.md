@@ -5,6 +5,7 @@
 ### Added
 
 - Send 301 for retrieve requests in EntryViewSet with old entry ids
+- Added `CAS_CHECK_NEXT` environment variable for development
 
 ### Changed
 

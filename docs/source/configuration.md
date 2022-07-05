@@ -78,6 +78,12 @@ Default: `True`
 
 If you are running Portfolio behind nginx, this has to be `True`. For local development, set this to `False`.
 
+### `CAS_CHECK_NEXT`
+
+Default: `True`
+
+If you want to use a non-local `CAS_REDIRECT_URL`, e.g. when redirecting to the frontend in a development setup, set this to `True`.
+
 ### `CAS_REDIRECT_URL`
 
 Default: `FORCE_SCRIPT_NAME` if defined, else `/`
@@ -399,7 +405,7 @@ a local dev environment it might rather be something like
 
 Default: `None`
 
-The API key for this Portfolio instance, as it is defined in the Showroom admin. 
+The API key for this Portfolio instance, as it is defined in the Showroom admin.
 
 #### `SHOWROOM_REPO_ID`
 
