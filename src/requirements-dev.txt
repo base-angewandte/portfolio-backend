@@ -40,7 +40,7 @@ deprecated==1.2.13
     # via redis
 distlib==0.3.4
     # via virtualenv
-django-cas-ng==4.1.1
+django-cas-ng==4.3.0
     # via -r src/requirements.in
 django-cleanup==5.2.0
     # via -r src/requirements.in
