@@ -40,7 +40,7 @@ from general.drf.filters import CaseInsensitiveOrderingFilter
 from media_server.models import get_media_for_entry, update_media_order_for_entry
 from media_server.utils import get_free_space_for_user
 
-from .mixins import CountModelMixin
+from .mixins import CountModelMixin, CreateListMixin
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
 from .yasg import (
@@ -121,7 +121,7 @@ entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', '
     ),
     name='list',
 )
-class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
+class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
     """
     retrieve:
     Returns a certain entry.
