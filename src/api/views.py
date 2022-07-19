@@ -330,10 +330,10 @@ def user_information(request, *args, **kwargs):
     attributes = request.session.get('attributes', {})
     data = {
         'uuid': request.user.username,
-        'name': attributes.get('display_name'),
-        'email': attributes.get('email'),
+        'name': request.user.get_full_name(),
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
+        'email': request.user.email,
         'permissions': attributes.get('permissions') or [],
         'groups': attributes.get('groups') or [],
         'space': get_free_space_for_user(request.user) if request.user else None,
