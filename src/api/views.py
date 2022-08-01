@@ -1025,7 +1025,9 @@ def get_media_for_entry_public(entry):
         except KeyError:
             pass
         if m.get('license'):
-            m['license'] = m.get('license', {}).get('label', {}).get(lang)
+            label = m.get('license', {}).get('label', {})
+            # fallback for CC licenses, which only have an English label
+            m['license'] = label.get(lang) or label.get('en')
     return media
 
 
