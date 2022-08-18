@@ -379,6 +379,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_VERSION': 'v1',
     'ORDERING_PARAM': 'sort',
+    'EXCEPTION_HANDLER': 'api.portfolio_exception_handler',
 }
 
 SWAGGER_SETTINGS = {'SECURITY_DEFINITIONS': {}}
