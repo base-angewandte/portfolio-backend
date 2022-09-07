@@ -14,6 +14,16 @@ from .utils import unaccent
 
 CACHE_TIME = 86400  # 1 day
 
+PROJECT_MAPPING = {
+    'http://base.uni-ak.ac.at/portfolio/languages/': 'languages',
+    'http://base.uni-ak.ac.at/recherche/keywords/': 'basekw',
+    'http://base.uni-ak.ac.at/vocabulary/': 'basevoc',
+    'http://base.uni-ak.ac.at/portfolio/licenses/': 'licenses',
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/': 'potax',
+    'http://base.uni-ak.ac.at/portfolio/vocabulary/': 'povoc',
+    'http://base.uni-ak.ac.at/portfolio/disciplines/': 'disciplines',
+}
+
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
 
 
