@@ -1,7 +1,7 @@
-from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector, TrigramSimilarity
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models
 
-from general.postgres import SearchVectorJSON
+from general.postgres import SearchVectorJSON, TrigramWordSimilarity
 
 search_vectors = (
     SearchVector('title', weight='A')
@@ -23,6 +23,6 @@ class EntryManager(models.Manager):
     def search(self, text):
         search_query = SearchQuery(text)
         search_rank = SearchRank(search_vectors, search_query)
-        trigram_similarity_title = TrigramSimilarity('title', text)
-        rank = search_rank + trigram_similarity_title
-        return self.get_queryset().annotate(rank=rank).filter(rank__gte=0.1).order_by('-rank')
+        trigram_word_similarity_title = TrigramWordSimilarity(text, 'title')
+        rank = search_rank + trigram_word_similarity_title
+        return self.get_queryset().annotate(rank=rank).filter(rank__gte=0.2).order_by('-rank')

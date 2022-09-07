@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
-from rest_framework import exceptions, permissions, viewsets
+from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, authentication_classes, parser_classes, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -19,6 +19,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.cache import cache
 from django.db.models import Max, Q
+from django.http import Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, gettext_lazy as _
@@ -36,7 +37,7 @@ from core.schemas.entries.video import VideoSchema
 from core.skosmos import get_altlabel_collection, get_collection_members, get_preflabel
 from general.drf.authentication import TokenAuthentication
 from general.drf.filters import CaseInsensitiveOrderingFilter
-from media_server.models import get_media_for_entry
+from media_server.models import get_media_for_entry, update_media_order_for_entry
 from media_server.utils import get_free_space_for_user
 
 from .serializers.entry import EntrySerializer
@@ -167,6 +168,18 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
     pagination_class = StandardLimitOffsetPagination
     swagger_schema = JSONAutoSchema
 
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Http404 as nfe:
+            reverse_pk = kwargs.get('pk', '')[::-1]
+            if self.get_queryset().filter(pk=reverse_pk).exists():
+                return Response(reverse_pk, status=301)
+            else:
+                raise nfe
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -192,6 +205,39 @@ class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
                 raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
             ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
             return Response(ret)
+        except Entry.DoesNotExist as e:
+            raise exceptions.NotFound(_('Entry does not exist')) from e
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+        responses={
+            204: openapi.Response(''),
+            400: openapi.Response('Bad Request'),
+            403: openapi.Response('Access not allowed'),
+            404: openapi.Response('Entry not found'),
+        },
+    )
+    @action(detail=True, methods=['post'], url_path='media/order', filter_backends=[], pagination_class=None)
+    def media_order(self, request, pk=None, *args, **kwargs):
+        """Set media order for an entry."""
+
+        try:
+            entry = Entry.objects.get(pk=pk)
+            if entry.owner != request.user:
+                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+            # validate request body
+            if not type(request.data) is list or not all(type(i) is dict and 'id' in i for i in request.data):
+                raise exceptions.ValidationError
+            update_media_order_for_entry(entry.pk, request.data)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Entry.DoesNotExist as e:
             raise exceptions.NotFound(_('Entry does not exist')) from e
 
@@ -284,8 +330,10 @@ def user_information(request, *args, **kwargs):
     attributes = request.session.get('attributes', {})
     data = {
         'uuid': request.user.username,
-        'name': attributes.get('display_name'),
-        'email': attributes.get('email'),
+        'name': request.user.get_full_name(),
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'email': request.user.email,
         'permissions': attributes.get('permissions') or [],
         'groups': attributes.get('groups') or [],
         'space': get_free_space_for_user(request.user) if request.user else None,
@@ -977,7 +1025,9 @@ def get_media_for_entry_public(entry):
         except KeyError:
             pass
         if m.get('license'):
-            m['license'] = m.get('license', {}).get('label', {}).get(lang)
+            label = m.get('license', {}).get('label', {})
+            # fallback for CC licenses, which only have an English label
+            m['license'] = label.get(lang) or label.get('en')
     return media
 
 
@@ -1116,6 +1166,7 @@ def wb_data(request, *args, **kwargs):
             'subtitle',
             'type',
             'reference',
+            # TODO add showroom_id and test with wb tool
             'keywords',
             'texts',
             'data',

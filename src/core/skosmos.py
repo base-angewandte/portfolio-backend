@@ -255,7 +255,7 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
         language = lang
     else:
         language = get_language() or 'en'
-    cache_key = f'get_preflabel_{language}_{concept}'
+    cache_key = f'get_preflabel_{project}_{language}_{concept}'
 
     label = cache.get(cache_key)
     if not label:

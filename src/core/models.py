@@ -24,7 +24,6 @@ class Entry(AbstractBaseModel):
     subtitle = models.CharField(verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True)
     type = JSONField(verbose_name=get_preflabel_lazy('type'), validators=[validate_type], blank=True, null=True)
     notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
-    reference = models.CharField(max_length=255, blank=True, null=True)
     keywords = JSONField(
         verbose_name=get_preflabel_lazy('keywords'),
         validators=[validate_keywords],
@@ -35,6 +34,9 @@ class Entry(AbstractBaseModel):
     published = models.BooleanField(default=False)
     data = JSONField(blank=True, null=True)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
+
+    reference = models.CharField(max_length=255, blank=True, null=True, default=None)
+    showroom_id = models.CharField(max_length=255, blank=True, null=True, default=None)
 
     objects = EntryManager()
 
@@ -165,7 +167,7 @@ class Relation(AbstractBaseModel):
             raise ValidationError(_('Both entries must belong to the same user'))
 
 
-@receiver(pre_save, sender=Relation)
+@receiver(pre_save, sender=Relation, dispatch_uid='relation_pre_save')
 def relation_pre_save(sender, instance, *args, **kwargs):
     # ensure that there's only one relation between two entries
     instance.to_entry.remove_relation(instance.from_entry)

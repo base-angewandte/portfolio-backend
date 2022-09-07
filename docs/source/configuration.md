@@ -78,6 +78,12 @@ Default: `True`
 
 If you are running Portfolio behind nginx, this has to be `True`. For local development, set this to `False`.
 
+### `CAS_CHECK_NEXT`
+
+Default: `True`
+
+If you want to use a non-local `CAS_REDIRECT_URL`, e.g. when redirecting to the frontend in a development setup, set this to `True`.
+
 ### `CAS_REDIRECT_URL`
 
 Default: `FORCE_SCRIPT_NAME` if defined, else `/`
@@ -371,3 +377,38 @@ Default: `1073741824` (10 GB)
 
 The disk quota a user has for their uploads (gets multiplied by the number of
 years an account already exists (1 in the first year)).
+
+### Showroom settings
+
+The following settings are needed if you want to be able to sync entries
+to a Showroom instance. This feature will only work if you set all of the
+following settings.
+
+#### `SYNC_TO_SHOWROOM`
+
+Default: False
+
+This setting determines, whether to sync published Portfolio entries to a
+Showroom instance, that is configured by the following parameters.
+
+#### `SHOWROOM_API_BASE`
+
+Default: `None`
+
+The base URL for the Showroom API that should be used to push entries to,
+including a trailing slash. For a production server this might look something
+like `http://showroom-django/api/v1/`, depending on your docker setup. For
+a local dev environment it might rather be something like
+`http://127.0.0.1:8500/api/v1/`.
+
+#### `SHOWROOM_API_KEY`
+
+Default: `None`
+
+The API key for this Portfolio instance, as it is defined in the Showroom admin.
+
+#### `SHOWROOM_REPO_ID`
+
+Default: `None`
+
+The repository ID for this Portfolio instance, as it is defined in the Showroom admin.

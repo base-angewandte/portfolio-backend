@@ -19,6 +19,7 @@ from django.dispatch import receiver
 from core.models import Entry
 from general.models import ShortUUIDField
 
+from . import signals
 from .apps import MediaServerConfig
 from .clamav import validate_file_infection
 from .storages import ProtectedFileSystemStorage
@@ -116,7 +117,10 @@ def user_directory_path(instance, filename):
 class Media(models.Model):
     id = ShortUUIDField(primary_key=True)
     file = models.FileField(
-        storage=ProtectedFileSystemStorage(), upload_to=user_directory_path, validators=[validate_file_infection]
+        storage=ProtectedFileSystemStorage(),
+        upload_to=user_directory_path,
+        max_length=255,
+        validators=[validate_file_infection],
     )
     type = models.CharField(choices=TYPE_CHOICES, max_length=1, default=OTHER_TYPE)
     created = models.DateTimeField(auto_now_add=True)
@@ -128,12 +132,14 @@ class Media(models.Model):
     exif = JSONField(default=dict)
     published = models.BooleanField(default=False)
     license = JSONField(validators=[validate_license])
+    featured = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=2147483647)
 
     class Meta:
         indexes = [
             models.Index(fields=['entry_id']),
         ]
-        ordering = ['-created']
+        ordering = ['order', '-created']
 
     @property
     def metadata(self):
@@ -206,6 +212,7 @@ class Media(models.Model):
             'type': self.type,
             'original': self.file.url,
             'published': self.published,
+            'featured': self.featured,
             'license': self.license,
         }
         return data
@@ -224,6 +231,7 @@ class Media(models.Model):
                 {
                     'cover': {'gif': self.get_url('cover.gif'), 'jpg': self.get_image()},
                     'playlist': self.get_url('playlist.m3u8'),
+                    'poster': self.get_url('cover-orig.jpg'),
                 }
             )
 
@@ -323,39 +331,41 @@ def has_entry_media(entry_id):
     return Media.objects.filter(entry_id=entry_id).exists()
 
 
-def get_media_for_entry(entry_id, flat=True, published=None):
+def get_media_for_entry(entry_id, flat: bool = True, published: bool = None):
     if flat:
         return Media.objects.filter(entry_id=entry_id).values_list('pk', flat=True)
 
     ret = []
-    exclude = []
 
-    query = Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED)
+    query = Media.objects.filter(entry_id=entry_id)
     if published is not None:
         query = query.filter(published=published)
 
     for m in query:
-        exclude.append(m.pk)
-        data = m.get_data()
-        data.update({'response_code': 200})
-        ret.append(data)
-
-    query = Media.objects.filter(entry_id=entry_id).exclude(id__in=exclude)
-    if published is not None:
-        query = query.filter(published=published)
-
-    for m in query:
-        data = m.get_minimal_data()
-        data.update({'response_code': 202})
-        ret.append(data)
+        if m.status == STATUS_CONVERTED:
+            data = m.get_data()
+            data.update({'response_code': 200})
+            ret.append(data)
+        else:
+            data = m.get_minimal_data()
+            data.update({'response_code': 202})
+            ret.append(data)
 
     return ret
 
 
 def get_image_for_entry(entry_id):
-    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED).order_by('created'):
+    for m in Media.objects.filter(entry_id=entry_id, status=STATUS_CONVERTED).order_by(
+        '-featured', 'order', 'created'
+    ):
         if m.get_image():
             return m.get_image()
+
+
+def update_media_order_for_entry(entry_id, order_list):
+    for i, d in enumerate(order_list):
+        Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
+    signals.media_order_update.send(sender='update_media_order_for_entry', entry_id=entry_id)
 
 
 def get_type_for_mime_type(mime_type):
@@ -376,7 +386,7 @@ def repair():
 # Signal handling
 
 
-@receiver(post_save, sender=Media)
+@receiver(post_save, sender=Media, dispatch_uid='media_post_save')
 def media_post_save(sender, instance, created, *args, **kwargs):
     if created:
         if instance.type == VIDEO_TYPE:
@@ -404,7 +414,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                 )
 
 
-@receiver(pre_delete, sender=Media)
+@receiver(pre_delete, sender=Media, dispatch_uid='media_pre_delete')
 def media_pre_delete(sender, instance, *args, **kwargs):
     try:
         conn = django_rq.get_connection()
@@ -419,7 +429,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_delete, sender=Media)
+@receiver(post_delete, sender=Media, dispatch_uid='media_post_delete')
 def media_post_delete(sender, instance, *args, **kwargs):
     try:
         shutil.rmtree(instance.get_protected_assets_path())
@@ -427,6 +437,6 @@ def media_post_delete(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_delete, sender=Entry)
+@receiver(post_delete, sender=Entry, dispatch_uid='entry_post_delete')
 def entry_post_delete(sender, instance, *args, **kwargs):
     Media.objects.filter(entry_id=instance.pk).delete()

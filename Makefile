@@ -3,7 +3,7 @@ export
 
 
 start:
-	docker-compose pull
+	docker-compose pull --ignore-pull-failures
 	docker-compose build --no-cache --pull portfolio-django
 	docker-compose up -d --build
 

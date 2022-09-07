@@ -139,6 +139,7 @@ CAS_RETRY_LOGIN = True
 CAS_VERSION = env.str('CAS_VERSION', default='3')
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
+CAS_CHECK_NEXT = env.bool('CAS_CHECK_NEXT', default=True)
 CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
 CAS_RENAME_ATTRIBUTES = env.dict('CAS_RENAME_ATTRIBUTES', default={})
 
@@ -408,7 +409,7 @@ ACTIVE_SCHEMAS = env.list(
 )
 
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
+    INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.insert(
         MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
         'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -735,3 +736,40 @@ DOCS_URL = env('DOCS_URL', default='docs/')
 
 if not os.path.exists(DOCS_ROOT):
     os.makedirs(DOCS_ROOT)
+
+SYNC_TO_SHOWROOM = env.bool('SYNC_TO_SHOWROOM', default=False)
+SHOWROOM_API_BASE = env.str('SHOWROOM_API_BASE', default=None)
+SHOWROOM_API_KEY = env.str('SHOWROOM_API_KEY', default=None)
+SHOWROOM_REPO_ID = env.int('SHOWROOM_REPO_ID', default=None)
+
+if SYNC_TO_SHOWROOM:
+    INSTALLED_APPS.append('showroom_connector')
+
+USER_PREFERENCES_API_BASE = env.str('USER_PREFERENCES_API_BASE', default=None)
+USER_PREFERENCES_API_KEY = env.str('USER_PREFERENCES_API_KEY', default=None)
+
+# Sentry
+SENTRY_DSN = env.str('SENTRY_DSN', default=None)
+SENTRY_ENVIRONMENT = env.str(
+    'SENTRY_ENVIRONMENT',
+    default='development' if any([i in SITE_URL for i in ['dev', 'localhost', '127.0.0.1']]) else 'production',
+)
+SENTRY_TRACES_SAMPLE_RATE = env.float('SENTRY_TRACES_SAMPLE_RATE', default=0.2)
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.redis import RedisIntegration
+    from sentry_sdk.integrations.rq import RqIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(),
+            RedisIntegration(),
+            RqIntegration(),
+        ],
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        send_default_pii=True,
+    )
