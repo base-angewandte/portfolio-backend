@@ -40,6 +40,9 @@ restart-gunicorn:
 restart-rq:
 	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
 
+update-labels:
+	docker-compose exec portfolio-django python manage.py update_labels
+
 update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
 
 start-dev:
