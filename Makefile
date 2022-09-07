@@ -43,7 +43,7 @@ restart-rq:
 update-labels:
 	docker-compose exec portfolio-django python manage.py update_labels
 
-update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs
+update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs update-labels
 
 start-dev:
 	docker-compose pull --ignore-pull-failures
