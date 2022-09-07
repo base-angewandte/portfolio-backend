@@ -286,6 +286,12 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
     return label or ''
 
 
+def get_preflabel_via_uri(concept, lang=None):
+    g, c = concept.rsplit('/', 1)
+    g += '/'
+    return get_preflabel(c, project=PROJECT_MAPPING[g], graph=g, lang=lang)
+
+
 def get_collection_members(collection, maxhits=1000, use_cache=True):
     cache_key = f'get_collection_members_{collection}'
 
