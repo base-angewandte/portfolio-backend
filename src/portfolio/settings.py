@@ -423,6 +423,8 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 LANGUAGES_VOCID = 'languages'
 
+EN_LABELS_TITLE_CASE = env.bool('EN_LABELS_TITLE_CASE', default=True)
+
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
