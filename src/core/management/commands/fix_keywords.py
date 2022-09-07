@@ -1,7 +1,6 @@
 from progressbar import progressbar
 from titlecase import titlecase
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from core.models import Entry
@@ -24,7 +23,7 @@ class Command(BaseCommand):
                             if 'disciplines' in kw['source']:
                                 project = 'disciplines'
                             else:
-                                project = settings.VOC_ID
+                                project = 'basekw'
                             e.keywords[idx]['label'] = {
                                 'de': get_preflabel(concept, project=project, graph=f'{graph}/', lang='de'),
                                 'en': titlecase(get_preflabel(concept, project=project, graph=f'{graph}/', lang='en')),
