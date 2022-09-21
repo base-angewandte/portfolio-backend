@@ -6,12 +6,14 @@
 
 - Send 301 for retrieve requests in EntryViewSet with old entry ids
 - Added `CAS_CHECK_NEXT` environment variable for development
+- Added `first_name` and `last_name` to API user response
 
 ### Changed
 
 - **BREAKING**: Updated shortuuid to 1.0.1
 - **BREAKING**: Migrated all existing shortuuids to new format
 - **BREAKING**: Migrated all existing media directories
+- **BREAKING**: Adapted API user response to use `request.user.get_full_name()` to be consistent over Portfolio instances
 
 ## 1.1.6
 
