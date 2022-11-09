@@ -41,6 +41,7 @@ from media_server.models import get_media_for_entry, update_media_order_for_entr
 from media_server.utils import get_free_space_for_user
 
 from . import PermanentRedirect
+from .mixins import CountModelMixin, CreateListMixin
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
 from .yasg import (
@@ -85,17 +86,6 @@ class StandardLimitOffsetPagination(LimitOffsetPagination):
     # offset_query_param = 'skip'
 
 
-class CountModelMixin:
-    """Count a queryset."""
-
-    @swagger_auto_schema(manual_parameters=[], responses={200: openapi.Response('')})
-    @action(detail=False, filter_backends=[], pagination_class=None)
-    def count(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        content = {'count': queryset.count()}
-        return Response(content)
-
-
 class EntryFilter(FilterSet):
     type = CharFilter(field_name='type', lookup_expr='source__iexact')
 
@@ -132,7 +122,7 @@ entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', '
     ),
     name='list',
 )
-class EntryViewSet(viewsets.ModelViewSet, CountModelMixin):
+class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
     """
     retrieve:
     Returns a certain entry.
