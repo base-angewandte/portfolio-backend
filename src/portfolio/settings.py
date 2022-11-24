@@ -426,8 +426,8 @@ LANGUAGES_VOCID = 'languages'
 EN_LABELS_TITLE_CASE = env.bool('EN_LABELS_TITLE_CASE', default=True)
 
 PRIMO_API_URL = 'https://apigw.obvsg.at/primo/v1/search'
-PRIMO_API_KEY = env.str('PORTFOLIO_AUTOSUGGEST_PRIMOAPIKEY', default='')
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
+PRIMO_API_KEY = env.str('PRIMO_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
