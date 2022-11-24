@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import Entry
 
+from .clamav import validate_file_infection
 from .validators import validate_license as vl
 
 
@@ -22,6 +23,13 @@ class MediaCreateSerializer(serializers.Serializer):
     entry = serializers.CharField()
     published = serializers.BooleanField()
     license = serializers.JSONField()
+
+    def validate_file(self, value):
+        try:
+            validate_file_infection(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.message) from e
+        return value
 
     def validate_entry(self, value):
         try:

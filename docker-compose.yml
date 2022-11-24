@@ -104,6 +104,13 @@ services:
     restart: always
     command: python manage.py rqscheduler
 
+  portfolio-clamav:
+    image: clamav/clamav:stable
+    container_name: portfolio-clamav
+    networks:
+      - portfolionet
+    restart: always
+
   portfolio-lool:
     image: collabora/code:4.2.3.1
     container_name: portfolio-lool

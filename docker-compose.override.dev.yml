@@ -12,6 +12,10 @@ services:
     ports:
       - "127.0.0.1:8200:8200"
 
+  portfolio-clamav:
+    ports:
+      - "127.0.0.1:3310:3310"
+
   portfolio-lool:
     ports:
       - "127.0.0.1:9980:9980"
