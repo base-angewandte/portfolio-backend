@@ -4,16 +4,63 @@
 
 ### Added
 
-- Send 301 for retrieve requests in EntryViewSet with old entry ids
-- Added `CAS_CHECK_NEXT` environment variable for development
+- Added autosuggest route for Primo API
+- Added `CAS_CHECK_NEXT` environment variable for development and documentation for it
 - Added `first_name` and `last_name` to API user response
+- Added ClamAV and scan uploaded media objects
+- Added bulk creation of entries for importer
+- Added project mapping in skosmos.py
+- Added `get_preflabel_via_uri` in skosmos.py
+- Added management command to update all labels
+- Added management commands to evaluate keywords usage of published entries
 
 ### Changed
 
-- **BREAKING**: Updated shortuuid to 1.0.1
+- **BREAKING**: Update all labels on every update of Portfolio
+- **BREAKING**: Adapted API user response to use `request.user.get_full_name()` instead of the CAS attribute `display_name` to be consistent over multiple Portfolio instances
+- Updated pre-commit configuration
+
+### Fixed
+
+- Fixed `fix_keywords` management command
+
+## 1.2.1
+
+### Fixed
+
+- Fixed CC licenses label in API
+
+## 1.2
+
+### Added
+
+- Send 301 for retrieve requests in EntryViewSet with old entry ids
+- Added Showroom connector
+- Added connection to User Preferences API
+- Added support for Sentry
+- Added possibility to sort media objects
+- Added possibility to feature a media object
+- Added showroom_id field to Entry model
+- Added support for nginx crop and resize in media_server
+- Added crop and resize to dev config of nginx
+- Added management command to push entries to Showroom
+- Added management command to manually start the conversion process of a media object
+- Added management command to fix missing previews
+- Added management commands for fixing migrations issues
+- Added documentation of Showroom settings
+
+### Changed
+
+- **BREAKING**: Updated shortuuid to 1.0.8
 - **BREAKING**: Migrated all existing shortuuids to new format
 - **BREAKING**: Migrated all existing media directories
-- **BREAKING**: Adapted API user response to use `request.user.get_full_name()` to be consistent over Portfolio instances
+- Changed search from TrigramSimilarity to TrigramWordSimilarity
+- Increased max_length of FileField in Media model
+- Adapted dev config of nginx
+
+### Fixed
+
+- Fixed prefLabel caching in skosmos.py
 
 ## 1.1.6
 
