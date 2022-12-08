@@ -5,14 +5,14 @@
 #    pip-compile src/requirements.in
 #
 apimapper==0.7.8
-    # via -r src/requirements.in
+    # via -r requirements.in
 apispec==0.39.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 attrs==20.3.0
     # via jsonschema
 bibtexparser==1.2.0
-    # via -r src/requirements.in
-certifi==2020.12.5
+    # via -r requirements.in
+certifi==2022.12.7
     # via requests
 chardet==4.0.0
     # via requests
@@ -21,7 +21,7 @@ click==7.1.2
     #   pip-tools
     #   rq
 concurrent-log-handler==0.9.19
-    # via -r src/requirements.in
+    # via -r requirements.in
 coreapi==2.3.3
     # via drf-yasg
 coreschema==0.0.4
@@ -30,27 +30,9 @@ coreschema==0.0.4
     #   drf-yasg
 croniter==1.0.12
     # via rq-scheduler
-django-cas-ng==4.1.1
-    # via -r src/requirements.in
-django-cleanup==5.2.0
-    # via -r src/requirements.in
-django-cors-headers==3.7.0
-    # via -r src/requirements.in
-django-debug-toolbar==3.2.1
-    # via -r src/requirements.in
-django-environ==0.4.5
-    # via -r src/requirements.in
-django-extensions==3.1.3
-    # via -r src/requirements.in
-django-filter==2.2.0
-    # via -r src/requirements.in
-django-redis==4.12.1
-    # via -r src/requirements.in
-django-rq==2.4.1
-    # via -r src/requirements.in
 django==2.2.21
     # via
-    #   -r src/requirements.in
+    #   -r requirements.in
     #   django-cas-ng
     #   django-cors-headers
     #   django-debug-toolbar
@@ -59,27 +41,40 @@ django==2.2.21
     #   django-redis
     #   django-rq
     #   drf-yasg
+django-cas-ng==4.1.1
+    # via -r requirements.in
+django-cleanup==5.2.0
+    # via -r requirements.in
+django-cors-headers==3.7.0
+    # via -r requirements.in
+django-debug-toolbar==3.2.1
+    # via -r requirements.in
+django-environ==0.4.5
+    # via -r requirements.in
+django-extensions==3.1.3
+    # via -r requirements.in
+django-filter==2.2.0
+    # via -r requirements.in
+django-redis==4.12.1
+    # via -r requirements.in
+django-rq==2.4.1
+    # via -r requirements.in
 djangorestframework==3.9.4
     # via
-    #   -r src/requirements.in
+    #   -r requirements.in
     #   drf-yasg
 drf-yasg[validation]==1.17.1
-    # via -r src/requirements.in
+    # via -r requirements.in
 future==0.18.2
     # via bibtexparser
 gunicorn==20.1.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 hashids==1.3.1
-    # via -r src/requirements.in
+    # via -r requirements.in
 idna==2.10
     # via
     #   jsonschema
     #   requests
-importlib-metadata==4.10.0
-    # via
-    #   jsonschema
-    #   markdown
-    #   pep517
 inflection==0.5.1
     # via drf-yasg
 isodate==0.6.0
@@ -92,32 +87,32 @@ jsonpointer==2.1
     # via jsonschema
 jsonschema[format]==3.2.0
     # via
-    #   -r src/requirements.in
+    #   -r requirements.in
     #   swagger-spec-validator
 lxml==4.6.3
     # via python-cas
 markdown==3.3.4
     # via
-    #   -r src/requirements.in
+    #   -r requirements.in
     #   apimapper
 markupsafe==1.1.1
     # via jinja2
 marshmallow==2.21.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 packaging==20.9
     # via drf-yasg
 pep517==0.10.0
     # via pip-tools
 pip-tools==6.1.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 portalocker==2.3.0
     # via concurrent-log-handler
 progressbar2==3.53.1
-    # via -r src/requirements.in
+    # via -r requirements.in
 psutil==5.8.0
     # via rainbow-saddle
 psycopg2-binary==2.8.6
-    # via -r src/requirements.in
+    # via -r requirements.in
 pyparsing==2.4.7
     # via
     #   bibtexparser
@@ -132,7 +127,7 @@ python-dateutil==2.8.1
     #   croniter
     #   rq-scheduler
 python-magic==0.4.22
-    # via -r src/requirements.in
+    # via -r requirements.in
 python-utils==2.5.6
     # via progressbar2
 pytz==2021.1
@@ -142,7 +137,7 @@ pyyaml==5.4.1
     #   apispec
     #   swagger-spec-validator
 rainbow-saddle==0.4.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 rdflib==5.0.0
     # via skosmos-client
 redis==3.5.3
@@ -158,18 +153,16 @@ requests==2.25.1
     #   skosmos-client
 rfc3987==1.3.8
     # via jsonschema
-rq-scheduler==0.11.0
-    # via -r src/requirements.in
 rq==1.8.0
     # via
     #   django-rq
     #   rq-scheduler
-ruamel.yaml.clib==0.2.2
-    # via ruamel.yaml
-ruamel.yaml==0.17.4
+rq-scheduler==0.11.0
+    # via -r requirements.in
+ruamel-yaml==0.17.4
     # via drf-yasg
 shortuuid==0.5.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 six==1.16.0
     # via
     #   drf-yasg
@@ -182,7 +175,7 @@ six==1.16.0
     #   rdflib
     #   swagger-spec-validator
 skosmos-client==0.3.0
-    # via -r src/requirements.in
+    # via -r requirements.in
 sqlparse==0.4.1
     # via
     #   django
@@ -193,8 +186,6 @@ swagger-spec-validator==2.7.3
     # via drf-yasg
 toml==0.10.2
     # via pep517
-typing-extensions==4.0.1
-    # via importlib-metadata
 uritemplate==3.0.1
     # via
     #   coreapi
@@ -204,13 +195,9 @@ urllib3==1.26.4
 webcolors==1.11.1
     # via jsonschema
 werkzeug==1.0.1
-    # via -r src/requirements.in
+    # via -r requirements.in
 xmltodict==0.12.0
-    # via -r src/requirements.in
-zipp==3.6.0
-    # via
-    #   importlib-metadata
-    #   pep517
+    # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
