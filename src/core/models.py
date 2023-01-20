@@ -32,7 +32,7 @@ class Entry(AbstractBaseModel):
     )
     texts = JSONField(verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True)
     published = models.BooleanField(default=False)
-    data = JSONField(blank=True, null=True)
+    data = JSONField(default=dict)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     reference = models.CharField(max_length=255, blank=True, null=True, default=None)
