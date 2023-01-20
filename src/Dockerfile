@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         webp \
     && rm -rf /var/lib/apt/lists/*
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3003
 RUN EXIFTOOL_VERSION="$(wget -qO- https://api.github.com/repos/exiftool/exiftool/tags | jq -r '.[0].name')" \
     && wget --progress=dot:giga https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
