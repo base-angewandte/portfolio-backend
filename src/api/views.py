@@ -1036,6 +1036,16 @@ def get_media_for_entry_public(entry):
     return media
 
 
+def get_entry_data(entry):
+    ret = entry.data_display
+    ret['media'] = get_media_for_entry_public(entry.pk)
+    ret['relations'] = {
+        'parents': [{'id': r.pk, 'title': r.title} for r in entry.related_to.filter(published=True)],
+        'to': [{'id': r.pk, 'title': r.title} for r in entry.relations.filter(published=True)],
+    }
+    return ret
+
+
 @swagger_auto_schema(
     methods=['get'],
     operation_id='api_v1_user_entry_data',
@@ -1062,13 +1072,7 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
     except Entry.DoesNotExist as e:
         raise exceptions.NotFound(_('Entry does not exist')) from e
 
-    ret = e.data_display
-    ret['media'] = get_media_for_entry_public(entry)
-    ret['relations'] = {
-        'parents': [{'id': r.pk, 'title': r.title} for r in e.related_to.filter(published=True)],
-        'to': [{'id': r.pk, 'title': r.title} for r in e.relations.filter(published=True)],
-    }
-
+    ret = get_entry_data(e)
     return Response(ret)
 
 
@@ -1091,13 +1095,7 @@ def entry_data(request, pk=None, *args, **kwargs):
     except Entry.DoesNotExist as e:
         raise exceptions.NotFound(_('Entry does not exist')) from e
 
-    ret = e.data_display
-    ret['media'] = get_media_for_entry_public(pk)
-    ret['relations'] = {
-        'parents': [{'id': r.pk, 'title': r.title} for r in e.related_to.filter(published=True)],
-        'to': [{'id': r.pk, 'title': r.title} for r in e.relations.filter(published=True)],
-    }
-
+    ret = get_entry_data(e)
     return Response(ret)
 
 
