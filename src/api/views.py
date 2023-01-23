@@ -340,7 +340,17 @@ def user_information(request, *args, **kwargs):
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('User not found'),
     },
-    manual_parameters=[authorization_header_paramter, language_header_parameter],
+    manual_parameters=[
+        authorization_header_paramter,
+        language_header_parameter,
+        openapi.Parameter(
+            'all',
+            openapi.IN_QUERY,
+            required=False,
+            type=openapi.TYPE_BOOLEAN,
+            default=False,
+        ),
+    ],
 )
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
@@ -374,34 +384,39 @@ def user_data(request, pk=None, *args, **kwargs):
             'data': data,
         }
 
-    published_entries_query = Entry.objects.filter(owner=user, published=True, type__isnull=False,).filter(
-        Q(data__contains={'architecture': [{'source': user.username}]})
-        | Q(data__contains={'authors': [{'source': user.username}]})
-        | Q(data__contains={'artists': [{'source': user.username}]})
-        | Q(data__contains={'winners': [{'source': user.username}]})
-        | Q(data__contains={'granted_by': [{'source': user.username}]})
-        | Q(data__contains={'jury': [{'source': user.username}]})
-        | Q(data__contains={'music': [{'source': user.username}]})
-        | Q(data__contains={'conductors': [{'source': user.username}]})
-        | Q(data__contains={'composition': [{'source': user.username}]})
-        | Q(data__contains={'organisers': [{'source': user.username}]})
-        | Q(data__contains={'lecturers': [{'source': user.username}]})
-        | Q(data__contains={'design': [{'source': user.username}]})
-        | Q(data__contains={'commissions': [{'source': user.username}]})
-        | Q(data__contains={'editors': [{'source': user.username}]})
-        | Q(data__contains={'publishers': [{'source': user.username}]})
-        | Q(data__contains={'curators': [{'source': user.username}]})
-        | Q(data__contains={'fellow_scholar': [{'source': user.username}]})
-        | Q(data__contains={'funding': [{'source': user.username}]})
-        | Q(data__contains={'organisations': [{'source': user.username}]})
-        | Q(data__contains={'project_lead': [{'source': user.username}]})
-        | Q(data__contains={'project_partnership': [{'source': user.username}]})
-        | Q(data__contains={'software_developers': [{'source': user.username}]})
-        | Q(data__contains={'directors': [{'source': user.username}]})
-        | Q(data__contains={'contributors': [{'source': user.username}]})
-    )
+    all_parameter = request.query_params.get('all', False)
 
-    cache_key = f'user_data__{pk}_{lang}'
+    published_entries_query = Entry.objects.filter(owner=user, published=True, type__isnull=False)
+
+    if not all_parameter:
+        published_entries_query = published_entries_query.filter(
+            Q(data__contains={'architecture': [{'source': user.username}]})
+            | Q(data__contains={'authors': [{'source': user.username}]})
+            | Q(data__contains={'artists': [{'source': user.username}]})
+            | Q(data__contains={'winners': [{'source': user.username}]})
+            | Q(data__contains={'granted_by': [{'source': user.username}]})
+            | Q(data__contains={'jury': [{'source': user.username}]})
+            | Q(data__contains={'music': [{'source': user.username}]})
+            | Q(data__contains={'conductors': [{'source': user.username}]})
+            | Q(data__contains={'composition': [{'source': user.username}]})
+            | Q(data__contains={'organisers': [{'source': user.username}]})
+            | Q(data__contains={'lecturers': [{'source': user.username}]})
+            | Q(data__contains={'design': [{'source': user.username}]})
+            | Q(data__contains={'commissions': [{'source': user.username}]})
+            | Q(data__contains={'editors': [{'source': user.username}]})
+            | Q(data__contains={'publishers': [{'source': user.username}]})
+            | Q(data__contains={'curators': [{'source': user.username}]})
+            | Q(data__contains={'fellow_scholar': [{'source': user.username}]})
+            | Q(data__contains={'funding': [{'source': user.username}]})
+            | Q(data__contains={'organisations': [{'source': user.username}]})
+            | Q(data__contains={'project_lead': [{'source': user.username}]})
+            | Q(data__contains={'project_partnership': [{'source': user.username}]})
+            | Q(data__contains={'software_developers': [{'source': user.username}]})
+            | Q(data__contains={'directors': [{'source': user.username}]})
+            | Q(data__contains={'contributors': [{'source': user.username}]})
+        )
+
+    cache_key = f'user_data__{pk}_{lang}_{all_parameter}'
 
     cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
