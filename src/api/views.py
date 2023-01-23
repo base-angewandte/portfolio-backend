@@ -1043,6 +1043,7 @@ def get_entry_data(entry):
         'parents': [{'id': r.pk, 'title': r.title} for r in entry.related_to.filter(published=True)],
         'to': [{'id': r.pk, 'title': r.title} for r in entry.relations.filter(published=True)],
     }
+    ret['showroom_id'] = entry.showroom_id
     return ret
 
 
