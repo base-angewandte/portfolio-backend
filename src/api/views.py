@@ -1,3 +1,4 @@
+import json
 import operator
 from functools import reduce
 
@@ -337,6 +338,7 @@ def user_information(request, *args, **kwargs):
     operation_id='api_v1_user_data',
     responses={
         200: openapi.Response(''),
+        400: openapi.Response('Bad Request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('User not found'),
     },
@@ -384,7 +386,10 @@ def user_data(request, pk=None, *args, **kwargs):
             'data': data,
         }
 
-    all_parameter = request.query_params.get('all', False)
+    try:
+        all_parameter = json.loads(request.query_params.get('all', 'false'))
+    except json.JSONDecodeError as e:
+        raise exceptions.ParseError() from e
 
     published_entries_query = Entry.objects.filter(owner=user, published=True, type__isnull=False)
 
