@@ -54,7 +54,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def location_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
@@ -62,7 +62,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def owner_role_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
@@ -70,7 +70,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def year_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
