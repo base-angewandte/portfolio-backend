@@ -372,7 +372,7 @@ def user_data(request, pk=None, *args, **kwargs):
             'id': entry.pk,
             'title': entry.title,
             'subtitle': entry.subtitle or None,
-            'type': entry.type.get('label').get(lang),
+            'type': entry.type.get('label').get(lang) if entry.type else None,
             'role': entry.owner_role_display,
             'location': entry.location_display,
             'year': entry.year_display,
@@ -941,7 +941,7 @@ def user_data(request, pk=None, *args, **kwargs):
             videos_data.append(entry_to_data(e))
         # General Activites
         else:
-            general_activities_data.append(e)
+            general_activities_data.append(entry_to_data(e))
 
     # Publications
     publications_data = []
