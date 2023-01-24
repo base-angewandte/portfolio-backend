@@ -605,7 +605,7 @@ def user_data(request, pk=None, *args, **kwargs):
     published_entries = published_entries_query.order_by('title')
 
     for e in published_entries:
-        entry_type = e.type.get('source')
+        entry_type = e.type.get('source') if e.type else None
 
         if entry_type in DOCUMENT_TYPES:
             e_data = document_schema.load(e.data).data
