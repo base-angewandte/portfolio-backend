@@ -166,7 +166,6 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
             reverse_pk = kwargs.get('pk', '')[::-1]
             if self.get_queryset().filter(pk=reverse_pk).exists():
                 raise PermanentRedirect(to=reverse_pk) from nfe
-                # return Response(reverse_pk, status=301)
             else:
                 raise nfe
         serializer = self.get_serializer(instance)
