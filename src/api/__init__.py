@@ -34,16 +34,9 @@ def portfolio_exception_handler(exc, context):
     if isinstance(exc, PermanentRedirect):
         pk = context['kwargs']['pk']
         old_path = context['request']._request.path
-        if exc.to:
-            new_path = old_path.replace(pk, exc.to)
-            response.data['to'] = new_path
-            # TODO: update to response.headers['Location'] once django is updated to >= 3.2
-            response['Location'] = new_path
-        else:
-            # TODO: in case to was not set when the exception was raised, should we
-            #       rather convert this to a 404, or should we even raise another
-            #       exception and go for a 500?
-            response.data['to'] = 'location not disclosed'
-            logger.warning(f'PermanentRedirect: no to parameter was provided for {old_path}')
+        new_path = old_path.replace(pk, exc.to)
+        response.data['to'] = new_path
+        # TODO: update to response.headers['Location'] once django is updated to >= 3.2
+        response['Location'] = new_path
 
     return response
