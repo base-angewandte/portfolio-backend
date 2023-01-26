@@ -41,6 +41,7 @@ from general.drf.filters import CaseInsensitiveOrderingFilter
 from media_server.models import get_media_for_entry, update_media_order_for_entry
 from media_server.utils import get_free_space_for_user
 
+from . import PermanentRedirect
 from .mixins import CountModelMixin, CreateListMixin
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
@@ -165,7 +166,7 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
         except Http404 as nfe:
             reverse_pk = kwargs.get('pk', '')[::-1]
             if self.get_queryset().filter(pk=reverse_pk).exists():
-                return Response(reverse_pk, status=301)
+                raise PermanentRedirect(to=reverse_pk) from nfe
             else:
                 raise nfe
         serializer = self.get_serializer(instance)
