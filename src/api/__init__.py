@@ -18,6 +18,8 @@ class PermanentRedirect(APIException):
     default_code = 'permanent_redirect'
 
     def __init__(self, detail=None, to=None):
+        if to is None:
+            raise TypeError("PermanentRedirect is missing required argument 'to'")
         self.to = to
         if detail is None:
             detail = self.default_detail
