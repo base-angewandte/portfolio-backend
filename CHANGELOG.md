@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.1
+
+## Added
+
+- Added `all` parameter to `/api/v1/user/{id}/data/` to be able to also return entries in which the user isn't a contributor
+
+### Changed
+
+- **BREAKING**: Updated pre-commit configuration to also enforce the use of conventional commit messages
+- **BREAKING**: Changed redirect response from 301 to 308
+- **BREAKING**: Default value for `data` is now an empty dict
+- Install exiftool via github instead of sourceforge in docker image
+
 ## 1.3
 
 ### Added

@@ -1,3 +1,4 @@
+import json
 import operator
 from functools import reduce
 
@@ -40,6 +41,7 @@ from general.drf.filters import CaseInsensitiveOrderingFilter
 from media_server.models import get_media_for_entry, update_media_order_for_entry
 from media_server.utils import get_free_space_for_user
 
+from . import PermanentRedirect
 from .mixins import CountModelMixin, CreateListMixin
 from .serializers.entry import EntrySerializer
 from .serializers.relation import RelationSerializer
@@ -164,7 +166,7 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
         except Http404 as nfe:
             reverse_pk = kwargs.get('pk', '')[::-1]
             if self.get_queryset().filter(pk=reverse_pk).exists():
-                return Response(reverse_pk, status=301)
+                raise PermanentRedirect(to=reverse_pk) from nfe
             else:
                 raise nfe
         serializer = self.get_serializer(instance)
@@ -235,7 +237,14 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
     @action(detail=False, filter_backends=[], pagination_class=None)
     def types(self, request, *args, **kwargs):
         language = get_language() or 'en'
-        content = self.get_queryset().exclude(type__isnull=True).values_list('type', flat=True).distinct().order_by()
+        content = (
+            self.get_queryset()
+            .exclude(type__isnull=True)
+            .exclude(type={})
+            .values_list('type', flat=True)
+            .distinct()
+            .order_by()
+        )
         return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower()))
 
     def get_queryset(self):
@@ -337,10 +346,21 @@ def user_information(request, *args, **kwargs):
     operation_id='api_v1_user_data',
     responses={
         200: openapi.Response(''),
+        400: openapi.Response('Bad Request'),
         403: openapi.Response('Access not allowed'),
         404: openapi.Response('User not found'),
     },
-    manual_parameters=[authorization_header_paramter, language_header_parameter],
+    manual_parameters=[
+        authorization_header_paramter,
+        language_header_parameter,
+        openapi.Parameter(
+            'all',
+            openapi.IN_QUERY,
+            required=False,
+            type=openapi.TYPE_BOOLEAN,
+            default=False,
+        ),
+    ],
 )
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
@@ -360,7 +380,7 @@ def user_data(request, pk=None, *args, **kwargs):
             'id': entry.pk,
             'title': entry.title,
             'subtitle': entry.subtitle or None,
-            'type': entry.type.get('label').get(lang),
+            'type': entry.type.get('label').get(lang) if entry.type else None,
             'role': entry.owner_role_display,
             'location': entry.location_display,
             'year': entry.year_display,
@@ -374,34 +394,46 @@ def user_data(request, pk=None, *args, **kwargs):
             'data': data,
         }
 
-    published_entries_query = Entry.objects.filter(owner=user, published=True, type__isnull=False,).filter(
-        Q(data__contains={'architecture': [{'source': user.username}]})
-        | Q(data__contains={'authors': [{'source': user.username}]})
-        | Q(data__contains={'artists': [{'source': user.username}]})
-        | Q(data__contains={'winners': [{'source': user.username}]})
-        | Q(data__contains={'granted_by': [{'source': user.username}]})
-        | Q(data__contains={'jury': [{'source': user.username}]})
-        | Q(data__contains={'music': [{'source': user.username}]})
-        | Q(data__contains={'conductors': [{'source': user.username}]})
-        | Q(data__contains={'composition': [{'source': user.username}]})
-        | Q(data__contains={'organisers': [{'source': user.username}]})
-        | Q(data__contains={'lecturers': [{'source': user.username}]})
-        | Q(data__contains={'design': [{'source': user.username}]})
-        | Q(data__contains={'commissions': [{'source': user.username}]})
-        | Q(data__contains={'editors': [{'source': user.username}]})
-        | Q(data__contains={'publishers': [{'source': user.username}]})
-        | Q(data__contains={'curators': [{'source': user.username}]})
-        | Q(data__contains={'fellow_scholar': [{'source': user.username}]})
-        | Q(data__contains={'funding': [{'source': user.username}]})
-        | Q(data__contains={'organisations': [{'source': user.username}]})
-        | Q(data__contains={'project_lead': [{'source': user.username}]})
-        | Q(data__contains={'project_partnership': [{'source': user.username}]})
-        | Q(data__contains={'software_developers': [{'source': user.username}]})
-        | Q(data__contains={'directors': [{'source': user.username}]})
-        | Q(data__contains={'contributors': [{'source': user.username}]})
-    )
+    try:
+        all_parameter = json.loads(request.query_params.get('all', 'false'))
+    except json.JSONDecodeError as e:
+        raise exceptions.ParseError() from e
 
-    cache_key = f'user_data__{pk}_{lang}'
+    published_entries_query = Entry.objects.filter(owner=user, published=True)
+
+    if not all_parameter:
+        published_entries_query = (
+            published_entries_query.exclude(type__isnull=True)
+            .exclude(type={})
+            .filter(
+                Q(data__contains={'architecture': [{'source': user.username}]})
+                | Q(data__contains={'authors': [{'source': user.username}]})
+                | Q(data__contains={'artists': [{'source': user.username}]})
+                | Q(data__contains={'winners': [{'source': user.username}]})
+                | Q(data__contains={'granted_by': [{'source': user.username}]})
+                | Q(data__contains={'jury': [{'source': user.username}]})
+                | Q(data__contains={'music': [{'source': user.username}]})
+                | Q(data__contains={'conductors': [{'source': user.username}]})
+                | Q(data__contains={'composition': [{'source': user.username}]})
+                | Q(data__contains={'organisers': [{'source': user.username}]})
+                | Q(data__contains={'lecturers': [{'source': user.username}]})
+                | Q(data__contains={'design': [{'source': user.username}]})
+                | Q(data__contains={'commissions': [{'source': user.username}]})
+                | Q(data__contains={'editors': [{'source': user.username}]})
+                | Q(data__contains={'publishers': [{'source': user.username}]})
+                | Q(data__contains={'curators': [{'source': user.username}]})
+                | Q(data__contains={'fellow_scholar': [{'source': user.username}]})
+                | Q(data__contains={'funding': [{'source': user.username}]})
+                | Q(data__contains={'organisations': [{'source': user.username}]})
+                | Q(data__contains={'project_lead': [{'source': user.username}]})
+                | Q(data__contains={'project_partnership': [{'source': user.username}]})
+                | Q(data__contains={'software_developers': [{'source': user.username}]})
+                | Q(data__contains={'directors': [{'source': user.username}]})
+                | Q(data__contains={'contributors': [{'source': user.username}]})
+            )
+        )
+
+    cache_key = f'user_data__{pk}_{lang}_{all_parameter}'
 
     cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
@@ -574,7 +606,7 @@ def user_data(request, pk=None, *args, **kwargs):
     published_entries = published_entries_query.order_by('title')
 
     for e in published_entries:
-        entry_type = e.type.get('source')
+        entry_type = e.type.get('source') if e.type else None
 
         if entry_type in DOCUMENT_TYPES:
             e_data = document_schema.load(e.data).data
@@ -921,7 +953,7 @@ def user_data(request, pk=None, *args, **kwargs):
             videos_data.append(entry_to_data(e))
         # General Activites
         else:
-            general_activities_data.append(e)
+            general_activities_data.append(entry_to_data(e))
 
     # Publications
     publications_data = []
@@ -1021,6 +1053,17 @@ def get_media_for_entry_public(entry):
     return media
 
 
+def get_entry_data(entry):
+    ret = entry.data_display
+    ret['media'] = get_media_for_entry_public(entry.pk)
+    ret['relations'] = {
+        'parents': [{'id': r.pk, 'title': r.title} for r in entry.related_to.filter(published=True)],
+        'to': [{'id': r.pk, 'title': r.title} for r in entry.relations.filter(published=True)],
+    }
+    ret['showroom_id'] = entry.showroom_id
+    return ret
+
+
 @swagger_auto_schema(
     methods=['get'],
     operation_id='api_v1_user_entry_data',
@@ -1047,13 +1090,7 @@ def user_entry_data(request, pk=None, entry=None, *args, **kwargs):
     except Entry.DoesNotExist as e:
         raise exceptions.NotFound(_('Entry does not exist')) from e
 
-    ret = e.data_display
-    ret['media'] = get_media_for_entry_public(entry)
-    ret['relations'] = {
-        'parents': [{'id': r.pk, 'title': r.title} for r in e.related_to.filter(published=True)],
-        'to': [{'id': r.pk, 'title': r.title} for r in e.relations.filter(published=True)],
-    }
-
+    ret = get_entry_data(e)
     return Response(ret)
 
 
@@ -1076,13 +1113,7 @@ def entry_data(request, pk=None, *args, **kwargs):
     except Entry.DoesNotExist as e:
         raise exceptions.NotFound(_('Entry does not exist')) from e
 
-    ret = e.data_display
-    ret['media'] = get_media_for_entry_public(pk)
-    ret['relations'] = {
-        'parents': [{'id': r.pk, 'title': r.title} for r in e.related_to.filter(published=True)],
-        'to': [{'id': r.pk, 'title': r.title} for r in e.relations.filter(published=True)],
-    }
-
+    ret = get_entry_data(e)
     return Response(ret)
 
 

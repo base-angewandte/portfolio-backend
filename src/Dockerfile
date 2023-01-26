@@ -18,16 +18,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         webp \
     && rm -rf /var/lib/apt/lists/*
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3003
 RUN EXIFTOOL_VERSION="$(wget -qO- https://api.github.com/repos/exiftool/exiftool/tags | jq -r '.[0].name')" \
-    && wget --progress=dot:giga https://netix.dl.sourceforge.net/project/exiftool/Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
-    && tar xvf Image-ExifTool-"${EXIFTOOL_VERSION}".tar.gz \
-    && cd Image-ExifTool-"${EXIFTOOL_VERSION}"/ \
+    EXIFTOOL_FILENAME=exiftool-"${EXIFTOOL_VERSION}" \
+    && wget --progress=dot:giga https://github.com/exiftool/exiftool/archive/refs/tags/"${EXIFTOOL_VERSION}".tar.gz -O "${EXIFTOOL_FILENAME}".tar.gz \
+    && tar xvf "${EXIFTOOL_FILENAME}".tar.gz \
+    && cd "${EXIFTOOL_FILENAME}"/ \
     && perl Makefile.PL \
     && make test \
-	&& make install \
-	&& cd .. \
-	&& rm -rf Image-ExifTool-"${EXIFTOOL_VERSION}"*
+    && make install \
+    && cd .. \
+    && rm -rf "${EXIFTOOL_FILENAME}"*
 
 # hadolint ignore=DL3059
 RUN mkdir /logs

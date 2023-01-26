@@ -32,7 +32,7 @@ class Entry(AbstractBaseModel):
     )
     texts = JSONField(verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True)
     published = models.BooleanField(default=False)
-    data = JSONField(blank=True, null=True)
+    data = JSONField(default=dict)
     relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
 
     reference = models.CharField(max_length=255, blank=True, null=True, default=None)
@@ -54,7 +54,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def location_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
@@ -62,7 +62,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def owner_role_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
@@ -70,7 +70,7 @@ class Entry(AbstractBaseModel):
 
     @property
     def year_display(self):
-        if self.type.get('source'):
+        if self.type and self.type.get('source'):
             schema = get_schema(self.type['source'])
             data = self.data
             if schema and data:
