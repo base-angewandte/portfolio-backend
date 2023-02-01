@@ -18,11 +18,15 @@ class Command(BaseCommand):
     help = 'Export all published entries'
 
     def add_arguments(self, parser):
-        parser.add_argument('year', type=int)
+        parser.add_argument('year', type=int, nargs='?', default=-1)
         parser.add_argument('--lang', type=str)
 
     def handle(self, *args, **options):
         year = options['year']
+
+        if year == -1:
+            year = 'all'
+
         lang = options['lang'] or 'en'
 
         if lang in settings.LANGUAGES_DICT.keys():
@@ -73,12 +77,14 @@ class Command(BaseCommand):
             for s in schemas:
                 date_fields += s().date_fields
 
-            for df in list(set(date_fields)):
-                date_filters.append({f'data__{df}__icontains': year})
+            query = Entry.objects.filter(published=True)
 
-            for e in progressbar(
-                Entry.objects.filter(published=True).filter(reduce(operator.or_, (Q(**x) for x in date_filters)))
-            ):
+            if year != 'all':
+                for df in list(set(date_fields)):
+                    date_filters.append({f'data__{df}__icontains': year})
+                query = query.filter(reduce(operator.or_, (Q(**x) for x in date_filters)))
+
+            for e in progressbar(query):
                 data = []
                 for d in e.data_display.get('data'):
                     d_label = d.get('label') or ''
@@ -100,7 +106,7 @@ class Command(BaseCommand):
                         e.id,
                         e.title,
                         e.subtitle,
-                        e.type.get('label').get(lang),
+                        e.type.get('label').get(lang) if e.type else '',
                         e.owner.get_full_name(),
                         ' // '.join(data),
                     ]
