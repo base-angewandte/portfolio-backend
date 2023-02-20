@@ -1,8 +1,7 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-redis:
-    image: redis:5.0-alpine
+    image: redis:6.2-alpine
     container_name: portfolio-redis
     volumes:
       - ./dockerdata/redis/data:/data
@@ -27,6 +26,7 @@ services:
 
   portfolio-django:
     build: ./src
+    image: portfolio-django
     container_name: portfolio-django
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -46,6 +46,7 @@ services:
 
   portfolio-rq-worker-1:
     build: ./src
+    image: portfolio-django
     container_name: portfolio-rq-worker-1
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -60,6 +61,7 @@ services:
 
   portfolio-rq-worker-2:
     build: ./src
+    image: portfolio-django
     container_name: portfolio-rq-worker-2
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -74,6 +76,7 @@ services:
 
   portfolio-rq-worker-3:
     build: ./src
+    image: portfolio-django
     container_name: portfolio-rq-worker-3
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -88,6 +91,7 @@ services:
 
   portfolio-rq-scheduler:
     build: ./src
+    image: portfolio-django
     container_name: portfolio-rq-scheduler
     environment:
       - POSTGRES_PASSWORD=$PORTFOLIO_DB_PASSWORD
@@ -99,6 +103,13 @@ services:
       - portfolionet
     restart: always
     command: python manage.py rqscheduler
+
+  portfolio-clamav:
+    image: clamav/clamav:stable
+    container_name: portfolio-clamav
+    networks:
+      - portfolionet
+    restart: always
 
   portfolio-lool:
     image: collabora/code:4.2.3.1
@@ -117,7 +128,6 @@ services:
       - ./docker/cron/crontab:/tmp/crontab
     network_mode: "none"
     restart: always
-
 
 networks:
   portfolionet:

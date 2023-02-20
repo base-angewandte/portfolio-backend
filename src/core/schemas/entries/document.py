@@ -34,7 +34,7 @@ class DocumentSchema(BaseSchema):
     publishers = get_contributors_field_for_role('publisher', {'order': 3})
     date = get_date_field({'order': 4})
     location = get_location_field({'order': 5})
-    # isbn/issn
+    # isbn/issn/issm
     isbn = get_string_field(get_preflabel_lazy('isbn'), {'field_format': 'half', 'order': 6})
     doi = get_string_field(get_preflabel_lazy('doi'), {'field_format': 'half', 'order': 7})
     url = get_url_field({'order': 8})

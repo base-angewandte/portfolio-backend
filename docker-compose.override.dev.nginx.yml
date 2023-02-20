@@ -1,6 +1,5 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-nginx:
     image: nginx:alpine
     container_name: portfolio-nginx
@@ -9,6 +8,6 @@ services:
       - $PORTFOLIO_ASSETS:/assets
       - $PORTFOLIO_FRONTEND:/portfolio-frontend
     ports:
-      - 127.0.0.1:80:80
+      - "127.0.0.1:80:80"
     networks:
       - portfolionet

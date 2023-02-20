@@ -49,7 +49,7 @@ class GenericModel:
         for key in self.__schema__.declared_fields:
             v = getattr(self, key)
             if v:
-                metadata = getattr(self, 'metadata').get(key)
+                metadata = self.metadata.get(key)
                 label = metadata.get('title')
                 if isinstance(v, GenericModel):
                     value = v.to_display()

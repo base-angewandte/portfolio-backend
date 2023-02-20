@@ -140,6 +140,7 @@ CAS_RETRY_LOGIN = True
 CAS_VERSION = env.str('CAS_VERSION', default='3')
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_REDIRECT_URL = env.str('CAS_REDIRECT_URL', default=FORCE_SCRIPT_NAME or '/')
+CAS_CHECK_NEXT = env.bool('CAS_CHECK_NEXT', default=True)
 CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
 CAS_RENAME_ATTRIBUTES = env.dict('CAS_RENAME_ATTRIBUTES', default={})
 
@@ -379,6 +380,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_VERSION': 'v1',
     'ORDERING_PARAM': 'sort',
+    'EXCEPTION_HANDLER': 'api.portfolio_exception_handler',
 }
 
 SWAGGER_SETTINGS = {'SECURITY_DEFINITIONS': {}}
@@ -409,7 +411,7 @@ ACTIVE_SCHEMAS = env.list(
 )
 
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
+    INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.insert(
         MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
         'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -423,7 +425,11 @@ VOC_ID = 'povoc'
 VOC_GRAPH = 'http://base.uni-ak.ac.at/portfolio/vocabulary/'
 LANGUAGES_VOCID = 'languages'
 
+EN_LABELS_TITLE_CASE = env.bool('EN_LABELS_TITLE_CASE', default=True)
+
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
+PRIMO_API_URL = env.str('PRIMO_API_URL', default='https://apigw.obvsg.at/primo/v1/search')
+PRIMO_API_KEY = env.str('PRIMO_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
 PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
@@ -558,6 +564,13 @@ SOURCES = {
             ),
         },
     },
+    'PRIMO_IMPORT': {
+        apiconfig.URL: PRIMO_API_URL,
+        apiconfig.QUERY_FIELD: 'q',
+        apiconfig.PAYLOAD: {'vid': 'OBV', 'scope': 'OBV_Gesamt', 'limit': 100},
+        apiconfig.TIMEOUT: 10,
+        apiconfig.HEADER: {'apikey': PRIMO_API_KEY},
+    },
 }
 
 ANGEWANDTE_MAPPING = {
@@ -598,6 +611,23 @@ PELIAS_MAPPING = {
     'region': ('properties', 'region'),
     'country': ('properties', 'country'),
     'geometry': ('geometry',),
+}
+
+PRIMO_MAPPING = {
+    'source': ('pnx', 'search', 'lsr33'),
+    'label': ('pnx', 'search', 'title'),
+    'isbn': ('pnx', 'search', 'isbn'),
+    'description': ('pnx', 'search', 'description'),
+    'author': ('pnx', 'display', 'creator'),
+    'pages': ('pnx', 'display', 'format'),
+    'creationdate': ('pnx', 'display', 'creationdate'),
+    'type': ('pnx', 'display', 'type'),
+    'lad24': ('pnx', 'addata', 'lad24'),
+    'lds16': ('pnx', 'display', 'lds16'),
+    'language': ('pnx', 'display', 'language'),
+    'subject': ('pnx', 'display', 'subject'),
+    'contributors': ('pnx', 'display', 'contributor'),
+    'ispartof': ('pnx', 'display', 'ispartof'),
 }
 
 
@@ -685,8 +715,14 @@ RESPONSE_MAPS = {
             },
         },
     },
+    'PRIMO_IMPORT': {
+        apiconfig.RESULT: 'docs',
+        apiconfig.DIRECT: PRIMO_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"OBVSG"'}},
+    },
 }
 
+BIBRECS = ('PRIMO_IMPORT',)
 CONTRIBUTORS = ('GND_PERSON', 'GND_INSTITUTION', 'VIAF_PERSON', 'VIAF_INSTITUTION')
 
 if 'uni-ak.ac.at' in SITE_URL:
@@ -707,6 +743,7 @@ else:
 ACTIVE_SOURCES = {
     'contributors': CONTRIBUTORS,
     'places': PLACES,
+    'bibrecs': BIBRECS,
     'keywords': {'all': 'core.skosmos.get_base_keywords', 'search': 'core.skosmos.get_keywords'},
     'roles': 'core.skosmos.get_roles',
     'formats': 'core.skosmos.get_formats',
@@ -720,6 +757,10 @@ ACTIVE_SOURCES = {
 }
 
 USER_QUOTA = env.int('USER_QUOTA', default=10 * 1024 * 1024 * 1024)  # user quota / year
+
+CLAMAV_ENABLED = env.bool('CLAMAV_ENABLED', default=True)
+CLAMAV_TCP_PORT = env.int('CLAMAV_TCP_PORT', default=3310)
+CLAMAV_TCP_ADDR = f'{PROJECT_NAME}-clamav' if DOCKER else 'localhost'
 
 LOOL_HOST = 'http://{}:9980'.format(f'{PROJECT_NAME}-lool' if DOCKER else 'localhost')
 
@@ -753,3 +794,40 @@ if ARCHIVE_TYPE:
     }
     ARCHIVE_METADATA_TEMPLATE = f'{ARCHIVE_TYPE.lower()}_container.json'
     ARCHIVE_THESIS_TEMPLATE = f'{ARCHIVE_TYPE.lower()}_thesis.json'
+
+SYNC_TO_SHOWROOM = env.bool('SYNC_TO_SHOWROOM', default=False)
+SHOWROOM_API_BASE = env.str('SHOWROOM_API_BASE', default=None)
+SHOWROOM_API_KEY = env.str('SHOWROOM_API_KEY', default=None)
+SHOWROOM_REPO_ID = env.int('SHOWROOM_REPO_ID', default=None)
+
+if SYNC_TO_SHOWROOM:
+    INSTALLED_APPS.append('showroom_connector')
+
+USER_PREFERENCES_API_BASE = env.str('USER_PREFERENCES_API_BASE', default=None)
+USER_PREFERENCES_API_KEY = env.str('USER_PREFERENCES_API_KEY', default=None)
+
+# Sentry
+SENTRY_DSN = env.str('SENTRY_DSN', default=None)
+SENTRY_ENVIRONMENT = env.str(
+    'SENTRY_ENVIRONMENT',
+    default='development' if any([i in SITE_URL for i in ['dev', 'localhost', '127.0.0.1']]) else 'production',
+)
+SENTRY_TRACES_SAMPLE_RATE = env.float('SENTRY_TRACES_SAMPLE_RATE', default=0.2)
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.redis import RedisIntegration
+    from sentry_sdk.integrations.rq import RqIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(),
+            RedisIntegration(),
+            RqIntegration(),
+        ],
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        send_default_pii=True,
+    )

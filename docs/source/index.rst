@@ -16,6 +16,7 @@ Welcome to base Portfolio Backend's documentation!
    management_commands
    rest_api
    archival
+   lists_logic
 
 
 .. Indices and tables

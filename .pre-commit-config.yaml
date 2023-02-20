@@ -1,42 +1,10 @@
+default_install_hook_types: [pre-commit, commit-msg]
 default_language_version:
   python: python3
-exclude: (/migrations/|manage.py)
+exclude: (/migrations/|manage.py|docs/source/conf.py)
 repos:
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.20.0
+  - repo: https://github.com/base-angewandte/pre-commit-hooks
+    rev: 1.1.1-py3.7
     hooks:
-      - id: pyupgrade
-        args: [ --py37-plus ]
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.9.1
-    hooks:
-      - id: isort
-  - repo: https://github.com/psf/black
-    rev: 21.6b0
-    hooks:
-      - id: black
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-      - id: double-quote-string-fixer
-      - id: end-of-file-fixer
-  - repo: https://github.com/myint/docformatter
-    rev: v1.4
-    hooks:
-      - id: docformatter
-        args: [ --in-place ]
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-bugbear==21.4.3, pep8-naming==0.11.1]
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.0
-    hooks:
-      - id: bandit
-        exclude: tests.py
-  - repo: https://github.com/IamTheFij/docker-pre-commit
-    rev: v2.0.0
-    hooks:
-      - id: docker-compose-check
-      - id: hadolint
+      - id: base-hooks
+      - id: base-commit-msg-hooks

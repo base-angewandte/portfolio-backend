@@ -3,6 +3,7 @@ from collections import OrderedDict
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
+from django.db.models.signals import post_save
 from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -44,6 +45,17 @@ class RelationsSerializer(serializers.Serializer):
     to = RelatedEntrySerializer(read_only=True)
 
 
+class EntryBulkCreateSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        entries_data = [Entry(**data) for data in validated_data]
+        entries = Entry.objects.bulk_create(entries_data)
+        # send post_save signal for published entries so they are pushed to Showroom
+        for entry in entries:
+            if entry.published:
+                post_save.send(Entry, instance=entry, created=True)
+        return entries
+
+
 class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
     parents = serializers.SerializerMethodField()
@@ -53,6 +65,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
 
     class Meta:
         model = Entry
+        list_serializer_class = EntryBulkCreateSerializer
         fields = '__all__'
         read_only_fields = [
             'archive_id', 'archive_URI', 'archive_date', 'date_created', 'date_changed'
@@ -64,6 +77,7 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'archive_id': OrderedDict([('hidden', True)]),
             'archive_URI': OrderedDict([('hidden', True)]),
             'reference': OrderedDict([('hidden', True)]),
+            'showroom_id': OrderedDict([('hidden', True)]),
             'published': OrderedDict([('hidden', True)]),
             'data': OrderedDict([('hidden', True)]),
             # switched field type from autocomplete to text until autocomplete actually supported

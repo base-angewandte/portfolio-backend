@@ -14,6 +14,16 @@ from .utils import unaccent
 
 CACHE_TIME = 86400  # 1 day
 
+PROJECT_MAPPING = {
+    'http://base.uni-ak.ac.at/portfolio/languages/': 'languages',
+    'http://base.uni-ak.ac.at/recherche/keywords/': 'basekw',
+    'http://base.uni-ak.ac.at/vocabulary/': 'basevoc',
+    'http://base.uni-ak.ac.at/portfolio/licenses/': 'licenses',
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/': 'potax',
+    'http://base.uni-ak.ac.at/portfolio/vocabulary/': 'povoc',
+    'http://base.uni-ak.ac.at/portfolio/disciplines/': 'disciplines',
+}
+
 skosmos = SkosmosClient(api_base=settings.SKOSMOS_API)
 
 
@@ -255,7 +265,7 @@ def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, la
         language = lang
     else:
         language = get_language() or 'en'
-    cache_key = f'get_preflabel_{language}_{concept}'
+    cache_key = f'get_preflabel_{project}_{language}_{concept}'
 
     label = cache.get(cache_key)
     if not label:
@@ -282,6 +292,12 @@ def get_preflabel_languages(concept: str) -> str:
         project=settings.LANGUAGES_VOCID,
         graph='http://base.uni-ak.ac.at/portfolio/languages/',
     )
+
+
+def get_preflabel_via_uri(concept, lang=None):
+    g, c = concept.rsplit('/', 1)
+    g += '/'
+    return get_preflabel(c, project=PROJECT_MAPPING[g], graph=g, lang=lang)
 
 
 def get_collection_members(collection, maxhits=1000, use_cache=True):

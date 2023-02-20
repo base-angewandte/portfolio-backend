@@ -1,11 +1,9 @@
-version: '2.3'
+version: "2.3"
 services:
-
   portfolio-django:
     build:
       context: ./src
       target: dev
     image: portfolio-django-dev
-    container_name: portfolio-django
     ports:
-      - 127.0.0.1:8200:8200
+      - "127.0.0.1:8200:8200"
