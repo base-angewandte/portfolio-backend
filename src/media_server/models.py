@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import subprocess  # nosec
-from typing import Tuple
 
 import django_rq
 import magic
@@ -22,8 +21,12 @@ from general.models import ShortUUIDField
 
 from . import signals
 from .apps import MediaServerConfig
-from .archiver.choices import ARCHIVE_STATUS_CHOICES, STATUS_NOT_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS, \
-    STATUS_TO_BE_ARCHIVED
+from .archiver.choices import (
+    ARCHIVE_STATUS_CHOICES,
+    STATUS_ARCHIVE_IN_PROGRESS,
+    STATUS_NOT_ARCHIVED,
+    STATUS_TO_BE_ARCHIVED,
+)
 from .clamav import validate_file_infection
 from .storages import ProtectedFileSystemStorage
 from .utils import humanize_size, user_hash
@@ -117,7 +120,6 @@ def user_directory_path(instance, filename):
 
 
 class Media(models.Model):
-
     id = ShortUUIDField(primary_key=True)
     file = models.FileField(
         storage=ProtectedFileSystemStorage(),
@@ -432,8 +434,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
 
 
 def delete_rq_job(job_id: str) -> None:
-    """
-    Stop and delete a redis queue job.
+    """Stop and delete a redis queue job.
 
     This is refactoring of the old function, due to the bug: https://basedev.uni-ak.ac.at/redmine/issues/1563
     :param job_id:
@@ -457,8 +458,8 @@ def delete_rq_job(job_id: str) -> None:
 
 @receiver(pre_delete, sender=Media, dispatch_uid='media_pre_delete')
 def media_pre_delete(sender, instance, *args, **kwargs):
-    """
-    Stop and delete all media redis queue jobs on media deletion, since they are not needed anymore
+    """Stop and delete all media redis queue jobs on media deletion, since they
+    are not needed anymore.
 
     :param sender:
     :param instance:
@@ -466,7 +467,7 @@ def media_pre_delete(sender, instance, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    job_ids: Tuple[str, str] = (instance.get_job_id(), instance.get_archive_job_id())
+    job_ids: tuple[str, str] = (instance.get_job_id(), instance.get_archive_job_id())
     for job_id in job_ids:
         delete_rq_job(job_id)
 

@@ -1,7 +1,7 @@
 import logging
 import mimetypes
+from collections.abc import Collection
 from os.path import basename, join
-from typing import Collection, Set
 
 import magic
 from drf_yasg import openapi
@@ -12,10 +12,10 @@ from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
-from django.http.response import JsonResponse
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
+from django.http.response import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -282,7 +282,7 @@ def validate_assets(request, media_pks, *args, **kwargs):
         raise ValidationError('At least one media has to be passed for archiving.')
 
     media_objects = Media.objects.all().filter(id__in=primary_keys)
-    media_objects: Set['Media'] = set(media_objects)
+    media_objects: set['Media'] = set(media_objects)
 
     controller = DefaultArchiveController(request.user, media_objects)
     controller.validate()
@@ -293,17 +293,17 @@ def validate_assets(request, media_pks, *args, **kwargs):
 def validate_entry(request, *args, **kwargs):
     try:
         entry_pk = request.query_params['entry']
-    except KeyError:
-        raise APIException('Entry param is not optional')
+    except KeyError as err:
+        raise APIException('Entry param is not optional') from err
     try:
         entry_object: 'Entry' = Entry.objects.get(pk=entry_pk)
-    except Entry.DoesNotExist:
-        raise APIException('Entry not found')
+    except Entry.DoesNotExist as err:
+        raise APIException('Entry not found') from err
 
     media_objects: Collection['Media'] = (
         Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
     )
-    media_objects: Set['Media'] = set(media_objects)
+    media_objects: set['Media'] = set(media_objects)
     controller = DefaultArchiveController(request.user, media_objects, entry=entry_object)
     controller.validate()
     return SuccessfulValidationResponse(_('Asset validation successful'))
@@ -322,7 +322,7 @@ def archive_assets(request, media_pks, *args, **kwargs):
 
     media_objects = Media.objects.all().filter(id__in=primary_keys).filter(archive_status=STATUS_NOT_ARCHIVED)
 
-    media_objects: Set['Media'] = set(media_objects)
+    media_objects: set['Media'] = set(media_objects)
 
     if media_objects.__len__() != primary_keys.__len__():
         not_archived_media_primary_keys = {media.id for media in media_objects}
@@ -342,8 +342,8 @@ def archive(request: Request, *args, **kwargs):
     """"""
     try:
         entry_pk = request.query_params['entry']
-    except KeyError:
-        raise APIException('Entry param is not optional')
+    except KeyError as err:
+        raise APIException('Entry param is not optional') from err
 
     entry_object: 'Entry' = Entry.objects.get(pk=entry_pk)
     if not entry_object.archive_id:
@@ -353,15 +353,15 @@ def archive(request: Request, *args, **kwargs):
         Media.objects.all().filter(entry_id=entry_object.id).filter(archive_status=STATUS_ARCHIVED)
     )
 
-    media_objects: Set['Media'] = set(media_objects)
+    media_objects: set['Media'] = set(media_objects)
 
     # Set archive status on the objects for the script
     for media_object in media_objects:
         media_object.archive_status = STATUS_ARCHIVE_IN_UPDATE
     # but use djangos update method to change the data in the database, since we have to bypass autonow
-    Media.objects.\
-        filter(pk__in={media_object.id for media_object in media_objects})\
-        .update(archive_status=STATUS_ARCHIVE_IN_UPDATE)
+    Media.objects.filter(pk__in={media_object.id for media_object in media_objects}).update(
+        archive_status=STATUS_ARCHIVE_IN_UPDATE
+    )
 
     controller = DefaultArchiveController(user=request.user, media_objects=media_objects, entry=entry_object)
     return controller.update_archive()
@@ -371,12 +371,12 @@ def archive(request: Request, *args, **kwargs):
 def archive_is_changed(request: Request, *args, **kwargs):
     try:
         entry_pk = request.query_params['entry']
-    except KeyError:
-        raise ValidationError('Entry query param is mandatory')
+    except KeyError as err:
+        raise ValidationError('Entry query param is mandatory') from err
     try:
         entry = Entry.objects.get(pk=entry_pk)
-    except Entry.DoesNotExist:
-        raise ValidationError(f'Entry {entry_pk} does not exist')
+    except Entry.DoesNotExist as err:
+        raise ValidationError(f'Entry {entry_pk} does not exist') from err
 
     archival_informer = EntryArchivalInformer(entry)
     return JsonResponse(archival_informer.has_changed, safe=False)
