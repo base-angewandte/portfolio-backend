@@ -396,7 +396,14 @@ Password for the account used by Portfolio backend to create objects in Phaidra
 
 #### `PHAIDRA_IDENTIFIER_BASE`
 
-Base URL to which the persistent identifier (archive\_id) can be added - to access objects in Phadira. Should end with "/".
+Base URL to which the persistent identifier (archive\_id) can be added - to access objects in Phaidra. Should end with "/".
+
+#### `PHAIDRA_IDENTIFIER_BASE_TESTING`
+
+Similar to `PHAIDRA_IDENTIFIER_BASE`, but used in test cases for the resulting URL base of the response. In an initial
+setup, when using a test archive server, this might be the same as `PHAIDRA_IDENTIFIER_BASE`. If over time the test
+server URL in the response changes (e.g., due to redirects) we still need to keep the initial `PHAIDRA_IDENTIFIER_BASE`
+but set an updated `PHAIDRA_IDENTIFIER_BASE_TESTING` for the tests to complete successfully.
 
 #### `PHAIDRA_CREATE_URI`
 

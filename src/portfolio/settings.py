@@ -784,6 +784,7 @@ if ARCHIVE_TYPE:
     ARCHIVE_URIS = {
         # end points created for media types with keys as mentioned in the media model
         'IDENTIFIER_BASE': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE'),
+        'IDENTIFIER_BASE_TESTING': env.str(f'{ARCHIVE_TYPE}_IDENTIFIER_BASE_TESTING'),
         'CREATE_URI': env.str(f'{ARCHIVE_TYPE}_CREATE_URI'),
         'BASE_URI': env.str(f'{ARCHIVE_TYPE}_BASE_URI'),
         'i': env.str(f'{ARCHIVE_TYPE}_BASE_URI') + env.str(f'{ARCHIVE_TYPE}_PICTURE_CREATE'),

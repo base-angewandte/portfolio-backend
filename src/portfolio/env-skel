@@ -47,6 +47,7 @@ SITE_URL=https://url/
 # PHAIDRA_BASE_URI=https://services.phaidra-sandbox.univie.ac.at/api/
 # PHAIDRA_CREATE_URI=https://services.phaidra-sandbox.univie.ac.at/api/container/create
 # PHAIDRA_IDENTIFIER_BASE=https://phaidra-sandbox.univie.ac.at/
+# PHAIDRA_IDENTIFIER_BASE_TESTING=https://ui.phaidra-sandbox.univie.ac.at/
 # PHAIDRA_PICTURE_CREATE=picture/create
 # PHAIDRA_DOCUMENT_CREATE=document/create
 # PHAIDRA_VIDEO_CREATE=video/create
