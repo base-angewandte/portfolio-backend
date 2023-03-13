@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 import django_rq
+from django.utils import timezone
 from freezegun import freeze_time
 
 from django.test import TestCase
@@ -107,7 +108,7 @@ class EntryWithMediaSavedAfterArchival(TestCase):
         """
         # Create 1. Timeline
         cls.timedelta_between_steps = timedelta(seconds=60)
-        cls.time_of_entry_creation = datetime(2021, 1, 1, 0, 0)
+        cls.time_of_entry_creation = timezone.now() - timedelta(days=5)
         cls.time_of_media_creation = cls.time_of_entry_creation + cls.timedelta_between_steps
         cls.time_of_archival = cls.time_of_media_creation + cls.timedelta_between_steps
         cls.time_of_media_update = cls.time_of_archival + cls.timedelta_between_steps
@@ -175,7 +176,7 @@ class EntrySavedAfterArchivalMediaUpToDate(TestCase):
         client_provider = ClientProvider(model_provider)
 
         cls.timedelta_between_steps = timedelta(seconds=60)
-        cls.creation_time = datetime(2021, 1, 1, 0, 0)
+        cls.creation_time = timezone.now() - timedelta(days=5)
         cls.archival_time = cls.creation_time + cls.timedelta_between_steps
         cls.update_time = cls.archival_time + cls.timedelta_between_steps
         cls.check_if_changed_time = cls.update_time + cls.timedelta_between_steps
@@ -236,7 +237,7 @@ class EntryUpToDateMediaMixed(TestCase):
         client_provider = ClientProvider(model_provider)
 
         cls.timedelta_between_steps = timedelta(seconds=60)
-        cls.creation_time = datetime(2021, 4, 1, 11, 11)
+        cls.creation_time = timezone.now() - timedelta(days=5)
         cls.archival_time = cls.creation_time + cls.timedelta_between_steps
         cls.update_time = cls.archival_time + cls.timedelta_between_steps
         cls.look_up_time = cls.update_time + cls.timedelta_between_steps

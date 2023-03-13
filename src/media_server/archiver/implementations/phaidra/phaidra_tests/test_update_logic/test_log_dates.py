@@ -1,6 +1,6 @@
 """The time of archival of entries and media should be logged in the
 database."""
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Optional
 
 from freezegun import freeze_time
@@ -8,6 +8,7 @@ from freezegun import freeze_time
 import django_rq
 
 from django.test import TestCase
+from django.utils import timezone
 
 from core.models import Entry
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
@@ -88,7 +89,7 @@ class SavedAfterArchivalTestCase(TestCase):
         Create an entry with one media, archive both and save them
         :return:
         """
-        now = datetime(2013, 4, 13, 17, 12)
+        now = timezone.now() - timedelta(days=5)
         with freeze_time(now):
             model_provider = ModelProvider()
             cls.entry = model_provider.get_entry()
@@ -137,7 +138,7 @@ class UpdatedArchivalTestCase(TestCase):
 
         :return:
         """
-        now = datetime(1995, 12, 24, 19, 15)
+        now = timezone.now() - timedelta(days=5)
         with freeze_time(now):
             model_provider = ModelProvider()
             cls.entry = model_provider.get_entry()

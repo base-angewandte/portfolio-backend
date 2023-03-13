@@ -25,7 +25,7 @@ class DeleteMediaJobs(APITestCase):
         self.model_provider = ModelProvider()
         self.client_provider = ClientProvider(self.model_provider)
 
-        self.now = datetime(2005, 1, 1, 14, 22, 3)
+        self.now = datetime.now() - timedelta(days=5)
         with freezegun.freeze_time(self.now):
             self.entry = self.model_provider.get_entry()
             self.media = self.model_provider.get_media(self.entry)

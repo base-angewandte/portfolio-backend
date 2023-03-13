@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 import django_rq
 from freezegun import freeze_time
 
 from django.test import TestCase
+from django.utils import timezone
 
 from media_server.archiver import STATUS_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
@@ -42,7 +43,7 @@ class EntryWithMediaSaveAfterArchival(TestCase):
         """
         # Create 1. Timeline
         cls.timedelta_between_steps = timedelta(seconds=60)
-        cls.time_of_entry_creation = datetime(2021, 1, 1, 0, 0, tzinfo=timezone.utc)
+        cls.time_of_entry_creation = timezone.now() - timedelta(days=5)
         cls.time_of_media_creation = cls.time_of_entry_creation + cls.timedelta_between_steps
         cls.time_of_archival = cls.time_of_media_creation + cls.timedelta_between_steps
         cls.time_of_media_update = cls.time_of_archival + cls.timedelta_between_steps

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 
 import requests
@@ -9,6 +9,8 @@ import django_rq
 from rq.job import Job
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
+
+from django.utils import timezone
 
 from media_server.archiver.choices import STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
@@ -40,12 +42,12 @@ class MediaDataState:
 
 
 # Some variables we need
-context_time = datetime(2000, 1, 1, 0, 0, 0, 0, timezone.utc)
-media_date_created = context_time + timedelta(hours=1)  # datetime(2000, 1, 1, 1, 0, 0, 0, tzinfo=<UTC>)
-media_date_archived = context_time + timedelta(hours=2)  # datetime(2000, 1, 1, 2, 0, 0, 0, tzinfo=<UTC>)
-media_date_modified = context_time + timedelta(hours=3)  # datetime(2000, 1, 1, 3, 0, 0, 0, tzinfo=<UTC>)
-media_date_schedule_processing = context_time + timedelta(hours=4)  # datetime(2000, 1, 1, 4, 0, 0, 0, tzinfo=<UTC>)
-media_date_processed = context_time + timedelta(hours=5)  # datetime(2000, 1, 1, 5, 0, 0, 0, tzinfo=<UTC>)
+context_time = timezone.now() - timedelta(days=5)
+media_date_created = context_time + timedelta(hours=1)
+media_date_archived = context_time + timedelta(hours=2)
+media_date_modified = context_time + timedelta(hours=3)
+media_date_schedule_processing = context_time + timedelta(hours=4)
+media_date_processed = context_time + timedelta(hours=5)
 
 
 license_cc_portfolio = {
