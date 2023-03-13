@@ -209,6 +209,7 @@ class EdmHastypeTestCase(TestCase):
                 title='Panda Shampoo Usage In Northern Iraq',
                 owner=User.objects.create_user(username='Quatschenstein', email='port@folio.ac.at'),
                 type=self.example_type_data,
+                data={'mustn_t': 'be_empty'},
             )
             self._entry.clean_fields()
             self._entry.save()
