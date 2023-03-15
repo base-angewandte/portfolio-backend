@@ -7,8 +7,8 @@ are not allowed there and so this test file will use the internal API.
 
 import django_rq
 import requests
-from django.conf import settings
 
+from django.conf import settings
 from django.core.validators import URLValidator
 from django.test import TestCase
 
@@ -38,7 +38,9 @@ class CreateEntryTestCase(TestCase):
 
     def test_phaidra_view_successful(self):
         response = requests.get(self.entry.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.entry.title, response.text)
         self.assertIn(self.entry.archive_id, response.text)
@@ -116,12 +118,14 @@ class UpdateEntryTestCase(TestCase):
 
     def test_phaidra_view_successful(self):
         response = requests.get(self.entry.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             self.new_title,
             response.text,
-            f'new title "{self.new_title}" should be here'
+            f'new title {self.new_title!r} should be here'
             f' https://phaidra-sandbox.univie.ac.at/view/{self.entry.archive_id}',
         )
 

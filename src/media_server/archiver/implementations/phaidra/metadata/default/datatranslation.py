@@ -1,54 +1,59 @@
 """Check out src/media_server/archiver/implementations/phaidra/phaidra_tests/te
 st_media_metadata.py Checkout
 src/media_server/archiver/implementations/phaidra/metadata/schemas.py."""
+from __future__ import annotations
+
 import typing
 from collections import defaultdict
+from collections.abc import Hashable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
-from media_server.archiver.interface.exceptions import InternalValidationError
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    extract_phaidra_role_code,
+)
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import extract_phaidra_role_code
 
 if TYPE_CHECKING:
     from media_server.models import Entry
-    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
-        BidirectionalConceptsMapper
+    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+        BidirectionalConceptsMapper,
+    )
 
 from media_server.archiver.implementations.phaidra.abstracts.datatranslation import (
+    AbstractConceptMappingDataTranslator,
     AbstractDataTranslator,
     AbstractUserUnrelatedDataTranslator,
-    AbstractConceptMappingDataTranslator
 )
 
 
 def _convert_two_to_three_letter_language_code(language_code: str) -> str:
-    """
-    Convert 2 to 3 letter language code. We only have a few though 
-    :param language_code: 
+    """Convert 2 to 3 letter language code. We only have a few though.
+
+    :param language_code:
     :return: eng|deu|und
-    """""
+    """ ''
     return {
         'en': 'eng',
         'de': 'deu',
     }.get(language_code, 'und')
 
 
-def _create_type_object(type_: str) -> Dict[str, str]:
+def _create_type_object(type_: str) -> dict[str, str]:
     return {'@type': type_}
 
 
-def _create_value_object(value: str) -> Dict[str, str]:
+def _create_value_object(value: str) -> dict[str, str]:
     return {'@value': value}
 
 
-def _create_value_language_object(value: str, language: str) -> Dict[str, str]:
+def _create_value_language_object(value: str, language: str) -> dict[str, str]:
     return {**_create_value_object(value), '@language': _convert_two_to_three_letter_language_code(language)}
 
 
-def _create_value_language_objects_from_label_dict(container: Dict) -> List:
-    labels: Dict = container['label']
+def _create_value_language_objects_from_label_dict(container: dict) -> list:
+    labels: dict = container['label']
     value_language_objects = []
     for language, label in labels.items():
         value_language_object = _create_value_language_object(label, language)
@@ -56,7 +61,7 @@ def _create_value_language_objects_from_label_dict(container: Dict) -> List:
     return value_language_objects
 
 
-def create_person_object(source: Optional[str], name: str) -> Dict[str, List[Dict[str, str]]]:
+def create_person_object(source: str | None, name: str) -> dict[str, list[dict[str, str]]]:
     person_object = {
         **_create_type_object('schema:Person'),
         'skos:exactMatch': [],
@@ -80,7 +85,7 @@ def create_person_object(source: Optional[str], name: str) -> Dict[str, List[Dic
 class DCTitleTranslator(AbstractDataTranslator):
     """A list of titles, where in our database is only one."""
 
-    def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+    def translate_data(self, model: Entry) -> list[dict[str, list[dict[str, str]]]]:
         title_object = {
             **_create_type_object('bf:Title'),
             'bf:mainTitle': [
@@ -96,7 +101,7 @@ class DCTitleTranslator(AbstractDataTranslator):
             title_object,
         ]
 
-    def translate_errors(self, errors: Dict[int, Dict]) -> Dict:
+    def translate_errors(self, errors: dict[int, dict]) -> dict:
         translated_errors = {}
         if errors.__len__() == 0:
             return translated_errors
@@ -116,7 +121,7 @@ class DCTitleTranslator(AbstractDataTranslator):
 
 
 class EdmHasTypeTranslator(AbstractDataTranslator):
-    def translate_data(self, model: 'Entry') -> List[Dict]:
+    def translate_data(self, model: Entry) -> list[dict]:
         """
         For Example
         ```
@@ -140,7 +145,7 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
             },
         ]
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+    def translate_errors(self, errors: dict | None) -> dict:
         """Minimum length is 1 on phaidra site, on ours only missing.
 
         :param errors:
@@ -155,15 +160,15 @@ class EdmHasTypeTranslator(AbstractDataTranslator):
         else:
             return {}
 
-    def _translate_skos_prefLabel(self, model: 'Entry') -> List[Dict[str, str]]:
+    def _translate_skos_prefLabel(self, model: Entry) -> list[dict[str, str]]:
         if 'label' not in model.type:
             return []
-        type_labels: Dict = model.type['label']
+        type_labels: dict = model.type['label']
         return [
             _create_value_language_object(language=language, value=label) for language, label in type_labels.items()
         ]
 
-    def _translate_skos_exactMatch(self, model: 'Entry') -> List[str]:
+    def _translate_skos_exactMatch(self, model: Entry) -> list[str]:
         if 'source' not in model.type:
             return []
         return [
@@ -176,24 +181,23 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
 
     raise_on_not_found_error: bool
     entry_attribute: str
-    json_keys: List[Hashable]
+    json_keys: list[Hashable]
 
     def __init__(
-            self, entry_attribute: str, json_keys: Optional[List[Hashable]] = None,
-            raise_on_not_found_error: bool = False
+        self, entry_attribute: str, json_keys: list[Hashable] | None = None, raise_on_not_found_error: bool = False
     ):
         self.entry_attribute = entry_attribute
         self.raise_on_not_found_error = raise_on_not_found_error
         self.json_keys = [] if json_keys is None else json_keys
 
-    def translate_data(self, model: 'Entry') -> List[Dict]:
+    def translate_data(self, model: Entry) -> list[dict]:
         data_of_interest = self._get_data_of_interest(model)
         if data_of_interest.__len__() == 0:
             return data_of_interest
         return self._translate(data_of_interest)
 
-    def _get_data_of_interest(self, model: 'Entry') -> List[Dict]:
-        data_of_interest: Dict = getattr(model, self.entry_attribute)
+    def _get_data_of_interest(self, model: Entry) -> list[dict]:
+        data_of_interest: dict = getattr(model, self.entry_attribute)
         if data_of_interest is None:
             if self.raise_on_not_found_error:
                 raise AttributeError(f'Attribute Entry.{self.entry_attribute} is empty')
@@ -207,10 +211,10 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
                     raise error
                 else:
                     return []
-        data_of_interest: List[Dict]
+        data_of_interest: list[dict]
         return data_of_interest
 
-    def _translate(self, data_of_interest: List[Dict]) -> List[Dict]:
+    def _translate(self, data_of_interest: list[dict]) -> list[dict]:
         return [
             {
                 **_create_type_object('skos:Concept'),
@@ -223,7 +227,7 @@ class GenericSkosConceptTranslator(AbstractUserUnrelatedDataTranslator):
 
 
 class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
-    def translate_data(self, model: 'Entry') -> List[Dict]:
+    def translate_data(self, model: Entry) -> list[dict]:
         # Bail early, if this field is NULL
         if model.texts is None:
             return []
@@ -232,7 +236,7 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
         for text in texts:
             # Determine the type of the text.
             # Generally it is bf:Note, if it is not an abstract, which is not fast to tell.
-            type_ = 'bf:Note'   # Default
+            type_ = 'bf:Note'  # Default
             # little complicated rule, since the data structure is quite dynamic
             if 'type' in text:
                 text_type = text['type']
@@ -242,12 +246,12 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
                     if source_name == 'abstract':
                         type_ = 'bf:Summary'
 
-            translated_text: Dict[str, Union[str, List[Dict]]] = _create_type_object(type_)
+            translated_text: dict[str, str | list[dict]] = _create_type_object(type_)
             translated_text['skos:prefLabel'] = self._get_data_from_skos_prefLabel_from_text_type(text)
             translated.append(translated_text)
         return translated
 
-    def _get_data_from_skos_prefLabel_from_text_type(self, text: Dict) -> List:
+    def _get_data_from_skos_prefLabel_from_text_type(self, text: dict) -> list:
         if 'data' not in text:
             return []
         text_data = text['data']
@@ -257,13 +261,13 @@ class BfNoteTranslator(AbstractUserUnrelatedDataTranslator):
             if ('text' in text_datum) and ('language' in text_datum) and ('source' in text_datum['language'])
         ]
 
-    def _create_value_language_object(self, text_datum: Dict) -> Dict:
+    def _create_value_language_object(self, text_datum: dict) -> dict:
         source = text_datum['language']['source']
         parsed_source = urlparse(source)
         parsed_path = Path(parsed_source.path)
         return _create_value_language_object(value=text_datum['text'], language=parsed_path.name)
 
-    def _filter_not_abstract_text_type(self, model: 'Entry') -> List[Dict]:
+    def _filter_not_abstract_text_type(self, model: Entry) -> list[dict]:
         abstract_source = 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
         return [
             text
@@ -276,7 +280,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
     role_uri: str
     primary_level_data_key: str
 
-    def __init__(self, primary_level_data_key: Optional[str], role_uri: str):
+    def __init__(self, primary_level_data_key: str | None, role_uri: str):
         """
 
         :param primary_level_data_key: The key to look for persons in Entry.data[key]
@@ -285,7 +289,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         self.role_uri = role_uri
         self.primary_level_data_key = primary_level_data_key
 
-    def translate_data(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+    def translate_data(self, model: Entry) -> list[dict[str, list[dict[str, str]]]]:
         if model.data is None:
             # Bail early on model.data is null, since is nullable
             return []
@@ -293,19 +297,16 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
         contributors = self._get_contributors(model)
         return first_level_persons + contributors
 
-    def _get_first_level_persons(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+    def _get_first_level_persons(self, model: Entry) -> list[dict[str, list[dict[str, str]]]]:
         if self.primary_level_data_key not in model.data:
             return []
         return [
-            create_person_object(
-                name=person['label'],
-                source=person['source'] if 'source' in person else None
-            )
+            create_person_object(name=person['label'], source=person['source'] if 'source' in person else None)
             for person in model.data[self.primary_level_data_key]
             if ('label' in person)
         ]
 
-    def _get_contributors(self, model: 'Entry') -> List[Dict[str, List[Dict[str, str]]]]:
+    def _get_contributors(self, model: Entry) -> list[dict[str, list[dict[str, str]]]]:
         if 'contributors' not in model.data:
             return []
         contributors = []
@@ -318,8 +319,7 @@ class GenericStaticPersonTranslator(AbstractUserUnrelatedDataTranslator):
 
 
 class LocationTranslator(AbstractUserUnrelatedDataTranslator):
-
-    def translate_data(self, model: 'Entry') -> List[Dict[str, str]]:
+    def translate_data(self, model: Entry) -> list[dict[str, str]]:
         if (model.data.__class__ is not dict) or ('location' not in model.data):
             return []
         return [
@@ -330,25 +330,23 @@ class LocationTranslator(AbstractUserUnrelatedDataTranslator):
 
 
 class UrlTranslator(AbstractDataTranslator):
-    """
-    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
-    """
+    """https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also."""
 
-    def translate_data(self, model: 'Entry') -> List[Dict]:
+    def translate_data(self, model: Entry) -> list[dict]:
         if (model.data is None) or ('url' not in model.data):
             return []
         url = model.data['url']
         return [
             {
                 **_create_type_object('schema:URL'),
-                'schema:url': [url, ],
-                'skos:prefLabel': [
-                    _create_value_language_object(url, 'und')
-                ]
+                'schema:url': [
+                    url,
+                ],
+                'skos:prefLabel': [_create_value_language_object(url, 'und')],
             },
         ]
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+    def translate_errors(self, errors: dict | None) -> dict:
         if not errors:
             return {}
         return {
@@ -359,14 +357,15 @@ class UrlTranslator(AbstractDataTranslator):
 
 
 class DctermsDateTranslator(AbstractUserUnrelatedDataTranslator):
-    """
-    https://basedev.uni-ak.ac.at/redmine/issues/1694#note-7
-    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#date
-    """
-    def translate_data(self, entry: 'Entry') -> List[str]:
+    """https://basedev.uni-ak.ac.at/redmine/issues/1694#note-7
+    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#date."""
+
+    def translate_data(self, entry: Entry) -> list[str]:
         if (entry.data is None) or ('date' not in entry.data):
             return []
-        return [entry.data['date'], ]
+        return [
+            entry.data['date'],
+        ]
 
 
 class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
@@ -389,9 +388,9 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
     ordered pairwise.
     """
 
-    _key_translator_mapping: Dict[str, AbstractDataTranslator]
+    _key_translator_mapping: dict[str, AbstractDataTranslator]
 
-    def __init__(self, mapping: 'BidirectionalConceptsMapper'):
+    def __init__(self, mapping: BidirectionalConceptsMapper):
         super().__init__(mapping)
         self.data_with_dynamic_structure = defaultdict(list)
         self._key_translator_mapping = {
@@ -422,29 +421,29 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 role_uri='http://base.uni-ak.ac.at/portfolio/vocabulary/publisher',
             ),
             'bf:physicalLocation': LocationTranslator(),
-            'rdfs:seeAlso': UrlTranslator()
+            'rdfs:seeAlso': UrlTranslator(),
         }
 
-    def translate_data(self, model: 'Entry') -> Dict:
+    def translate_data(self, model: Entry) -> dict:
         static_data = self._translate_data(model)
         dynamic_data = self._get_data_with_dynamic_structure(model)
         all_data = self._merge(static_data, dynamic_data)
         return self._wrap_in_container(all_data)
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+    def translate_errors(self, errors: dict | None) -> dict:
         errors = self._extract_from_container(errors)
         static_errors = self._translate_errors(errors)
         dynamic_errors = self._translate_errors_with_dynamic_structure(errors)
         all_errors = self._merge(static_errors, dynamic_errors)
         return self._filter_errors(all_errors)
 
-    def _translate_data(self, model: 'Entry') -> Dict:
+    def _translate_data(self, model: Entry) -> dict:
         return {
             'dcterms:type': self._create_static_dcterms(),
             **{key: translator.translate_data(model) for key, translator in self._key_translator_mapping.items()},
         }
 
-    def _translate_errors(self, errors: Dict) -> Dict:
+    def _translate_errors(self, errors: dict) -> dict:
         translated_errors = {}
         for target_key, translator in self._key_translator_mapping.items():
             if target_key in errors:
@@ -453,7 +452,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
         return translated_errors
 
     @staticmethod
-    def _create_static_dcterms() -> List:
+    def _create_static_dcterms() -> list:
         return [
             {
                 '@type': 'skos:Concept',
@@ -463,12 +462,12 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
         ]
 
     @classmethod
-    def _filter_errors(cls, errors: Dict) -> Dict:
+    def _filter_errors(cls, errors: dict) -> dict:
         errors = cls._recursive_filter_errors(errors)
         return {} if errors is None else errors  # keep to level dict
 
     @classmethod
-    def _recursive_filter_errors(cls, errors: Union[Dict, List]) -> Optional[Union[Dict, List]]:
+    def _recursive_filter_errors(cls, errors: dict | list) -> dict | list | None:
         """Since we use marshmallow, we assume objects container either nested
         objects or lists of errors.
 
@@ -492,7 +491,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
             return errors  # leave node
         return filtered_errors if filtered_errors else None
 
-    def _set_nested_errors(self, source_errors: Dict, translated_errors: Dict) -> Dict:
+    def _set_nested_errors(self, source_errors: dict, translated_errors: dict) -> dict:
         for key, value in source_errors.items():
             # it is the error message, set it
             if value.__class__ is list:
@@ -511,20 +510,20 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 translated_errors[key] = self._set_nested_errors(value, sub_errors)
         return translated_errors
 
-    def _wrap_in_container(self, data: Any) -> Dict:
+    def _wrap_in_container(self, data: Any) -> dict:
         return {
             'metadata': {
                 'json-ld': data,
             }
         }
 
-    def _extract_from_container(self, data: Dict) -> Any:
+    def _extract_from_container(self, data: dict) -> Any:
         try:
             return data['metadata']['json-ld']
         except KeyError:
             return {}
 
-    def _translate_errors_with_dynamic_structure(self, errors: Dict):
+    def _translate_errors_with_dynamic_structure(self, errors: dict):
         """
 
         :param errors:
@@ -543,7 +542,11 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 contributor_errors += this_errors
 
         if contributor_errors:
-            return {'data': {'contributors': contributor_errors, }, }
+            return {
+                'data': {
+                    'contributors': contributor_errors,
+                },
+            }
         else:
             return {}
 
@@ -564,7 +567,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                 )
         return data_with_static_structure
 
-    def _get_data_with_dynamic_structure(self, model: 'Entry') -> Dict:
+    def _get_data_with_dynamic_structure(self, model: Entry) -> dict:
         self._extract_data_with_dynamic_structure(model)
         # add keys in mapping aka must-use to data:
         for concept_mapping in self.mapping.concept_mappings.values():
@@ -573,17 +576,19 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
                     self.data_with_dynamic_structure[phaidra_role_code] = []
         return self.data_with_dynamic_structure
 
-    def _extract_data_with_dynamic_structure(self, model: 'Entry') -> Dict[str, List]:
+    def _extract_data_with_dynamic_structure(self, model: Entry) -> dict[str, list]:
         if (model.data is None) or ('contributors' not in model.data):
             return self.data_with_dynamic_structure
-        contributors: List[Dict] = model.data['contributors']
+        contributors: list[dict] = model.data['contributors']
         for contributor in contributors:
             contributor_source = contributor['source'] if 'source' in contributor else None
             contributor_label = contributor['label']
             # Either generate a role:XXX entry for every role of the contributor, or default role:ctb
-            phaidra_role_codes = self.yield_phaidra_role_codes_from_roles(contributor['roles']) \
-                if 'roles' in contributor and contributor['roles'] \
+            phaidra_role_codes = (
+                self.yield_phaidra_role_codes_from_roles(contributor['roles'])
+                if 'roles' in contributor and contributor['roles']
                 else ['role:ctb']
+            )
 
             for phaidra_role_code in phaidra_role_codes:
                 person_object = create_person_object(
@@ -599,7 +604,7 @@ class PhaidraMetaDataTranslator(AbstractConceptMappingDataTranslator):
         for phaidra_role in phaidra_roles:
             yield extract_phaidra_role_code(phaidra_role)
 
-    def yield_phaidra_role_codes_from_roles(self, roles: typing.Iterable[Dict]):
+    def yield_phaidra_role_codes_from_roles(self, roles: typing.Iterable[dict]):
         for role in roles:
             if 'source' not in role:
                 continue

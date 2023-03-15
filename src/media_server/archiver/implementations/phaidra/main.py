@@ -1,4 +1,4 @@
-import typing
+from __future__ import annotations
 
 from rest_framework.exceptions import ValidationError
 
@@ -12,7 +12,7 @@ class PhaidraArchiver(AbstractArchiver):
     """Archives to Phaidra https://app.swaggerhub.com/apis/ctot-
     nondef/Phaidra/1.0.0#/"""
 
-    _metadata_data_archiver: typing.Optional[AbstractArchiver] = None
+    _metadata_data_archiver: AbstractArchiver | None = None
 
     @property
     def metadata_data_archiver(self) -> AbstractArchiver:
@@ -23,7 +23,7 @@ class PhaidraArchiver(AbstractArchiver):
                 self._metadata_data_archiver = DefaultMetadataArchiver(self.archive_object)
         return self._metadata_data_archiver
 
-    _media_archiver: typing.Optional[AbstractArchiver] = None
+    _media_archiver: AbstractArchiver | None = None
 
     @property
     def media_archiver(self) -> AbstractArchiver:
@@ -52,7 +52,7 @@ class PhaidraArchiver(AbstractArchiver):
         self.media_archiver.push_to_archive()
         return metadata_response
 
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         metadata_response = self.metadata_data_archiver.update_archive()
         self.media_archiver.update_archive()
         return metadata_response

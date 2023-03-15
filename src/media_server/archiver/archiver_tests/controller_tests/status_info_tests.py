@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 import django_rq
-from django.utils import timezone
 from freezegun import freeze_time
 
 from django.test import TestCase
+from django.utils import timezone
 
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.controller.status_info import EntryArchivalInformer
@@ -248,10 +248,10 @@ class EntryUpToDateMediaMixed(TestCase):
             media_out_of_sync = model_provider.get_media(entry)
 
         with freeze_time(cls.archival_time):
-            r1 = client_provider.get_media_primary_key_response(media_in_sync, only_validate=False)
-            r2 = client_provider.get_media_primary_key_response(media_out_of_sync, only_validate=False)
+            client_provider.get_media_primary_key_response(media_in_sync, only_validate=False)
+            client_provider.get_media_primary_key_response(media_out_of_sync, only_validate=False)
             worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
-            w = worker.work(burst=True)  # wait until it is done
+            worker.work(burst=True)  # wait until it is done
 
         with freeze_time(cls.update_time):
             media_out_of_sync.license = {

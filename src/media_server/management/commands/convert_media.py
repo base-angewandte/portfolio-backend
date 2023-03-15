@@ -19,7 +19,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
         if not options['media_id']:
             raise CommandError('You have to provide at least one media_id.')
 

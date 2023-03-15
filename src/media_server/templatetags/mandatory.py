@@ -6,7 +6,7 @@ register = template.Library()
 @register.simple_tag
 def must_have(fieldname, value):
     if not value:
-        raise ValueError(f"Field '{fieldname}' is mandatory.")
+        raise ValueError(f'Field {fieldname!r} is mandatory.')
     return ''
 
 

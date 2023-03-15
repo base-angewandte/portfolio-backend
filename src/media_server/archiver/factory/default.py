@@ -1,5 +1,6 @@
-import typing
-from typing import TYPE_CHECKING, Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from portfolio import settings
 
@@ -14,11 +15,9 @@ if TYPE_CHECKING:
 class ArchiverFactory:
     """Generate instances of implementations of `AbstractArchiver`s."""
 
-    mappings: Dict[Archives, typing.Type['AbstractArchiver']] = {Archives.PHAIDRA: PhaidraArchiver}
+    mappings: dict[Archives, type[AbstractArchiver]] = {Archives.PHAIDRA: PhaidraArchiver}
 
-    def create(
-        self, archive_object: 'ArchiveObject', archive: typing.Optional[typing.Union[Archives, str]] = None
-    ) -> 'AbstractArchiver':
+    def create(self, archive_object: ArchiveObject, archive: Archives | str | None = None) -> AbstractArchiver:
         """Create a archiver instance for an entry.
 
         :param archive_object:
@@ -29,8 +28,8 @@ class ArchiverFactory:
         if archive.__class__ is str:
             try:
                 archive = Archives(archive)
-            except ValueError:
-                raise NotImplementedError(f'{archive} is not registered in the factory')
+            except ValueError as err:
+                raise NotImplementedError(f'{archive} is not registered in the factory') from err
         if archive not in self.mappings:
             raise NotImplementedError(f'{archive} is not registered in the factory')
 

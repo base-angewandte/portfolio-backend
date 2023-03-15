@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import operator
 from datetime import date, datetime
 from itertools import groupby
-from typing import List
 
 
-def years_to_string(years: List[str]) -> str:
+def years_to_string(years: list[str]) -> str:
     sorted_years = sorted(set(years))
     if len(sorted_years) > 1:
         out = []
@@ -51,7 +52,7 @@ def years_from_date_time_range_location_group_field(dtrlg) -> str:
         return years_to_string(years)
 
 
-def years_list_from_date_range(dr) -> List[str]:
+def years_list_from_date_range(dr) -> list[str]:
     years = []
     if dr.get('date_from') and dr.get('date_to'):
         date_from = year_from_date(dr['date_from'])

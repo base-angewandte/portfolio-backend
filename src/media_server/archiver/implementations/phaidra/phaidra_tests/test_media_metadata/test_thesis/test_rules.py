@@ -9,7 +9,6 @@ from rest_framework.exceptions import ValidationError
 from django.test import TestCase
 
 from media_server.archiver.controller.default import DefaultArchiveController
-
 from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import (
     PhaidraThesisMetaDataTranslator,
 )
@@ -19,8 +18,9 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.schemas impor
 )
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
     ClientProvider,
+    FakeBidirectionalConceptsMapper,
     ModelProvider,
-    PhaidraContainerGenerator, FakeBidirectionalConceptsMapper,
+    PhaidraContainerGenerator,
 )
 from media_server.archiver.messages.validation.thesis import (
     MISSING_AUTHOR,
@@ -64,7 +64,7 @@ class AtLeastOneAuthorTestCase(TestCase):
     }
 
     def test_schema_validation_fail(self):
-        """If there is no author, the schema is expected to return errors"""
+        """If there is no author, the schema is expected to return errors."""
         invalid_data = PhaidraContainerGenerator.create_phaidra_container(respect_author_rule=False)
         entry = self.model_provider.get_entry(author=False)
         mapping = FakeBidirectionalConceptsMapper.from_entry(entry)

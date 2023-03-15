@@ -18,7 +18,6 @@ from .validators import validate_keywords, validate_texts, validate_type
 
 
 class Entry(AbstractBaseModel):
-
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)

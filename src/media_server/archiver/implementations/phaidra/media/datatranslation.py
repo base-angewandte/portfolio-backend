@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, Optional, Set, List
 
 import marshmallow
 
@@ -19,7 +20,7 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
             }
         }
 
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
+    def translate_errors(self, errors: dict | None) -> dict:
         super().translate_errors(errors)
         translated_errors = {}
         try:
@@ -68,11 +69,13 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
             else []
         )
 
-    def _get_file_name(self, media: Media) -> List[str]:
+    def _get_file_name(self, media: Media) -> list[str]:
         if not media.file:
             return []
         path = Path(media.file.name)
-        return [path.name, ]
+        return [
+            path.name,
+        ]
 
     def _get_licenses(self, media: Media):
         phaidra_licenses = (
@@ -91,6 +94,6 @@ class PhaidraMediaDataTranslator(AbstractDataTranslator):
             for translated_license in self._translate_license(phaidra_license)
         ]
 
-    def _translate_license(self, phaidra_license: str) -> Set[str]:
+    def _translate_license(self, phaidra_license: str) -> set[str]:
         concept_mapper = ConceptMapper.from_base_uri(phaidra_license, set())
         return concept_mapper.owl_sameAs

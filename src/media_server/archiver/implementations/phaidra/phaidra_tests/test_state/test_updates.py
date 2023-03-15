@@ -14,6 +14,7 @@ from media_server.archiver.implementations.phaidra.phaidra_tests.utillities impo
 
 if TYPE_CHECKING:
     from rest_framework.response import Response
+
     from core.models import Entry
     from media_server.models import Media
 

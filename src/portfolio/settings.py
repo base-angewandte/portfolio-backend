@@ -708,7 +708,7 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
         apiconfig.RULES: {
-            'source_name': {apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'},
+            'source_name': {apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'},  # noqa: B907 - this has to be in double quotes
             'source': {
                 apiconfig.RULE: f'"{PELIAS_API_URL}/place?ids={{p1}}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},

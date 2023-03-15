@@ -1,21 +1,22 @@
 import json
 
-from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
 import django_rq
 import requests
+from rest_framework.test import APITestCase
+
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 from media_server.models import Media
+
+from ..utillities import create_random_test_password
 
 
 class OnePdfResaved(APITestCase):
-
     def setUp(self) -> None:
-        """
-        (Log in as a user)
+        """(Log in as a user)
 
         Create an entry with the web api,
         attach a file with the web api,
@@ -24,9 +25,10 @@ class OnePdfResaved(APITestCase):
         update archive with the web api
         :return:
         """
-        User.objects.create_user(username='Hansi', password='Hansi1986')
+        pw = create_random_test_password()
+        User.objects.create_user(username='test_user', password=pw)
         client = self.client
-        client.login(username='Hansi', password='Hansi1986')
+        client.login(username='test_user', password=pw)
 
         # define license_states for testing
         self.first_portfolio_license = 'http://base.uni-ak.ac.at/portfolio/licenses/copyright'
@@ -44,10 +46,12 @@ class OnePdfResaved(APITestCase):
                 'file': SimpleUploadedFile('example.pdf', b'example file'),
                 'entry': entry_id,
                 'published': 'false',
-                'license': json.dumps({
-                    'source': self.first_portfolio_license,
-                    'label': {'de': 'urheberrechtlich geschützt', "en": "Copyright"}
-                }),
+                'license': json.dumps(
+                    {
+                        'source': self.first_portfolio_license,
+                        'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'},
+                    }
+                ),
             },
         )
         media_id = response.data
@@ -68,8 +72,8 @@ class OnePdfResaved(APITestCase):
         # change media
         media = Media.objects.get(pk=media_id)
         media.license = {
-            'label': {'en': "Creative Commons Attribution Non-Commercial 4.0"},
-            "source": self.second_portfolio_license,
+            'label': {'en': 'Creative Commons Attribution Non-Commercial 4.0'},
+            'source': self.second_portfolio_license,
         }
         media.save()
 
@@ -93,20 +97,20 @@ class OnePdfResaved(APITestCase):
         phaidra_licenses = response.json()['edm:rights']
         self.assertEqual(
             phaidra_licenses,
-            [self.second_phaidra_license, ]
+            [
+                self.second_phaidra_license,
+            ],
         )
 
 
 class EntryWithDeletedAttachmentUpdated(APITestCase):
-    """
-    > Portfolio–Phaidra: "Update Archive" fails, if previously archived asset has been deleted
-    https://basedev.uni-ak.ac.at/redmine/issues/1654
-    """
+    """> Portfolio–Phaidra: "Update Archive" fails, if previously archived
+    asset has been deleted https://basedev.uni-ak.ac.at/redmine/issues/1654."""
+
     entry: Entry
 
     def setUp(self) -> None:
-        """
-        (Log in as a user)
+        """(Log in as a user)
 
         Create an entry, and media
         Archive them with the web api
@@ -134,8 +138,8 @@ class EntryWithDeletedAttachmentUpdated(APITestCase):
         archival_response = client_provider.get_media_primary_key_response(media, False)
         if archival_response.status_code != 200:
             raise RuntimeError(
-                rf'Can not perform test {self.__class__}. ' \
-                + rf'Server responded with status {archival_response.status_code} ' \
+                rf'Can not perform test {self.__class__}. '
+                + rf'Server responded with status {archival_response.status_code} '
                 + rf'and message {archival_response.content}'
             )
 
@@ -158,9 +162,10 @@ class EntryWithDeletedAttachmentUpdated(APITestCase):
             f'/api/v1/archive?entry={self.entry.id}',
         )
         self.assertEqual(
-            portfolio_response.status_code, 200,
-            rf'Archival update for archived entry with deleted media returned message {portfolio_response.content}'
-                         )
+            portfolio_response.status_code,
+            200,
+            rf'Archival update for archived entry with deleted media returned message {portfolio_response.content}',
+        )
 
         phaidra_response = requests.get(
             rf'https://services.phaidra-sandbox.univie.ac.at/api/object/{self.entry.archive_id}/jsonld'

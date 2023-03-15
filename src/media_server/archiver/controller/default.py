@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Optional, Set
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from rest_framework.exceptions import APIException, PermissionDenied
 
@@ -20,8 +22,8 @@ class DefaultArchiveController:
     """Handle Archive Actions."""
 
     user: User
-    media_objects: Set['Media']
-    _entry: Optional[Entry]
+    media_objects: set[Media]
+    _entry: Entry | None
 
     @property
     def entry(self) -> Entry:
@@ -29,15 +31,15 @@ class DefaultArchiveController:
             self._entry = self._get_entry()
         return self._entry
 
-    _archiver: Optional['AbstractArchiver'] = None
+    _archiver: AbstractArchiver | None = None
 
     @property
-    def archiver(self) -> 'AbstractArchiver':
+    def archiver(self) -> AbstractArchiver:
         if self._archiver is None:
             self._archiver = self._create_archiver()
         return self._archiver
 
-    def __init__(self, user: User, media_objects: Set['Media'], entry: Optional[Entry] = None):
+    def __init__(self, user: User, media_objects: set[Media], entry: Entry | None = None):
         """
         :param user: The user, the request is coming from
         :param media_objects: the media to archive
@@ -46,7 +48,7 @@ class DefaultArchiveController:
         self.user = user
         self._entry = entry
 
-    def push_to_archive(self) -> 'SuccessfulArchiveResponse':
+    def push_to_archive(self) -> SuccessfulArchiveResponse:
         """Validates the data and pushes to archive.
 
         :raises media_server.archiver.interface.exceptions.ExternalServerError
@@ -64,7 +66,7 @@ class DefaultArchiveController:
         self._validate_ownership()
         self._validate_for_archive()
 
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         self.validate()
         return self._update_archive()
 
@@ -77,7 +79,7 @@ class DefaultArchiveController:
         self._create_archiver()
         self.archiver.validate()
 
-    def _push_to_archive(self) -> 'SuccessfulArchiveResponse':
+    def _push_to_archive(self) -> SuccessfulArchiveResponse:
         """Push to archive.
 
         :raises media_server.archiver.interface.exceptions.ExternalServerError
@@ -106,7 +108,7 @@ class DefaultArchiveController:
         if not (self.entry.owner == self.user):
             raise PermissionDenied(messages.errors.CURRENT_USER_NOW_OWNER_OF_MEDIA)
 
-    def _create_archiver(self) -> 'AbstractArchiver':
+    def _create_archiver(self) -> AbstractArchiver:
         """
         Create an archiver instance
         :return:

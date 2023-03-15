@@ -1,13 +1,17 @@
+from __future__ import annotations
+
+import random
+import string
 import typing
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Optional, Set
+from typing import TYPE_CHECKING
 
 from rest_framework.test import APIClient
 
 from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.utils import IntegrityError
 
 from core.models import Entry
 from media_server.models import Media
@@ -160,8 +164,8 @@ class ModelProvider:
             self.user = User.objects.get_by_natural_key(username=self.username)
 
     def get_media(
-        self, entry: 'Entry', license_: bool = True, mime_type: Optional[str] = 'text/plain', file_type='pdf'
-    ) -> 'Media':
+        self, entry: Entry, license_: bool = True, mime_type: str | None = 'text/plain', file_type='pdf'
+    ) -> Media:
         media = Media(
             owner=self.user,
             file=SimpleUploadedFile(f'example.{file_type}', b'example file'),
@@ -190,7 +194,7 @@ class ModelProvider:
         french_abstract: bool = False,
         akan_language: bool = False,
         thesis_type: bool = True,
-    ) -> 'Entry':
+    ) -> Entry:
         """
         :param thesis_type: if to use thesis type, or else. Only will be applied if type_ is True
         :param title: Mandatory field
@@ -325,19 +329,19 @@ class ModelProvider:
 
 
 class ClientProvider:
-    def __init__(self, model_provider: 'ModelProvider'):
+    def __init__(self, model_provider: ModelProvider):
         self.client = APIClient()
         r = self.client.login(username=model_provider.username, password=model_provider.peeword)
         if not r:
             raise RuntimeError('login fail')
 
-    def get_media_primary_key_response(self, media: 'Media', only_validate: bool = True) -> 'Response':
+    def get_media_primary_key_response(self, media: Media, only_validate: bool = True) -> Response:
         action = 'validate' if only_validate else 'archive'
         return self.client.get(
             f'/api/v1/{action}_assets/media/{media.id}/',
         )
 
-    def get_multiple_medias_primary_key_response(self, medias: Set['Media'], only_validate: bool = True) -> 'Response':
+    def get_multiple_medias_primary_key_response(self, medias: set[Media], only_validate: bool = True) -> Response:
         action = 'validate' if only_validate else 'archive'
         media_keys = ','.join([media.id for media in medias])
         return self.client.get(
@@ -345,21 +349,19 @@ class ClientProvider:
         )
 
     def get_validate_entry_response(self, entry: Entry):
-        return self.client.get((
-            rf'/api/v1/archive/validate_entry?entry={entry.id}'
-        ))
+        return self.client.get(rf'/api/v1/archive/validate_entry?entry={entry.id}')
 
     def __del__(self):
         self.client.logout()  # Very important! ;-)
 
-    def get_update_entry_archival_response(self, entry: 'Entry') -> 'Response':
+    def get_update_entry_archival_response(self, entry: Entry) -> Response:
         return self.client.put(f'/api/v1/archive?entry={entry.id}')
 
     def get_is_changed_response(
         self,
-        entry: 'Entry',
-        entry_threshold: Optional[int] = None,
-        asset_threshold: Optional[int] = None,
+        entry: Entry,
+        entry_threshold: int | None = None,
+        asset_threshold: int | None = None,
     ):
         url = f'/api/v1/archive/is-changed?entry={entry.id}'
         if entry_threshold is not None:
@@ -377,21 +379,20 @@ class FakeConceptMapper:
     uri: str
 
     '''comparables, eg  {'http://vocab.getty.edu/aat/300160216', 'http://d-nb.info/gnd/4005565-6'}'''
-    owl_sameAs: typing.Set[str]
+    owl_sameAs: set[str]
 
     class Utils:
         fakes = {
-            'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role': {'http://id.loc.gov/vocabulary/relators/csl'},
+            'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role': {
+                'http://id.loc.gov/vocabulary/relators/csl'
+            },
             'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor': {'http://id.loc.gov/vocabulary/relators/dgs'},
-            'http://base.uni-ak.ac.at/portfolio/vocabulary/author': {'http://id.loc.gov/vocabulary/relators/aut'}
+            'http://base.uni-ak.ac.at/portfolio/vocabulary/author': {'http://id.loc.gov/vocabulary/relators/aut'},
         }
 
     @classmethod
-    def from_base_uri(cls, uri: str) -> 'FakeConceptMapper':
-        return cls(
-            uri=uri,
-            owl_sameAs=cls.Utils.fakes[uri]
-        )
+    def from_base_uri(cls, uri: str) -> FakeConceptMapper:
+        return cls(uri=uri, owl_sameAs=cls.Utils.fakes[uri])
 
     def to_dict(self) -> dict:
         return {
@@ -402,32 +403,32 @@ class FakeConceptMapper:
 
 @dataclass
 class FakeBidirectionalConceptsMapper:
-    concept_mappings: typing.Dict[str, FakeConceptMapper] = field(default_factory=dict)
+    concept_mappings: dict[str, FakeConceptMapper] = field(default_factory=dict)
 
     @classmethod
-    def from_base_uris(cls, uris: typing.Set[str]) -> 'FakeBidirectionalConceptsMapper':
+    def from_base_uris(cls, uris: set[str]) -> FakeBidirectionalConceptsMapper:
         return cls(concept_mappings={uri: FakeConceptMapper.from_base_uri(uri) for uri in uris})
 
-    def get_owl_sameAs_from_uri(self, uri: str) -> typing.Set[str]:
+    def get_owl_sameAs_from_uri(self, uri: str) -> set[str]:
         return self.concept_mappings[uri].owl_sameAs
 
-    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> typing.Set[str]:
+    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> set[str]:
         return {
             uri for uri, concept_mapper in self.concept_mappings.items() if owl_sameAs in concept_mapper.owl_sameAs
         }
 
-    def add_uri(self, uri: str) -> 'FakeBidirectionalConceptsMapper':
+    def add_uri(self, uri: str) -> FakeBidirectionalConceptsMapper:
         if uri not in self.concept_mappings:
             self.concept_mappings[uri] = FakeConceptMapper.from_base_uri(uri)
         return self
 
-    def add_uris(self, uris: typing.Iterable[str]) -> 'FakeBidirectionalConceptsMapper':
+    def add_uris(self, uris: typing.Iterable[str]) -> FakeBidirectionalConceptsMapper:
         for uri in uris:
             self.add_uri(uri)
         return self
 
     @classmethod
-    def from_entry(cls, entry: 'Entry') -> 'FakeBidirectionalConceptsMapper':
+    def from_entry(cls, entry: Entry) -> FakeBidirectionalConceptsMapper:
         if (entry.data is None) or ('contributors' not in entry.data):
             return cls.from_base_uris(set())
         contributors = entry.data['contributors']
@@ -440,7 +441,7 @@ class FakeBidirectionalConceptsMapper:
         return cls.from_base_uris(set(roles))
 
 
-def add_other_role(entry: 'Entry') -> 'Entry':
+def add_other_role(entry: Entry) -> Entry:
     if 'contributors' not in entry.data:
         entry.data['contributors'] = []
 
@@ -465,16 +466,19 @@ def add_other_phaidra_role(data: dict) -> dict:
         {
             '@type': 'schema:Person',
             'skos:exactMatch': [
-                {
-                    '@value': 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role',
-                    '@type': 'ids:uri'
-                },
+                {'@value': 'http://voc.uni-ak.ac.at/skosmos/povoc/en/page/another-role', '@type': 'ids:uri'},
             ],
             'schema:name': [
                 {
                     '@value': 'Universität für Angewandte Kunst Wien',
                 },
-            ]
+            ],
         }
     ]
     return data
+
+
+def create_random_test_password(length: int = 16) -> str:
+    charset = string.ascii_letters + string.digits
+    # this is just used to generate temporary test passwords, so we are fine with using a quick random char sampler
+    return ''.join([random.choice(charset) for _n in range(length)])  # nosec

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 from dataclasses import dataclass, field
 
@@ -15,16 +17,16 @@ class ConceptMapper:
     uri: str
 
     '''comparables, eg  {'http://vocab.getty.edu/aat/300160216', 'http://d-nb.info/gnd/4005565-6'}'''
-    owl_sameAs: typing.Set[str]
+    owl_sameAs: set[str]
 
     @classmethod
-    def from_base_uri(cls, uri: str, must_includes: typing.Optional[typing.Set[str]] = None) -> 'ConceptMapper':
+    def from_base_uri(cls, uri: str, must_includes: set[str] | None = None) -> ConceptMapper:
         """
-        
-        :param uri: 
+
+        :param uri:
         :param must_includes: if none of the words in the set are contained in a owl:sameAs, ignore entry.
         Defaults to library of congress: {'loc.gov'}, pass empty set to bypass
-        :return: 
+        :return:
         """
         graph = get_json_data(uri)['graph']
         for node in graph:
@@ -46,11 +48,16 @@ class ConceptMapper:
                 f'and value {node["owl:sameAs"]}'
             )
 
-        must_includes = must_includes if must_includes.__class__ is set else {'loc.gov', }
+        must_includes = (
+            must_includes
+            if must_includes.__class__ is set
+            else {
+                'loc.gov',
+            }
+        )
         if len(must_includes) > 0:
             owl_sameAs = {
-                element for element in owl_sameAs
-                if any((must_include in element for must_include in must_includes))
+                element for element in owl_sameAs if any(must_include in element for must_include in must_includes)
             }
 
         return cls(
@@ -67,32 +74,32 @@ class ConceptMapper:
 
 @dataclass
 class BidirectionalConceptsMapper:
-    concept_mappings: typing.Dict[str, ConceptMapper] = field(default_factory=dict)
+    concept_mappings: dict[str, ConceptMapper] = field(default_factory=dict)
 
     @classmethod
-    def from_base_uris(cls, uris: typing.Set[str]) -> 'BidirectionalConceptsMapper':
+    def from_base_uris(cls, uris: set[str]) -> BidirectionalConceptsMapper:
         return cls(concept_mappings={uri: ConceptMapper.from_base_uri(uri) for uri in uris})
 
-    def get_owl_sameAs_from_uri(self, uri: str) -> typing.Set[str]:
+    def get_owl_sameAs_from_uri(self, uri: str) -> set[str]:
         return self.concept_mappings[uri].owl_sameAs
 
-    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> typing.Set[str]:
+    def get_uris_from_owl_sameAs(self, owl_sameAs: str) -> set[str]:
         return {
             uri for uri, concept_mapper in self.concept_mappings.items() if owl_sameAs in concept_mapper.owl_sameAs
         }
 
-    def add_uri(self, uri: str) -> 'BidirectionalConceptsMapper':
+    def add_uri(self, uri: str) -> BidirectionalConceptsMapper:
         if uri not in self.concept_mappings:
             self.concept_mappings[uri] = ConceptMapper.from_base_uri(uri)
         return self
 
-    def add_uris(self, uris: typing.Iterable[str]) -> 'BidirectionalConceptsMapper':
+    def add_uris(self, uris: typing.Iterable[str]) -> BidirectionalConceptsMapper:
         for uri in uris:
             self.add_uri(uri)
         return self
 
     @classmethod
-    def from_entry(cls, entry: 'Entry') -> 'BidirectionalConceptsMapper':
+    def from_entry(cls, entry: Entry) -> BidirectionalConceptsMapper:
         if (entry.data is None) or ('contributors' not in entry.data):
             return cls.from_base_uris(set())
         contributors = entry.data['contributors']

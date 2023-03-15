@@ -14,7 +14,6 @@ from media_server.models import Media
 
 
 class PhaidraMediaDataTestCase(TestCase):
-
     phaidra_media_data_translator = PhaidraMediaDataTranslator()
     phaidra_media_data_validator = PhaidraMediaData()
     example_mime_type = 'audio/aac'

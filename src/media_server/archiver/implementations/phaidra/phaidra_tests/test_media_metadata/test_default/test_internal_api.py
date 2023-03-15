@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import importlib
 from copy import deepcopy
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING
 
 from media_server.archiver.implementations.phaidra.metadata.archiver import (
     DefaultMetadataArchiver,
@@ -45,8 +47,10 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, \
-    FakeBidirectionalConceptsMapper
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+    FakeBidirectionalConceptsMapper,
+    ModelProvider,
+)
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 
@@ -97,7 +101,7 @@ class MetaDataTitle(TestCase):
         # title is no error, because default empty string
         self.assertEqual(len(portfolio_errors), 0)  # details in _method
 
-    def _only_title_data_transformation(self, entry: 'Entry') -> List:
+    def _only_title_data_transformation(self, entry: Entry) -> list:
         translator = DCTitleTranslator()
         phaidra_data = translator.translate_data(entry)
         self.assertEqual(
@@ -111,7 +115,7 @@ class MetaDataTitle(TestCase):
         )
         return phaidra_data
 
-    def _only_subtitle_data_transformation(self, entry: 'Entry') -> List:
+    def _only_subtitle_data_transformation(self, entry: Entry) -> list:
         translator = DCTitleTranslator()
         phaidra_data = translator.translate_data(entry)
         self.assertEqual(
@@ -126,7 +130,7 @@ class MetaDataTitle(TestCase):
         )
         return phaidra_data
 
-    def _only_title_validation(self, data: List) -> Dict[int, Dict]:
+    def _only_title_validation(self, data: list) -> dict[int, dict]:
         schema = DceTitleSchema()
         errors = {key: schema.validate(datum) for key, datum in enumerate(data)}
         self.assertEqual(
@@ -137,12 +141,12 @@ class MetaDataTitle(TestCase):
         )
         return errors
 
-    def _only_subtitle_validation(self, data: List) -> Dict[int, Dict]:
+    def _only_subtitle_validation(self, data: list) -> dict[int, dict]:
         self.assertEqual(
             data.__len__(), 1, 'if data is not length 1, this test does not makes sense. Data should be default 1'
         )  # !
         schema = DceTitleSchema()
-        errors: Dict[int, Dict] = {key: schema.validate(datum) for key, datum in enumerate(data)}
+        errors: dict[int, dict] = {key: schema.validate(datum) for key, datum in enumerate(data)}
         self.assertEqual(
             errors,
             {
@@ -151,13 +155,13 @@ class MetaDataTitle(TestCase):
         )
         return errors
 
-    def _only_title_error_transformation(self, errors: Dict[int, Dict]) -> Dict:
+    def _only_title_error_transformation(self, errors: dict[int, dict]) -> dict:
         translator = DCTitleTranslator()
         portfolio_errors = translator.translate_errors(errors)
         self.assertEqual(portfolio_errors, {})
         return portfolio_errors
 
-    def _only_subtitle_error_transformation(self, errors: Dict) -> Dict:
+    def _only_subtitle_error_transformation(self, errors: dict) -> dict:
         translator = DCTitleTranslator()
         portfolio_errors = translator.translate_errors(errors)
         self.assertEqual(
@@ -171,8 +175,7 @@ class MetaDataTitle(TestCase):
 
 
 class EdmHastypeTestCase(TestCase):
-
-    _entry: Optional['Entry'] = None
+    _entry: Entry | None = None
 
     example_type_data = {
         'label': {'de': 'Artikel', 'en': 'article'},
@@ -307,7 +310,7 @@ class EdmHastypeTestCase(TestCase):
 class MissingTypeTestCase(TestCase):
     """Type is not mandatory."""
 
-    _entry: Optional['Entry'] = None
+    _entry: Entry | None = None
 
     expected_translated_data = {
         'metadata': {
@@ -358,9 +361,9 @@ class MissingTypeTestCase(TestCase):
     def test_translate_data(self):
         entry = self.entry
         # noinspection PyTypeChecker
-        translated_data = PhaidraMetaDataTranslator(
-            FakeBidirectionalConceptsMapper.from_entry(entry)
-        ).translate_data(entry)
+        translated_data = PhaidraMetaDataTranslator(FakeBidirectionalConceptsMapper.from_entry(entry)).translate_data(
+            entry
+        )
         self.assertEqual(translated_data, self.expected_translated_data)
 
     def test_validate_data(self):
@@ -992,11 +995,17 @@ class DynamicPersonsTestCase(TestCase):
         mapping = BidirectionalConceptsMapper.from_entry(entry)
         translator = PhaidraThesisMetaDataTranslator(mapping)
         portfolio_errors = translator._translate_errors_with_dynamic_structure(
-                errors={
-                    'role:act': [MISSING_DATA_FOR_REQUIRED_FIELD],
-                },
-            )
-        expected_errors = {'data': {'contributors': [MISSING_DATA_FOR_REQUIRED_FIELD, ]}}
+            errors={
+                'role:act': [MISSING_DATA_FOR_REQUIRED_FIELD],
+            },
+        )
+        expected_errors = {
+            'data': {
+                'contributors': [
+                    MISSING_DATA_FOR_REQUIRED_FIELD,
+                ]
+            }
+        }
         self.assertEqual(expected_errors, portfolio_errors)
 
 
@@ -1236,7 +1245,7 @@ class PhaidraRuleTest(TestCase):
         errors = self._validate(entry)
         self.assertEqual(errors, {})
 
-    def _validate(self, entry: 'Entry') -> Dict:
+    def _validate(self, entry: Entry) -> dict:
         """Validate phaidra style, return errors portfolio style.
 
         :param entry:
@@ -1263,7 +1272,7 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
-        bf_note: List[Dict] = translation['bf:note']
+        bf_note: list[dict] = translation['bf:note']
         self.assertEqual(1, len(bf_note))
 
     def test_mixed(self):
@@ -1273,7 +1282,7 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
-        bf_note: List[Dict] = translation['bf:note']
+        bf_note: list[dict] = translation['bf:note']
         self.assertEqual(3, len(bf_note))
 
     def test_implemented(self):
@@ -1283,7 +1292,7 @@ class TranslateNotImplementedLanguageTextTestCase(TestCase):
         translation = translator.translate_data(entry)
         # only check dynamic part
         translation = translator._extract_from_container(translation)
-        bf_note: List[Dict] = translation['bf:note']
+        bf_note: list[dict] = translation['bf:note']
         self.assertEqual(2, len(bf_note))
 
 
@@ -1344,8 +1353,8 @@ class ThesisSwitchArchiverTestCase(TestCase):
                 media,
             },
         )
-        archiver: 'PhaidraArchiver' = controller.archiver
-        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
+        archiver: PhaidraArchiver = controller.archiver
+        metadata_data_archiver: DefaultMetadataArchiver = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
         self.assertIsInstance(
@@ -1364,8 +1373,8 @@ class ThesisSwitchArchiverTestCase(TestCase):
                 media,
             },
         )
-        archiver: 'PhaidraArchiver' = controller.archiver
-        metadata_data_archiver: 'DefaultMetadataArchiver' = archiver.metadata_data_archiver
+        archiver: PhaidraArchiver = controller.archiver
+        metadata_data_archiver: DefaultMetadataArchiver = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, DefaultMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraMetaData)
         self.assertIsInstance(
@@ -1384,8 +1393,8 @@ class ThesisSwitchArchiverTestCase(TestCase):
                 media,
             },
         )
-        archiver: 'PhaidraArchiver' = controller.archiver
-        metadata_data_archiver: 'ThesisMetadataArchiver' = archiver.metadata_data_archiver
+        archiver: PhaidraArchiver = controller.archiver
+        metadata_data_archiver: ThesisMetadataArchiver = archiver.metadata_data_archiver
         self.assertIsInstance(metadata_data_archiver, ThesisMetadataArchiver)
         self.assertIsInstance(metadata_data_archiver.schema, PhaidraThesisMetaData)
         self.assertIsInstance(

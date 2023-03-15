@@ -1,8 +1,9 @@
+from typing import TYPE_CHECKING
+
 from rest_framework.test import APITestCase
 
 from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.core.models import Entry
 
@@ -94,10 +95,8 @@ class ArchiveSecondAsset(APITestCase):
 
 
 class ValidateValidEntryEndpoint(APITestCase):
-    """
-    With no attachment
-    https://basedev.uni-ak.ac.at/redmine/issues/1711
-    """
+    """With no attachment https://basedev.uni-ak.ac.at/redmine/issues/1711."""
+
     @classmethod
     def setUpTestData(cls):
         model_provider = ModelProvider()
@@ -110,10 +109,7 @@ class ValidateValidEntryEndpoint(APITestCase):
 
 
 class ValidateInvalidEntryEndpoint(APITestCase):
-    """
-    With no attachment
-    https://basedev.uni-ak.ac.at/redmine/issues/1711
-    """
+    """With no attachment https://basedev.uni-ak.ac.at/redmine/issues/1711."""
 
     @classmethod
     def setUpTestData(cls):
@@ -128,10 +124,7 @@ class ValidateInvalidEntryEndpoint(APITestCase):
 
 
 class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
-    """
-    With attachment
-    https://basedev.uni-ak.ac.at/redmine/issues/1711
-    """
+    """With attachment https://basedev.uni-ak.ac.at/redmine/issues/1711."""
 
     entry: 'Entry'
 
@@ -140,7 +133,7 @@ class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
         model_provider = ModelProvider()
         cls.client_provider = ClientProvider(model_provider)
         cls.entry = model_provider.get_entry()
-        media = model_provider.get_media(entry=cls.entry)
+        model_provider.get_media(entry=cls.entry)
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)
@@ -148,10 +141,8 @@ class ValidateValidEntryWithAttachmentsEndpoint(APITestCase):
 
 
 class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
-    """
-    With attachment
-    https://basedev.uni-ak.ac.at/redmine/issues/1711
-    """
+    """With attachment https://basedev.uni-ak.ac.at/redmine/issues/1711."""
+
     entry: 'Entry'
 
     @classmethod
@@ -159,7 +150,7 @@ class ValidateInvalidEntryWithAttachmentsEndpoint(APITestCase):
         model_provider = ModelProvider()
         cls.client_provider = ClientProvider(model_provider)
         cls.entry = model_provider.get_entry(english_abstract=False)
-        media = model_provider.get_media(entry=cls.entry)
+        model_provider.get_media(entry=cls.entry)
 
     def test_validation(self):
         response = self.client_provider.get_validate_entry_response(self.entry)

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
     BfNoteTranslator,
@@ -14,7 +14,7 @@ from media_server.archiver.implementations.phaidra.metadata.mappings.contributor
 class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
     """Implement basic error feedback."""
 
-    def translate_errors(self, errors: Optional[Union[List[Dict], Dict]]) -> Dict:
+    def translate_errors(self, errors: list[dict] | dict | None) -> dict:
         if not errors:
             return {}
         translated_errors = {}
@@ -27,7 +27,7 @@ class ResponsiveGenericSkosConceptTranslator(GenericSkosConceptTranslator):
 
 
 class ResponsiveBfNoteTranslator(BfNoteTranslator):
-    def translate_errors(self, errors: Union[List[str], Dict]) -> Dict[str, List[str]]:
+    def translate_errors(self, errors: list[str] | dict) -> dict[str, list[str]]:
         if errors.__class__ is list:
             return {'texts': errors}
         else:
@@ -37,7 +37,7 @@ class ResponsiveBfNoteTranslator(BfNoteTranslator):
 class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
     """Implement basic error feedback."""
 
-    def translate_errors(self, errors: Union[Dict, List]) -> Dict:
+    def translate_errors(self, errors: dict | list) -> dict:
         """Since all of this errors are on schema level, we just to add the top
         keys.
 
@@ -50,8 +50,7 @@ class ResponsiveGenericStaticPersonTranslator(GenericStaticPersonTranslator):
 
 
 class PhaidraThesisMetaDataTranslator(PhaidraMetaDataTranslator):
-
-    def __init__(self, mapping: 'BidirectionalConceptsMapper'):
+    def __init__(self, mapping: BidirectionalConceptsMapper):
         super().__init__(mapping)
 
         self._key_translator_mapping['role:aut'] = ResponsiveGenericStaticPersonTranslator(

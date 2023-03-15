@@ -2,8 +2,8 @@ from pathlib import Path
 
 import django_rq
 import requests
-from django.conf import settings
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.test import TestCase
@@ -66,9 +66,11 @@ class ArchiveEntryWithOnePdfFile(TestCase):
             message = 'everything ok'
         except ValidationError as validation_error:
             url_valid = False
-            message = f'validation_error={validation_error}' \
-                      f'self.media.archive_URI={self.media.archive_URI}' \
-                      f'self.media.archive_URI.__class__={self.media.archive_URI.__class__}'
+            message = (
+                f'validation_error={validation_error}'
+                f'self.media.archive_URI={self.media.archive_URI}'
+                f'self.media.archive_URI.__class__={self.media.archive_URI.__class__}'
+            )
         self.assertTrue(url_valid, message)
         self.assertEqual(200, requests.get(self.media.archive_URI).status_code)
 
@@ -77,18 +79,24 @@ class ArchiveEntryWithOnePdfFile(TestCase):
 
     def test_phaidra_entry_view_successful(self):
         response = requests.get(self.entry.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(self.entry.title, response.text,
-                      f'self.entry.title={self.entry.title} not found in {response.url}'
-                      )
-        self.assertIn(self.entry.archive_id, response.text,
-                      f'self.entry.archive_id={self.entry.archive_id} not found in {response.url}'
-                      )
+        self.assertIn(
+            self.entry.title, response.text, f'self.entry.title={self.entry.title} not found in {response.url}'
+        )
+        self.assertIn(
+            self.entry.archive_id,
+            response.text,
+            f'self.entry.archive_id={self.entry.archive_id} not found in {response.url}',
+        )
 
     def test_phaidra_media_view_successful(self):
         response = requests.get(self.media.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_phaidra_entry_meta_data_successful(self):
@@ -186,9 +194,11 @@ class ArchiveEntryWithTwoPdfFiles(TestCase):
             message = 'everything ok'
         except ValidationError as validation_error:
             url_valid = False
-            message = f'validation_error={validation_error} ' \
-                      f'self.media_1.archive_URI=={self.media_1.archive_URI}' \
-                      f'self.media_1.archive_URI.__class__=={self.media_1.archive_URI.__class__}'
+            message = (
+                f'validation_error={validation_error} '
+                f'self.media_1.archive_URI=={self.media_1.archive_URI}'
+                f'self.media_1.archive_URI.__class__=={self.media_1.archive_URI.__class__}'
+            )
         self.assertTrue(url_valid, message)
         self.assertEqual(200, requests.get(self.media_1.archive_URI).status_code)
         try:
@@ -197,9 +207,11 @@ class ArchiveEntryWithTwoPdfFiles(TestCase):
             message = 'everything ok'
         except ValidationError as validation_error:
             url_valid = False
-            message = f'validation_error={validation_error}' \
-                      f'self.media_2.archive_URI={self.media_2.archive_URI} ' \
-                      f'self.media_2.archive_URI.__class__={self.media_2.archive_URI.__class__}'
+            message = (
+                f'validation_error={validation_error}'
+                f'self.media_2.archive_URI={self.media_2.archive_URI} '
+                f'self.media_2.archive_URI.__class__={self.media_2.archive_URI.__class__}'
+            )
         self.assertTrue(url_valid, message)
         self.assertEqual(200, requests.get(self.media_2.archive_URI).status_code)
 
@@ -209,20 +221,29 @@ class ArchiveEntryWithTwoPdfFiles(TestCase):
 
     def test_phaidra_entry_view_successful(self):
         response = requests.get(self.entry.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(self.entry.title, response.text,
-                      f'self.entry.title={self.entry.title} not found in {response.url}'
-                      )
-        self.assertIn(self.entry.archive_id, response.text, f'self.entry.archive_id={self.entry.archive_id} '
-                                                            f'not found in {response.url}')
+        self.assertIn(
+            self.entry.title, response.text, f'self.entry.title={self.entry.title} not found in {response.url}'
+        )
+        self.assertIn(
+            self.entry.archive_id,
+            response.text,
+            f'self.entry.archive_id={self.entry.archive_id} ' f'not found in {response.url}',
+        )
 
     def test_phaidra_media_view_successful(self):
         response_1 = requests.get(self.media_1.archive_URI)
-        self.assertEqual(response_1.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_1.archive_id}')
+        self.assertEqual(
+            response_1.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_1.archive_id}'
+        )
         self.assertEqual(response_1.status_code, 200)
         response_2 = requests.get(self.media_2.archive_URI)
-        self.assertEqual(response_2.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_2.archive_id}')
+        self.assertEqual(
+            response_2.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_2.archive_id}'
+        )
         self.assertEqual(response_2.status_code, 200)
 
     def test_phaidra_entry_meta_data_successful(self):
@@ -349,9 +370,11 @@ class AddOnePdfFileToEntryWithOnePdfFile(TestCase):
             message = 'everything ok'
         except ValidationError as validation_error:
             url_valid = False
-            message = f'validation_error={validation_error} ' \
-                      f'self.media_1.archive_URI={self.media_1.archive_URI} ' \
-                      f'self.media_1.archive_URI.__class__={self.media_1.archive_URI.__class__}'
+            message = (
+                f'validation_error={validation_error} '
+                f'self.media_1.archive_URI={self.media_1.archive_URI} '
+                f'self.media_1.archive_URI.__class__={self.media_1.archive_URI.__class__}'
+            )
         self.assertTrue(url_valid, message)
         self.assertEqual(200, requests.get(self.media_1.archive_URI).status_code)
 
@@ -364,9 +387,11 @@ class AddOnePdfFileToEntryWithOnePdfFile(TestCase):
             message = 'everything ok'
         except ValidationError as validation_error:
             url_valid = False
-            message = f'validation_error={validation_error} ' \
-                      f'self.media_2.archive_URI={self.media_2.archive_URI} ' \
-                      f'self.media_2.archive_URI.__class__={self.media_2.archive_URI.__class__}'
+            message = (
+                f'validation_error={validation_error} '
+                f'self.media_2.archive_URI={self.media_2.archive_URI} '
+                f'self.media_2.archive_URI.__class__={self.media_2.archive_URI.__class__}'
+            )
         self.assertTrue(url_valid, message)
         self.assertEqual(200, requests.get(self.media_2.archive_URI).status_code)
 
@@ -376,23 +401,31 @@ class AddOnePdfFileToEntryWithOnePdfFile(TestCase):
 
     def test_phaidra_entry_view_successful(self):
         response = requests.get(self.entry.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.entry.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(self.entry.title, response.text,
-                      f'self.entry.title={self.entry.title} not found in {response.url}'
-                      )
-        self.assertIn(self.entry.archive_id, response.text,
-                      f'self.entry.archive_id={self.entry.archive_id} not found in {response.url}'
-                      )
+        self.assertIn(
+            self.entry.title, response.text, f'self.entry.title={self.entry.title} not found in {response.url}'
+        )
+        self.assertIn(
+            self.entry.archive_id,
+            response.text,
+            f'self.entry.archive_id={self.entry.archive_id} not found in {response.url}',
+        )
 
     def test_phaidra_media_1_view_successful(self):
         response = requests.get(self.media_1.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_1.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_1.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_phaidra_media_2_view_successful(self):
         response = requests.get(self.media_2.archive_URI)
-        self.assertEqual(response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_2.archive_id}')
+        self.assertEqual(
+            response.url, f'{settings.ARCHIVE_URIS["IDENTIFIER_BASE_TESTING"]}detail/{self.media_2.archive_id}'
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_phaidra_entry_meta_data_successful(self):

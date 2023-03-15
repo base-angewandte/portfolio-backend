@@ -14,8 +14,8 @@ class Command(BaseCommand):
 
         for job_id in options['job_id']:
             if job_id not in scheduler:
-                raise CommandError(f'Job "{job_id}" does not exist')
+                raise CommandError(f'Job {job_id!r} does not exist')
 
             scheduler.cancel(job_id)
 
-            self.stdout.write(self.style.SUCCESS(f'Successfully deleted job "{job_id}"'))
+            self.stdout.write(self.style.SUCCESS(f'Successfully deleted job {job_id!r}'))

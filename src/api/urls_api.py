@@ -2,8 +2,14 @@ from rest_framework import routers
 
 from django.urls import include, path, re_path
 
-from media_server.views import MediaViewSet, archive, archive_assets, archive_is_changed, validate_assets, \
-    validate_entry
+from media_server.views import (
+    MediaViewSet,
+    archive,
+    archive_assets,
+    archive_is_changed,
+    validate_assets,
+    validate_entry,
+)
 
 from . import views
 

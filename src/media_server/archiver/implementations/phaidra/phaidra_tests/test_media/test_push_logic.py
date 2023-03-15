@@ -3,8 +3,11 @@ from typing import TYPE_CHECKING, Optional
 import django_rq
 
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
-from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver, _push_to_archive_job, \
-    MediaArchiveHandler
+from media_server.archiver.implementations.phaidra.media.archiver import (
+    MediaArchiveHandler,
+    MediaArchiver,
+    _push_to_archive_job,
+)
 from media_server.archiver.interface.responses import SuccessfulArchiveResponse
 
 if TYPE_CHECKING:

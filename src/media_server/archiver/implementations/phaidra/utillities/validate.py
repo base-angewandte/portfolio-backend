@@ -1,7 +1,7 @@
 import typing
-from typing import Hashable
+from collections.abc import Hashable
 
-from marshmallow.validate import Length, Validator, ValidationError
+from marshmallow.validate import Length, ValidationError, Validator
 
 from media_server.archiver.messages import validation as validation_messages
 
@@ -38,9 +38,8 @@ class ValidateSupervisor(ValidateLength1):
 
 
 class NotFalsyValidator(Validator):
-    """
-    If key not present in data, or not data[key] raise validation error.
-    """
+    """If key not present in data, or not data[key] raise validation error."""
+
     message: str
     key: Hashable
     error: str
@@ -56,5 +55,10 @@ class NotFalsyValidator(Validator):
     def validate(self, value: dict) -> dict:
         if (self.key not in value) or (not value[self.key]):
             self.error = self.message
-            raise ValidationError(self.message, [self.key, ])
+            raise ValidationError(
+                self.message,
+                [
+                    self.key,
+                ],
+            )
         return value

@@ -1,11 +1,11 @@
 """The time of archival of entries and media should be logged in the
 database."""
-from datetime import date, timedelta
-from typing import Optional
+from __future__ import annotations
 
-from freezegun import freeze_time
+from datetime import date, timedelta
 
 import django_rq
+from freezegun import freeze_time
 
 from django.test import TestCase
 from django.utils import timezone
@@ -20,8 +20,8 @@ from media_server.models import Media
 class NotArchivedTestCase(TestCase):
     """An not archived entry / media pair should not have archival dates."""
 
-    entry: Optional[Entry] = None
-    media: Optional[Media] = None
+    entry: Entry | None = None
+    media: Media | None = None
 
     @classmethod
     def setUpTestData(cls):
@@ -43,8 +43,8 @@ class NotArchivedTestCase(TestCase):
 class ArchivedTestCase(TestCase):
     """An archived entry / media pair should have archival dates."""
 
-    entry: Optional[Entry] = None
-    media: Optional[Media] = None
+    entry: Entry | None = None
+    media: Media | None = None
 
     @classmethod
     def setUpTestData(cls):
@@ -79,8 +79,8 @@ class SavedAfterArchivalTestCase(TestCase):
     """An archived entry / media pair that is saved again after archival,
     should have newer save than archival dates."""
 
-    entry: Optional[Entry] = None
-    media: Optional[Media] = None
+    entry: Entry | None = None
+    media: Media | None = None
     time_gone: int = 1
 
     @classmethod
@@ -111,15 +111,15 @@ class SavedAfterArchivalTestCase(TestCase):
 
     def test_entry_archival_date_differs_from_save_date(self):
         self.assertGreater(
-                self.entry.date_changed,
-                self.entry.archive_date,
+            self.entry.date_changed,
+            self.entry.archive_date,
         )
 
     def test_media_archival_date_differs_from_save_date(self):
         self.assertGreater(
-                self.media.modified,
-                self.media.archive_date,
-            )
+            self.media.modified,
+            self.media.archive_date,
+        )
 
 
 class UpdatedArchivalTestCase(TestCase):
@@ -127,8 +127,8 @@ class UpdatedArchivalTestCase(TestCase):
     updated the archival as well, should have the same save and archival
     dates."""
 
-    entry: Optional[Entry] = None
-    media: Optional[Media] = None
+    entry: Entry | None = None
+    media: Media | None = None
     time_gone: int = 1
 
     @classmethod
@@ -165,7 +165,8 @@ class UpdatedArchivalTestCase(TestCase):
                 raise RuntimeError(
                     f'Update call returned '
                     f'response.status_code={response.status_code} '
-                    f'and response.content={response.content}')
+                    f'and response.content={response.content}'
+                )
             worker = django_rq.get_worker(AsyncMediaHandler.queue_name)
             worker.work(burst=True)  # wait until it is done
             cls.entry.refresh_from_db()
@@ -184,6 +185,5 @@ self.entry.date_changed={self.entry.date_changed}
     def test_media_archival_and_save_date_are_the_same(self):
         self.assertTrue(
             DateTimeComparator(self.time_gone).about_the_same(self.media.archive_date, self.media.modified),
-            f'\nself.media.archive_date={self.media.archive_date}\n'
-            f'self.media.modified={self.media.modified}',
+            f'\nself.media.archive_date={self.media.archive_date}\n' f'self.media.modified={self.media.modified}',
         )

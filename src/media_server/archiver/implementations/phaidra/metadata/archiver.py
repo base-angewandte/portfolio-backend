@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 import requests
@@ -8,9 +10,9 @@ import requests
 from django.conf import settings
 from django.utils import timezone
 
+from core.models import Entry
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
 from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData
-from .thesis.must_use import DEFAULT_DYNAMIC_ROLES
 
 from .... import credentials
 from ....interface.exceptions import ExternalServerError
@@ -18,8 +20,8 @@ from ....interface.responses import ModificationType, SuccessfulArchiveResponse
 from ..uris import create_phaidra_update_url
 from .mappings.contributormapping import BidirectionalConceptsMapper
 from .thesis.datatranslation import PhaidraThesisMetaDataTranslator
+from .thesis.must_use import DEFAULT_DYNAMIC_ROLES
 from .thesis.schemas import PhaidraThesisContainer, create_dynamic_phaidra_thesis_meta_data_schema
-from core.models import Entry
 
 if TYPE_CHECKING:
     from ....interface.archiveobject import ArchiveObject
@@ -28,10 +30,10 @@ from ....interface.abstractarchiver import AbstractArchiver
 
 
 class DefaultMetadataArchiver(AbstractArchiver):
-    data: Optional[Dict] = None
+    data: dict | None = None
     translator_class = PhaidraMetaDataTranslator
 
-    def __init__(self, archive_object: 'ArchiveObject'):
+    def __init__(self, archive_object: ArchiveObject):
         super().__init__(archive_object)
         self.data = None
         self.is_update = None
@@ -40,13 +42,13 @@ class DefaultMetadataArchiver(AbstractArchiver):
         self._concepts_mapper = None
 
     @property
-    def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
+    def concepts_mapper(self) -> BidirectionalConceptsMapper:
         if self._concepts_mapper is None:
             self._concepts_mapper = BidirectionalConceptsMapper.from_entry(entry=self.archive_object.entry)
         return self._concepts_mapper
 
     @property
-    def translator(self) -> 'PhaidraMetaDataTranslator':
+    def translator(self) -> PhaidraMetaDataTranslator:
         if self._translator is None:
             self._translator = self.translator_class(self.concepts_mapper)
         return self._translator
@@ -59,7 +61,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         errors = self._translate_errors(errors)
         self.throw_validation_errors(errors)
 
-    def push_to_archive(self) -> 'SuccessfulArchiveResponse':
+    def push_to_archive(self) -> SuccessfulArchiveResponse:
         if self.data is None:
             self.validate()
         self.is_update = self.archive_object.entry.archive_id is not None
@@ -67,7 +69,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
         response = self._post_to_phaidra(url, self.data)
         return self._handle_phaidra_response(response)
 
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         return self.push_to_archive()
 
     def _post_to_phaidra(self, url, data: dict):
@@ -85,9 +87,9 @@ class DefaultMetadataArchiver(AbstractArchiver):
             )
             return response
         except Exception as exception:
-            raise ExternalServerError(exception)
+            raise ExternalServerError from exception
 
-    def _handle_phaidra_response(self, response: requests.Response) -> 'SuccessfulArchiveResponse':
+    def _handle_phaidra_response(self, response: requests.Response) -> SuccessfulArchiveResponse:
         """
         :param response:
         :return:
@@ -115,9 +117,7 @@ class DefaultMetadataArchiver(AbstractArchiver):
             'archive_date': now,
             'date_changed': now,
         }
-        Entry.objects\
-            .filter(id=self.archive_object.entry.id)\
-            .update(**data)
+        Entry.objects.filter(id=self.archive_object.entry.id).update(**data)
         # Methods expect data on entry object, since Entry.save was used before
         for field, value in data.items():
             setattr(self.archive_object.entry, field, value)
@@ -129,14 +129,14 @@ class DefaultMetadataArchiver(AbstractArchiver):
             service='PHAIDRA',
         )
 
-    def _translate_data(self, entry: 'Entry') -> Dict:
+    def _translate_data(self, entry: Entry) -> dict:
         return self.translator.translate_data(entry)
 
-    def _translate_errors(self, errors: Dict) -> Dict:
+    def _translate_errors(self, errors: dict) -> dict:
         return self.translator.translate_errors(errors)
 
     @property
-    def schema(self) -> 'PhaidraMetaData':
+    def schema(self) -> PhaidraMetaData:
         if self._schema is None:
             self._schema = PhaidraMetaData()
         return self._schema
@@ -147,14 +147,14 @@ class ThesisMetadataArchiver(DefaultMetadataArchiver):
     base_schema_class = PhaidraThesisContainer
 
     @property
-    def concepts_mapper(self) -> 'BidirectionalConceptsMapper':
+    def concepts_mapper(self) -> BidirectionalConceptsMapper:
         if self._concepts_mapper is None:
             self._concepts_mapper = super().concepts_mapper
             self._concepts_mapper.add_uris(DEFAULT_DYNAMIC_ROLES)
         return self._concepts_mapper
 
     @property
-    def schema(self) -> 'PhaidraMetaData':
+    def schema(self) -> PhaidraMetaData:
         if self._schema is None:
             self._schema = create_dynamic_phaidra_thesis_meta_data_schema(self.concepts_mapper)
         return self._schema

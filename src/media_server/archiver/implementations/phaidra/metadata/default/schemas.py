@@ -83,9 +83,8 @@ class DceTitleSchema(Schema):
 
 
 class RdfSeeAlsoSchema(TypeLabelSchema):
-    """
-    https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
-    """
+    """https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also."""
+
     type = PortfolioConstantField('schema:URL', load_from='@type', dump_to='@type')
     schema_url = PortfolioListField(url_field, load_from='schema:url', dump_to='schema:url')
     skos_prefLabel = PortfolioNestedField(
@@ -126,12 +125,7 @@ class PhaidraContainer(Schema):
         dump_to='dce:title',
     )
 
-    dcterms_date = fields.List(
-        fields.String(),
-        required=False,
-        load_from='dcterms:date',
-        dump_to='dcterms:date'
-    )
+    dcterms_date = fields.List(fields.String(), required=False, load_from='dcterms:date', dump_to='dcterms:date')
 
     dcterms_language = PortfolioNestedField(
         SkosConceptSchema, many=True, load_from='dcterms:language', dump_to='dcterms:language', validate=None
@@ -175,12 +169,20 @@ class PhaidraContainer(Schema):
 
     role_pbl = PortfolioNestedField(PersonSchema, many=True, load_from='role:pbl', dump_to='role:pbl', validate=None)
 
-    bf_physicalLocation = PortfolioNestedField(ValueLanguageBaseSchema, many=True, validate=None,
-                                               load_from='bf:physicalLocation', dump_to='bf:physicalLocation'
-                                               )
-    rdfs_seeAlso = PortfolioNestedField(RdfSeeAlsoSchema, many=True, validate=None,
-                                        load_from='rdfs:seeAlso', dump_to='rdfs:seeAlso',
-                                        )
+    bf_physicalLocation = PortfolioNestedField(
+        ValueLanguageBaseSchema,
+        many=True,
+        validate=None,
+        load_from='bf:physicalLocation',
+        dump_to='bf:physicalLocation',
+    )
+    rdfs_seeAlso = PortfolioNestedField(
+        RdfSeeAlsoSchema,
+        many=True,
+        validate=None,
+        load_from='rdfs:seeAlso',
+        dump_to='rdfs:seeAlso',
+    )
 
 
 class JsonLd(Schema):

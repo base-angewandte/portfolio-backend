@@ -1,23 +1,33 @@
-"""
-https://basedev.uni-ak.ac.at/redmine/issues/1503
+"""https://basedev.uni-ak.ac.at/redmine/issues/1503.
 
 >  archive_id and archive_URI fields are deleted from the database
 
 after changing / resaving the database
 """
+from json import dumps
+
+import django_rq
 from rest_framework.test import APITestCase
+
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-import django_rq
+
 from core.models import Entry
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import create_random_test_password
 from media_server.models import Media
+
+license_copyright = {
+    'source': 'http://base.uni-ak.ac.at/portfolio/licenses/copyright',
+    'label': {
+        'de': 'urheberrechtlich geschützt',
+        'en': 'Copyright',
+    },
+}
 
 
 class OnePdfResaved(APITestCase):
-
     def setUp(self) -> None:
-        """
-        (Log in as a user)
+        """(Log in as a user)
 
         Create an entry with the web api,
         attach a file with the web api,
@@ -25,9 +35,10 @@ class OnePdfResaved(APITestCase):
         change the entry with the web api,
         :return:
         """
-        User.objects.create_user(username='Hansi', password='Hansi1986')
+        pw = create_random_test_password()
+        User.objects.create_user(username='test_user', password=pw)
         client = self.client
-        client.login(username='Hansi', password='Hansi1986')
+        client.login(username='test_user', password=pw)
 
         # Create an entry …
         response = self.client.post('/api/v1/entry/', data={'title': 'Test'})
@@ -40,7 +51,7 @@ class OnePdfResaved(APITestCase):
                 'file': SimpleUploadedFile('example.pdf', b'example file'),
                 'entry': entry_id,
                 'published': 'false',
-                'license': '{"source":"http://base.uni-ak.ac.at/portfolio/licenses/copyright","label":{"de":"urheberrechtlich geschützt","en":"Copyright"}}',
+                'license': dumps(license_copyright),
             },
         )
         media_id = response.data
@@ -59,16 +70,13 @@ class OnePdfResaved(APITestCase):
         response = client.put(
             f'/api/v1/entry/{entry_id}/',
             data={
-                "title": "Test",
-                "type": {
-                    "label": {
-                        "de": "Album",
-                        "en": "Album"
-                    },
-                    "source": "http://base.uni-ak.ac.at/portfolio/taxonomy/album"
-                }
+                'title': 'Test',
+                'type': {
+                    'label': {'de': 'Album', 'en': 'Album'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/album',
+                },
             },
-            format='json'
+            format='json',
         )
 
         # byby ;-)
@@ -100,12 +108,10 @@ class OnePdfResaved(APITestCase):
 
 
 class OnePdfResavedWithArchiveIDSetNull(APITestCase):
-    """
-    Client accidentally sets the archive id to null
-    """
+    """Client accidentally sets the archive id to null."""
+
     def setUp(self) -> None:
-        """
-        (Log in as a user)
+        """(Log in as a user)
 
         Create an entry with the web api,
         attach a file with the web api,
@@ -113,9 +119,10 @@ class OnePdfResavedWithArchiveIDSetNull(APITestCase):
         change the entry with the web api,
         :return:
         """
-        User.objects.create_user(username='Hansi', password='Hansi1986')
+        pw = create_random_test_password()
+        User.objects.create_user(username='test_user', password=pw)
         client = self.client
-        client.login(username='Hansi', password='Hansi1986')
+        client.login(username='test_user', password=pw)
 
         # Create an entry …
         response = self.client.post('/api/v1/entry/', data={'title': 'Test'})
@@ -128,7 +135,7 @@ class OnePdfResavedWithArchiveIDSetNull(APITestCase):
                 'file': SimpleUploadedFile('example.pdf', b'example file'),
                 'entry': entry_id,
                 'published': 'false',
-                'license': '{"source":"http://base.uni-ak.ac.at/portfolio/licenses/copyright","label":{"de":"urheberrechtlich geschützt","en":"Copyright"}}',
+                'license': dumps(license_copyright),
             },
         )
         media_id = response.data
@@ -147,17 +154,14 @@ class OnePdfResavedWithArchiveIDSetNull(APITestCase):
         response = client.put(
             f'/api/v1/entry/{entry_id}/',
             data={
-                "title": "Test",
-                "archive_id": None,
-                "type": {
-                    "label": {
-                        "de": "Album",
-                        "en": "Album"
-                    },
-                    "source": "http://base.uni-ak.ac.at/portfolio/taxonomy/album"
-                }
+                'title': 'Test',
+                'archive_id': None,
+                'type': {
+                    'label': {'de': 'Album', 'en': 'Album'},
+                    'source': 'http://base.uni-ak.ac.at/portfolio/taxonomy/album',
+                },
             },
-            format='json'
+            format='json',
         )
 
         # byby ;-)

@@ -1,26 +1,41 @@
-"""
-New metadata is added to the containers. Check it
+"""New metadata is added to the containers.
+
+Check it
 """
 from datetime import datetime
 
-import requests as requests
-from django.test import TestCase
 import django_rq
+import requests as requests
+
+from django.test import TestCase
+
 from core.models import Entry
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
-from media_server.archiver.implementations.phaidra.metadata.default.schemas import PhaidraMetaData, \
-    ValueLanguageBaseSchema, RdfSeeAlsoSchema
-from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
-    BidirectionalConceptsMapper
-from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import \
-    PhaidraThesisMetaDataTranslator
-from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import \
-    create_dynamic_phaidra_thesis_meta_data_schema, PhaidraThesisMetaData
-from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator, \
-    _convert_two_to_three_letter_language_code, BfNoteTranslator
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import FakeBidirectionalConceptsMapper, \
-    ClientProvider
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import (
+    BfNoteTranslator,
+    PhaidraMetaDataTranslator,
+    _convert_two_to_three_letter_language_code,
+)
+from media_server.archiver.implementations.phaidra.metadata.default.schemas import (
+    PhaidraMetaData,
+    RdfSeeAlsoSchema,
+    ValueLanguageBaseSchema,
+)
+from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+    BidirectionalConceptsMapper,
+)
+from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslation import (
+    PhaidraThesisMetaDataTranslator,
+)
+from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
+    PhaidraThesisMetaData,
+    create_dynamic_phaidra_thesis_meta_data_schema,
+)
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+    ClientProvider,
+    FakeBidirectionalConceptsMapper,
+    ModelProvider,
+)
 from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
 from media_server.archiver.interface.exceptions import InternalValidationError
 from media_server.archiver.messages.validation.default import INVALID_URL
@@ -42,23 +57,26 @@ class TestFeature1677(TestCase):
     location_label_1 = 'Universität für Angewandte Kunst Wien'
     location_label_2 = 'Wien, Österreich'
 
-    location_1_portfolio = {'country': 'Austria',
-                            'geometry': {'coordinates': [16.348388, 48.198674], 'type': 'Point'},
-                            'label': location_label_1,
-                            'locality': 'Vienna',
-                            'region': 'Wien',
-                            'source': 'https://api.geocode.earth/v1/place?ids=whosonfirst:locality:101748073'
-                            }
+    location_1_portfolio = {
+        'country': 'Austria',
+        'geometry': {'coordinates': [16.348388, 48.198674], 'type': 'Point'},
+        'label': location_label_1,
+        'locality': 'Vienna',
+        'region': 'Wien',
+        'source': 'https://api.geocode.earth/v1/place?ids=whosonfirst:locality:101748073',
+    }
 
-    location_2_portfolio = {'country': 'Österreich',
-                            'geometry': {'coordinates': [16.382464, 48.208126], 'type': 'Point'},
-                            'house_number': '2',
-                            'label': location_label_2,
-                            'locality': 'Wien',
-                            'postcode': '1010',
-                            'region': 'Wien',
-                            'source': 'https://api.geocode.earth/v1/place?ids=openstreetmap:venue:way/25427674',
-                            'street': 'Oskar-Kokoschka-Platz'}
+    location_2_portfolio = {
+        'country': 'Österreich',
+        'geometry': {'coordinates': [16.382464, 48.208126], 'type': 'Point'},
+        'house_number': '2',
+        'label': location_label_2,
+        'locality': 'Wien',
+        'postcode': '1010',
+        'region': 'Wien',
+        'source': 'https://api.geocode.earth/v1/place?ids=openstreetmap:venue:way/25427674',
+        'street': 'Oskar-Kokoschka-Platz',
+    }
 
     # Expected data
 
@@ -85,7 +103,9 @@ class TestFeature1677(TestCase):
         entry_with_no_location = model_provider.get_entry(thesis_type=False)
 
         entry_with_one_location = model_provider.get_entry(thesis_type=False)
-        entry_with_one_location.data['location'] = [cls.location_1_portfolio, ]
+        entry_with_one_location.data['location'] = [
+            cls.location_1_portfolio,
+        ]
         entry_with_one_location.save()
         entry_with_one_location.refresh_from_db()
 
@@ -151,12 +171,14 @@ class TestFeature1677(TestCase):
 
         self.assertEqual([], self.translated_data_with_no_location['metadata']['json-ld']['bf:physicalLocation'])
         self.assertEqual(
-            [self.location_1_phaidra, ],
-            self.translated_data_with_one_location['metadata']['json-ld']['bf:physicalLocation']
+            [
+                self.location_1_phaidra,
+            ],
+            self.translated_data_with_one_location['metadata']['json-ld']['bf:physicalLocation'],
         )
         self.assertEqual(
             [self.location_1_phaidra, self.location_2_phaidra],
-            self.translated_data_with_two_locations['metadata']['json-ld']['bf:physicalLocation']
+            self.translated_data_with_two_locations['metadata']['json-ld']['bf:physicalLocation'],
         )
 
     def test_validation(self):
@@ -167,12 +189,10 @@ class TestFeature1677(TestCase):
     def test_schema_contains_location_fields(self):
         # There is a schema …
         self.assertIn(
-            'bf_physicalLocation',
-            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+            'bf_physicalLocation', self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
         )
         self.assertIn(
-            'bf_physicalLocation',
-            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
+            'bf_physicalLocation', self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
         )
         # It checks for an array of objects
         self.assertIsInstance(
@@ -195,35 +215,28 @@ class TestFeature1677(TestCase):
         )
 
     def test_phaidra(self):
-        self.assertIn(
-            'bf:physicalLocation',
-            self.phaidra_data_with_1_location
-        )
-        self.assertIn(
-            'bf:physicalLocation',
-            self.phaidra_data_with_2_locations
-        )
+        self.assertIn('bf:physicalLocation', self.phaidra_data_with_1_location)
+        self.assertIn('bf:physicalLocation', self.phaidra_data_with_2_locations)
         self.assertEqual(
-            [self.location_1_phaidra, ],
-            self.phaidra_data_with_1_location['bf:physicalLocation']
+            [
+                self.location_1_phaidra,
+            ],
+            self.phaidra_data_with_1_location['bf:physicalLocation'],
         )
         self.assertEqual(
             [self.location_1_phaidra, self.location_2_phaidra],
-            self.phaidra_data_with_2_locations['bf:physicalLocation']
+            self.phaidra_data_with_2_locations['bf:physicalLocation'],
         )
 
 
 class TestFeature1678(TestCase):
-    """
-    https://basedev.uni-ak.ac.at/redmine/issues/1678
-
-
+    """https://basedev.uni-ak.ac.at/redmine/issues/1678.
 
     URL - not currently mapped, map to rdfs:seeAlso
 
     https://github.com/phaidra/phaidra-ld/wiki/Metadata-fields#see-also
-
     """
+
     # Test this data
     translated_data_0_url: dict
     translated_data_1_url: dict
@@ -239,14 +252,11 @@ class TestFeature1678(TestCase):
     expected_phaidra_data_0_url = []
     expected_phaidra_data_1_url = [
         {
-            "@type": "schema:URL",
-            "schema:url": [url, ],
-            "skos:prefLabel": [
-                {
-                    "@value": url,
-                    "@language": "und"
-                }
-            ]
+            '@type': 'schema:URL',
+            'schema:url': [
+                url,
+            ],
+            'skos:prefLabel': [{'@value': url, '@language': 'und'}],
         },
     ]
 
@@ -283,12 +293,12 @@ class TestFeature1678(TestCase):
         portfolio_responses = [client.get_media_primary_key_response(media, False) for media in media_objects]
         if any([response.status_code != 200 for response in portfolio_responses]):
             raise RuntimeError(
-                f'Could not archive assets: ' +
-                '\n'.join((f'{response.status_code} {response.content}'
-                           for response in portfolio_responses
-                           if response.status_code != 200
-                           )
-                          )
+                'Could not archive assets: '
+                + '\n'.join(
+                    f'{response.status_code} {response.content}'
+                    for response in portfolio_responses
+                    if response.status_code != 200
+                )
             )
         for entry in entries:
             entry.refresh_from_db()
@@ -300,12 +310,12 @@ class TestFeature1678(TestCase):
 
         if any([response.status_code != 200 for response in phaidra_responses]):
             raise RuntimeError(
-                f'Could not archive assets: ' +
-                '\n'.join((f'{response.status_code} {response.content}'
-                           for response in phaidra_responses
-                           if response.status_code != 200
-                           )
-                          )
+                'Could not archive assets: '
+                + '\n'.join(
+                    f'{response.status_code} {response.content}'
+                    for response in phaidra_responses
+                    if response.status_code != 200
+                )
             )
 
         phaidra_data = [response.json() for response in phaidra_responses]
@@ -316,9 +326,9 @@ class TestFeature1678(TestCase):
         self.assertIn('rdfs:seeAlso', self.translated_data_0_url['metadata']['json-ld'])
         self.assertIn('rdfs:seeAlso', self.translated_data_1_url['metadata']['json-ld'])
         self.assertEqual([], self.translated_data_0_url['metadata']['json-ld']['rdfs:seeAlso'])
-        self.assertEqual(self.expected_phaidra_data_1_url,
-                         self.translated_data_1_url['metadata']['json-ld']['rdfs:seeAlso']
-                         )
+        self.assertEqual(
+            self.expected_phaidra_data_1_url, self.translated_data_1_url['metadata']['json-ld']['rdfs:seeAlso']
+        )
 
     def test_validation(self):
         self.assertEqual({}, self.validation_0_url)
@@ -326,14 +336,8 @@ class TestFeature1678(TestCase):
 
     def test_schema(self):
         # There is a schema …
-        self.assertIn(
-            'rdfs_seeAlso',
-            self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
-        )
-        self.assertIn(
-            'rdfs_seeAlso',
-            self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields
-        )
+        self.assertIn('rdfs_seeAlso', self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields)
+        self.assertIn('rdfs_seeAlso', self.thesis_schema.fields['metadata'].nested.fields['json_ld'].nested.fields)
         # It checks for an array of objects
         self.assertIsInstance(
             self.normal_schema.fields['metadata'].nested.fields['json_ld'].nested.fields['rdfs_seeAlso'],
@@ -355,46 +359,32 @@ class TestFeature1678(TestCase):
         )
 
     def test_phaidra(self):
-        self.assertIn(
-            'rdfs:seeAlso',
-            self.phaidra_data_0_url
-        )
-        self.assertIn(
-            'rdfs:seeAlso',
-            self.phaidra_data_1_url
-        )
-        self.assertEqual(
-            self.expected_phaidra_data_0_url,
-            self.phaidra_data_0_url['rdfs:seeAlso']
-        )
-        self.assertEqual(
-            self.expected_phaidra_data_1_url,
-            self.phaidra_data_1_url['rdfs:seeAlso']
-        )
+        self.assertIn('rdfs:seeAlso', self.phaidra_data_0_url)
+        self.assertIn('rdfs:seeAlso', self.phaidra_data_1_url)
+        self.assertEqual(self.expected_phaidra_data_0_url, self.phaidra_data_0_url['rdfs:seeAlso'])
+        self.assertEqual(self.expected_phaidra_data_1_url, self.phaidra_data_1_url['rdfs:seeAlso'])
 
 
 class TestImprovement1686(TestCase):
-    """
-    https://basedev.uni-ak.ac.at/redmine/issues/1686
+    """https://basedev.uni-ak.ac.at/redmine/issues/1686.
 
-    1) If a language code can not be translated, default to und
-    2) Do not skip records, where language codes can not be translated
+    1) If a language code can not be translated, default to und 2) Do
+    not skip records, where language codes can not be translated
     """
 
     def test_language_code_translation(self):
-        """
-        Unit test for 1) If a language code can not be translated, default to und
-        """
+        """Unit test for 1) If a language code can not be translated, default
+        to und."""
         self.assertEqual('deu', _convert_two_to_three_letter_language_code('de'))
         self.assertEqual('eng', _convert_two_to_three_letter_language_code('en'))
         self.assertEqual('und', _convert_two_to_three_letter_language_code('unknown'))
         self.assertEqual('und', _convert_two_to_three_letter_language_code('xxx'))
 
     def test_bf_note_translation_known_language(self):
-        """
-        Integration test for both:
-        1) If a language code can not be translated, default to und
-        2) Do not skip records, where language codes can not be translated
+        """Integration test for both:
+
+        1) If a language code can not be translated, default to und 2)
+        Do not skip records, where language codes can not be translated
         """
         entry = Entry(
             texts=[
@@ -423,10 +413,10 @@ class TestImprovement1686(TestCase):
         )
 
     def test_bf_note_translation_unknown_language(self):
-        """
-        Integration test for both:
-        1) If a language code can not be translated, default to und
-        2) Do not skip records, where language codes can not be translated
+        """Integration test for both:
+
+        1) If a language code can not be translated, default to und 2)
+        Do not skip records, where language codes can not be translated
         """
         entry = Entry(
             texts=[
@@ -456,8 +446,7 @@ class TestImprovement1686(TestCase):
 
 
 class TestBug1693(TestCase):
-    """
-    https://basedev.uni-ak.ac.at/redmine/issues/1693
+    """https://basedev.uni-ak.ac.at/redmine/issues/1693.
 
     At the time of writing tests, malformed urls from Entry.data['url'] will lead to an InternalServerError.
 
@@ -499,7 +488,12 @@ class TestBug1693(TestCase):
         errors = self.translator.translate_errors(self.validation)
         self.assertIn('data', errors)
         self.assertIn('url', errors['data'])
-        self.assertEqual([INVALID_URL, ], errors['data']['url'])
+        self.assertEqual(
+            [
+                INVALID_URL,
+            ],
+            errors['data']['url'],
+        )
 
     def test_server_returns_validation_errors(self):
         response = self.custom_client.get_media_primary_key_response(media=self.media, only_validate=True)
@@ -508,16 +502,17 @@ class TestBug1693(TestCase):
             response.data,
             {
                 'data': {
-                    'url': [INVALID_URL, ]
+                    'url': [
+                        INVALID_URL,
+                    ]
                 }
-            }
+            },
         )
 
 
 class TestNewFeatureBug1694(TestCase):
-    """
-    Basically `Entry.data.date` from `core.schemas.entries.document.DocumentSchema`
-    to `dcterms:date`
+    """Basically `Entry.data.date` from
+    `core.schemas.entries.document.DocumentSchema` to `dcterms:date`
 
     https://basedev.uni-ak.ac.at/redmine/issues/1694
     """
@@ -568,19 +563,15 @@ class TestNewFeatureBug1694(TestCase):
 
         # 3. translate errors to portfolio
         cls.translated_portfolio_errors_valid_date = translator_valid_date.translate_errors(
-            create_dynamic_phaidra_thesis_meta_data_schema(
-                concepts_mapper_valid_date
-            ).load(
-                cls.generated_phaidra_data_valid_date
-            ).errors
+            create_dynamic_phaidra_thesis_meta_data_schema(concepts_mapper_valid_date)
+            .load(cls.generated_phaidra_data_valid_date)
+            .errors
         )
 
         cls.translated_portfolio_errors_invalid_date = translator_invalid_date.translate_errors(
-            create_dynamic_phaidra_thesis_meta_data_schema(
-                concepts_mapper_invalid_date
-            ).load(
-                cls.generated_phaidra_data_invalid_date
-            ).errors
+            create_dynamic_phaidra_thesis_meta_data_schema(concepts_mapper_invalid_date)
+            .load(cls.generated_phaidra_data_invalid_date)
+            .errors
         )
 
         # 4. create media
@@ -617,12 +608,22 @@ class TestNewFeatureBug1694(TestCase):
     def test_valid_date_generated(self):
         inner_data = self.generated_phaidra_data_valid_date['metadata']['json-ld']
         self.assertIn('dcterms:date', inner_data)
-        self.assertEqual(inner_data['dcterms:date'], [self.valid_date, ])
+        self.assertEqual(
+            inner_data['dcterms:date'],
+            [
+                self.valid_date,
+            ],
+        )
 
     def test_invalid_date_generated(self):
         inner_data = self.generated_phaidra_data_invalid_date['metadata']['json-ld']
         self.assertIn('dcterms:date', inner_data)
-        self.assertEqual(inner_data['dcterms:date'], [self.invalid_date, ])
+        self.assertEqual(
+            inner_data['dcterms:date'],
+            [
+                self.invalid_date,
+            ],
+        )
 
     def test_no_errors_valid_date(self):
         self.assertEqual({}, self.translated_portfolio_errors_valid_date)
@@ -632,7 +633,17 @@ class TestNewFeatureBug1694(TestCase):
 
     def test_valid_date_in_phaidra(self):
         self.assertIn('dcterms:date', self.pulled_phaidra_data_valid_date)
-        self.assertEqual(self.pulled_phaidra_data_valid_date['dcterms:date'], [self.valid_date, ])
+        self.assertEqual(
+            self.pulled_phaidra_data_valid_date['dcterms:date'],
+            [
+                self.valid_date,
+            ],
+        )
 
     def test_invalid_date_not_in_phaidra(self):
-        self.assertNotIn('dcterms:date', [self.pulled_phaidra_data_invalid_date, ])
+        self.assertNotIn(
+            'dcterms:date',
+            [
+                self.pulled_phaidra_data_invalid_date,
+            ],
+        )

@@ -382,7 +382,7 @@ years an account already exists (1 in the first year)).
 
 Default: `PHAIDRA`
 
-Name of the archival system used; all the settings needed for the archival will be prefixed with this value followed by an "_"; for example - `PHAIDRA_USER`.
+Name of the archival system used; all the settings needed for the archival will be prefixed with this value followed by an `_`; for example `PHAIDRA_USER`.
 
 ### Archival Settings (Phaidra)
 
@@ -396,7 +396,7 @@ Password for the account used by Portfolio backend to create objects in Phaidra
 
 #### `PHAIDRA_IDENTIFIER_BASE`
 
-Base URL to which the persistent identifier (archive\_id) can be added - to access objects in Phaidra. Should end with "/".
+Base URL to which the persistent identifier (`archive_id`) can be added - to access objects in Phaidra. Should end with "/".
 
 #### `PHAIDRA_IDENTIFIER_BASE_TESTING`
 

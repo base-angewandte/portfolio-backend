@@ -1,34 +1,38 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Hashable, List, Optional, Union
+from collections.abc import Hashable
+from typing import TYPE_CHECKING, Any
 
 from media_server.archiver.interface.exceptions import InternalValidationError
 
 if TYPE_CHECKING:
     from django.db.models import Model
-    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import \
-        BidirectionalConceptsMapper
+
+    from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
+        BidirectionalConceptsMapper,
+    )
 
 
 class AbstractDataTranslator(ABC):
     @abstractmethod
-    def translate_data(self, model: 'Model') -> Union[Dict, List]:
-        """
-        Extract and translate data from a django model to phaidra's data model
-        """
+    def translate_data(self, model: Model) -> dict | list:
+        """Extract and translate data from a django model to phaidra's data
+        model."""
         pass
 
     @abstractmethod
-    def translate_errors(self, errors: Optional[Dict]) -> Dict:
-        """
-        Translate error schema validation messages to portfolio's data schema, so that the user can adjust the data
+    def translate_errors(self, errors: dict | None) -> dict:
+        """Translate error schema validation messages to portfolio's data
+        schema, so that the user can adjust the data.
 
-        :param errors: 
-        :return: 
+        :param errors:
+        :return:
         """
         if (errors is None) or len(errors) == 0:
             return {}
 
-    def set_nested(self, keys: List[Hashable], value: Any, target: Dict) -> Dict:
+    def set_nested(self, keys: list[Hashable], value: Any, target: dict) -> dict:
         if len(keys) == 0:
             return target
         sub_target = target
@@ -39,15 +43,14 @@ class AbstractDataTranslator(ABC):
             sub_target = sub_target[key]
         sub_target[last_key] = value
         return target
-    
-    
-class AbstractConceptMappingDataTranslator(AbstractDataTranslator, ABC):
-    """
-    Use a concept mapper to extend translation capabilities.
-    """
-    mapping: 'BidirectionalConceptsMapper'
 
-    def __init__(self, mapping: 'BidirectionalConceptsMapper'):
+
+class AbstractConceptMappingDataTranslator(AbstractDataTranslator, ABC):
+    """Use a concept mapper to extend translation capabilities."""
+
+    mapping: BidirectionalConceptsMapper
+
+    def __init__(self, mapping: BidirectionalConceptsMapper):
         self.mapping = mapping
 
 
@@ -59,7 +62,7 @@ class AbstractUserUnrelatedDataTranslator(AbstractDataTranslator, ABC):
     raise InternalValidationError
     """
 
-    def translate_errors(self, errors: Optional[Union[List[Dict], Dict]]) -> Union[Dict[int, Dict], Dict[str, List]]:
+    def translate_errors(self, errors: list[dict] | dict | None) -> dict[int, dict] | dict[str, list]:
         """None of these errors will be shown to the user."""
         if len(errors):
             raise InternalValidationError(str(errors))

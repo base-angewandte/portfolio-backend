@@ -1,20 +1,21 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 
-import requests
-from typing import Optional, Union, Callable, Dict
-
 import django_rq
-from rq.job import Job
+import requests
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
+from rq.job import Job
 
 from django.utils import timezone
 
-from media_server.archiver.choices import STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVED
+from media_server.archiver.choices import STATUS_ARCHIVED, STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider, ClientProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
 
 # Utilities
 from media_server.models import Media
@@ -22,23 +23,23 @@ from media_server.models import Media
 
 @dataclass
 class MediaDataState:
-    """
-    Snapshot of a media object, that contains important features to check correct state.
-    """
+    """Snapshot of a media object, that contains important features to check
+    correct state."""
+
     time_of_action: datetime
     """"""
     modified: datetime
-    """Media.modified"""
-    archive_date: Optional[datetime] = None
-    """Media.archive_date"""
-    archive_status: Optional[int] = STATUS_NOT_ARCHIVED
-    """Media.archive_status"""
-    license: Optional[dict] = None
-    """Media.license"""
-    license_in_archive: Optional[Union[dict, list]] = None
-    """How the license appears in the archive"""
-    archive_is_changed: Optional[bool] = None
-    """route archive/is-changed"""
+    """Media.modified."""
+    archive_date: datetime | None = None
+    """Media.archive_date."""
+    archive_status: int | None = STATUS_NOT_ARCHIVED
+    """Media.archive_status."""
+    license: dict | None = None
+    """Media.license."""
+    license_in_archive: dict | list | None = None
+    """How the license appears in the archive."""
+    archive_is_changed: bool | None = None
+    """Route archive/is-changed."""
 
 
 # Some variables we need
@@ -57,10 +58,12 @@ license_cc_portfolio = {
 
 license_dd_portfolio = {
     'source': 'http://base.uni-ak.ac.at/portfolio/licenses/copyright',
-    'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'}
+    'label': {'de': 'urheberrechtlich geschützt', 'en': 'Copyright'},
 }
 
-license_cc_phaidra = ["http://creativecommons.org/licenses/by/4.0/", ]
+license_cc_phaidra = [
+    'http://creativecommons.org/licenses/by/4.0/',
+]
 
 
 class MediaDataStateName(Enum):
@@ -70,11 +73,15 @@ class MediaDataStateName(Enum):
     SUCCESSFUL_ASYNC_OPERATIONS = 'successful_async_operations'
 
 
-order_of_states = [MediaDataStateName.CREATED, MediaDataStateName.REQUESTED_ARCHIVAL,
-                   MediaDataStateName.CHANGED_LICENSE, MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS]
+order_of_states = [
+    MediaDataStateName.CREATED,
+    MediaDataStateName.REQUESTED_ARCHIVAL,
+    MediaDataStateName.CHANGED_LICENSE,
+    MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS,
+]
 
 """Some states to test with name: state"""
-media_data_states: Dict[MediaDataStateName, MediaDataState] = {
+media_data_states: dict[MediaDataStateName, MediaDataState] = {
     MediaDataStateName.CREATED: MediaDataState(
         time_of_action=media_date_created,
         modified=media_date_created,
@@ -83,7 +90,8 @@ media_data_states: Dict[MediaDataStateName, MediaDataState] = {
         license=license_cc_portfolio,
         license_in_archive=None,
         archive_is_changed=None,
-    ), MediaDataStateName.REQUESTED_ARCHIVAL: MediaDataState(
+    ),
+    MediaDataStateName.REQUESTED_ARCHIVAL: MediaDataState(
         time_of_action=media_date_archived,
         modified=media_date_archived,
         archive_date=None,
@@ -91,7 +99,8 @@ media_data_states: Dict[MediaDataStateName, MediaDataState] = {
         license=license_cc_portfolio,
         license_in_archive=None,
         archive_is_changed=False,
-    ), MediaDataStateName.CHANGED_LICENSE: MediaDataState(
+    ),
+    MediaDataStateName.CHANGED_LICENSE: MediaDataState(
         time_of_action=media_date_modified,
         modified=media_date_modified,
         archive_date=None,
@@ -99,7 +108,8 @@ media_data_states: Dict[MediaDataStateName, MediaDataState] = {
         license=license_dd_portfolio,
         license_in_archive=None,
         archive_is_changed=True,
-    ), MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS: MediaDataState(
+    ),
+    MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS: MediaDataState(
         time_of_action=media_date_processed,
         modified=media_date_modified,
         archive_date=media_date_archived,
@@ -107,7 +117,8 @@ media_data_states: Dict[MediaDataStateName, MediaDataState] = {
         license=license_dd_portfolio,
         license_in_archive=license_cc_phaidra,
         archive_is_changed=True,
-    )}
+    ),
+}
 
 
 # The user has created the media object. It is not yet converted or archived
@@ -123,7 +134,7 @@ media_data_states: Dict[MediaDataStateName, MediaDataState] = {
 
 def set_time_frame(time_of_action: datetime) -> Callable:
     def _contextualize(function: Callable) -> Callable:
-        def _wrapper(self_: 'StateManager', media: Optional['Media'] = None) -> 'Media':
+        def _wrapper(self_: StateManager, media: Media | None = None) -> Media:
             if media is not None:
                 media.refresh_from_db()
             with freeze_time(time_of_action):
@@ -139,13 +150,13 @@ def set_time_frame(time_of_action: datetime) -> Callable:
 
 
 class StateManager:
-    state: Optional[MediaDataStateName] = None
+    state: MediaDataStateName | None = None
 
     @dataclass
     class DataStateCreatorPair:
         name: MediaDataStateName
         state: MediaDataState
-        create_function: Callable[[Optional[Media]], Media]
+        create_function: Callable[[Media | None], Media]
 
     def __init__(self):
         with freeze_time(context_time):
@@ -156,17 +167,24 @@ class StateManager:
 
         self.state = None
         self.media_data_states_creation_pairs = (
-            self.DataStateCreatorPair(MediaDataStateName.CREATED, media_data_states[MediaDataStateName.CREATED],
-                                      self.create_media),
-            self.DataStateCreatorPair(MediaDataStateName.REQUESTED_ARCHIVAL,
-                                      media_data_states[MediaDataStateName.REQUESTED_ARCHIVAL],
-                                      self.request_media_archival),
-            self.DataStateCreatorPair(MediaDataStateName.CHANGED_LICENSE,
-                                      media_data_states[MediaDataStateName.CHANGED_LICENSE],
-                                      self.change_license),
-            self.DataStateCreatorPair(MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS,
-                                      media_data_states[MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS],
-                                      self.successful_async_operations),
+            self.DataStateCreatorPair(
+                MediaDataStateName.CREATED, media_data_states[MediaDataStateName.CREATED], self.create_media
+            ),
+            self.DataStateCreatorPair(
+                MediaDataStateName.REQUESTED_ARCHIVAL,
+                media_data_states[MediaDataStateName.REQUESTED_ARCHIVAL],
+                self.request_media_archival,
+            ),
+            self.DataStateCreatorPair(
+                MediaDataStateName.CHANGED_LICENSE,
+                media_data_states[MediaDataStateName.CHANGED_LICENSE],
+                self.change_license,
+            ),
+            self.DataStateCreatorPair(
+                MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS,
+                media_data_states[MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS],
+                self.successful_async_operations,
+            ),
         )
 
     def clean_up(self) -> None:
@@ -175,8 +193,8 @@ class StateManager:
 
     @set_time_frame(media_data_states[MediaDataStateName.CREATED].time_of_action)
     def create_media(self, _=None) -> Media:
-        """
-        Create media for state "created"
+        """Create media for state "created".
+
         :param _: Placeholder for argument media, which will be called in other functions
         :return:
         """
@@ -185,8 +203,8 @@ class StateManager:
 
     @set_time_frame(media_data_states[MediaDataStateName.REQUESTED_ARCHIVAL].time_of_action)
     def request_media_archival(self, media: Media) -> Media:
-        """
-        Modify media for state "requested_archival"
+        """Modify media for state "requested_archival".
+
         :param media:
         :return:
         """
@@ -197,8 +215,8 @@ class StateManager:
 
     @set_time_frame(media_data_states[MediaDataStateName.CHANGED_LICENSE].time_of_action)
     def change_license(self, media: Media) -> Media:
-        """
-        Modify media for state "changed_license"
+        """Modify media for state "changed_license".
+
         :param media:
         :return:
         """
@@ -208,8 +226,8 @@ class StateManager:
 
     @set_time_frame(media_data_states[MediaDataStateName.SUCCESSFUL_ASYNC_OPERATIONS].time_of_action)
     def successful_async_operations(self, media: Media) -> Media:
-        """
-        Modify media for state "successful_async_operations"
+        """Modify media for state "successful_async_operations".
+
         :param media:
         :return:
         """
@@ -221,8 +239,8 @@ class StateManager:
         return media
 
     def run_operations_until_state(self, final_state: MediaDataStateName) -> Media:
-        """
-        Utility function to set states with string
+        """Utility function to set states with string.
+
         :param final_state:
         :return:
         """
@@ -240,6 +258,7 @@ class StateManager:
 
 
 # Tests
+
 
 class MediaCreatedTestCase(APITestCase):
     TARGET_STATUS = MediaDataStateName.CREATED
@@ -272,8 +291,7 @@ class MediaCreatedTestCase(APITestCase):
 
     def test_archive_is_changed(self):
         self.client.login(
-            username=self.state_manager.model_provider.username,
-            password=self.state_manager.model_provider.peeword
+            username=self.state_manager.model_provider.username, password=self.state_manager.model_provider.peeword
         )
         response = self.client.get(
             f'/api/v1/archive/is-changed?entry={self.media.entry_id}', content_type='application/json'
@@ -304,7 +322,4 @@ class MediaSuccessfulAsyncOperationsTestCase(MediaCreatedTestCase):
             raise RuntimeError(
                 f'Phaidra server did respond with status code {response.status_code} and contend {response.text}'
             )
-        self.assertEqual(
-            response.json()['edm:rights'],
-            self.desired_data_status.license_in_archive
-        )
+        self.assertEqual(response.json()['edm:rights'], self.desired_data_status.license_in_archive)

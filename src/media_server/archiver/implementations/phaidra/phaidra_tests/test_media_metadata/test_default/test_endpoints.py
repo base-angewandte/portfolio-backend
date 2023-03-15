@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from rest_framework.test import APITestCase
 
@@ -15,16 +17,16 @@ if TYPE_CHECKING:
 class DefaultValidationEndpointTestCase(APITestCase):
     """Default aka not thesis."""
 
-    entry: Optional['Entry'] = None
-    media: Optional['Media'] = None
+    entry: Entry | None = None
+    media: Media | None = None
 
     def setUp(self) -> None:
         self.model_provider = ModelProvider()
         self.client_provider = ClientProvider(self.model_provider)
 
     def _create_media(
-        self, title: bool = True, type_: bool = True, mime_type: Optional[str] = 'text/plain', language=True
-    ) -> 'Media':
+        self, title: bool = True, type_: bool = True, mime_type: str | None = 'text/plain', language=True
+    ) -> Media:
         self.entry = self.model_provider.get_entry(title=title, type_=type_, german_language=language)
         self.media = self.model_provider.get_media(entry=self.entry, mime_type=mime_type)
         self.media.file = SimpleUploadedFile('example.txt', b'example text')
@@ -32,8 +34,8 @@ class DefaultValidationEndpointTestCase(APITestCase):
         return self.media
 
     def get_media_primary_key_response(
-        self, title: bool = True, type_: bool = True, mime_type: Optional[str] = 'text/plain'
-    ) -> 'Response':
+        self, title: bool = True, type_: bool = True, mime_type: str | None = 'text/plain'
+    ) -> Response:
         self.media = self._create_media(title, type_, mime_type)
         return self.client_provider.get_media_primary_key_response(media=self.media, only_validate=True)
 

@@ -1,12 +1,20 @@
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable, List, Optional
+from __future__ import annotations
 
-from media_server.archiver.choices import STATUS_ARCHIVED, \
-    STATUS_ARCHIVE_IN_UPDATE, STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS
+from collections.abc import Iterable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+import django_rq
+from rq.job import Job
+
+from media_server.archiver.choices import (
+    STATUS_ARCHIVE_IN_PROGRESS,
+    STATUS_ARCHIVE_IN_UPDATE,
+    STATUS_ARCHIVED,
+    STATUS_TO_BE_ARCHIVED,
+)
 from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver
 from media_server.models import Media
-from rq.job import Job
-import django_rq
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -17,29 +25,29 @@ if TYPE_CHECKING:
 @dataclass
 class ItemArchivalStatus:
     id: str
-    last_modify_date: 'datetime'
-    archive_id: Optional[str] = None
-    last_archival_date: Optional['datetime'] = None
-    changed_since_archival: Optional[bool] = None
+    last_modify_date: datetime
+    archive_id: str | None = None
+    last_archival_date: datetime | None = None
+    changed_since_archival: bool | None = None
 
 
 @dataclass
 class EntryArchivalStatus:
-    entry: 'ItemArchivalStatus'
-    assets: List['ItemArchivalStatus']
+    entry: ItemArchivalStatus
+    assets: list[ItemArchivalStatus]
 
 
 class EntryArchivalInformer:
-    entry: 'Entry'
+    entry: Entry
 
-    def __init__(self, entry: 'Entry'):
+    def __init__(self, entry: Entry):
         """
         :param entry:
         """
         self.entry = entry
 
     @property
-    def data(self) -> 'EntryArchivalStatus':
+    def data(self) -> EntryArchivalStatus:
         asset_data = self.get_asset_data()
         redis_data = self.get_redis_data()
         return EntryArchivalStatus(
@@ -54,8 +62,7 @@ class EntryArchivalInformer:
         )
 
     @property
-    def has_changed(self) -> Optional[bool]:
-
+    def has_changed(self) -> bool | None:
         entry_changed = self.has_entry_changed()
         # No need for the database call for media, since one True is enough
         if entry_changed is True:
@@ -87,8 +94,8 @@ class EntryArchivalInformer:
         # Now only None remains
         return None
 
-    def get_asset_data(self) -> List['ItemArchivalStatus']:
-        media_objects: Iterable['Media'] = (
+    def get_asset_data(self) -> list[ItemArchivalStatus]:
+        media_objects: Iterable[Media] = (
             Media.objects.all().filter(entry_id=self.entry.id).filter(archive_status=STATUS_ARCHIVED)
         )
         return [
@@ -97,31 +104,35 @@ class EntryArchivalInformer:
                 last_modify_date=media_object.modified,
                 archive_id=media_object.archive_id,
                 last_archival_date=media_object.archive_date,
-                changed_since_archival=media_object.modified > media_object.archive_date
+                changed_since_archival=media_object.modified > media_object.archive_date,
             )
             for media_object in media_objects
         ]
 
-    def has_entry_changed(self) -> Optional[bool]:
+    def has_entry_changed(self) -> bool | None:
         if self.entry.archive_date is None:
             return None
         return self.entry.date_changed > self.entry.archive_date
 
-    def get_redis_data(self) -> List['ItemArchivalStatus']:
-        media_dictionaries: Iterable[dict] = Media.objects\
-            .values('id', 'modified')\
-            .filter(entry_id=self.entry.id).filter(
-                    archive_status__in=[
-                        STATUS_ARCHIVE_IN_UPDATE, STATUS_TO_BE_ARCHIVED, STATUS_ARCHIVE_IN_PROGRESS,
-                    ]
-                )
+    def get_redis_data(self) -> list[ItemArchivalStatus]:
+        media_dictionaries: Iterable[dict] = (
+            Media.objects.values('id', 'modified')
+            .filter(entry_id=self.entry.id)
+            .filter(
+                archive_status__in=[
+                    STATUS_ARCHIVE_IN_UPDATE,
+                    STATUS_TO_BE_ARCHIVED,
+                    STATUS_ARCHIVE_IN_PROGRESS,
+                ]
+            )
+        )
 
         if not media_dictionaries:
             return []
 
         media_jobs = Job.fetch_many(
             [Media.create_archive_job_id(media_dictionary['id']) for media_dictionary in media_dictionaries],
-            connection=django_rq.get_connection()
+            connection=django_rq.get_connection(),
         )
 
         # Job.fetch_many returns None for not found jobs
@@ -130,18 +141,20 @@ class EntryArchivalInformer:
         result = []
 
         for media_job in media_jobs:
-            archiver: 'MediaArchiver' = media_job.args[0]
+            archiver: MediaArchiver = media_job.args[0]
             for media_dictionary in media_dictionaries:
                 if archiver.media_object.id == media_dictionary['id']:
                     break
             else:
                 raise RuntimeError('Redis media object is missing in database')
 
-            result.append(ItemArchivalStatus(
-                id=media_dictionary['id'],
-                last_modify_date=media_dictionary['modified'],
-                archive_id=None,
-                last_archival_date=archiver.archive_data.archive_date,
-                changed_since_archival=media_dictionary['modified'] > archiver.archive_data.archive_date
-            ))
+            result.append(
+                ItemArchivalStatus(
+                    id=media_dictionary['id'],
+                    last_modify_date=media_dictionary['modified'],
+                    archive_id=None,
+                    last_archival_date=archiver.archive_data.archive_date,
+                    changed_since_archival=media_dictionary['modified'] > archiver.archive_data.archive_date,
+                )
+            )
         return result

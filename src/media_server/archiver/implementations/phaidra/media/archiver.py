@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 from urllib.parse import urljoin
-from typing import Dict
 
 import requests
 from rest_framework.exceptions import APIException
@@ -8,7 +9,6 @@ from rest_framework.exceptions import APIException
 from django.utils import timezone
 
 from core.models import Entry
-from media_server.models import Media
 from media_server.archiver import STATUS_ARCHIVE_ERROR, STATUS_ARCHIVED, credentials, uris
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.factory.archives import Archives
@@ -20,8 +20,9 @@ from media_server.archiver.implementations.phaidra.uris import (
     create_phaidra_update_url,
 )
 from media_server.archiver.interface.abstractarchiver import AbstractArchiver
-from media_server.archiver.interface.archiveobject import ArchiveObject, ArchiveData
+from media_server.archiver.interface.archiveobject import ArchiveData, ArchiveObject
 from media_server.archiver.interface.responses import ModificationType, SuccessfulArchiveResponse
+from media_server.models import Media
 
 
 def save_media_with_update(pk: str, fields: dict):
@@ -32,13 +33,12 @@ class MediaArchiver(AbstractArchiver):
     """Handles Single Media Archive Job."""
 
     @classmethod
-    def from_archive_object(cls, archive_object: ArchiveObject) -> 'MediaArchiver':
+    def from_archive_object(cls, archive_object: ArchiveObject) -> MediaArchiver:
         return cls(
             archive_object,
             ArchiveData(
-                timezone.now(),
-                PhaidraMediaDataTranslator().translate_data(next(iter(archive_object.media_objects)))
-            )
+                timezone.now(), PhaidraMediaDataTranslator().translate_data(next(iter(archive_object.media_objects)))
+            ),
         )
 
     def __init__(self, archive_object: ArchiveObject, archive_data: ArchiveData):
@@ -68,7 +68,7 @@ class MediaArchiver(AbstractArchiver):
             object_description=f'Media <{self.media_object.archive_id}>',
         )
 
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         self.validate()
         self._check_for_consistency()
         response = self._send_update_request_to_archive()
@@ -105,12 +105,16 @@ class MediaArchiver(AbstractArchiver):
         )
         return response
 
-    def _handle_phaidra_error_response(self, phaidra_response: requests.Response,):
+    def _handle_phaidra_error_response(
+        self,
+        phaidra_response: requests.Response,
+    ):
         if phaidra_response.status_code != 200:
             save_media_with_update(self.media_object.id, {'archive_status': STATUS_ARCHIVE_ERROR})
             raise PhaidraServerError(
                 f'Phaidra Response:\n\tStatus: {phaidra_response.status_code}\n'
-                f'\tContent: {phaidra_response.content}')
+                f'\tContent: {phaidra_response.content}'
+            )
 
     def _save_phaidra_response(self, phaidra_response: requests.Response, first_time: bool) -> None:
         db_fields = {
@@ -120,8 +124,8 @@ class MediaArchiver(AbstractArchiver):
         if first_time:
             try:
                 pid = phaidra_response.json()['pid'].strip()
-            except KeyError:
-                raise PhaidraServerError(f'NO PID returned in response, {phaidra_response.content}')
+            except KeyError as err:
+                raise PhaidraServerError(f'NO PID returned in response, {phaidra_response.content}') from err
             db_fields['archive_id'] = pid
             db_fields['archive_URI'] = urljoin(uris.get('IDENTIFIER_BASE'), pid)
 
@@ -152,7 +156,7 @@ class MediaArchiver(AbstractArchiver):
             )
 
 
-def _archive_job_commons(media_archiver: MediaArchiver) -> 'MediaArchiver':
+def _archive_job_commons(media_archiver: MediaArchiver) -> MediaArchiver:
     media_archiver.archive_object.entry.refresh_from_db()
     if not media_archiver.archive_object.entry:
         raise APIException({'Error': 'Entry {entry.id} not yet archived, cannot archive media %s'})
@@ -171,7 +175,7 @@ def _update_archive_job(media_archiver: MediaArchiver):
 class MediaArchiveHandler(AbstractArchiver):
     """Handles many media archive jobs."""
 
-    generated_media_data: Dict[str, MediaArchiver]
+    generated_media_data: dict[str, MediaArchiver]
 
     def __init__(self, archive_object: ArchiveObject):
         super().__init__(archive_object)
@@ -189,9 +193,7 @@ class MediaArchiveHandler(AbstractArchiver):
         self.generate_data()
         job = _push_to_archive_job if first_time else _update_archive_job
         modification_type = ModificationType.created if first_time else ModificationType.updated
-        async_media_handler = AsyncMediaHandler(
-            media_archivers=set(self.generated_media_data.values()), job=job
-        )
+        async_media_handler = AsyncMediaHandler(media_archivers=set(self.generated_media_data.values()), job=job)
         async_media_handler.enqueue()
         file_names = [media_object.file.name for media_object in self.archive_object.media_objects]
         return SuccessfulArchiveResponse(
@@ -203,7 +205,7 @@ class MediaArchiveHandler(AbstractArchiver):
     def push_to_archive(self) -> SuccessfulArchiveResponse:
         return self._common_archival_job(True)
 
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         return self._common_archival_job(False)
 
     def validate(self) -> None:

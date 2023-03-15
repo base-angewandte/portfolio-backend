@@ -136,7 +136,6 @@ class Command(BaseCommand):
         parser.add_argument('file', type=argparse.FileType('r'), help='BibTeX file to import from')
 
     def handle(self, *args, **options):
-
         try:
             user = User.objects.get(username=options['user'])
         except User.DoesNotExist as e:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 from abc import ABC, abstractmethod
 
@@ -31,7 +33,7 @@ class AbstractArchiver(ABC):
         pass
 
     @abstractmethod
-    def push_to_archive(self) -> 'SuccessfulArchiveResponse':
+    def push_to_archive(self) -> SuccessfulArchiveResponse:
         """
         Push to archive and return message
         :raises: media_server.archiver.interface.exceptions.ExternalServerError
@@ -40,7 +42,7 @@ class AbstractArchiver(ABC):
         pass
 
     @abstractmethod
-    def update_archive(self) -> 'SuccessfulArchiveResponse':
+    def update_archive(self) -> SuccessfulArchiveResponse:
         """
         Push to archive and return message
         :raises: media_server.archiver.interface.exceptions.ExternalServerError
@@ -48,7 +50,7 @@ class AbstractArchiver(ABC):
         """
         pass
 
-    def throw_validation_errors(self, errors: typing.Optional[typing.Dict[str, typing.List[str]]]) -> None:
+    def throw_validation_errors(self, errors: dict[str, list[str]] | None) -> None:
         """
         :
         :param errors:

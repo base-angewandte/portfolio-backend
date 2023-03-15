@@ -1,4 +1,5 @@
-from typing import Optional
+from __future__ import annotations
+
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -34,7 +35,7 @@ def create_phaidra_object_create_uri(mime_type: str) -> str:
     return urljoin(base=base, url=f'{object_type}/create')
 
 
-def create_phaidra_update_url(archive_id: Optional[str] = None):
+def create_phaidra_update_url(archive_id: str | None = None):
     if archive_id is None:
         return settings.ARCHIVE_URIS['CREATE_URI']
     base_uri = settings.ARCHIVE_URIS['BASE_URI']
