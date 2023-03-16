@@ -7,11 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2021-07-29 12:39+0200\n"
-=======
 "POT-Creation-Date: 2022-10-21 13:03+0200\n"
->>>>>>> develop
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,11 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-<<<<<<< HEAD
-#: api/serializers/entry.py:127
-=======
 #: api/serializers/entry.py:139
->>>>>>> develop
 msgid "will not be published"
 msgstr ""
 
@@ -36,13 +28,8 @@ msgstr ""
 msgid "Current user is not the owner of this entry"
 msgstr ""
 
-<<<<<<< HEAD
-#: api/views.py:191 api/views.py:776 api/views.py:805
-#: media_server/serializers.py:30
-=======
 #: api/views.py:199 api/views.py:232 api/views.py:1048 api/views.py:1077
 #: media_server/serializers.py:38
->>>>>>> develop
 msgid "Entry does not exist"
 msgstr ""
 
@@ -54,37 +41,21 @@ msgstr ""
 msgid "User does not exist"
 msgstr ""
 
-<<<<<<< HEAD
-#: core/models.py:143
-=======
 #: core/models.py:121
->>>>>>> develop
 #, python-format
 msgid "Type %(type_source)s does not belong to any active schema"
 msgstr ""
 
-<<<<<<< HEAD
-#: core/models.py:150
-=======
 #: core/models.py:128
->>>>>>> develop
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr ""
 
-<<<<<<< HEAD
-#: core/models.py:153
-msgid "Data without type"
-msgstr ""
-
-#: core/models.py:189
-=======
 #: core/models.py:131
 msgid "Data without type"
 msgstr ""
 
 #: core/models.py:167
->>>>>>> develop
 msgid "Both entries must belong to the same user"
 msgstr ""
 
@@ -131,7 +102,6 @@ msgstr ""
 msgid "Invalid texts: %(error)s"
 msgstr ""
 
-<<<<<<< HEAD
 #: media_server/archiver/controller/default.py:61
 msgid "empty"
 msgstr ""
@@ -210,14 +180,11 @@ msgstr ""
 msgid "A German Abstract is required"
 msgstr ""
 
-#: media_server/serializers.py:33
-=======
 #: media_server/clamav.py:36
 msgid "File is infected with malware"
 msgstr ""
 
 #: media_server/serializers.py:41
->>>>>>> develop
 msgid "Current user is not the owner of entry"
 msgstr ""
 
@@ -230,21 +197,10 @@ msgstr ""
 msgid "Invalid license"
 msgstr ""
 
-<<<<<<< HEAD
-#: media_server/views.py:114 media_server/views.py:190
-#: media_server/views.py:235
-msgid "Media object does not exist"
-msgstr ""
-
-#: media_server/views.py:132
-msgid "No space left for user"
-msgstr ""
-
 #: media_server/views.py:251
 msgid "Asset validation successful"
 msgstr ""
 
-=======
 #: media_server/views.py:115 media_server/views.py:201
 #: media_server/views.py:246
 msgid "Current user is not the owner of this media object"
@@ -259,7 +215,6 @@ msgstr ""
 msgid "No space left for user"
 msgstr ""
 
->>>>>>> develop
 #: portfolio/settings.py:250
 msgid "German"
 msgstr ""

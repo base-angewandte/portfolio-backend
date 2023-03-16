@@ -7,11 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2021-07-29 12:39+0200\n"
-=======
 "POT-Creation-Date: 2022-10-21 13:01+0200\n"
->>>>>>> develop
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,11 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-<<<<<<< HEAD
-#: api/serializers/entry.py:127
-=======
 #: api/serializers/entry.py:139
->>>>>>> develop
 msgid "will not be published"
 msgstr "Werden nicht veröffentlicht"
 
@@ -37,13 +29,8 @@ msgstr "Verknüpfung existiert bereits"
 msgid "Current user is not the owner of this entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
-<<<<<<< HEAD
-#: api/views.py:191 api/views.py:776 api/views.py:805
-#: media_server/serializers.py:30
-=======
 #: api/views.py:199 api/views.py:232 api/views.py:1048 api/views.py:1077
 #: media_server/serializers.py:38
->>>>>>> develop
 msgid "Entry does not exist"
 msgstr "Eintrag existiert nicht"
 
@@ -55,37 +42,21 @@ msgstr "Kein Schema gefunden"
 msgid "User does not exist"
 msgstr "Benutzer existiert nicht"
 
-<<<<<<< HEAD
-#: core/models.py:143
-=======
 #: core/models.py:121
->>>>>>> develop
 #, python-format
 msgid "Type %(type_source)s does not belong to any active schema"
 msgstr "Typ %(type_source)s gehört zu keinem aktiven Schema"
 
-<<<<<<< HEAD
-#: core/models.py:150
-=======
 #: core/models.py:128
->>>>>>> develop
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr "Ungültige Daten: %(error)s"
 
-<<<<<<< HEAD
-#: core/models.py:153
-msgid "Data without type"
-msgstr "Daten ohne Typ"
-
-#: core/models.py:189
-=======
 #: core/models.py:131
 msgid "Data without type"
 msgstr "Daten ohne Typ"
 
 #: core/models.py:167
->>>>>>> develop
 msgid "Both entries must belong to the same user"
 msgstr "Beide Einträge müssen demselben Benutzer gehören"
 
@@ -132,7 +103,6 @@ msgstr "Dieselbe Sprache wird mehrmals definiert"
 msgid "Invalid texts: %(error)s"
 msgstr "Ungültige Texte: %(error)s"
 
-<<<<<<< HEAD
 #: media_server/archiver/controller/default.py:61
 msgid "empty"
 msgstr ""
@@ -217,14 +187,11 @@ msgstr ""
 msgid "A German Abstract is required"
 msgstr ""
 
-#: media_server/serializers.py:33
-=======
 #: media_server/clamav.py:36
 msgid "File is infected with malware"
 msgstr "Datei ist mit Malware infiziert"
 
-#: media_server/serializers.py:41
->>>>>>> develop
+#: media_server/serializers.py:33
 msgid "Current user is not the owner of entry"
 msgstr "Der momentane Benutzer ist nicht der Besitzer dieses Eintrags"
 
@@ -237,21 +204,10 @@ msgstr "Ungültige Lizenz: %(error)s"
 msgid "Invalid license"
 msgstr "Ungültige Lizenz"
 
-<<<<<<< HEAD
-#: media_server/views.py:114 media_server/views.py:190
-#: media_server/views.py:235
-msgid "Media object does not exist"
-msgstr "Medienobjekt existiert nicht"
-
-#: media_server/views.py:132
-msgid "No space left for user"
-msgstr "Kein Speicherplatz mehr für diesen Benutzer"
-
 #: media_server/views.py:251
 msgid "Asset validation successful"
 msgstr ""
 
-=======
 #: media_server/views.py:115 media_server/views.py:201
 #: media_server/views.py:246
 msgid "Current user is not the owner of this media object"
@@ -266,7 +222,6 @@ msgstr "Medienobjekt existiert nicht"
 msgid "No space left for user"
 msgstr "Kein Speicherplatz mehr für diesen Benutzer"
 
->>>>>>> develop
 #: portfolio/settings.py:250
 msgid "German"
 msgstr "Deutsch"
