@@ -12,7 +12,7 @@ from rest_framework.test import APITestCase
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.default.datatranslation import PhaidraMetaDataTranslator
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import (
     ClientProvider,
     FakeBidirectionalConceptsMapper,
     ModelProvider,

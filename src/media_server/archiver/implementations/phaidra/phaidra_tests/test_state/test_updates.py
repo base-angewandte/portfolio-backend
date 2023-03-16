@@ -10,7 +10,7 @@ from django.utils import timezone
 from media_server.archiver import STATUS_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.controller.status_info import EntryArchivalInformer
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 
 if TYPE_CHECKING:
     from rest_framework.response import Response

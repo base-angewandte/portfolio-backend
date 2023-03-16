@@ -8,10 +8,10 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 from media_server.models import Media
 
-from ..utillities import create_random_test_password
+from ..utilities import create_random_test_password
 
 
 class OnePdfResaved(APITestCase):

@@ -47,7 +47,7 @@ from media_server.archiver.implementations.phaidra.metadata.default.schemas impo
 from media_server.archiver.implementations.phaidra.metadata.mappings.contributormapping import (
     BidirectionalConceptsMapper,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import (
     FakeBidirectionalConceptsMapper,
     ModelProvider,
 )

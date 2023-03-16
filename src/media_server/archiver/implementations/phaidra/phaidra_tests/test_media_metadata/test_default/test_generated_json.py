@@ -5,7 +5,7 @@ from jsonschema import Draft4Validator
 from django.forms.models import model_to_dict
 from django.test import TestCase
 
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ModelProvider
 
 
 class MetaDataPortfolioTestCase(TestCase):

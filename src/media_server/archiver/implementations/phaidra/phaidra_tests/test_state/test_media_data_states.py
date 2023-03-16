@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from media_server.archiver.choices import STATUS_ARCHIVED, STATUS_NOT_ARCHIVED, STATUS_TO_BE_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 from media_server.models import Media
 
 

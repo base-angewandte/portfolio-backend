@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.models import Entry
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import create_random_test_password
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import create_random_test_password
 from media_server.models import Media
 
 license_copyright = {

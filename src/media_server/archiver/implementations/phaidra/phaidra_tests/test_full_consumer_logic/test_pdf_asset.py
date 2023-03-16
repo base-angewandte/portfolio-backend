@@ -12,7 +12,7 @@ from core.models import Entry
 from media_server.archiver import STATUS_ARCHIVED
 from media_server.archiver.controller.asyncmedia import AsyncMediaHandler
 from media_server.archiver.implementations.phaidra.metadata.archiver import ThesisMetadataArchiver
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 from media_server.archiver.interface.archiveobject import ArchiveObject
 
 

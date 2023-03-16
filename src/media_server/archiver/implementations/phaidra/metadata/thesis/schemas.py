@@ -20,8 +20,8 @@ from media_server.archiver.implementations.phaidra.metadata.mappings.contributor
     BidirectionalConceptsMapper,
     extract_phaidra_role_code,
 )
-from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
-from media_server.archiver.implementations.phaidra.utillities.validate import (
+from media_server.archiver.implementations.phaidra.utilities.fields import PortfolioNestedField
+from media_server.archiver.implementations.phaidra.utilities.validate import (
     NotFalsyValidator,
     ValidateAuthor,
     ValidateLanguage,

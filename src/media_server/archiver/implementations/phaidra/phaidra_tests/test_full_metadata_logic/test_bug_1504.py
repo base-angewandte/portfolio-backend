@@ -25,7 +25,7 @@ import requests
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.archiver import ThesisMetadataArchiver
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 from media_server.archiver.interface.archiveobject import ArchiveObject
 
 if TYPE_CHECKING:

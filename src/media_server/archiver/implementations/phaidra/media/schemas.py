@@ -1,11 +1,11 @@
 from marshmallow import Schema
 
-from media_server.archiver.implementations.phaidra.utillities.fields import (
+from media_server.archiver.implementations.phaidra.utilities.fields import (
     PortfolioListField,
     PortfolioNestedField,
     PortfolioStringField,
 )
-from media_server.archiver.implementations.phaidra.utillities.validate import ValidateLength1
+from media_server.archiver.implementations.phaidra.utilities.validate import ValidateLength1
 
 
 class PhaidraJsonLD(Schema):

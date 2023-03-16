@@ -6,7 +6,7 @@ from rq.suspension import resume, suspend
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ModelProvider
 from media_server.models import Media
 
 

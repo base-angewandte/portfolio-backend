@@ -4,13 +4,13 @@ a/metadata/datatranslation.py."""
 
 from marshmallow import Schema, fields
 
-from media_server.archiver.implementations.phaidra.utillities.fields import (
+from media_server.archiver.implementations.phaidra.utilities.fields import (
     PortfolioConstantField,
     PortfolioListField,
     PortfolioNestedField,
     PortfolioStringField,
 )
-from media_server.archiver.implementations.phaidra.utillities.validate import ValidateLength1
+from media_server.archiver.implementations.phaidra.utilities.validate import ValidateLength1
 from media_server.archiver.messages.validation.default import INVALID_URL
 
 value_field = PortfolioStringField(required=True, load_from='@value', dump_to='@value')

@@ -55,7 +55,7 @@ if typing.TYPE_CHECKING:
         PhaidraThesisMetaData,
     )
 
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import (
     ClientProvider,
     FakeBidirectionalConceptsMapper,
     ModelProvider,

@@ -31,12 +31,12 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.schemas impor
     PhaidraThesisMetaData,
     create_dynamic_phaidra_thesis_meta_data_schema,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import (
     ClientProvider,
     FakeBidirectionalConceptsMapper,
     ModelProvider,
 )
-from media_server.archiver.implementations.phaidra.utillities.fields import PortfolioNestedField
+from media_server.archiver.implementations.phaidra.utilities.fields import PortfolioNestedField
 from media_server.archiver.interface.exceptions import InternalValidationError
 from media_server.archiver.messages.validation.default import INVALID_URL
 from media_server.models import Media

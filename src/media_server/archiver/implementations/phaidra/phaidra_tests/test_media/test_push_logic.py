@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 from django.test import TestCase
 
 from media_server.archiver.implementations.phaidra.metadata.archiver import DefaultMetadataArchiver
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ModelProvider
 from media_server.archiver.interface.archiveobject import ArchiveObject
 
 

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from rest_framework.test import APITestCase
 
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ClientProvider, ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ClientProvider, ModelProvider
 
 if TYPE_CHECKING:
     from src.core.models import Entry

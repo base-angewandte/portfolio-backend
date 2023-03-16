@@ -6,7 +6,7 @@ from core.models import Entry
 from media_server.archiver.implementations.phaidra.media.archiver import MediaArchiver
 from media_server.archiver.implementations.phaidra.media.datatranslation import PhaidraMediaDataTranslator
 from media_server.archiver.implementations.phaidra.media.schemas import PhaidraMediaData
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import ModelProvider
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import ModelProvider
 from media_server.archiver.interface.archiveobject import ArchiveObject
 from media_server.archiver.messages import validation as validation_messages
 from media_server.archiver.messages.validation import MISSING_DATA_FOR_REQUIRED_FIELD

@@ -13,7 +13,7 @@ from media_server.archiver.implementations.phaidra.metadata.thesis.datatranslati
 from media_server.archiver.implementations.phaidra.metadata.thesis.schemas import (
     create_dynamic_phaidra_thesis_meta_data_schema,
 )
-from media_server.archiver.implementations.phaidra.phaidra_tests.utillities import (
+from media_server.archiver.implementations.phaidra.phaidra_tests.utilities import (
     ClientProvider,
     FakeBidirectionalConceptsMapper,
     ModelProvider,
