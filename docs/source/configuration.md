@@ -329,6 +329,12 @@ Default: `None`
 
 API key for Pelias.
 
+#### `PELIAS_API_KEY_LOCATION`
+
+Default: `PAYLOAD`
+
+API key location for Pelias. Supported values are `PAYLOAD` and `HEADER`.
+
 #### `PELIAS_API_URL`
 
 Default: `https://api.geocode.earth/v1`
