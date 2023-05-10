@@ -431,6 +431,7 @@ PRIMO_API_URL = env.str('PRIMO_API_URL', default='https://apigw.obvsg.at/primo/v
 PRIMO_API_KEY = env.str('PRIMO_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
+PELIAS_API_KEY_LOCATION = env.str('PELIAS_API_KEY_LOCATION', default='PAYLOAD')
 PELIAS_API_URL = env.str('PELIAS_API_URL', default='https://api.geocode.earth/v1')
 PELIAS_SOURCE_NAME = env.str('PELIAS_SOURCE_NAME', default='geocode.earth')
 
@@ -553,7 +554,7 @@ SOURCES = {
         apiconfig.QUERY_FIELD: 'text',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.PAYLOAD: {
-            'api_key': PELIAS_API_KEY,
+            **({'api_key': PELIAS_API_KEY} if 'PAYLOAD' in PELIAS_API_KEY_LOCATION else {}),
             'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
             'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
             'lang': get_language_lazy(),
@@ -562,6 +563,7 @@ SOURCES = {
                 'coarse,postalcode'
             ),
         },
+        **({apiconfig.HEADER: {'X-API-Key': PELIAS_API_KEY}} if 'HEADER' in PELIAS_API_KEY_LOCATION else {}),
     },
     'PRIMO_IMPORT': {
         apiconfig.URL: PRIMO_API_URL,
