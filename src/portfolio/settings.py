@@ -553,6 +553,7 @@ SOURCES = {
         apiconfig.URL: f'{PELIAS_API_URL}/autocomplete',
         apiconfig.QUERY_FIELD: 'text',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
+        apiconfig.TIMEOUT: 10,
         apiconfig.PAYLOAD: {
             **({'api_key': PELIAS_API_KEY} if 'PAYLOAD' in PELIAS_API_KEY_LOCATION else {}),
             'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
