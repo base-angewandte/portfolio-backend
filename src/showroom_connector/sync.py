@@ -1,12 +1,11 @@
 import logging
 
-import django_rq
 import requests
 
 from django.conf import settings
 
 from core.models import Entry
-from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
+from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, STATUS_CONVERTED, VIDEO_TYPE, Media
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +33,7 @@ auth_headers = {
 
 
 def push_entry(entry):
+    entry.refresh_from_db()
     data = {
         'source_repo_entry_id': entry.id,
         'source_repo': settings.SHOWROOM_REPO_ID,
@@ -53,10 +53,32 @@ def push_entry(entry):
     if r.status_code == 201:
         response = r.json()
         handle_push_entry_response(response)
+
+        # if the entry was just created in Showroom, we also have to push media and relations
+        if response.get('created'):
+            published_media = Media.objects.filter(entry_id=entry.id, published=True, status=STATUS_CONVERTED)
+            for medium in published_media:
+                try:
+                    push_medium(medium)
+                except ShowroomError as err:
+                    logger.warning(f'Problem encountered when syncing medium for entry {entry.id}: {err}')
+            try:
+                push_relations(entry)
+            except ShowroomError as err:
+                logger.warning(f'Problem encountered when syncing relations for entry {entry.id}: {err}')
+            # push_relations only pushes the relations of an entry to attached entries. but
+            # if the currently published entry is attached to other already published entries
+            # we have to update the relations of those as well
+            published_parent_relations = entry.to_entries.filter(from_entry__published=True)
+            for relation in published_parent_relations:
+                try:
+                    push_relations(e := relation.from_entry)
+                except ShowroomError as err:
+                    logger.warning(f'Problem encountered when syncing relations for entry {e.id} (parent): {err}')
         return response
+
     elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
-
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be pushed: 400: {r.text}')
     else:
@@ -147,18 +169,13 @@ def delete_medium(medium):
 
 
 def push_relations(entry):
-    data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.all()]}
+    data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.filter(to_entry__published=True)]}
+    print(f'pushing relations for {entry.id} to {data["related_to"]}')
     r = requests.post(f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/', json=data, headers=auth_headers)
 
     if r.status_code == 201:
-        # TODO: showroom is returning a dict with `created` and `not_found` arrays containing the
-        #       ids of those relations added and those entries that could not be found. in theory
-        #       `not_found` should be empty. but if not, how shall we handle this?
         return r.json()
     elif r.status_code == 404:
-        # entry not found in Showroom, so push entry and relation again
-        entry_sync = django_rq.enqueue(push_entry, entry=entry)
-        django_rq.enqueue(push_relations, entry=entry, depends_on=entry_sync)
         raise ShowroomError(f'Could not push relations for Entry {entry.id}: 404: {r.text}')
     elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
@@ -169,11 +186,14 @@ def push_relations(entry):
 
 
 def handle_push_entry_response(response):
+    """Update portfolio entries based on result of push to Showroom.
+
+    When entries are pushed to Showroom, the response will contain a
+    list of created and updated Showroom activity IDs. For newly
+    published entries we need to store the (new) activity ID. The
+    updated Showroom activities can be ignored as we already stored the
+    ID, when the activity was created.
+    """
     created = response.get('created', [])
     for item in created:
-        Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])
-
-    # TODO check if we really need to update showroom_id in this case
-    updated = response.get('updated', [])
-    for item in updated:
         Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])
