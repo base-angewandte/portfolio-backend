@@ -85,8 +85,7 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Wien (A)",
               "year": "2017"
-            },
-            …
+            }
           ]
         },
         {
@@ -109,8 +108,7 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Lissabon (P)",
               "year": "2015"
-            },
-            …
+            }
           ]
         },
         {
@@ -133,8 +131,7 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Graz (A)",
               "year": "2018"
-            },
-            …
+            }
           ]
         }
       ]
@@ -159,8 +156,7 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Kurator*in",
           "location": null,
           "year": null
-        },
-        …
+        }
       ]
     },
     {
@@ -183,8 +179,7 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Vortragende*r",
           "location": null,
           "year": "2011"
-        },
-        …
+        }
       ]
     },
     {
@@ -207,11 +202,9 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Vortrag",
           "location": "Wien (A)",
           "year": "2016"
-        },
-        …
+        }
       ]
-    },
-    …
+    }
   ]
 }
 ```
