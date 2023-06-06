@@ -34,6 +34,11 @@ auth_headers = {
 
 def push_entry(entry):
     entry.refresh_from_db()
+    if not entry.published:
+        # TODO: discuss in review: should this be an info event or a warning?
+        logger.info(f'Entry {entry.id} was unpublished before worker could push it')
+        return
+
     data = {
         'source_repo_entry_id': entry.id,
         'source_repo': settings.SHOWROOM_REPO_ID,
