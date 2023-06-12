@@ -51,7 +51,9 @@ Fetch all published Portfolio entries of a user in which the user has any role.
 `GET /api/v1/user/7F4EF7F05E98435FAD27B40EC6DEEACC/data/`\
 `Accept-Language: de`
 
-```json
+```{code-block} json
+:force:
+
 {
   "entry_labels": {
     "title": "Titel",
@@ -85,7 +87,8 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Wien (A)",
               "year": "2017"
-            }
+            },
+            ...
           ]
         },
         {
@@ -108,7 +111,8 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Lissabon (P)",
               "year": "2015"
-            }
+            },
+            ...
           ]
         },
         {
@@ -131,9 +135,11 @@ Fetch all published Portfolio entries of a user in which the user has any role.
               "role": "Autor*in",
               "location": "Graz (A)",
               "year": "2018"
-            }
+            },
+            ...
           ]
-        }
+        },
+        ...
       ]
     },
     {
@@ -156,7 +162,8 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Kurator*in",
           "location": null,
           "year": null
-        }
+        },
+        ...
       ]
     },
     {
@@ -179,7 +186,8 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Vortragende*r",
           "location": null,
           "year": "2011"
-        }
+        },
+        ...
       ]
     },
     {
@@ -202,11 +210,19 @@ Fetch all published Portfolio entries of a user in which the user has any role.
           "role": "Vortrag",
           "location": "Wien (A)",
           "year": "2016"
-        }
+        },
+        ...
       ]
-    }
+    },
+    ...
   ]
 }
+```
+
+```{note}
+The semantically invalid `, \n...` appearances in the example result above signify that a real result may contain more
+items in each of the list and sublist entries, as well as other lists that are not exemplified here - depending on
+whether the user has any items that will render to those lists according to the [](lists_logic.md))
 ```
 
 ##### Error
