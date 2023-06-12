@@ -1,3 +1,4 @@
+# compile this file with 'pip-compile requirements.in'
 linkify-it-py
 myst-parser
 sphinx
