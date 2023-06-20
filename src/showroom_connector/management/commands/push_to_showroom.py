@@ -84,7 +84,7 @@ class Command(BaseCommand):
         for entry in entries:
             result = {}
             try:
-                result = sync.push_entry(entry)
+                result = sync.push_entry(entry, process_media=False, process_relations=False)
             except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
                 raise CommandError(e) from e
             except sync.ShowroomError as e:

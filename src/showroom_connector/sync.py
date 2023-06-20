@@ -32,7 +32,7 @@ auth_headers = {
 }
 
 
-def push_entry(entry):
+def push_entry(entry, process_media=True, process_relations=True):
     entry.refresh_from_db()
     if not entry.published:
         # TODO: discuss in review: should this be an info event or a warning?
@@ -61,25 +61,27 @@ def push_entry(entry):
 
         # if the entry was just created in Showroom, we also have to push media and relations
         if response.get('created'):
-            published_media = Media.objects.filter(entry_id=entry.id, published=True, status=STATUS_CONVERTED)
-            for medium in published_media:
+            if process_media:
+                published_media = Media.objects.filter(entry_id=entry.id, published=True, status=STATUS_CONVERTED)
+                for medium in published_media:
+                    try:
+                        push_medium(medium)
+                    except ShowroomError as err:
+                        logger.warning(f'Problem encountered when syncing medium for entry {entry.id}: {err}')
+            if process_relations:
                 try:
-                    push_medium(medium)
+                    push_relations(entry)
                 except ShowroomError as err:
-                    logger.warning(f'Problem encountered when syncing medium for entry {entry.id}: {err}')
-            try:
-                push_relations(entry)
-            except ShowroomError as err:
-                logger.warning(f'Problem encountered when syncing relations for entry {entry.id}: {err}')
-            # push_relations only pushes the relations of an entry to attached entries. but
-            # if the currently published entry is attached to other already published entries
-            # we have to update the relations of those as well
-            published_parent_relations = entry.to_entries.filter(from_entry__published=True)
-            for relation in published_parent_relations:
-                try:
-                    push_relations(e := relation.from_entry)
-                except ShowroomError as err:
-                    logger.warning(f'Problem encountered when syncing relations for entry {e.id} (parent): {err}')
+                    logger.warning(f'Problem encountered when syncing relations for entry {entry.id}: {err}')
+                # push_relations only pushes the relations of an entry to attached entries. but
+                # if the currently published entry is attached to other already published entries
+                # we have to update the relations of those as well
+                published_parent_relations = entry.to_entries.filter(from_entry__published=True)
+                for relation in published_parent_relations:
+                    try:
+                        push_relations(e := relation.from_entry)
+                    except ShowroomError as err:
+                        logger.warning(f'Problem encountered when syncing relations for entry {e.id} (parent): {err}')
         return response
 
     elif r.status_code == 403:
@@ -175,7 +177,6 @@ def delete_medium(medium):
 
 def push_relations(entry):
     data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.filter(to_entry__published=True)]}
-    print(f'pushing relations for {entry.id} to {data["related_to"]}')
     r = requests.post(f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/', json=data, headers=auth_headers)
 
     if r.status_code == 201:
