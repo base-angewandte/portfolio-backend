@@ -79,7 +79,8 @@ def push_entry(entry, process_media=True, process_relations=True):
                 published_parent_relations = entry.to_entries.filter(from_entry__published=True)
                 for relation in published_parent_relations:
                     try:
-                        push_relations(e := relation.from_entry)
+                        e = relation.from_entry
+                        push_relations(e)
                     except ShowroomError as err:
                         logger.warning(f'Problem encountered when syncing relations for entry {e.id} (parent): {err}')
         return response
