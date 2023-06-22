@@ -1,5 +1,7 @@
 from re import match
 
+import requests.exceptions
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
@@ -21,6 +23,9 @@ class Command(BaseCommand):
             '-o', '--offset', type=int, help='An optional offset to first entry in the result set to be pushed'
         )
         parser.add_argument('-s', '--status', type=int, help='Log a status line after each STATUS entries are pushed.')
+        parser.add_argument(
+            '-c', '--cancel-threshold', type=int, default=100, help='After how many entry sync errors to stop syncing.'
+        )
 
     def handle(self, *args, **options):
         if None in [settings.SHOWROOM_API_BASE, settings.SHOWROOM_API_KEY, settings.SHOWROOM_REPO_ID]:
@@ -82,14 +87,23 @@ class Command(BaseCommand):
         not_pushed = []
         count = 0
         for entry in entries:
+            if len(not_pushed) > options['cancel_threshold']:
+                raise CommandError(f'stopping due to too many sync errors (threshold: {options["cancel_threshold"]})')
             result = {}
             try:
                 result = sync.push_entry(entry, process_media=False, process_relations=False)
-            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                raise CommandError(e) from e
             except sync.ShowroomError as e:
                 not_pushed.append(entry.id)
                 self.stdout.write(self.style.WARNING(e))
+                continue
+            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                self.stdout.write(self.style.ERROR(e))
+                not_pushed.append(entry.id)
+                continue
+            except requests.exceptions.ConnectionError as e:
+                not_pushed.append(entry.id)
+                self.stdout.write(self.style.ERROR(e))
+                continue
 
             # so far Showroom does only allow single entry POSTs, but the response
             # format is already tailored towards multi entry POSTs. therefore
@@ -123,11 +137,18 @@ class Command(BaseCommand):
                 result = {}
                 try:
                     result = sync.push_medium(medium)
-                except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                    raise CommandError(e) from e
                 except sync.ShowroomError as e:
                     media_not_pushed.append(entry.id)
                     self.stdout.write(self.style.WARNING(e))
+                    continue
+                except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                    self.stdout.write(self.style.ERROR(e))
+                    media_not_pushed.append(entry.id)
+                    continue
+                except requests.exceptions.ConnectionError as e:
+                    media_not_pushed.append(entry.id)
+                    self.stdout.write(self.style.ERROR(e))
+                    continue
 
                 # so far Showroom does only allow single media POSTs, but the response
                 # format is already tailored towards multi entry POSTs. therefore
@@ -159,11 +180,18 @@ class Command(BaseCommand):
             result = {}
             try:
                 result = sync.push_relations(entry)
-            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                raise CommandError(e) from e
             except sync.ShowroomError as e:
                 relations_not_pushed.append(entry.id)
                 self.stdout.write(self.style.WARNING(e))
+                continue
+            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
+                self.stdout.write(self.style.ERROR(e))
+                relations_not_pushed.append(entry.id)
+                continue
+            except requests.exceptions.ConnectionError as e:
+                relations_not_pushed.append(entry.id)
+                self.stdout.write(self.style.ERROR(e))
+                continue
 
             created = result.get('created')
             if created:
