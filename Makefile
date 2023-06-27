@@ -20,10 +20,10 @@ init:
 	docker-compose exec portfolio-django bash -c "pip-sync && python manage.py migrate"
 
 init-rq:
-	docker-compose exec portfolio-rq-worker-1 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-worker-2 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-worker-3 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-scheduler bash -c "pip-sync && python manage.py migrate"
+	docker-compose exec portfolio-rq-worker-1 bash -c "pip-sync"
+	docker-compose exec portfolio-rq-worker-2 bash -c "pip-sync"
+	docker-compose exec portfolio-rq-worker-3 bash -c "pip-sync"
+	docker-compose exec portfolio-rq-scheduler bash -c "pip-sync"
 
 init-static:
 	docker-compose exec portfolio-django bash -c "python manage.py collectstatic --noinput"
