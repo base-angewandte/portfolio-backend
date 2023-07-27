@@ -380,7 +380,12 @@ def repair():
         m.status = STATUS_NOT_CONVERTED
         m.save()
         queue = django_rq.get_queue('high')
-        queue.enqueue(m.media_info_and_convert, job_id=m.get_job_id(), failure_ttl=settings.RQ_FAILURE_TTL)
+        queue.enqueue(
+            m.media_info_and_convert,
+            job_id=m.get_job_id(),
+            failure_ttl=settings.RQ_FAILURE_TTL,
+            result_ttl=settings.RQ_RESULT_TTL,
+        )
 
 
 # Signal handling
@@ -399,6 +404,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                         instance.media_info_and_convert,
                         job_id=instance.get_job_id(),
                         failure_ttl=settings.RQ_FAILURE_TTL,
+                        result_ttl=settings.RQ_RESULT_TTL,
                     )
                 )
         else:
@@ -410,6 +416,7 @@ def media_post_save(sender, instance, created, *args, **kwargs):
                         instance.media_info_and_convert,
                         job_id=instance.get_job_id(),
                         failure_ttl=settings.RQ_FAILURE_TTL,
+                        result_ttl=settings.RQ_RESULT_TTL,
                     )
                 )
 

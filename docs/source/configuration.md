@@ -212,6 +212,16 @@ ports. So whichever non-default port you set in your docker-compose.override.yml
 for Redis, this should be also set here, unless you operate in a fully
 containerised setup.
 
+#### `RQ_RESULT_TTL`
+
+Default: `500`
+
+Time (in seconds) how long results from RQ worker jobs are kept in Redis.
+Should be fine by default, but for debugging, you might want to increase this
+value. In case it is a performance issue on a production server, you can also
+set it to 0 to not keep any worker job results.
+For background details: https://python-rq.org/docs/results/
+
 ### `DEBUG`
 
 Default: `False`

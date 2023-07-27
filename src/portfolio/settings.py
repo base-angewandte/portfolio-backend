@@ -349,6 +349,8 @@ RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
 
 RQ_FAILURE_TTL = 2628288  # approx. 3 month
 
+RQ_RESULT_TTL = env.int('RQ_RESULT_TTL', default=500)
+RQ = {'DEFAULT_RESULT_TTL': RQ_RESULT_TTL}  # only applies to django_rq's @job decorators, not to enqueue calls
 
 """ Session settings """
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
