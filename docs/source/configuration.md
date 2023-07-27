@@ -199,6 +199,19 @@ least one of the database container ports needs to be mapped to a different
 value. So use whatever you set in your docker-compose.override.yml for
 portfolio-postgres or use the default.
 
+#### `REDIS_PORT`
+
+Default: `6379`
+
+Port of the Redis data store
+
+Similar to `POSTGRES_PORT` you won't need to change this in most cases.
+But if you develop locally and have several Redis instances for different
+projects running at the same time, you might map some of them to alternate
+ports. So whichever non-default port you set in your docker-compose.override.yml
+for Redis, this should be also set here, unless you operate in a fully
+containerised setup.
+
 ### `DEBUG`
 
 Default: `False`

@@ -327,7 +327,10 @@ LOGGING = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://{}:6379/0'.format(f'{PROJECT_NAME}-redis' if DOCKER else 'localhost'),
+        'LOCATION': 'redis://{}:{}/0'.format(
+            f'{PROJECT_NAME}-redis' if DOCKER else 'localhost',
+            env.int('REDIS_PORT', default=6379),
+        ),
         'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
     }
 }
