@@ -21,7 +21,7 @@ This command exports published entries for a specific year as CSV. Exported CSV 
 
 ##### Positional
 
-- `year` - Year of the export.
+- `year` - Year of the export. If no year is provided, everything will be exported.
 
 ##### Optional
 
