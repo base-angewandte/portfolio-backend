@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.2
+
+### Added
+
+- Added timeout to Pelias configuration
+- Added `PELIAS_API_KEY_LOCATION` configuration
+- Added possibility to export all published entries
+
+### Changed
+
+- Updated pre-commit configuration
+
 ## 1.3.1
 
 ## Added
