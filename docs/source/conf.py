@@ -68,20 +68,20 @@ myst_enable_extensions = [
 primary_color = '#ff9800'
 
 html_theme_options = {
-    "light_logo": "portfolio-backend-light.svg",
-    "dark_logo": "portfolio-backend-dark.svg",
-    "light_css_variables": {
-        "color-brand-primary": primary_color,
-        "color-brand-content": primary_color,
+    'light_logo': 'portfolio-backend-light.svg',
+    'dark_logo': 'portfolio-backend-dark.svg',
+    'light_css_variables': {
+        'color-brand-primary': primary_color,
+        'color-brand-content': primary_color,
     },
-    "dark_css_variables": {
-        "color-brand-primary": primary_color,
-        "color-brand-content": primary_color,
+    'dark_css_variables': {
+        'color-brand-primary': primary_color,
+        'color-brand-content': primary_color,
     },
-    "sidebar_hide_name": True,
-    "navigation_with_keys": True,
-    # "announcement": "Important announcement!",
+    'sidebar_hide_name': True,
+    'navigation_with_keys': True,
+    # 'announcement': 'Important announcement!',
 }
 
-pygments_style = "default"
-pygments_dark_style = "github-dark"
+pygments_style = 'default'
+pygments_dark_style = 'github-dark'
