@@ -85,3 +85,7 @@ html_theme_options = {
 
 pygments_style = 'default'
 pygments_dark_style = 'github-dark'
+
+html_css_files = [
+    'css/styles.css'
+]
