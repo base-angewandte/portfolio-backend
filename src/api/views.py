@@ -17,9 +17,9 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.cache import cache
 from django.db.models import Max, Q
+from django.db.models.fields.json import KeyTextTransform
 from django.http import Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator

@@ -1,10 +1,10 @@
 from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import JSONField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.translation import get_language, gettext_lazy as _

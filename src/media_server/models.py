@@ -11,8 +11,8 @@ from rq.exceptions import InvalidJobOperation, NoSuchJobError
 from rq.job import Job
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
+from django.db.models import JSONField
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 

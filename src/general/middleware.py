@@ -18,7 +18,7 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
 
     def process_request(self, request):
         try:
-            real_ip = request.META['HTTP_X_FORWARDED_FOR']
+            real_ip = request.headers['x-forwarded-for']
         except KeyError:
             pass
         else:
