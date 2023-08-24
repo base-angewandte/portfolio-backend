@@ -85,7 +85,7 @@ subsections.
 
 ### The full developer setup
 
-- Install latest python 3.7 and create a virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
+- Install latest python 3.8 and create a virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
 
 - Install pip-tools and requirements in your virtualenv:
 
