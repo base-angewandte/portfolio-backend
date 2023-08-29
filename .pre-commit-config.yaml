@@ -4,7 +4,12 @@ default_language_version:
 exclude: (/migrations/|manage.py|docs/source/conf.py)
 repos:
   - repo: https://github.com/base-angewandte/pre-commit-hooks
-    rev: 1.2.0-py3.7
+    rev: 1.2.0-py3.8
     hooks:
       - id: base-hooks
       - id: base-commit-msg-hooks
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: 1.14.1
+    hooks:
+      - id: django-upgrade
+        args: [--target-version, "3.2"]

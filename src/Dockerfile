@@ -1,4 +1,4 @@
-FROM python:3.7 AS base
+FROM python:3.8 AS base
 
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR 1

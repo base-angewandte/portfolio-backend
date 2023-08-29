@@ -1,6 +1,5 @@
-from django.contrib.postgres.fields import JSONField
 from django.contrib.postgres.search import SearchVector
-from django.db.models import FloatField, Func, Value
+from django.db.models import FloatField, Func, JSONField, Value
 from django.db.models.functions import Cast, Coalesce
 
 

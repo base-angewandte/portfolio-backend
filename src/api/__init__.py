@@ -3,8 +3,6 @@ import logging
 from rest_framework.exceptions import APIException
 from rest_framework.views import exception_handler
 
-default_app_config = 'api.apps.ApiConfig'
-
 logger = logging.getLogger(__name__)
 
 

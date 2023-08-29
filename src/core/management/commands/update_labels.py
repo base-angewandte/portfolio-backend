@@ -2,8 +2,8 @@ from progressbar import progressbar
 from titlecase import titlecase
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.core.management.base import BaseCommand
+from django.db.models import JSONField
 
 from core.models import Entry
 from core.skosmos import get_preflabel_via_uri
