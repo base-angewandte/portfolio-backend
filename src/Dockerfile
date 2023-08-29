@@ -50,8 +50,9 @@ EXPOSE 8200
 
 FROM base as dev
 
-COPY requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
+# to ensure pip-sync is also working in docker dev setup we need to overwrite requirements.txt
+COPY requirements-dev.txt requirements.txt
+RUN pip-sync
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
 
