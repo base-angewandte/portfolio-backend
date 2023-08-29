@@ -1,0 +1,4 @@
+/* change styling of … in invalid json highlighting */
+.highlight .err {
+    border: none;
+}
