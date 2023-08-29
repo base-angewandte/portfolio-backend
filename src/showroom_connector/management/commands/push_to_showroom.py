@@ -92,15 +92,12 @@ class Command(BaseCommand):
             result = {}
             try:
                 result = sync.push_entry(entry, process_media=False, process_relations=False)
-            except sync.ShowroomError as e:
-                not_pushed.append(entry.id)
-                self.stdout.write(self.style.WARNING(e))
-                continue
-            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                self.stdout.write(self.style.ERROR(e))
-                not_pushed.append(entry.id)
-                continue
-            except requests.exceptions.ConnectionError as e:
+            except (
+                sync.ShowroomError,
+                sync.ShowroomAuthenticationError,
+                sync.ShowroomUndefinedError,
+                requests.exceptions.ConnectionError,
+            ) as e:
                 not_pushed.append(entry.id)
                 self.stdout.write(self.style.ERROR(e))
                 continue
@@ -137,15 +134,12 @@ class Command(BaseCommand):
                 result = {}
                 try:
                     result = sync.push_medium(medium)
-                except sync.ShowroomError as e:
-                    media_not_pushed.append(entry.id)
-                    self.stdout.write(self.style.WARNING(e))
-                    continue
-                except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                    self.stdout.write(self.style.ERROR(e))
-                    media_not_pushed.append(entry.id)
-                    continue
-                except requests.exceptions.ConnectionError as e:
+                except (
+                    sync.ShowroomError,
+                    sync.ShowroomAuthenticationError,
+                    sync.ShowroomUndefinedError,
+                    requests.exceptions.ConnectionError,
+                ) as e:
                     media_not_pushed.append(entry.id)
                     self.stdout.write(self.style.ERROR(e))
                     continue
@@ -180,15 +174,12 @@ class Command(BaseCommand):
             result = {}
             try:
                 result = sync.push_relations(entry)
-            except sync.ShowroomError as e:
-                relations_not_pushed.append(entry.id)
-                self.stdout.write(self.style.WARNING(e))
-                continue
-            except (sync.ShowroomAuthenticationError, sync.ShowroomUndefinedError) as e:
-                self.stdout.write(self.style.ERROR(e))
-                relations_not_pushed.append(entry.id)
-                continue
-            except requests.exceptions.ConnectionError as e:
+            except (
+                sync.ShowroomError,
+                sync.ShowroomAuthenticationError,
+                sync.ShowroomUndefinedError,
+                requests.exceptions.ConnectionError,
+            ) as e:
                 relations_not_pushed.append(entry.id)
                 self.stdout.write(self.style.ERROR(e))
                 continue
