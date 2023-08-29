@@ -31,6 +31,10 @@ def validate_file_infection(file):
         logger.warning(f'The file is too large for ClamD to scan it. Bytes Read {file.tell()}')
         file.seek(0)
         return
+    except clamd.BufferTooLongError as e:
+        logger.warning(f'ClamD: {str(e)}')
+        file.seek(0)
+        return
 
     if result and result['stream'][0] == 'FOUND':
         raise ValidationError(_('File is infected with malware'), code='infected')
