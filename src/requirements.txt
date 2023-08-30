@@ -106,7 +106,7 @@ packaging==23.1
     # via
     #   build
     #   drf-yasg
-pip-tools==6.14.0
+pip-tools==7.3.0
     # via -r src/requirements.in
 portalocker==2.7.0
     # via concurrent-log-handler
