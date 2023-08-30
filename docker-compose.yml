@@ -8,6 +8,8 @@ services:
     networks:
       - portfolionet
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
     command: redis-server --appendonly yes
 
   portfolio-postgres:
