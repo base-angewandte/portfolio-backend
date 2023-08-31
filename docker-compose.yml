@@ -47,6 +47,11 @@ services:
     networks:
       - portfolionet
     restart: always
+    depends_on:
+      - portfolio-postgres
+      - portfolio-redis
+      - portfolio-lool
+      - portfolio-clamav
 
   portfolio-rq-worker-1:
     build: ./src
@@ -61,6 +66,10 @@ services:
     networks:
       - portfolionet
     restart: always
+    depends_on:
+      - portfolio-postgres
+      - portfolio-redis
+      - portfolio-lool
     command: python manage.py rqworker default
 
   portfolio-rq-worker-2:
@@ -76,6 +85,10 @@ services:
     networks:
       - portfolionet
     restart: always
+    depends_on:
+      - portfolio-postgres
+      - portfolio-redis
+      - portfolio-lool
     command: python manage.py rqworker high default
 
   portfolio-rq-worker-3:
@@ -91,6 +104,10 @@ services:
     networks:
       - portfolionet
     restart: always
+    depends_on:
+      - portfolio-postgres
+      - portfolio-redis
+      - portfolio-lool
     command: python manage.py rqworker high video default
 
   portfolio-rq-scheduler:
@@ -106,6 +123,10 @@ services:
     networks:
       - portfolionet
     restart: always
+    depends_on:
+      - portfolio-postgres
+      - portfolio-redis
+      - portfolio-lool
     command: python manage.py rqscheduler
 
   portfolio-clamav:
