@@ -1,7 +1,4 @@
-from django.utils.deprecation import MiddlewareMixin
-
-
-class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
+class SetRemoteAddrFromForwardedFor:
     """Middleware that sets REMOTE_ADDR based on HTTP_X_FORWARDED_FOR, if the
     latter is set.
 
@@ -16,7 +13,10 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     HTTP_X_FORWARDED_FOR.
     """
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         try:
             real_ip = request.headers['x-forwarded-for']
         except KeyError:
@@ -26,3 +26,5 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             # Take just the first one.
             real_ip = real_ip.split(',')[0]
             request.META['REMOTE_ADDR'] = real_ip
+
+        return self.get_response(request)
