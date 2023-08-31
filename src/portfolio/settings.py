@@ -172,6 +172,7 @@ X_FRAME_OPTIONS = 'DENY'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'general.middleware.HealthCheckMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
