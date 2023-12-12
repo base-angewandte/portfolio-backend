@@ -130,7 +130,7 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = reverse_lazy('cas_ng_login')
 LOGOUT_URL = reverse_lazy('cas_ng_logout')
 
-CAS_SERVER_URL = env.str('CAS_SERVER', default=f'{SITE_URL}cas/')
+CAS_SERVER_URL = env.str('CAS_SERVER', default=f'{SITE_URL}auth/')
 CAS_LOGIN_MSG = None
 CAS_LOGGED_MSG = None
 CAS_RENEW = False

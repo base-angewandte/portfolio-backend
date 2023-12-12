@@ -103,9 +103,9 @@ Portfolio Backend expects the following attributes: `first_name`, `last_name`, `
 
 ### `CAS_SERVER`
 
-Default: `f'{SITE_URL}cas/`
+Default: `f'{SITE_URL}auth/`
 
-The base url for the CAS server, e.g. `https://your.base.domain/cas/`.
+The base url for the CAS server, e.g. `https://your.base.domain/auth/`.
 
 ### `CAS_VERIFY_CERTIFICATE`
 
