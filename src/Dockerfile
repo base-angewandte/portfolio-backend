@@ -47,6 +47,8 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8200
 
+HEALTHCHECK CMD curl --fail http://localhost:8200/health || exit 1
+
 
 FROM base as dev
 
