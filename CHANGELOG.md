@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.3.4
+
+### Added
+
+- configurable error handling for push_to_showroom
+- add HealthCheckMiddleware
+- make RQ result TTL configurable
+- make Redis port configurable
+- add documentation for `REDIS_PORT` and `RQ_RESULT_TTL`
+- add documentation for Showroom sync
+
+### Changed
+
+- use general config from https://github.com/base-angewandte/config
+- improve docker configuration with healthchecks and `depends_on`
+- update documentation style and environment
+- upgrade middleware to new django style
+- upgrade python to 3.8
+- upgrade django to 3.2
+- update requirements
+
+### Fixed
+
+- fix pip-sync in docker dev setup
+- change styling of … in invalid json highlighting
+- add migrations for jsonfield changes
+- fix cors settings
+- fix python version for readthedocs
+- only push entry if still published at worker runtime
+
+# 1.3.3
+
+### Added
+
+- add readthedocs configuration
+
+### Fixed
+
+- **clamav**: catch BufferTooLongError
+
 ## 1.3.2
 
 ### Added
