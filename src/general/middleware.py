@@ -37,10 +37,9 @@ class SetRemoteAddrFromForwardedFor:
 class HealthCheckMiddleware:
     """Middleware for providing a health check endpoint.
 
-    It needs to be added before
-    django.middleware.common.CommonMiddleware in order to ensure that it
-    also works for calls via localhost. Otherwise, health checks might
-    fail if localhost is not in ALLOWED_HOSTS.
+    It needs to be added to the top of MIDDLEWARE in order to ensure
+    that it also works for calls via localhost. Otherwise, health checks
+    might fail if localhost is not in ALLOWED_HOSTS.
     """
 
     def __init__(self, get_response):
