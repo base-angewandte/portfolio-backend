@@ -13,6 +13,7 @@
 
 ### Changed
 
+- **BREAKING**: change default value of CAS_SERVER_URL to `f'{SITE_URL}auth/'`
 - use general config from https://github.com/base-angewandte/config
 - improve docker configuration with healthchecks and `depends_on`
 - update documentation style and environment
