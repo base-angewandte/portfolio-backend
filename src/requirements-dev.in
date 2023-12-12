@@ -4,6 +4,6 @@
 
 -r requirements.in
 
-pre-commit==2.13.0
+pre-commit
 vcrpy==4.1.1
 werkzeug==2.3.7  # for django-extensions
