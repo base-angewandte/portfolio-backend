@@ -34,7 +34,11 @@ def autosuggest(data, query, language=None):
     query = unaccent(query.lower())
 
     result = list(
-        filter(lambda d: query in unaccent(d['label'].get(language, d['label'].get('en', '')).lower()), data)
+        filter(
+            lambda d: query
+            in unaccent(d['label'].get(language, d['label'].get('en', '')).lower()),
+            data,
+        )
     )
 
     return result
@@ -48,7 +52,11 @@ def get_json_data(uri, vocid=None):
     else:
         url = settings.SKOSMOS_API + 'data'
 
-    req = requests.get(url, params=payload)
+    req = requests.get(
+        url,
+        params=payload,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
     req.raise_for_status()
 
     return req.json()
@@ -64,7 +72,11 @@ def get_search_data(uri):
         'unique': 'true',
     }
 
-    req = requests.get(settings.SKOSMOS_API + 'search', params=payload)
+    req = requests.get(
+        settings.SKOSMOS_API + 'search',
+        params=payload,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
     req.raise_for_status()
     return req.json()['results']
 
@@ -73,7 +85,9 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
     language = get_language() or 'en'
 
     cache_key = hashlib.md5(  # nosec
-        '_'.join([uri, vocid or '', str(fetch_children), source_name or '', language]).encode('utf-8')
+        '_'.join(
+            [uri, vocid or '', str(fetch_children), source_name or '', language]
+        ).encode('utf-8')
     ).hexdigest()
 
     data = cache.get(cache_key, [])
@@ -102,7 +116,10 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
 
         if data:
             data = sorted(
-                data, key=lambda x: x.get('label', {}).get(language, x.get('label', {}).get('en', 'zzz')).lower()
+                data,
+                key=lambda x: x.get('label', {})
+                .get(language, x.get('label', {}).get('en', 'zzz'))
+                .lower(),
             )
             cache.set(cache_key, data, CACHE_TIME)
 
@@ -110,7 +127,10 @@ def fetch_data(uri, vocid=None, fetch_children=False, source_name=None):
 
 
 def get_base_keywords():
-    return fetch_data('http://base.uni-ak.ac.at/recherche/keywords/collection_base', source_name='base')
+    return fetch_data(
+        'http://base.uni-ak.ac.at/recherche/keywords/collection_base',
+        source_name='base',
+    )
 
 
 def get_disciplines():
@@ -123,7 +143,9 @@ def get_disciplines():
             filter(
                 lambda x: len(x['source'].split('/')[-1]) % 3 == 0,
                 fetch_data(
-                    'http://base.uni-ak.ac.at/portfolio/disciplines/oefos', fetch_children=True, source_name='voc'
+                    'http://base.uni-ak.ac.at/portfolio/disciplines/oefos',
+                    fetch_children=True,
+                    source_name='voc',
                 ),
             )
         )
@@ -179,7 +201,9 @@ def get_materials():
 
 
 def get_media_licenses():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_media_licenses')
+    return fetch_data(
+        'http://base.uni-ak.ac.at/portfolio/licenses/collection_media_licenses'
+    )
 
 
 def get_roles():
@@ -187,11 +211,15 @@ def get_roles():
 
 
 def get_statuses():
-    return fetch_data('http://base.uni-ak.ac.at/vocabulary/collection_portfolio_project_status')
+    return fetch_data(
+        'http://base.uni-ak.ac.at/vocabulary/collection_portfolio_project_status'
+    )
 
 
 def get_software_licenses():
-    return fetch_data('http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses')
+    return fetch_data(
+        'http://base.uni-ak.ac.at/portfolio/licenses/collection_software_licenses'
+    )
 
 
 def get_text_types():
@@ -209,7 +237,9 @@ def get_entry_types():
         data = list(
             filter(
                 lambda x: x['source'] in ACTIVE_TYPES,
-                fetch_data('http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy'),
+                fetch_data(
+                    'http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy'
+                ),
             )
         )
 
@@ -249,7 +279,9 @@ def get_altlabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lan
     return label
 
 
-def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None):
+def get_altlabel_collection(
+    collection, project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=None
+):
     return (
         get_altlabel(collection, project, graph, lang)
         .replace('Sammlung', '')
@@ -260,7 +292,9 @@ def get_altlabel_collection(collection, project=settings.TAX_ID, graph=settings.
     )
 
 
-def get_preflabel(concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None):
+def get_preflabel(
+    concept, project=settings.VOC_ID, graph=settings.VOC_GRAPH, lang=None
+):
     if lang:
         language = lang
     else:

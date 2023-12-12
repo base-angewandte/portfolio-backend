@@ -20,7 +20,11 @@ def get_quota_for_user(user):
     if not quota:
         joined = user.date_joined
         today = timezone.now()
-        diff = today.year - joined.year - ((today.month, today.day) < (joined.month, joined.day))
+        diff = (
+            today.year
+            - joined.year
+            - ((today.month, today.day) < (joined.month, joined.day))
+        )
         quota = settings.USER_QUOTA * (diff + 1)
         cache.set(cache_key, quota, 86400)
     return quota

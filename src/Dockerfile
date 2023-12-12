@@ -1,4 +1,4 @@
-FROM python:3.7 AS base
+FROM python:3.8 AS base
 
 ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR 1
@@ -41,17 +41,20 @@ VOLUME /logs
 
 WORKDIR /django
 
-RUN pip install --upgrade pip==21.1.3
+RUN pip install --upgrade pip==23.2.1
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 EXPOSE 8200
 
+HEALTHCHECK CMD curl --fail http://localhost:8200/health || exit 1
+
 
 FROM base as dev
 
-COPY requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
+# to ensure pip-sync is also working in docker dev setup we need to overwrite requirements.txt
+COPY requirements-dev.txt requirements.txt
+RUN pip-sync
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8200"]
 

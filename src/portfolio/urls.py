@@ -1,4 +1,4 @@
-"""portfolio URL Configuration.
+"""Portfolio URL Configuration.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -21,9 +21,21 @@ from django.urls import include, path
 
 urlpatterns = [
     path(f'{settings.DJANGO_ADMIN_PATH}/', admin.site.urls),
-    path('accounts/login/', django_cas_ng.views.LoginView.as_view(), name='cas_ng_login'),
-    path('accounts/logout/', django_cas_ng.views.LogoutView.as_view(), name='cas_ng_logout'),
-    path('accounts/callback/', django_cas_ng.views.CallbackView.as_view(), name='cas_ng_proxy_callback'),
+    path(
+        'accounts/login/',
+        django_cas_ng.views.LoginView.as_view(),
+        name='cas_ng_login',
+    ),
+    path(
+        'accounts/logout/',
+        django_cas_ng.views.LogoutView.as_view(),
+        name='cas_ng_logout',
+    ),
+    path(
+        'accounts/callback/',
+        django_cas_ng.views.CallbackView.as_view(),
+        name='cas_ng_proxy_callback',
+    ),
     path('api/', include('api.urls')),
     path('autosuggest/', include('autosuggest.urls')),
     path('p/', include('media_server.urls')),

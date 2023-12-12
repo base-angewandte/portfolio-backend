@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.ERROR)
 
 
 class AutoSuggestTestCase(TestCase):
-    """tests based on current settings configured.
+    """Tests based on current settings configured.
 
     TODO:
     very repetitive, make it better with decorators
@@ -52,7 +52,10 @@ class AutoSuggestTestCase(TestCase):
 
     def test_places_geonames(self):
         res = fetch_responses('Wien', ('GEONAMES_PLACE',))
-        assert any(rec['source'] == 'http://api.geonames.org/get?geonameId=2761369' for rec in res)
+        assert any(
+            rec['source'] == 'http://api.geonames.org/get?geonameId=2761369'
+            for rec in res
+        )
 
         return
 
@@ -68,7 +71,10 @@ class AutoSuggestTestCase(TestCase):
 
     def test_keywords(self):
         res = fetch_responses('aerodyna', ('VOC_KEYWORDS',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/disciplines/103001' for rec in res)
+        assert any(
+            rec['source'] == 'http://base.uni-ak.ac.at/portfolio/disciplines/103001'
+            for rec in res
+        )
         return
 
     def test_empty_roles(self):
@@ -78,7 +84,11 @@ class AutoSuggestTestCase(TestCase):
 
     def test_roles(self):
         res = fetch_responses('archite', ('VOC_ROLES',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/architecture' for rec in res)
+        assert any(
+            rec['source']
+            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/architecture'
+            for rec in res
+        )
         return
 
     def test_empty_formats(self):
@@ -88,7 +98,10 @@ class AutoSuggestTestCase(TestCase):
 
     def test_formats(self):
         res = fetch_responses('og', ('VOC_FORMATS',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/ogg' for rec in res)
+        assert any(
+            rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/ogg'
+            for rec in res
+        )
         return
 
     def test_empty_materials(self):
@@ -98,7 +111,10 @@ class AutoSuggestTestCase(TestCase):
 
     def test_materials(self):
         res = fetch_responses('pap', ('VOC_MATERIALS',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/paper' for rec in res)
+        assert any(
+            rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/paper'
+            for rec in res
+        )
         return
 
     def test_empty_languages(self):
@@ -108,7 +124,10 @@ class AutoSuggestTestCase(TestCase):
 
     def test_languages(self):
         res = fetch_responses('ge', ('VOC_LANGUAGES',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/languages/de' for rec in res)
+        assert any(
+            rec['source'] == 'http://base.uni-ak.ac.at/portfolio/languages/de'
+            for rec in res
+        )
         return
 
     def test_empty_texttypes(self):
@@ -118,11 +137,21 @@ class AutoSuggestTestCase(TestCase):
 
     def test_texttypes(self):
         res = fetch_responses('abs', ('VOC_TEXTTYPES',))
-        assert any(rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract' for rec in res)
+        assert any(
+            rec['source'] == 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
+            for rec in res
+        )
         return
 
     def test_all_labels(self):
-        VOC_SOURCES = ('VOC_LANGUAGES', 'VOC_MATERIALS', 'VOC_FORMATS', 'VOC_ROLES', 'VOC_KEYWORDS', 'VOC_TEXTTYPES')
+        VOC_SOURCES = (
+            'VOC_LANGUAGES',
+            'VOC_MATERIALS',
+            'VOC_FORMATS',
+            'VOC_ROLES',
+            'VOC_KEYWORDS',
+            'VOC_TEXTTYPES',
+        )
         for voc_source in VOC_SOURCES:
             res = fetch_responses('a', (voc_source,))
             assert len(res) > 0, f'{voc_source} is empty'

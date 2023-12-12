@@ -1,7 +1,11 @@
 from ...schemas import ICON_EVENT
 from ...skosmos import get_collection_members
 from ..base import BaseSchema
-from ..general import get_contributors_field, get_contributors_field_for_role, get_date_range_location_group_field
+from ..general import (
+    get_contributors_field,
+    get_contributors_field_for_role,
+    get_date_range_location_group_field,
+)
 from ..utils import years_from_date_range_location_group_field
 
 ICON = ICON_EVENT
@@ -21,4 +25,6 @@ class FellowshipVisitingAffiliationSchema(BaseSchema):
 
     def year_display(self, data):
         if data.get('date_range_location'):
-            return years_from_date_range_location_group_field(data['date_range_location'])
+            return years_from_date_range_location_group_field(
+                data['date_range_location']
+            )

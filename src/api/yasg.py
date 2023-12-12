@@ -10,7 +10,11 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from django.conf import settings
 
-from core.schemas import get_keywords_jsonschema, get_texts_jsonschema, get_type_jsonschema
+from core.schemas import (
+    get_keywords_jsonschema,
+    get_texts_jsonschema,
+    get_type_jsonschema,
+)
 
 authorization_header_paramter = openapi.Parameter(
     'Authorization',
@@ -27,12 +31,18 @@ language_header_parameter = openapi.Parameter(
     enum=list(settings.LANGUAGES_DICT.keys()),
 )
 
-language_header_decorator = swagger_auto_schema(manual_parameters=[language_header_parameter])
+language_header_decorator = swagger_auto_schema(
+    manual_parameters=[language_header_parameter]
+)
 
 
 class JSONFieldInspector(FieldInspector):
-    def field_to_swagger_object(self, field, swagger_object_type, use_references, **kwargs):
-        SwaggerType, ChildSwaggerType = self._get_partial_types(field, swagger_object_type, use_references, **kwargs)
+    def field_to_swagger_object(
+        self, field, swagger_object_type, use_references, **kwargs
+    ):
+        SwaggerType, ChildSwaggerType = self._get_partial_types(
+            field, swagger_object_type, use_references, **kwargs
+        )
 
         if isinstance(field, serializers.JSONField):
             if field.field_name == 'type':

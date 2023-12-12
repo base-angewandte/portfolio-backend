@@ -21,5 +21,7 @@ class Command(BaseCommand):
 
             token = Token.objects.create(user=user)
             self.stdout.write(
-                self.style.SUCCESS(f'Successfully created token for user "{user.username}": {token.key}')
+                self.style.SUCCESS(
+                    f'Successfully created token for user {repr(user.username)}: {token.key}'
+                )
             )

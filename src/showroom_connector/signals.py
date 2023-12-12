@@ -16,58 +16,69 @@ def entry_post_save(sender, instance, created, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         queue = django_rq.get_queue('default')
         if instance.published:
-            entry_sync = queue.enqueue(sync.push_entry, entry=instance)
-            # TODO: discuss and implement failure handling
-            # now check for all attached media that are also published and push those too
-            # TODO: discuss: it would be more efficient to only do this if the published
-            #       status itself has changed (vs. all the time anything in an already
-            #       published entry was changed), but we would need to write our own
-            #       update function in the serializer, to set the update_fields in kwargs
-            published_media = Media.objects.filter(entry_id=instance.id, published=True, status=STATUS_CONVERTED)
-            for medium in published_media:
-                queue.enqueue(sync.push_medium, medium=medium, depends_on=entry_sync)
-            # TODO: similar to media also relations would only have to be pushed after
-            #       publishing and not on every save
-            if instance.from_entries.exists():
-                queue.enqueue(sync.push_relations, entry=instance, depends_on=entry_sync)
-            # TODO: this doesn't seem very performant, adapt Showroom API to be able
-            #       to push relations in both directions
-            for relation in instance.to_entries.all():
-                queue.enqueue(sync.push_relations, entry=relation.from_entry, depends_on=entry_sync)
+            queue.enqueue(
+                sync.push_entry,
+                entry=instance,
+                result_ttl=settings.RQ_RESULT_TTL,
+            )
         # if the instance was just created but not published, we do nothing. but if its
-        # published status (now) is false and it was not just created, we have to delete
+        # published status (now) is false, and it was not just created, we have to delete
         # it from Showroom
         elif not created:
-            queue.enqueue(sync.delete_entry, entry=instance)
-            # TODO: discuss and implement failure handling
+            queue.enqueue(
+                sync.delete_entry,
+                entry=instance,
+                result_ttl=settings.RQ_RESULT_TTL,
+            )
 
 
-@receiver(post_delete, sender=Entry, dispatch_uid='showroom_connector_entry_post_delete')
+@receiver(
+    post_delete,
+    sender=Entry,
+    dispatch_uid='showroom_connector_entry_post_delete',
+)
 def entry_post_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         if instance.published:
             queue = django_rq.get_queue('default')
-            queue.enqueue(sync.delete_entry, entry=instance)
-            # TODO: discuss and implement failure handling
+            queue.enqueue(
+                sync.delete_entry,
+                entry=instance,
+                result_ttl=settings.RQ_RESULT_TTL,
+            )
 
 
-@receiver(post_save, sender=Relation, dispatch_uid='showroom_connector_relation_post_save')
+@receiver(
+    post_save,
+    sender=Relation,
+    dispatch_uid='showroom_connector_relation_post_save',
+)
 def relation_post_save(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         if instance.from_entry.published and instance.to_entry.published:
             queue = django_rq.get_queue('default')
-            queue.enqueue(sync.push_relations, entry=instance.from_entry)
-            # TODO: discuss and implement failure handling
+            queue.enqueue(
+                sync.push_relations,
+                entry=instance.from_entry,
+                result_ttl=settings.RQ_RESULT_TTL,
+            )
 
 
-@receiver(post_delete, sender=Relation, dispatch_uid='showroom_connector_relation_post_delete')
+@receiver(
+    post_delete,
+    sender=Relation,
+    dispatch_uid='showroom_connector_relation_post_delete',
+)
 def relation_post_delete(sender, instance, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         try:
             if instance.from_entry.published and instance.to_entry.published:
                 queue = django_rq.get_queue('default')
-                queue.enqueue(sync.push_relations, entry=instance.from_entry)
-                # TODO: discuss and implement failure handling
+                queue.enqueue(
+                    sync.push_relations,
+                    entry=instance.from_entry,
+                    result_ttl=settings.RQ_RESULT_TTL,
+                )
         except Entry.DoesNotExist:
             # Entry has already been deleted, so the corresponding request to
             # Showroom should already have deleted all corresponding relations
@@ -82,10 +93,18 @@ def media_post_save(sender, instance, created, *args, **kwargs):
         if entry.published:
             if instance.published:
                 if instance.status == STATUS_CONVERTED:
-                    django_rq.enqueue(sync.push_medium, medium=instance)
+                    django_rq.enqueue(
+                        sync.push_medium,
+                        medium=instance,
+                        result_ttl=settings.RQ_RESULT_TTL,
+                    )
                     # TODO: discuss and implement failure handling
             elif not created:
-                django_rq.enqueue(sync.delete_medium, medium=instance)
+                django_rq.enqueue(
+                    sync.delete_medium,
+                    medium=instance,
+                    result_ttl=settings.RQ_RESULT_TTL,
+                )
                 # TODO: discuss and implement failure handling
 
 
@@ -100,7 +119,11 @@ def media_pre_delete(sender, instance, *args, **kwargs):
                 and instance.status == STATUS_CONVERTED
                 and Entry.objects.get(pk=instance.entry_id).published
             ):
-                django_rq.enqueue(sync.delete_medium, medium=instance)
+                django_rq.enqueue(
+                    sync.delete_medium,
+                    medium=instance,
+                    result_ttl=settings.RQ_RESULT_TTL,
+                )
                 # TODO: discuss and implement failure handling
         except Entry.DoesNotExist:
             # Entry has already been deleted, so the corresponding request to
@@ -114,8 +137,16 @@ def media_order_update(sender, entry_id, *args, **kwargs):
     if settings.SYNC_TO_SHOWROOM:
         entry = Entry.objects.get(pk=entry_id)
         if entry.published:
-            media = Media.objects.filter(entry_id=entry_id, published=True, status=STATUS_CONVERTED)
+            media = Media.objects.filter(
+                entry_id=entry_id,
+                published=True,
+                status=STATUS_CONVERTED,
+            )
             queue = django_rq.get_queue('default')
             for m in media:
-                queue.enqueue(sync.push_medium, medium=m)
+                queue.enqueue(
+                    sync.push_medium,
+                    medium=m,
+                    result_ttl=settings.RQ_RESULT_TTL,
+                )
                 # TODO: discuss and implement failure handling

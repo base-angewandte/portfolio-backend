@@ -1,4 +1,1 @@
-[flake8]
-max-line-length = 120
-select = B,C,E,F,W,B9
-ignore = E203,E501,W503
+config/.flake8

@@ -130,7 +130,7 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = reverse_lazy('cas_ng_login')
 LOGOUT_URL = reverse_lazy('cas_ng_logout')
 
-CAS_SERVER_URL = env.str('CAS_SERVER', default=f'{SITE_URL}cas/')
+CAS_SERVER_URL = env.str('CAS_SERVER', default=f'{SITE_URL}auth/')
 CAS_LOGIN_MSG = None
 CAS_LOGGED_MSG = None
 CAS_RENEW = False
@@ -143,7 +143,7 @@ CAS_CHECK_NEXT = env.bool('CAS_CHECK_NEXT', default=True)
 CAS_VERIFY_CERTIFICATE = env.bool('CAS_VERIFY_CERTIFICATE', default=True)
 CAS_RENAME_ATTRIBUTES = env.dict('CAS_RENAME_ATTRIBUTES', default={})
 
-""" Email settings """
+# Email settings
 SERVER_EMAIL = 'error@%s' % urlparse(SITE_URL).hostname
 
 EMAIL_HOST_USER = env.str('EMAIL_HOST_USER', default='')
@@ -153,7 +153,9 @@ EMAIL_PORT = env.int('EMAIL_PORT', default=25)
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
 EMAIL_USE_LOCALTIME = env.bool('EMAIL_USE_LOCALTIME', default=True)
 
-EMAIL_SUBJECT_PREFIX = '{} '.format(env.str('EMAIL_SUBJECT_PREFIX', default='[Portfolio]').strip())
+EMAIL_SUBJECT_PREFIX = '{} '.format(
+    env.str('EMAIL_SUBJECT_PREFIX', default='[Portfolio]').strip()
+)
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = os.path.join(BASE_DIR, '..', 'tmp', 'emails')
@@ -171,6 +173,7 @@ if SITE_URL.startswith('https'):
 X_FRAME_OPTIONS = 'DENY'
 
 MIDDLEWARE = [
+    'general.middleware.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -216,7 +219,7 @@ WSGI_APPLICATION = f'{PROJECT_NAME}.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', f'django_{PROJECT_NAME}'),
         'USER': os.environ.get('POSTGRES_USER', f'django_{PROJECT_NAME}'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', f'password_{PROJECT_NAME}'),
@@ -230,7 +233,9 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+    },
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
@@ -260,21 +265,31 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATICFILES_DIRS = ('{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'static')), os.sep),)
+STATICFILES_DIRS = (
+    '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'static')), os.sep),
+)
 STATIC_URL = '{}/s/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
-STATIC_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'static')), os.sep)
+STATIC_ROOT = '{}{}'.format(
+    os.path.normpath(os.path.join(BASE_DIR, 'assets', 'static')), os.sep
+)
 
 MEDIA_URL = '{}/m/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
-MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'media')), os.sep)
+MEDIA_ROOT = '{}{}'.format(
+    os.path.normpath(os.path.join(BASE_DIR, 'assets', 'media')), os.sep
+)
 
 PROTECTED_MEDIA_URL = '{}/p/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
-PROTECTED_MEDIA_ROOT = '{}{}'.format(os.path.normpath(os.path.join(BASE_DIR, 'assets', 'protected')), os.sep)
-PROTECTED_MEDIA_LOCATION = '{}/internal/'.format(FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else '')
+PROTECTED_MEDIA_ROOT = '{}{}'.format(
+    os.path.normpath(os.path.join(BASE_DIR, 'assets', 'protected')), os.sep
+)
+PROTECTED_MEDIA_LOCATION = '{}/internal/'.format(
+    FORCE_SCRIPT_NAME if FORCE_SCRIPT_NAME else ''
+)
 PROTECTED_MEDIA_SERVER = 'nginx' if not DEBUG else 'django'
 
 FILE_UPLOAD_PERMISSIONS = 0o644
 
-""" Logging """
+# Logging
 LOG_DIR = os.path.join(BASE_DIR, '..', 'logs')
 
 if not os.path.exists(LOG_DIR):
@@ -284,13 +299,19 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'},
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
         'simple': {'format': '%(levelname)s %(message)s'},
         'simple_with_time': {'format': '%(levelname)s %(asctime)s %(message)s'},
     },
     'handlers': {
         'null': {'level': 'DEBUG', 'class': 'logging.NullHandler'},
-        'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'simple'},
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
         'file': {
             'level': 'DEBUG',
             'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
@@ -301,9 +322,16 @@ LOGGING = {
             'delay': True,
             'formatter': 'verbose',
         },
-        'mail_admins': {'level': 'ERROR', 'class': 'django.utils.log.AdminEmailHandler'},
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
         'stream_to_console': {'level': 'DEBUG', 'class': 'logging.StreamHandler'},
-        'rq_console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'simple_with_time'},
+        'rq_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple_with_time',
+        },
         'rq_file': {
             'level': 'DEBUG',
             'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
@@ -316,20 +344,47 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {'handlers': ['console', 'file', 'mail_admins'], 'propagate': True, 'level': 'INFO'},
-        'django': {'handlers': ['console', 'file', 'mail_admins'], 'propagate': True, 'level': 'INFO'},
-        'django.request': {'handlers': ['console', 'file', 'mail_admins'], 'level': 'ERROR', 'propagate': True},
-        'rq.worker': {'handlers': ['rq_console', 'rq_file', 'mail_admins'], 'level': 'DEBUG', 'propagate': False},
+        '': {
+            'handlers': ['console', 'file', 'mail_admins'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django': {
+            'handlers': ['console', 'file', 'mail_admins'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'rq.worker': {
+            'handlers': ['rq_console', 'rq_file', 'mail_admins'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
 
-""" Cache settings """
+# Cache settings
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://{}:6379/0'.format(f'{PROJECT_NAME}-redis' if DOCKER else 'localhost'),
+        'LOCATION': 'redis://{}:{}/0'.format(
+            f'{PROJECT_NAME}-redis' if DOCKER else 'localhost',
+            env.int('REDIS_PORT', default=6379),
+        ),
         'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
-    }
+    },
+    'sessions': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://{}:{}/1'.format(
+            f'{PROJECT_NAME}-redis' if DOCKER else 'localhost',
+            env.int('REDIS_PORT', default=6379),
+        ),
+        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
+    },
 }
 
 RQ_QUEUES = {
@@ -346,10 +401,15 @@ RQ_EXCEPTION_HANDLERS = ['general.rq.handlers.exception_handler']
 
 RQ_FAILURE_TTL = 2628288  # approx. 3 month
 
+RQ_RESULT_TTL = env.int('RQ_RESULT_TTL', default=500)
+RQ = {
+    # only applies to django_rq's @job decorators, not to enqueue calls
+    'DEFAULT_RESULT_TTL': RQ_RESULT_TTL
+}
 
-""" Session settings """
+# Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+SESSION_CACHE_ALIAS = 'sessions'
 SESSION_COOKIE_NAME = f'sessionid_{PROJECT_NAME}'
 SESSION_COOKIE_DOMAIN = env.str('SESSION_COOKIE_DOMAIN', default=None)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -361,10 +421,12 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
 CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
-CORS_URLS_REGEX = r'^/(api|autosuggest)/.*$'
+CORS_URLS_REGEX = r'^/(api|autosuggest|p)/.*$'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -427,7 +489,9 @@ LANGUAGES_VOCID = 'languages'
 EN_LABELS_TITLE_CASE = env.bool('EN_LABELS_TITLE_CASE', default=True)
 
 ANGEWANDTE_API_KEY = env.str('ANGEWANDTE_API_KEY', default='')
-PRIMO_API_URL = env.str('PRIMO_API_URL', default='https://apigw.obvsg.at/primo/v1/search')
+PRIMO_API_URL = env.str(
+    'PRIMO_API_URL', default='https://apigw.obvsg.at/primo/v1/search'
+)
 PRIMO_API_KEY = env.str('PRIMO_API_KEY', default='')
 GEONAMES_USER = env.str('GEONAMES_USER', default=None)
 PELIAS_API_KEY = env.str('PELIAS_API_KEY', default=None)
@@ -470,7 +534,10 @@ SOURCES = {
     'GND_PLACE': {
         apiconfig.URL: 'https://lobid.org/gnd/search',
         apiconfig.QUERY_FIELD: 'q',
-        apiconfig.PAYLOAD: {'format': 'json:suggest', 'filter': 'type:PlaceOrGeographicName'},
+        apiconfig.PAYLOAD: {
+            'format': 'json:suggest',
+            'filter': 'type:PlaceOrGeographicName',
+        },
     },
     'VIAF_PLACE': {
         apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
@@ -536,7 +603,11 @@ SOURCES = {
         apiconfig.URL: f'{SKOSMOS_API}languages/search',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
-        apiconfig.PAYLOAD: {'lang': get_language_lazy(), 'unique': True, 'fields': 'prefLabel'},
+        apiconfig.PAYLOAD: {
+            'lang': get_language_lazy(),
+            'unique': True,
+            'fields': 'prefLabel',
+        },
     },
     'VOC_TEXTTYPES': {
         apiconfig.URL: f'{SKOSMOS_API}povoc/search',
@@ -555,7 +626,11 @@ SOURCES = {
         apiconfig.QUERY_SUFFIX_WILDCARD: True,
         apiconfig.TIMEOUT: 10,
         apiconfig.PAYLOAD: {
-            **({'api_key': PELIAS_API_KEY} if 'PAYLOAD' in PELIAS_API_KEY_LOCATION else {}),
+            **(
+                {'api_key': PELIAS_API_KEY}
+                if 'PAYLOAD' in PELIAS_API_KEY_LOCATION
+                else {}
+            ),
             'focus.point.lat': env.float('PELIAS_FOCUS_POINT_LAT', default=48.208126),
             'focus.point.lon': env.float('PELIAS_FOCUS_POINT_LON', default=16.382464),
             'lang': get_language_lazy(),
@@ -564,7 +639,11 @@ SOURCES = {
                 'coarse,postalcode'
             ),
         },
-        **({apiconfig.HEADER: {'X-API-Key': PELIAS_API_KEY}} if 'HEADER' in PELIAS_API_KEY_LOCATION else {}),
+        **(
+            {apiconfig.HEADER: {'X-API-Key': PELIAS_API_KEY}}
+            if 'HEADER' in PELIAS_API_KEY_LOCATION
+            else {}
+        ),
     },
     'PRIMO_IMPORT': {
         apiconfig.URL: PRIMO_API_URL,
@@ -638,15 +717,24 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: ANGEWANDTE_MAPPING,
         apiconfig.RULES: {'source_name': {apiconfig.RULE: '"Angewandte"'}},
     },
-    'GND_PERSON': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
-    'GND_INSTITUTION': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
+    'GND_PERSON': {
+        apiconfig.DIRECT: GND_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
+    },
+    'GND_INSTITUTION': {
+        apiconfig.DIRECT: GND_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
+    },
     'VIAF_PERSON': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'personal'},
         apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+            'source': {
+                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                apiconfig.FIELDS: {'p1': 'viafid'},
+            },
         },
     },
     'VIAF_INSTITUTION': {
@@ -655,17 +743,26 @@ RESPONSE_MAPS = {
         apiconfig.DIRECT: VIAF_CONTRIBUTORS_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+            'source': {
+                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                apiconfig.FIELDS: {'p1': 'viafid'},
+            },
         },
     },
-    'GND_PLACE': {apiconfig.DIRECT: GND_MAPPING, apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}}},
+    'GND_PLACE': {
+        apiconfig.DIRECT: GND_MAPPING,
+        apiconfig.RULES: {'source_name': {apiconfig.RULE: '"GND"'}},
+    },
     'VIAF_PLACE': {
         apiconfig.RESULT: 'result',
         apiconfig.FILTER: {'nametype': 'geographic'},
         apiconfig.DIRECT: VIAF_PLACES_MAPPING,
         apiconfig.RULES: {
             'source_name': {apiconfig.RULE: '"VIAF"'},
-            'source': {apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"', apiconfig.FIELDS: {'p1': 'viafid'}},
+            'source': {
+                apiconfig.RULE: '"http://www.viaf.org/viaf/{p1}"',
+                apiconfig.FIELDS: {'p1': 'viafid'},
+            },
         },
     },
     'GEONAMES_PLACE': {
@@ -710,7 +807,9 @@ RESPONSE_MAPS = {
         apiconfig.RESULT: 'features',
         apiconfig.DIRECT: PELIAS_MAPPING,
         apiconfig.RULES: {
-            'source_name': {apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'},  # noqa: B907 - this has to be in double quotes
+            'source_name': {
+                apiconfig.RULE: f'"{PELIAS_SOURCE_NAME}"'  # noqa: B907 - this has to be in double quotes
+            },
             'source': {
                 apiconfig.RULE: f'"{PELIAS_API_URL}/place?ids={{p1}}"',
                 apiconfig.FIELDS: {'p1': ('properties', 'gid')},
@@ -746,7 +845,10 @@ ACTIVE_SOURCES = {
     'contributors': CONTRIBUTORS,
     'places': PLACES,
     'bibrecs': BIBRECS,
-    'keywords': {'all': 'core.skosmos.get_base_keywords', 'search': 'core.skosmos.get_keywords'},
+    'keywords': {
+        'all': 'core.skosmos.get_base_keywords',
+        'search': 'core.skosmos.get_keywords',
+    },
     'roles': 'core.skosmos.get_roles',
     'formats': 'core.skosmos.get_formats',
     'materials': 'core.skosmos.get_materials',
@@ -791,7 +893,9 @@ USER_PREFERENCES_API_KEY = env.str('USER_PREFERENCES_API_KEY', default=None)
 SENTRY_DSN = env.str('SENTRY_DSN', default=None)
 SENTRY_ENVIRONMENT = env.str(
     'SENTRY_ENVIRONMENT',
-    default='development' if any([i in SITE_URL for i in ['dev', 'localhost', '127.0.0.1']]) else 'production',
+    default='development'
+    if any([i in SITE_URL for i in ['dev', 'localhost', '127.0.0.1']])
+    else 'production',
 )
 SENTRY_TRACES_SAMPLE_RATE = env.float('SENTRY_TRACES_SAMPLE_RATE', default=0.2)
 
@@ -812,3 +916,5 @@ if SENTRY_DSN:
         traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         send_default_pii=True,
     )
+
+REQUESTS_TIMEOUT = 60
