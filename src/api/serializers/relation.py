@@ -27,7 +27,9 @@ class RelationSerializer(CleanModelSerializer):
     def __validate_owner(self, value):
         user = self.context['request'].user
         if user != value.owner:
-            raise serializers.ValidationError(_('Current user is not the owner of this entry'))
+            raise serializers.ValidationError(
+                _('Current user is not the owner of this entry')
+            )
         return value
 
     def validate_from_entry(self, value):

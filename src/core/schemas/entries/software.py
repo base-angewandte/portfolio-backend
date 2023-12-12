@@ -16,11 +16,16 @@ from ..general import (
 )
 from ..utils import year_from_date
 
-TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software', use_cache=False)
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software',
+    use_cache=False,
+)
 
 
 class SoftwareSchema(BaseSchema):
-    software_developers = get_contributors_field_for_role('software_developer', {'order': 1})
+    software_developers = get_contributors_field_for_role(
+        'software_developer', {'order': 1}
+    )
     programming_language = get_string_field(
         get_preflabel_lazy('programming_language'),
         {'field_format': 'half', 'order': 2},
@@ -33,9 +38,14 @@ class SoftwareSchema(BaseSchema):
             'x-attrs': {
                 'field_format': 'half',
                 'field_type': 'chips',
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'}),
+                'source': reverse_lazy(
+                    'lookup_all',
+                    kwargs={'version': 'v1', 'fieldname': 'softwarelicenses'},
+                ),
                 'prefetch': ['source'],
-                'placeholder': placeholder_lazy(get_preflabel_lazy('open_source_license')),
+                'placeholder': placeholder_lazy(
+                    get_preflabel_lazy('open_source_license')
+                ),
                 'order': 3,
                 'set_label_language': True,
             }

@@ -7,4 +7,6 @@ placeholder_lazy = lazy(lambda label: _('Enter %(label)s') % {'label': label}, s
 
 
 def unaccent(text):
-    return str(unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8'))
+    return str(
+        unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8')
+    )

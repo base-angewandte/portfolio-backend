@@ -34,7 +34,11 @@ class GenericModel:
             if isinstance(v, GenericModel):
                 out[key] = v.to_dict()
             elif isinstance(v, list):
-                out[key] = [x.to_dict() for x in v] if v and isinstance(v[0], GenericModel) else v
+                out[key] = (
+                    [x.to_dict() for x in v]
+                    if v and isinstance(v[0], GenericModel)
+                    else v
+                )
             elif isinstance(v, (int, float)) or v is None:
                 out[key] = v
             else:
@@ -55,7 +59,11 @@ class GenericModel:
                     value = v.to_display()
                 elif isinstance(v, list):
                     kwargs = {'roles': True} if key == 'contributors' else {}
-                    value = [x.to_display(**kwargs) for x in v] if v and isinstance(v[0], GenericModel) else v
+                    value = (
+                        [x.to_display(**kwargs) for x in v]
+                        if v and isinstance(v[0], GenericModel)
+                        else v
+                    )
                 elif isinstance(v, (int, float)):
                     value = v
                 else:
@@ -76,7 +84,10 @@ class BaseSchema(Schema):
         for fld in self.declared_fields:
             if (
                 fld == 'contributors'
-                or self.declared_fields[fld].metadata.get('x-attrs', {}).get('equivalent') == 'contributors'
+                or self.declared_fields[fld]
+                .metadata.get('x-attrs', {})
+                .get('equivalent')
+                == 'contributors'
             ):
                 self.contributors_fields.append(fld)
             else:

@@ -11,7 +11,9 @@ urlpatterns = [
         name='lookup_all',
     ),
     re_path(
-        r'^(?P<fieldname>({}))/(?P<searchstr>(.*))/$'.format('|'.join(settings.ACTIVE_SOURCES.keys())),
+        r'^(?P<fieldname>({}))/(?P<searchstr>(.*))/$'.format(
+            '|'.join(settings.ACTIVE_SOURCES.keys())
+        ),
         views.lookup_view_search,
         name='lookup',
     ),

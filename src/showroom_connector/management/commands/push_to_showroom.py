@@ -15,21 +15,51 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'id', type=str, nargs='*', help='The ShortUUID of an entry to push (will be ignored when using --all'
+            'id',
+            type=str,
+            nargs='*',
+            help='The ShortUUID of an entry to push (will be ignored when using --all',
         )
-        parser.add_argument('--all', action='store_true', help='Use this to push all published entries to Showroom')
-        parser.add_argument('-l', '--limit', type=int, help='An optional limit to the numbers entries that are pushed')
         parser.add_argument(
-            '-o', '--offset', type=int, help='An optional offset to first entry in the result set to be pushed'
+            '--all',
+            action='store_true',
+            help='Use this to push all published entries to Showroom',
         )
-        parser.add_argument('-s', '--status', type=int, help='Log a status line after each STATUS entries are pushed.')
         parser.add_argument(
-            '-c', '--cancel-threshold', type=int, default=100, help='After how many entry sync errors to stop syncing.'
+            '-l',
+            '--limit',
+            type=int,
+            help='An optional limit to the numbers entries that are pushed',
+        )
+        parser.add_argument(
+            '-o',
+            '--offset',
+            type=int,
+            help='An optional offset to first entry in the result set to be pushed',
+        )
+        parser.add_argument(
+            '-s',
+            '--status',
+            type=int,
+            help='Log a status line after each STATUS entries are pushed.',
+        )
+        parser.add_argument(
+            '-c',
+            '--cancel-threshold',
+            type=int,
+            default=100,
+            help='After how many entry sync errors to stop syncing.',
         )
 
     def handle(self, *args, **options):
-        if None in [settings.SHOWROOM_API_BASE, settings.SHOWROOM_API_KEY, settings.SHOWROOM_REPO_ID]:
-            raise CommandError('A showroom config parameter is missing in .env! Cannot push anything.')
+        if None in [
+            settings.SHOWROOM_API_BASE,
+            settings.SHOWROOM_API_KEY,
+            settings.SHOWROOM_REPO_ID,
+        ]:
+            raise CommandError(
+                'A showroom config parameter is missing in .env! Cannot push anything.'
+            )
 
         if not options['all'] and not options['id']:
             raise CommandError(
@@ -38,18 +68,26 @@ class Command(BaseCommand):
 
         for entry_id in options['id']:
             if len(entry_id) != 22 or not match(r'^[0-9a-zA-Z]{22}$', entry_id):
-                raise CommandError(f'This does not look like a valid ShortUUID: {entry_id}')
+                raise CommandError(
+                    f'This does not look like a valid ShortUUID: {entry_id}'
+                )
 
         # Now fetch our entries
         if options['all']:
             entries = Entry.objects.filter(published=True)
             if not entries:
-                self.stdout.write(self.style.WARNING('Your portfolio does not contain any published entries'))
+                self.stdout.write(
+                    self.style.WARNING(
+                        'Your portfolio does not contain any published entries'
+                    )
+                )
                 return
         else:
             entries = Entry.objects.filter(pk__in=options['id'], published=True)
             if not entries:
-                self.stdout.write(self.style.WARNING('No published entries found with provided IDs'))
+                self.stdout.write(
+                    self.style.WARNING('No published entries found with provided IDs')
+                )
                 return
 
         limit = None
@@ -88,10 +126,14 @@ class Command(BaseCommand):
         count = 0
         for entry in entries:
             if len(not_pushed) > options['cancel_threshold']:
-                raise CommandError(f'stopping due to too many sync errors (threshold: {options["cancel_threshold"]})')
+                raise CommandError(
+                    f'stopping due to too many sync errors (threshold: {options["cancel_threshold"]})'
+                )
             result = {}
             try:
-                result = sync.push_entry(entry, process_media=False, process_relations=False)
+                result = sync.push_entry(
+                    entry, process_media=False, process_relations=False
+                )
             except (
                 sync.ShowroomError,
                 sync.ShowroomAuthenticationError,
@@ -108,19 +150,29 @@ class Command(BaseCommand):
             # entries and extend our aggregated lists
             result_created = result.get('created')
             if result_created:
-                created.extend([(item['id'], item['showroom_id']) for item in result_created])
+                created.extend(
+                    [(item['id'], item['showroom_id']) for item in result_created]
+                )
             result_updated = result.get('updated')
             if result_updated:
-                updated.extend([(item['id'], item['showroom_id']) for item in result_updated])
+                updated.extend(
+                    [(item['id'], item['showroom_id']) for item in result_updated]
+                )
             count += 1
             if status and count % status == 0:
                 self.stdout.write(f'[status:] pushed {count} / {total} entries')
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(created)+len(updated)} entries:'))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully pushed {len(created)+len(updated)} entries:'
+            )
+        )
         self.stdout.write(f'Created: {len(created)}')
         self.stdout.write(f'Updated: {len(updated)}')
         if len(not_pushed) > 0:
-            self.stdout.write(self.style.WARNING(f'Could not push {len(not_pushed)} entries:'))
+            self.stdout.write(
+                self.style.WARNING(f'Could not push {len(not_pushed)} entries:')
+            )
             self.stdout.write(str(not_pushed))
 
         self.stdout.write('Now pushing all related published media')
@@ -129,7 +181,9 @@ class Command(BaseCommand):
         media_not_pushed = []
         count = 0
         for entry in entries:
-            media = Media.objects.filter(entry_id=entry.id, published=True, status=STATUS_CONVERTED)
+            media = Media.objects.filter(
+                entry_id=entry.id, published=True, status=STATUS_CONVERTED
+            )
             for medium in media:
                 result = {}
                 try:
@@ -150,20 +204,30 @@ class Command(BaseCommand):
                 # entries and extend our aggregated lists
                 result_created = result.get('created')
                 if result_created:
-                    media_created.extend([(m['id'], m['showroom_id']) for m in result_created])
+                    media_created.extend(
+                        [(m['id'], m['showroom_id']) for m in result_created]
+                    )
                 result_updated = result.get('updated')
                 if result_updated:
-                    media_updated.extend([(m['id'], m['showroom_id']) for m in result_updated])
+                    media_updated.extend(
+                        [(m['id'], m['showroom_id']) for m in result_updated]
+                    )
             count += 1
             if status and count % status == 0:
-                self.stdout.write(f'[status:] pushed media for {count} / {total} entries')
+                self.stdout.write(
+                    f'[status:] pushed media for {count} / {total} entries'
+                )
 
         media_pushed = len(media_created) + len(media_updated)
-        self.stdout.write(self.style.SUCCESS(f'Successfully pushed {media_pushed} media:'))
+        self.stdout.write(
+            self.style.SUCCESS(f'Successfully pushed {media_pushed} media:')
+        )
         self.stdout.write(f'Created: {len(media_created)}')
         self.stdout.write(f'Updated: {len(media_updated)}')
         if len(media_not_pushed) > 0:
-            self.stdout.write(self.style.WARNING(f'Could not push {len(media_not_pushed)} media:'))
+            self.stdout.write(
+                self.style.WARNING(f'Could not push {len(media_not_pushed)} media:')
+            )
             self.stdout.write(str(media_not_pushed))
 
         self.stdout.write('Now pushing entry relations')
@@ -189,12 +253,24 @@ class Command(BaseCommand):
                 relations_created.extend((entry.id, entry_id) for entry_id in created)
             not_found = result.get('not_found')
             if not_found:
-                relations_not_pushed.extend((entry.id, entry_id) for entry_id in not_found)
+                relations_not_pushed.extend(
+                    (entry.id, entry_id) for entry_id in not_found
+                )
             count += 1
             if status and count % status == 0:
-                self.stdout.write(f'[status:] pushed relations for {count} / {total} entries')
+                self.stdout.write(
+                    f'[status:] pushed relations for {count} / {total} entries'
+                )
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully pushed {len(relations_created)} relations.'))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully pushed {len(relations_created)} relations.'
+            )
+        )
         if len(relations_not_pushed) > 0:
-            self.stdout.write(self.style.WARNING(f'Could not push {len(relations_not_pushed)} relations:'))
+            self.stdout.write(
+                self.style.WARNING(
+                    f'Could not push {len(relations_not_pushed)} relations:'
+                )
+            )
             self.stdout.write(str(relations_not_pushed))

@@ -28,7 +28,9 @@ def validate_file_infection(file):
         # Ping the server if it fails than the server is down
         scanner.ping()
         # Server is up. This means that the file is too big.
-        logger.warning(f'ClamD: The file is too large for ClamD to scan it. Bytes Read {file.tell()}')
+        logger.warning(
+            f'ClamD: The file is too large for ClamD to scan it. Bytes Read {file.tell()}'
+        )
         file.seek(0)
         return
     except clamd.BufferTooLongError as e:

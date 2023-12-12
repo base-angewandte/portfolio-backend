@@ -51,7 +51,12 @@ def protected_view(request, path, server):
         return response
 
     elif server == 'django':
-        return serve(request, path, document_root=settings.PROTECTED_MEDIA_ROOT, show_indexes=False)
+        return serve(
+            request,
+            path,
+            document_root=settings.PROTECTED_MEDIA_ROOT,
+            show_indexes=False,
+        )
 
     return HttpResponseServerError()
 
@@ -65,7 +70,13 @@ license_args = [
 license_kwargs = dict(
     description='media license json object',
     type=openapi.TYPE_STRING,
-    **{'x-attrs': {'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'})}},
+    **{
+        'x-attrs': {
+            'source': reverse_lazy(
+                'lookup_all', kwargs={'version': 'v1', 'fieldname': 'medialicenses'}
+            )
+        }
+    },
 )
 license_param = openapi.Parameter(
     *license_args,
@@ -121,16 +132,27 @@ class MediaViewSet(viewsets.GenericViewSet):
                 if serializer.is_valid():
                     if serializer.validated_data:
                         # unset old featured media if a new one is selected
-                        if 'featured' in serializer.validated_data and serializer.validated_data['featured']:
-                            Media.objects.filter(entry_id=m.entry_id, featured=True).update(featured=False)
+                        if (
+                            'featured' in serializer.validated_data
+                            and serializer.validated_data['featured']
+                        ):
+                            Media.objects.filter(
+                                entry_id=m.entry_id, featured=True
+                            ).update(featured=False)
                         serializer.instance = m
                         serializer.validated_data['modified'] = timezone.now()
                         serializer.save()
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-        return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            _('Media object does not exist'),
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     @swagger_auto_schema(
         responses={
@@ -142,23 +164,30 @@ class MediaViewSet(viewsets.GenericViewSet):
         manual_parameters=[license_param_required],
     )
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request},
+        )
 
         if serializer.is_valid():
-
             if not check_quota(request.user, serializer.validated_data['file'].size):
                 return Response(
                     _('No space left for user'),
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            mime_type = magic.from_buffer(serializer.validated_data['file'].read(1048576), mime=True)
+            mime_type = magic.from_buffer(
+                serializer.validated_data['file'].read(1048576),
+                mime=True,
+            )
             media_type = get_type_for_mime_type(mime_type)
 
             if mime_type in ['application/octet-stream', 'application/zip']:
                 # check for office document
                 serializer.validated_data['file'].seek(0)
-                magic_type = magic.from_buffer(serializer.validated_data['file'].read(1048576))
+                magic_type = magic.from_buffer(
+                    serializer.validated_data['file'].read(1048576)
+                )
                 if magic_type in [
                     'Microsoft Word 2007+',
                     'Microsoft PowerPoint 2007+',
@@ -202,11 +231,17 @@ class MediaViewSet(viewsets.GenericViewSet):
                         status=status.HTTP_403_FORBIDDEN,
                     )
                 elif m.status != STATUS_CONVERTED:
-                    return Response(m.get_minimal_data(), status=status.HTTP_202_ACCEPTED)
+                    return Response(
+                        m.get_minimal_data(),
+                        status=status.HTTP_202_ACCEPTED,
+                    )
 
                 return Response(m.get_data())
 
-        return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            _('Media object does not exist'),
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # @swagger_auto_schema(responses={
     #     204: openapi.Response(''),
@@ -227,7 +262,7 @@ class MediaViewSet(viewsets.GenericViewSet):
         manual_parameters=[license_param],
     )
     def partial_update(self, request, pk=None, *args, **kwargs):
-        return self._update(request, pk=pk, partial=True, *args, **kwargs)
+        return self._update(request, *args, pk=pk, partial=True, **kwargs)
 
     @swagger_auto_schema(
         responses={
@@ -251,4 +286,7 @@ class MediaViewSet(viewsets.GenericViewSet):
 
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response(_('Media object does not exist'), status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            _('Media object does not exist'),
+            status=status.HTTP_404_NOT_FOUND,
+        )

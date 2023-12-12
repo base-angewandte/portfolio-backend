@@ -20,12 +20,18 @@ TYPES = get_collection_members(
 
 class ConferenceContributionSchema(BaseSchema):
     lecturers = get_contributors_field_for_role('lecturer', {'order': 1})
-    title_of_event = get_string_field(get_preflabel_lazy('title_of_event'), {'order': 2})
+    title_of_event = get_string_field(
+        get_preflabel_lazy('title_of_event'), {'order': 2}
+    )
     organisers = get_contributors_field_for_role('organiser_management', {'order': 3})
     contributors = get_contributors_field({'order': 4})
-    date_range_time_range_location = get_date_range_time_range_location_group_field({'order': 5})
+    date_range_time_range_location = get_date_range_time_range_location_group_field(
+        {'order': 5}
+    )
     url = get_url_field({'order': 6})
 
     def year_display(self, data):
         if data.get('date_range_time_range_location'):
-            return years_from_date_range_time_range_location_group_field(data['date_range_time_range_location'])
+            return years_from_date_range_time_range_location_group_field(
+                data['date_range_time_range_location']
+            )

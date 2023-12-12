@@ -11,7 +11,10 @@ from ..utils import years_from_date_time_range_location_group_field
 
 ICON = ICON_EVENT
 
-TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_concert', use_cache=False)
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_concert',
+    use_cache=False,
+)
 
 
 class ConcertSchema(BaseSchema):
@@ -24,4 +27,6 @@ class ConcertSchema(BaseSchema):
 
     def year_display(self, data):
         if data.get('date_time_range_location'):
-            return years_from_date_time_range_location_group_field(data['date_time_range_location'])
+            return years_from_date_time_range_location_group_field(
+                data['date_time_range_location']
+            )

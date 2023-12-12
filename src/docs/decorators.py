@@ -15,17 +15,21 @@ def basicauth(view):
                 auth = request.headers['authorization'].split()
                 if len(auth) == 2:
                     if auth[0].lower() == 'basic':
-                        uname, passwd = base64.b64decode(auth[1]).decode('utf8').split(':')
+                        uname, passwd = (
+                            base64.b64decode(auth[1]).decode('utf8').split(':')
+                        )
                         # prevent timing atacks with contant_time_compare
-                        if constant_time_compare(uname, settings.DOCS_USER) and constant_time_compare(
-                            passwd, settings.DOCS_PASSWORD
-                        ):
+                        if constant_time_compare(
+                            uname, settings.DOCS_USER
+                        ) and constant_time_compare(passwd, settings.DOCS_PASSWORD):
                             return view(request, *args, **kwargs)
 
         response = HttpResponse()
         response.status_code = 401
         # we specifically need the double quotes here, therefore applying # noqa: B907
-        response['WWW-Authenticate'] = f'Basic realm="{settings.DOCS_REALM}"'  # noqa: B907
+        response[
+            'WWW-Authenticate'
+        ] = f'Basic realm="{settings.DOCS_REALM}"'  # noqa: B907
         return response
 
     return wrap

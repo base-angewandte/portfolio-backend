@@ -29,7 +29,12 @@ class Command(BaseCommand):
         today = date.today().strftime('%d-%m-%Y')
 
         with open(f'export/{today}_keywords_usage.csv', mode='w') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(
+                csvfile,
+                delimiter=',',
+                quotechar='"',
+                quoting=csv.QUOTE_MINIMAL,
+            )
             csv_writer.writerow(
                 [
                     'count',
@@ -45,8 +50,20 @@ class Command(BaseCommand):
                         project = 'disciplines'
                     else:
                         project = 'basekw'
-                    label_en = titlecase(get_preflabel(concept, project=project, graph=f'{graph}/', lang='en'))
-                    label_de = get_preflabel(concept, project=project, graph=f'{graph}/', lang='de')
+                    label_en = titlecase(
+                        get_preflabel(
+                            concept,
+                            project=project,
+                            graph=f'{graph}/',
+                            lang='en',
+                        )
+                    )
+                    label_de = get_preflabel(
+                        concept,
+                        project=project,
+                        graph=f'{graph}/',
+                        lang='de',
+                    )
 
                     csv_writer.writerow(
                         [

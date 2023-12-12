@@ -20,14 +20,21 @@ from ..utils import years_list_from_date_range, years_to_string
 
 ICON = ICON_EVENT
 
-TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition', use_cache=False)
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition',
+    use_cache=False,
+)
 
 
 class DateOpeningLocationSchema(BaseSchema):
     date = get_date_range_field({'order': 1, 'field_format': 'full'})
-    opening = get_date_time_range_field({'order': 2}, label=get_preflabel_lazy('opening'))
+    opening = get_date_time_range_field(
+        {'order': 2}, label=get_preflabel_lazy('opening')
+    )
     location = get_location_field({'order': 3})
-    location_description = get_location_description_field({'field_format': 'half', 'order': 4})
+    location_description = get_location_description_field(
+        {'field_format': 'half', 'order': 4}
+    )
 
     __model__ = DateTimeLocationModel
 

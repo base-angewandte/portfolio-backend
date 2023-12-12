@@ -59,7 +59,12 @@ class Command(BaseCommand):
             return ' | '.join(lst)
 
         with open(f'export/{year}-published.csv', mode='w') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(
+                csvfile,
+                delimiter=',',
+                quotechar='"',
+                quoting=csv.QUOTE_MINIMAL,
+            )
             csv_writer.writerow(
                 [
                     'ID',
@@ -82,7 +87,9 @@ class Command(BaseCommand):
             if year != 'all':
                 for df in list(set(date_fields)):
                     date_filters.append({f'data__{df}__icontains': year})
-                query = query.filter(reduce(operator.or_, (Q(**x) for x in date_filters)))
+                query = query.filter(
+                    reduce(operator.or_, (Q(**x) for x in date_filters))
+                )
 
             for e in progressbar(query):
                 data = []
@@ -112,4 +119,6 @@ class Command(BaseCommand):
                     ]
                 )
 
-        self.stdout.write(self.style.SUCCESS('Successfully exported all published entries'))
+        self.stdout.write(
+            self.style.SUCCESS('Successfully exported all published entries')
+        )

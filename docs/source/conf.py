@@ -4,23 +4,25 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-from datetime import date
-
-# -- Path setup --------------------------------------------------------------
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
 import sys
+from datetime import date
+
+# -- Path setup --------------------------------------------------------------
+
 sys.path.insert(0, os.path.abspath('../../src'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'base Portfolio Backend'
-copyright = f'base Angewandte | University of Applied Arts Vienna, 2021-{date.today().year}'
+copyright = (
+    f'base Angewandte | University of Applied Arts Vienna, 2021-{date.today().year}'
+)
 author = 'base Dev Team'
 
 
@@ -86,6 +88,4 @@ html_theme_options = {
 pygments_style = 'default'
 pygments_dark_style = 'github-dark'
 
-html_css_files = [
-    'css/styles.css'
-]
+html_css_files = ['css/styles.css']

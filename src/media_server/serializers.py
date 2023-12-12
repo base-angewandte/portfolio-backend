@@ -38,7 +38,9 @@ class MediaCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(_('Entry does not exist')) from e
         user = self.context['request'].user
         if user != entry.owner:
-            raise serializers.ValidationError(_('Current user is not the owner of entry'))
+            raise serializers.ValidationError(
+                _('Current user is not the owner of entry')
+            )
         return value
 
     def validate_license(self, value):

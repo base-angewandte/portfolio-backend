@@ -1,4 +1,9 @@
-from jsonschema import Draft4Validator, FormatChecker, ValidationError as SchemaValidationError, validate
+from jsonschema import (
+    Draft4Validator,
+    FormatChecker,
+    ValidationError as SchemaValidationError,
+    validate,
+)
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
@@ -21,19 +26,43 @@ class Entry(AbstractBaseModel):
     id = ShortUUIDField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(verbose_name=get_preflabel_lazy('title'), max_length=255)
-    subtitle = models.CharField(verbose_name=get_preflabel_lazy('subtitle'), max_length=255, blank=True, null=True)
-    type = JSONField(verbose_name=get_preflabel_lazy('type'), validators=[validate_type], blank=True, null=True)
-    notes = models.TextField(verbose_name=get_preflabel_lazy('notes'), blank=True, null=True)
+    subtitle = models.CharField(
+        verbose_name=get_preflabel_lazy('subtitle'),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+    type = JSONField(
+        verbose_name=get_preflabel_lazy('type'),
+        validators=[validate_type],
+        blank=True,
+        null=True,
+    )
+    notes = models.TextField(
+        verbose_name=get_preflabel_lazy('notes'),
+        blank=True,
+        null=True,
+    )
     keywords = JSONField(
         verbose_name=get_preflabel_lazy('keywords'),
         validators=[validate_keywords],
         blank=True,
         null=True,
     )
-    texts = JSONField(verbose_name=get_preflabel_lazy('text'), validators=[validate_texts], blank=True, null=True)
+    texts = JSONField(
+        verbose_name=get_preflabel_lazy('text'),
+        validators=[validate_texts],
+        blank=True,
+        null=True,
+    )
     published = models.BooleanField(default=False)
     data = JSONField(default=dict)
-    relations = models.ManyToManyField('self', through='Relation', symmetrical=False, related_name='related_to')
+    relations = models.ManyToManyField(
+        'self',
+        through='Relation',
+        symmetrical=False,
+        related_name='related_to',
+    )
 
     reference = models.CharField(max_length=255, blank=True, null=True, default=None)
     showroom_id = models.CharField(max_length=255, blank=True, null=True, default=None)
@@ -90,7 +119,9 @@ class Entry(AbstractBaseModel):
                     value = value.get('label', {}).get(lang)
                 elif isinstance(value, list):
                     value = [x.get('label', {}).get(lang) for x in value]
-                ret['data'].append({'label': self._meta.get_field(field).verbose_name, 'value': value})
+                ret['data'].append(
+                    {'label': self._meta.get_field(field).verbose_name, 'value': value}
+                )
         if self.texts:
             texts = []
             language_source = f'http://base.uni-ak.ac.at/portfolio/languages/{lang}'
@@ -100,7 +131,9 @@ class Entry(AbstractBaseModel):
                     if len(text['data']) > 1:
                         for t in text['data']:
                             if t.get('language', {}).get('source') == language_source:
-                                texts.append({'label': text_type, 'value': t.get('text')})
+                                texts.append(
+                                    {'label': text_type, 'value': t.get('text')}
+                                )
                     else:
                         t = text['data'][0]
                         texts.append({'label': text_type, 'value': t.get('text')})
@@ -118,14 +151,21 @@ class Entry(AbstractBaseModel):
             if self.data:
                 schema = get_jsonschema(self.type.get('source'), force_text=True)
                 if schema is None:
-                    msg = _('Type %(type_source)s does not belong to any active schema') % {
-                        'type_source': self.type.get('source')
-                    }
+                    msg = _(
+                        'Type %(type_source)s does not belong to any active schema'
+                    ) % {'type_source': self.type.get('source')}
                     raise ValidationError(msg)
                 try:
-                    validate(self.data, schema, cls=Draft4Validator, format_checker=FormatChecker())
+                    validate(
+                        self.data,
+                        schema,
+                        cls=Draft4Validator,
+                        format_checker=FormatChecker(),
+                    )
                 except SchemaValidationError as e:
-                    msg = _('Invalid data: %(error)s') % {'error': e.message}  # noqa: B306
+                    msg = _('Invalid data: %(error)s') % {
+                        'error': e.message
+                    }  # noqa: B306
                     raise ValidationError(msg) from e
         elif self.data:
             raise ValidationError(_('Data without type'))
@@ -153,8 +193,16 @@ class Entry(AbstractBaseModel):
 
 class Relation(AbstractBaseModel):
     id = ShortUUIDField(primary_key=True)
-    from_entry = models.ForeignKey(Entry, related_name='from_entries', on_delete=models.CASCADE)
-    to_entry = models.ForeignKey(Entry, related_name='to_entries', on_delete=models.CASCADE)
+    from_entry = models.ForeignKey(
+        Entry,
+        related_name='from_entries',
+        on_delete=models.CASCADE,
+    )
+    to_entry = models.ForeignKey(
+        Entry,
+        related_name='to_entries',
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         unique_together = (
