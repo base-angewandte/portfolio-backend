@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.5
+
+## Changed
+
+- move healtcheck to docker-compose.yml
+- set start_period and interval for healthchecks
+- update documentation
+
 ## 1.3.4
 
 ### Added

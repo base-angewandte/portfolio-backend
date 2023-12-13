@@ -10,6 +10,8 @@ services:
     restart: always
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      start_period: 60s
+      interval: 60s
     command: redis-server --appendonly yes
 
   portfolio-postgres:
@@ -27,6 +29,8 @@ services:
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      start_period: 60s
+      interval: 60s
 
   portfolio-django:
     build: ./src
@@ -47,6 +51,10 @@ services:
     networks:
       - portfolionet
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8200/health || exit 1"]
+      start_period: 60s
+      interval: 60s
     depends_on:
       - portfolio-postgres
       - portfolio-redis
@@ -70,8 +78,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker default
 
   portfolio-rq-worker-2:
@@ -91,8 +97,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker high default
 
   portfolio-rq-worker-3:
@@ -112,8 +116,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker high video default
 
   portfolio-rq-scheduler:
@@ -133,8 +135,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqscheduler
 
   portfolio-clamav:
