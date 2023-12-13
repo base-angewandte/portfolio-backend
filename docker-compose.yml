@@ -47,6 +47,8 @@ services:
     networks:
       - portfolionet
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8200/health || exit 1"]
     depends_on:
       - portfolio-postgres
       - portfolio-redis
@@ -70,8 +72,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker default
 
   portfolio-rq-worker-2:
@@ -91,8 +91,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker high default
 
   portfolio-rq-worker-3:
@@ -112,8 +110,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqworker high video default
 
   portfolio-rq-scheduler:
@@ -133,8 +129,6 @@ services:
       - portfolio-postgres
       - portfolio-redis
       - portfolio-lool
-    healthcheck:
-      test: ["NONE"]
     command: python manage.py rqscheduler
 
   portfolio-clamav:

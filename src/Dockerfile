@@ -47,9 +47,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8200
 
-HEALTHCHECK CMD curl --fail http://localhost:8200/health || exit 1
-
-
 FROM base as dev
 
 # to ensure pip-sync is also working in docker dev setup we need to overwrite requirements.txt
