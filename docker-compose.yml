@@ -10,6 +10,8 @@ services:
     restart: always
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      start_period: 60s
+      interval: 60s
     command: redis-server --appendonly yes
 
   portfolio-postgres:
@@ -27,6 +29,8 @@ services:
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      start_period: 60s
+      interval: 60s
 
   portfolio-django:
     build: ./src
@@ -49,6 +53,8 @@ services:
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8200/health || exit 1"]
+      start_period: 60s
+      interval: 60s
     depends_on:
       - portfolio-postgres
       - portfolio-redis
