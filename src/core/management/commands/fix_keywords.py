@@ -25,8 +25,20 @@ class Command(BaseCommand):
                             else:
                                 project = 'basekw'
                             e.keywords[idx]['label'] = {
-                                'de': get_preflabel(concept, project=project, graph=f'{graph}/', lang='de'),
-                                'en': titlecase(get_preflabel(concept, project=project, graph=f'{graph}/', lang='en')),
+                                'de': get_preflabel(
+                                    concept,
+                                    project=project,
+                                    graph=f'{graph}/',
+                                    lang='de',
+                                ),
+                                'en': titlecase(
+                                    get_preflabel(
+                                        concept,
+                                        project=project,
+                                        graph=f'{graph}/',
+                                        lang='en',
+                                    )
+                                ),
                             }
                         else:
                             need_to_filter = True

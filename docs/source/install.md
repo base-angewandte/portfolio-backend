@@ -85,7 +85,7 @@ subsections.
 
 ### The full developer setup
 
-- Install latest python 3.7 and create a virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
+- Install latest python 3.8 and create a virtualenv e.g. via [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)
 
 - Install pip-tools and requirements in your virtualenv:
 
@@ -171,12 +171,12 @@ LC_NUMERIC="en_US.UTF-8" python manage.py runserver 8200
 
 - Create and change to `/opt/base`
 
-- Clone git repository and checkout branch `master`:
+- Clone git repository and checkout branch `main`:
 
   ```bash
   git clone https://github.com/base-angewandte/portfolio-backend.git
   cd portfolio-backend
-  git checkout master
+  git checkout main
   ```
 
 - Check and adapt settings (see [Configuration](./configuration.md) for further details about the configuration possibilities):
@@ -194,7 +194,7 @@ LC_NUMERIC="en_US.UTF-8" python manage.py runserver 8200
 - Use `Makefile` to initialize and run project:
 
   ```bash
-  make start init init-static restart-gunicorn
+  make start init restart-gunicorn
   ```
 
 - Install nginx and configure it accordingly

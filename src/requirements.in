@@ -7,33 +7,32 @@ apispec==0.39.0
 bibtexparser==1.2.0
 concurrent-log-handler==0.9.19
 clamd~=1.0
-django~=2.2
+django~=3.2
 django-cas-ng==4.3.0
 django-cleanup==5.2.0
 django-cors-headers==3.7.0
 django-debug-toolbar==3.2.1
 django-environ==0.4.5
-django-extensions==3.1.3
-django-filter==2.2.0
+django-extensions==3.2.3
+django-filter==23.2
 django-redis==4.12.1
-django-rq==2.4.1
-djangorestframework==3.9.4
-drf-yasg[validation]==1.17.1
+django-rq==2.8.1
+djangorestframework==3.13.1
+drf-yasg[validation]==1.21.7
 hashids==1.3.1
 jsonschema[format]==3.2.0
-markdown==3.3.4  # for djangorestframework
+markdown==3.4.4  # for djangorestframework
 marshmallow==2.21.0
-pip-tools==6.9.0
+pip-tools==7.3.0
 progressbar2==3.53.1
 psycopg2-binary==2.8.6
 python-magic==0.4.22
 rdflib==5.0.0  # TODO: needed by skosmos-client, but 6.1.1 breaks concept retrieval
-rq-scheduler==0.11.0
+rq-scheduler==0.13.1
 sentry-sdk
 shortuuid==1.0.8
 skosmos-client==0.3.0
 titlecase==2.3
-werkzeug==1.0.1  # for django-extensions
 xmltodict==0.12.0
 
 # Server

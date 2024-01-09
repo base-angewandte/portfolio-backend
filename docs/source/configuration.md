@@ -103,9 +103,9 @@ Portfolio Backend expects the following attributes: `first_name`, `last_name`, `
 
 ### `CAS_SERVER`
 
-Default: `f'{SITE_URL}cas/`
+Default: `f'{SITE_URL}auth/`
 
-The base url for the CAS server, e.g. `https://your.base.domain/cas/`.
+The base url for the CAS server, e.g. `https://your.base.domain/auth/`.
 
 ### `CAS_VERIFY_CERTIFICATE`
 
@@ -198,6 +198,29 @@ locally in combination with e.g. Showroom also running locally. Then at
 least one of the database container ports needs to be mapped to a different
 value. So use whatever you set in your docker-compose.override.yml for
 portfolio-postgres or use the default.
+
+#### `REDIS_PORT`
+
+Default: `6379`
+
+Port of the Redis data store
+
+Similar to `POSTGRES_PORT` you won't need to change this in most cases.
+But if you develop locally and have several Redis instances for different
+projects running at the same time, you might map some of them to alternate
+ports. So whichever non-default port you set in your docker-compose.override.yml
+for Redis, this should be also set here, unless you operate in a fully
+containerised setup.
+
+#### `RQ_RESULT_TTL`
+
+Default: `500`
+
+Time (in seconds) how long results from RQ worker jobs are kept in Redis.
+Should be fine by default, but for debugging, you might want to increase this
+value. In case it is a performance issue on a production server, you can also
+set it to 0 to not keep any worker job results.
+For background details: https://python-rq.org/docs/results/
 
 ### `DEBUG`
 
@@ -328,6 +351,12 @@ User for GeoNames database at geonames.org.
 Default: `None`
 
 API key for Pelias.
+
+#### `PELIAS_API_KEY_LOCATION`
+
+Default: `PAYLOAD`
+
+API key location for Pelias. Supported values are `PAYLOAD` and `HEADER`.
 
 #### `PELIAS_API_URL`
 

@@ -1,0 +1,6 @@
+src/assets/
+src/export/*.csv
+src/fixtures/vcr_cassettes/
+tmp/
+
+hashids_salt.py

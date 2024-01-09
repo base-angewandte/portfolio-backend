@@ -1,7 +1,8 @@
-from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
+from django.http import HttpResponse
 
 
-class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
+class SetRemoteAddrFromForwardedFor:
     """Middleware that sets REMOTE_ADDR based on HTTP_X_FORWARDED_FOR, if the
     latter is set.
 
@@ -16,9 +17,12 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     HTTP_X_FORWARDED_FOR.
     """
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         try:
-            real_ip = request.META['HTTP_X_FORWARDED_FOR']
+            real_ip = request.headers['x-forwarded-for']
         except KeyError:
             pass
         else:
@@ -26,3 +30,23 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             # Take just the first one.
             real_ip = real_ip.split(',')[0]
             request.META['REMOTE_ADDR'] = real_ip
+
+        return self.get_response(request)
+
+
+class HealthCheckMiddleware:
+    """Middleware for providing a health check endpoint.
+
+    It needs to be added to the top of MIDDLEWARE in order to ensure
+    that it also works for calls via localhost. Otherwise, health checks
+    might fail if localhost is not in ALLOWED_HOSTS.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.health_check_path = f'{settings.FORCE_SCRIPT_NAME}/health'
+
+    def __call__(self, request):
+        if request.path == self.health_check_path:
+            return HttpResponse('OK')
+        return self.get_response(request)

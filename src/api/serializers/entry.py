@@ -101,7 +101,10 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'type': OrderedDict(
                 [
                     ('field_type', 'chips'),
-                    ('source', reverse_lazy('jsonschema-list', kwargs={'version': 'v1'})),
+                    (
+                        'source',
+                        reverse_lazy('jsonschema-list', kwargs={'version': 'v1'}),
+                    ),
                     ('form_group', 1),
                     ('order', 4),
                     ('placeholder', placeholder_lazy(get_preflabel_lazy('type'))),
@@ -111,7 +114,13 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'keywords': OrderedDict(
                 [
                     ('field_type', 'chips'),
-                    ('source', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'keywords'})),
+                    (
+                        'source',
+                        reverse_lazy(
+                            'lookup_all',
+                            kwargs={'version': 'v1', 'fieldname': 'keywords'},
+                        ),
+                    ),
                     ('prefetch', ['source']),
                     ('form_group', 1),
                     ('order', 3),
@@ -124,7 +133,13 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
             'texts': OrderedDict(
                 [
                     ('field_type', 'multiline'),
-                    ('source_type', reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'texttypes'})),
+                    (
+                        'source_type',
+                        reverse_lazy(
+                            'lookup_all',
+                            kwargs={'version': 'v1', 'fieldname': 'texttypes'},
+                        ),
+                    ),
                     ('prefetch', ['source_type']),
                     ('form_group', 2),
                     ('order', 5),
@@ -139,7 +154,9 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
                     (
                         'placeholder',
                         format_lazy(
-                            '{} ({})', placeholder_lazy(get_preflabel_lazy('notes')), _('will not be published')
+                            '{} ({})',
+                            placeholder_lazy(get_preflabel_lazy('notes')),
+                            _('will not be published'),
                         ),
                     ),
                 ]
@@ -151,7 +168,9 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     @swagger_serializer_method(serializer_or_field=ParentSerializer)
     def get_parents(self, obj):
         ret = []
-        for relation in Relation.objects.select_related('from_entry').filter(to_entry=obj):
+        for relation in Relation.objects.select_related('from_entry').filter(
+            to_entry=obj
+        ):
             ret.append(
                 {
                     'id': relation.pk,
@@ -169,7 +188,9 @@ class EntrySerializer(CleanModelSerializer, SwaggerMetaModelSerializer):
     @swagger_serializer_method(serializer_or_field=RelationsSerializer)
     def get_relations(self, obj):
         ret = []
-        for relation in Relation.objects.select_related('to_entry').filter(from_entry=obj):
+        for relation in Relation.objects.select_related('to_entry').filter(
+            from_entry=obj
+        ):
             ret.append(
                 {
                     'id': relation.pk,

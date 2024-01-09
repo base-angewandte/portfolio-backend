@@ -17,6 +17,7 @@ Welcome to base Portfolio Backend's documentation!
    rest_api
    archival
    lists_logic
+   showroom
 
 
 .. Indices and tables

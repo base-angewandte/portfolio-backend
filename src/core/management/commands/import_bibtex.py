@@ -20,12 +20,22 @@ def get_label(uri, lang):
 
 
 def get_type_label(uri, lang):
-    return get_preflabel(uri.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang=lang)
+    return get_preflabel(
+        uri.split('/')[-1],
+        project=settings.TAX_ID,
+        graph=settings.TAX_GRAPH,
+        lang=lang,
+    )
 
 
 def get_language_label(lang, label_lang):
     graph = 'http://base.uni-ak.ac.at/portfolio/languages/'
-    return get_preflabel(lang, project=settings.LANGUAGES_VOCID, graph=graph, lang=label_lang)
+    return get_preflabel(
+        lang,
+        project=settings.LANGUAGES_VOCID,
+        graph=graph,
+        lang=label_lang,
+    )
 
 
 def get_role_object(uri):
@@ -73,7 +83,10 @@ def get_text_object(text):
 def get_language_object(lang):
     return {
         'source': f'http://base.uni-ak.ac.at/portfolio/languages/{lang}',
-        'label': {label_lang: get_language_label(lang, label_lang) for label_lang, _lstring in settings.LANGUAGES},
+        'label': {
+            label_lang: get_language_label(lang, label_lang)
+            for label_lang, _lstring in settings.LANGUAGES
+        },
     }
 
 
@@ -91,9 +104,9 @@ def customizations(record):
 def keywords(record, sep=',|;'):
     """Split keywords field into a list.
 
-    For some reason the bibtexparser.customization only contains a keyword function,
-    operating on a 'keyword' key in the record. So we add the same code here for
-    a 'keywords' key.
+    For some reason the bibtexparser.customization only contains a
+    keyword function, operating on a 'keyword' key in the record. So we
+    add the same code here for a 'keywords' key.
 
     :param record: the record.
     :type record: dict
@@ -102,7 +115,9 @@ def keywords(record, sep=',|;'):
     :returns: dict -- the modified record.
     """
     if 'keywords' in record:
-        record['keywords'] = [i.strip() for i in re.split(sep, record['keywords'].replace('\n', ''))]
+        record['keywords'] = [
+            i.strip() for i in re.split(sep, record['keywords'].replace('\n', ''))
+        ]
 
     return record
 
@@ -132,8 +147,16 @@ class Command(BaseCommand):
     help = 'Creates new entries from entries in a BibTeX file'
 
     def add_arguments(self, parser):
-        parser.add_argument('user', type=str, help='Username of the user to import entries for')
-        parser.add_argument('file', type=argparse.FileType('r'), help='BibTeX file to import from')
+        parser.add_argument(
+            'user',
+            type=str,
+            help='Username of the user to import entries for',
+        )
+        parser.add_argument(
+            'file',
+            type=argparse.FileType('r'),
+            help='BibTeX file to import from',
+        )
 
     def handle(self, *args, **options):
         try:
@@ -147,23 +170,47 @@ class Command(BaseCommand):
         try:
             bibtex_database = bibtexparser.load(options['file'], parser=parser)
         except Exception as err:
-            raise CommandError(f'Error when loading BibTeX database: {repr(err)}') from err
+            raise CommandError(
+                f'Error when loading BibTeX database: {repr(err)}'
+            ) from err
 
         # type mapping
         # bibtex type as keys
         # type object as values
         type_mapping = {
-            'article': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/article'),
-            'book': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'),
-            'booklet': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'),
-            'conference': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'),
-            'inproceedings': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'),
-            'inbook': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'),
-            'incollection': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series'),
-            'manual': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'),
-            'masterthesis': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis'),
-            'phdthesis': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation'),
-            'proceedings': get_type_object('http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'),
+            'article': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/article'
+            ),
+            'book': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'
+            ),
+            'booklet': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'
+            ),
+            'conference': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/catalogue'
+            ),
+            'inproceedings': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'
+            ),
+            'inbook': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/chapter'
+            ),
+            'incollection': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series'
+            ),
+            'manual': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication'
+            ),
+            'masterthesis': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis'
+            ),
+            'phdthesis': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation'
+            ),
+            'proceedings': get_type_object(
+                'http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings'
+            ),
         }
 
         # ensure type objects are still valid
@@ -202,7 +249,9 @@ class Command(BaseCommand):
                 texts.append(
                     {
                         'data': get_text_object(bibtex_entry['abstract']),
-                        'type': get_text_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'),
+                        'type': get_text_type_object(
+                            'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract'
+                        ),
                     }
                 )
 
@@ -216,7 +265,11 @@ class Command(BaseCommand):
                 contributors.append(
                     {
                         'label': bibtex_entry['affiliation'],
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/organisation'
+                            )
+                        ],
                     }
                 )
 
@@ -230,7 +283,11 @@ class Command(BaseCommand):
                 for bibtex_author in bibtex_entry['author']:
                     author = {
                         'label': ' '.join(bibtex_author.split(', ')[::-1]),
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/author')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                            )
+                        ],
                     }
                     if author['label'] == user.get_full_name():
                         author['source'] = user.username
@@ -252,7 +309,9 @@ class Command(BaseCommand):
                 texts.append(
                     {
                         'data': get_text_object(bibtex_entry['contents']),
-                        'type': get_text_type_object('http://base.uni-ak.ac.at/portfolio/vocabulary/description'),
+                        'type': get_text_type_object(
+                            'http://base.uni-ak.ac.at/portfolio/vocabulary/description'
+                        ),
                     }
                 )
 
@@ -296,7 +355,11 @@ class Command(BaseCommand):
                 for bibtex_editor in bibtex_entry['editor']:
                     editor = {
                         'label': ' '.join(bibtex_editor['name'].split(', ')[::-1]),
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/editor')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
+                            )
+                        ],
                     }
                     if editor['label'] == user.get_full_name():
                         editor['source'] = user.username
@@ -309,7 +372,9 @@ class Command(BaseCommand):
                     {
                         'label': bibtex_entry['institution'],
                         'roles': [
-                            get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/partner_institution')
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/partner_institution'
+                            )
                         ],
                     }
                 )
@@ -365,7 +430,11 @@ class Command(BaseCommand):
                 contributors.append(
                     {
                         'label': bibtex_entry['organization'],
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/organisation'
+                            )
+                        ],
                     }
                 )
 
@@ -378,7 +447,11 @@ class Command(BaseCommand):
                 document.publishers = [
                     {
                         'label': bibtex_entry['publisher'],
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/publisher')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/publisher'
+                            )
+                        ],
                     }
                 ]
 
@@ -388,14 +461,20 @@ class Command(BaseCommand):
                     {
                         'label': bibtex_entry['school'],
                         # TODO: this should become university/college when new vocabulary is deployed
-                        'roles': [get_role_object('http://base.uni-ak.ac.at/portfolio/vocabulary/organisation')],
+                        'roles': [
+                            get_role_object(
+                                'http://base.uni-ak.ac.at/portfolio/vocabulary/organisation'
+                            )
+                        ],
                     }
                 )
 
             # Size
             if 'size' in bibtex_entry:
                 # TODO: check first against formats in our vocabulary?
-                document.format = [{'label': {lang: bibtex_entry['size'] for lang in ['de', 'en']}}]
+                document.format = [
+                    {'label': {lang: bibtex_entry['size'] for lang in ['de', 'en']}}
+                ]
 
             # URL
             if 'url' in bibtex_entry:
@@ -440,7 +519,9 @@ class Command(BaseCommand):
                     )
 
             if entry_type is None:
-                notes_list.append('\nNo matching type found for this entry. Collected data:')
+                notes_list.append(
+                    '\nNo matching type found for this entry. Collected data:'
+                )
                 for key in bibtex_entry:
                     notes_list.append(f'{key}: {bibtex_entry[key]}')
 
@@ -465,4 +546,6 @@ class Command(BaseCommand):
         # after all imports print success message with number of items
         # TODO: we could also display how many entries of each type.
         #       do we want to have that? maybe if a -v flag was set?
-        self.stdout.write(self.style.SUCCESS(f'Successfuly imported {len(imported)} entries'))
+        self.stdout.write(
+            self.style.SUCCESS(f'Successfuly imported {len(imported)} entries')
+        )

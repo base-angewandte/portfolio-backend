@@ -11,4 +11,6 @@ class LicenseModelSchema(BaseSchema):
 
 
 def get_license_jsonschema():
-    return schema2jsonschema(LicenseModelSchema, force_text=True)['properties']['license']
+    return schema2jsonschema(LicenseModelSchema, force_text=True)['properties'][
+        'license'
+    ]

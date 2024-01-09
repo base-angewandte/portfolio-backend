@@ -11,8 +11,8 @@ from rq.exceptions import InvalidJobOperation, NoSuchJobError
 from rq.job import Job
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
+from django.db.models import JSONField
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
@@ -188,7 +188,9 @@ class Media(models.Model):
                     self.status = STATUS_ERROR
                     self.save()
         except Exception:
-            logger.exception(f'Error while converting {dict(TYPE_CHOICES).get(self.type)}')
+            logger.exception(
+                f'Error while converting {dict(TYPE_CHOICES).get(self.type)}'
+            )
             self.status = STATUS_ERROR
             self.save()
 
@@ -235,13 +237,20 @@ class Media(models.Model):
         if self.type == AUDIO_TYPE:
             data.update({'mp3': self.get_url('listen.mp3')})
         elif self.type == DOCUMENT_TYPE:
-            data.update({'thumbnail': self.get_image(), 'pdf': self.get_url('preview.pdf')})
+            data.update(
+                {'thumbnail': self.get_image(), 'pdf': self.get_url('preview.pdf')}
+            )
         elif self.type == IMAGE_TYPE:
-            data.update({'thumbnail': self.get_image(), 'previews': self.get_previews()})
+            data.update(
+                {'thumbnail': self.get_image(), 'previews': self.get_previews()}
+            )
         elif self.type == VIDEO_TYPE:
             data.update(
                 {
-                    'cover': {'gif': self.get_url('cover.gif'), 'jpg': self.get_image()},
+                    'cover': {
+                        'gif': self.get_url('cover.gif'),
+                        'jpg': self.get_image(),
+                    },
                     'playlist': self.get_url('playlist.m3u8'),
                     'poster': self.get_url('cover-orig.jpg'),
                 }
@@ -264,7 +273,9 @@ class Media(models.Model):
             if self.check_file(f):
                 return f'{self.get_protected_assets_url()}/{f}'
 
-        logger.error('File {} does not exist for {}'.format(', '.join(filename), self.id))
+        logger.error(
+            'File {} does not exist for {}'.format(', '.join(filename), self.id)
+        )
         return None
 
     def media_info_and_convert(self):
@@ -279,7 +290,9 @@ class Media(models.Model):
 
         if self.type == DOCUMENT_TYPE:
             script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-preview.sh')
-            self.convert(['/bin/bash', script_path, settings.LOOL_HOST, path, destination])
+            self.convert(
+                ['/bin/bash', script_path, settings.LOOL_HOST, path, destination]
+            )
         else:
             if self.type == AUDIO_TYPE:
                 script_path = os.path.join(SCRIPTS_BASE_DIR, 'create-mp3.sh')
@@ -299,7 +312,9 @@ class Media(models.Model):
     def check_mime_type(self):
         exiftool_mime_type = self.exif.get('MIMEType', {}).get('val')
         if exiftool_mime_type and self.mime_type != exiftool_mime_type:
-            logger.warning(f'MIMEType mismatch: {self.mime_type} != {exiftool_mime_type}')
+            logger.warning(
+                f'MIMEType mismatch: {self.mime_type} != {exiftool_mime_type}'
+            )
             # correct some mime types
             if self.mime_type in [
                 'application/zip',
@@ -317,12 +332,22 @@ class Media(models.Model):
 
     def set_exif(self):
         try:
-            self.exif = json.loads(subprocess.check_output(['exiftool', '-j', '-l', '-b', self.file.path]))[0]  # nosec
+            self.exif = json.loads(
+                subprocess.check_output(  # nosec
+                    ['exiftool', '-j', '-l', '-b', self.file.path]
+                )
+            )[0]
         except Exception:
-            logger.warning('Could not read metainformation from file: %s', self.file.path)
+            logger.warning(
+                'Could not read metainformation from file: %s', self.file.path
+            )
             # create fallback data
             self.exif = {
-                'FileSize': {'desc': 'File Size', 'num': self.file.size, 'val': humanize_size(self.file.size)},
+                'FileSize': {
+                    'desc': 'File Size',
+                    'num': self.file.size,
+                    'val': humanize_size(self.file.size),
+                },
                 'MIMEType': {'desc': 'MIME Type', 'val': self.mime_type},
             }
         self.save()
@@ -384,7 +409,10 @@ def get_image_for_entry(entry_id):
 def update_media_order_for_entry(entry_id, order_list):
     for i, d in enumerate(order_list):
         Media.objects.filter(id=d['id'], entry_id=entry_id).update(order=i)
-    signals.media_order_update.send(sender='update_media_order_for_entry', entry_id=entry_id)
+    signals.media_order_update.send(
+        sender='update_media_order_for_entry',
+        entry_id=entry_id,
+    )
 
 
 def get_type_for_mime_type(mime_type):
@@ -399,7 +427,12 @@ def repair():
         m.status = STATUS_NOT_CONVERTED
         m.save()
         queue = django_rq.get_queue('high')
-        queue.enqueue(m.media_info_and_convert, job_id=m.get_job_id(), failure_ttl=settings.RQ_FAILURE_TTL)
+        queue.enqueue(
+            m.media_info_and_convert,
+            job_id=m.get_job_id(),
+            failure_ttl=settings.RQ_FAILURE_TTL,
+            result_ttl=settings.RQ_RESULT_TTL,
+        )
 
 
 # Signal handling
@@ -412,23 +445,29 @@ def media_post_save(sender, instance, created, *args, **kwargs):
             queue = django_rq.get_queue('video')
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
-                sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+                sender.objects.filter(pk=instance.pk).update(
+                    status=STATUS_NOT_CONVERTED
+                )
                 transaction.on_commit(
                     lambda: queue.enqueue(
                         instance.media_info_and_convert,
                         job_id=instance.get_job_id(),
                         failure_ttl=settings.RQ_FAILURE_TTL,
+                        result_ttl=settings.RQ_RESULT_TTL,
                     )
                 )
         else:
             with transaction.atomic():
                 # ensure status is STATUS_NOT_CONVERTED
-                sender.objects.filter(pk=instance.pk).update(status=STATUS_NOT_CONVERTED)
+                sender.objects.filter(pk=instance.pk).update(
+                    status=STATUS_NOT_CONVERTED
+                )
                 transaction.on_commit(
                     lambda: django_rq.enqueue(
                         instance.media_info_and_convert,
                         job_id=instance.get_job_id(),
                         failure_ttl=settings.RQ_FAILURE_TTL,
+                        result_ttl=settings.RQ_RESULT_TTL,
                     )
                 )
 

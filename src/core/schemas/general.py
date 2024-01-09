@@ -6,7 +6,13 @@ from django.urls import reverse_lazy
 from django.utils.text import format_lazy
 from django.utils.translation import get_language, gettext_lazy as _
 
-from ..skosmos import get_altlabel_lazy, get_languages_choices, get_preflabel, get_preflabel_lazy, get_uri
+from ..skosmos import (
+    get_altlabel_lazy,
+    get_languages_choices,
+    get_preflabel,
+    get_preflabel_lazy,
+    get_uri,
+)
 from ..utils import placeholder_lazy
 from .base import BaseSchema, GenericModel
 
@@ -18,7 +24,9 @@ logger = logging.getLogger(__name__)
 def get_field(field, label, additional_attributes):
     return field(
         title=label,
-        **{'x-attrs': {'placeholder': placeholder_lazy(label), **additional_attributes}},
+        **{
+            'x-attrs': {'placeholder': placeholder_lazy(label), **additional_attributes}
+        },
     )
 
 
@@ -37,8 +45,12 @@ def get_contributors_field(additional_attributes=None):
             'x-attrs': {
                 'field_type': 'chips-below',
                 'placeholder': placeholder_lazy(label),
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
-                'source_role': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'roles'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}
+                ),
+                'source_role': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'roles'}
+                ),
                 'prefetch': ['source_role'],
                 'allow_unknown_entries': True,
                 'dynamic_autosuggest': True,
@@ -62,7 +74,9 @@ def get_contributors_field_for_role(role, additional_attributes=None):
                 'field_type': 'chips',
                 'placeholder': placeholder_lazy(label),
                 'sortable': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'contributors'}
+                ),
                 'allow_unknown_entries': True,
                 'dynamic_autosuggest': True,
                 **additional_attributes,
@@ -71,7 +85,10 @@ def get_contributors_field_for_role(role, additional_attributes=None):
     )
 
 
-def get_date_field(additional_attributes=None, pattern=r'^\d{4}(-(0[1-9]|1[0-2]))?(-(0[1-9]|[12]\d|3[01]))?$'):
+def get_date_field(
+    additional_attributes=None,
+    pattern=r'^\d{4}(-(0[1-9]|1[0-2]))?(-(0[1-9]|[12]\d|3[01]))?$',
+):
     if additional_attributes is None:
         additional_attributes = {}
     label = get_preflabel_lazy('date')
@@ -103,7 +120,13 @@ def get_date_location_group_field(additional_attributes=None):
     return fields.List(
         fields.Nested(DateLocationSchema, additionalProperties=False),
         title=label,
-        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+        **{
+            'x-attrs': {
+                'field_type': 'group',
+                'show_label': False,
+                **additional_attributes,
+            }
+        },
     )
 
 
@@ -119,7 +142,13 @@ def get_date_range_location_group_field(additional_attributes=None):
     return fields.List(
         fields.Nested(DateRangeLocationSchema, additionalProperties=False),
         title=label,
-        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+        **{
+            'x-attrs': {
+                'field_type': 'group',
+                'show_label': False,
+                **additional_attributes,
+            }
+        },
     )
 
 
@@ -147,7 +176,12 @@ def get_date_range_time_range_field(additional_attributes=None):
         additional_attributes = {}
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
-    label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
+    label = format_lazy(
+        '{date} {conjunction} {time}',
+        date=label_date,
+        conjunction=_('and'),
+        time=label_time,
+    )
     return fields.Nested(
         DateRangeTimeRangeSchema,
         title=label,
@@ -156,7 +190,10 @@ def get_date_range_time_range_field(additional_attributes=None):
             'x-attrs': {
                 'field_type': 'date',
                 'date_format': 'day',
-                'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
+                'placeholder': {
+                    'date': placeholder_lazy(label_date),
+                    'time': placeholder_lazy(label_time),
+                },
                 **additional_attributes,
             }
         },
@@ -176,7 +213,13 @@ def get_date_range_time_range_location_group_field(additional_attributes=None):
     return fields.List(
         fields.Nested(DateRangeTimeRangeLocationSchema, additionalProperties=False),
         title=label,
-        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+        **{
+            'x-attrs': {
+                'field_type': 'group',
+                'show_label': False,
+                **additional_attributes,
+            }
+        },
     )
 
 
@@ -186,7 +229,12 @@ def get_date_time_field(additional_attributes=None, label=None):
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     if label is None:
-        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
+        label = format_lazy(
+            '{date} {conjunction} {time}',
+            date=label_date,
+            conjunction=_('and'),
+            time=label_time,
+        )
     return fields.Nested(
         DateTimeSchema,
         title=label,
@@ -194,7 +242,10 @@ def get_date_time_field(additional_attributes=None, label=None):
         **{
             'x-attrs': {
                 'field_type': 'date',
-                'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
+                'placeholder': {
+                    'date': placeholder_lazy(label_date),
+                    'time': placeholder_lazy(label_time),
+                },
                 **additional_attributes,
             }
         },
@@ -207,7 +258,12 @@ def get_date_time_range_field(additional_attributes=None, label=None):
     label_date = get_preflabel_lazy('date')
     label_time = get_preflabel_lazy('time')
     if label is None:
-        label = format_lazy('{date} {conjunction} {time}', date=label_date, conjunction=_('and'), time=label_time)
+        label = format_lazy(
+            '{date} {conjunction} {time}',
+            date=label_date,
+            conjunction=_('and'),
+            time=label_time,
+        )
     return fields.Nested(
         DateTimeRangeSchema,
         title=label,
@@ -215,7 +271,10 @@ def get_date_time_range_field(additional_attributes=None, label=None):
         **{
             'x-attrs': {
                 'field_type': 'date',
-                'placeholder': {'date': placeholder_lazy(label_date), 'time': placeholder_lazy(label_time)},
+                'placeholder': {
+                    'date': placeholder_lazy(label_date),
+                    'time': placeholder_lazy(label_time),
+                },
                 **additional_attributes,
             }
         },
@@ -235,20 +294,32 @@ def get_date_time_range_location_group_field(additional_attributes=None):
     return fields.List(
         fields.Nested(DateTimeRangeLocationSchema, additionalProperties=False),
         title=label,
-        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+        **{
+            'x-attrs': {
+                'field_type': 'group',
+                'show_label': False,
+                **additional_attributes,
+            }
+        },
     )
 
 
 def get_dimensions_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
-    return get_string_field(get_preflabel_lazy('dimensions'), {'field_format': 'half', **additional_attributes})
+    return get_string_field(
+        get_preflabel_lazy('dimensions'),
+        {'field_format': 'half', **additional_attributes},
+    )
 
 
 def get_duration_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
-    return get_string_field(get_preflabel_lazy('duration'), {'field_format': 'half', **additional_attributes})
+    return get_string_field(
+        get_preflabel_lazy('duration'),
+        {'field_format': 'half', **additional_attributes},
+    )
 
 
 def get_format_field(additional_attributes=None):
@@ -265,7 +336,9 @@ def get_format_field(additional_attributes=None):
                 'sortable': True,
                 'allow_unknown_entries': True,
                 'set_label_language': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'formats'}
+                ),
                 'prefetch': ['source'],
                 'placeholder': placeholder_lazy(label),
                 **additional_attributes,
@@ -286,7 +359,9 @@ def get_language_list_field(additional_attributes=None):
                 'field_format': 'half',
                 'field_type': 'chips',
                 'set_label_language': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'languages'}
+                ),
                 'prefetch': ['source'],
                 'placeholder': placeholder_lazy(label),
                 **additional_attributes,
@@ -307,7 +382,9 @@ def get_location_field(additional_attributes=None):
                 'field_format': 'half',
                 'field_type': 'chips',
                 'dynamic_autosuggest': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'places'}
+                ),
                 'placeholder': placeholder_lazy(label),
                 **additional_attributes,
             }
@@ -319,7 +396,8 @@ def get_location_description_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
     return get_string_field(
-        get_preflabel_lazy('location_description'), {'field_type': 'text', **additional_attributes}
+        get_preflabel_lazy('location_description'),
+        {'field_type': 'text', **additional_attributes},
     )
 
 
@@ -330,7 +408,13 @@ def get_location_group_field(additional_attributes=None):
     return fields.List(
         fields.Nested(LocationSchema, additionalProperties=False),
         title=label,
-        **{'x-attrs': {'field_type': 'group', 'show_label': False, **additional_attributes}},
+        **{
+            'x-attrs': {
+                'field_type': 'group',
+                'show_label': False,
+                **additional_attributes,
+            }
+        },
     )
 
 
@@ -347,7 +431,9 @@ def get_material_field(additional_attributes=None):
                 'sortable': True,
                 'allow_unknown_entries': True,
                 'set_label_language': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'materials'}
+                ),
                 'prefetch': ['source'],
                 'placeholder': placeholder_lazy(label),
                 **additional_attributes,
@@ -384,7 +470,9 @@ def get_status_field(additional_attributes=None):
                 'field_format': 'half',
                 'field_type': 'chips',
                 'set_label_language': True,
-                'source': reverse_lazy('lookup_all', kwargs={'version': 'v1', 'fieldname': 'statuses'}),
+                'source': reverse_lazy(
+                    'lookup_all', kwargs={'version': 'v1', 'fieldname': 'statuses'}
+                ),
                 'type': 'object',
                 'prefetch': ['source'],
                 'placeholder': placeholder_lazy(label),
@@ -398,7 +486,9 @@ def get_url_field(additional_attributes=None):
     if additional_attributes is None:
         additional_attributes = {}
     return get_field(
-        fields.Str, get_preflabel_lazy('url'), {**additional_attributes}  # TODO change back to fields.Url
+        fields.Str,
+        get_preflabel_lazy('url'),
+        {**additional_attributes},  # TODO change back to fields.Url
     )
 
 
@@ -468,7 +558,10 @@ class DateTimeLocationModel(GenericModel):
         if label is None:
             label = self.metadata.get(attribute, {}).get('title')
         if is_range:
-            return {'label': label, 'value': {x: getattr(self, f'{attribute}_{x}') for x in ['from', 'to']}}
+            return {
+                'label': label,
+                'value': {x: getattr(self, f'{attribute}_{x}') for x in ['from', 'to']},
+            }
         else:
             return {
                 'label': label,
@@ -483,11 +576,24 @@ class DateTimeLocationModel(GenericModel):
             else:
                 ret.append(self._value_dict('date'))
         elif hasattr(self, 'date_from') and (self.date_from or self.date_to):
-            ret.append(self._value_dict('date', label=get_preflabel_lazy('date'), is_range=True))
+            ret.append(
+                self._value_dict(
+                    'date', label=get_preflabel_lazy('date'), is_range=True
+                )
+            )
         if hasattr(self, 'time_from') and (self.time_from or self.time_to):
-            ret.append(self._value_dict('time', label=get_preflabel_lazy('time'), is_range=True))
+            ret.append(
+                self._value_dict(
+                    'time', label=get_preflabel_lazy('time'), is_range=True
+                )
+            )
         if hasattr(self, 'opening') and self.opening:
-            ret.append({'label': self.metadata.get('opening', {}).get('title'), 'value': self.opening.to_display()})
+            ret.append(
+                {
+                    'label': self.metadata.get('opening', {}).get('title'),
+                    'value': self.opening.to_display(),
+                }
+            )
         if hasattr(self, 'location') and self.location:
             ret.append(
                 {
@@ -533,7 +639,9 @@ class DateTimeRangeSchema(BaseSchema):
 
 class LocationSchema(BaseSchema):
     location = get_location_field({'order': 1})
-    location_description = get_location_description_field({'field_format': 'half', 'order': 2})
+    location_description = get_location_description_field(
+        {'field_format': 'half', 'order': 2}
+    )
 
     __model__ = DateTimeLocationModel
 
@@ -549,7 +657,9 @@ class DateLocationSchema(BaseSchema):
 class DateRangeLocationSchema(BaseSchema):
     date = get_date_range_field({'order': 1})
     location = get_location_field({'order': 2})
-    location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+    location_description = get_location_description_field(
+        {'field_format': 'half', 'order': 3}
+    )
 
     __model__ = DateTimeLocationModel
 
@@ -557,7 +667,9 @@ class DateRangeLocationSchema(BaseSchema):
 class DateRangeTimeRangeLocationSchema(BaseSchema):
     date = get_date_range_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
-    location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+    location_description = get_location_description_field(
+        {'field_format': 'half', 'order': 3}
+    )
 
     __model__ = DateTimeLocationModel
 
@@ -565,7 +677,9 @@ class DateRangeTimeRangeLocationSchema(BaseSchema):
 class DateTimeRangeLocationSchema(BaseSchema):
     date = get_date_time_range_field({'order': 1})
     location = get_location_field({'order': 2})
-    location_description = get_location_description_field({'field_format': 'half', 'order': 3})
+    location_description = get_location_description_field(
+        {'field_format': 'half', 'order': 3}
+    )
 
     __model__ = DateTimeLocationModel
 
@@ -578,7 +692,9 @@ class ContributorModel(GenericModel):
                 return {
                     'label': self.label,
                     'value': [
-                        getattr(x.label, lang) if x.label else get_preflabel(x.source.split('/')[-1])
+                        getattr(x.label, lang)
+                        if x.label
+                        else get_preflabel(x.source.split('/')[-1])
                         for x in self.roles
                     ]
                     if self.roles
@@ -590,6 +706,8 @@ class ContributorModel(GenericModel):
 class ContributorSchema(BaseSchema):
     source = fields.Str(**{'x-attrs': {'hidden': True}})
     label = fields.Str()
-    roles = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
+    roles = fields.List(
+        fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False)
+    )
 
     __model__ = ContributorModel

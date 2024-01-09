@@ -14,7 +14,9 @@ class TypeModelSchema(BaseSchema):
 
 # keywords
 class KeywordsModelSchema(BaseSchema):
-    keywords = fields.List(fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False))
+    keywords = fields.List(
+        fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False)
+    )
 
 
 # texts
@@ -24,7 +26,11 @@ class TextDataSchema(BaseSchema):
 
 
 class TextSchema(BaseSchema):
-    type = fields.Nested(SourceMultilingualLabelSchema, additionalProperties=False, title=get_preflabel_lazy('type'))
+    type = fields.Nested(
+        SourceMultilingualLabelSchema,
+        additionalProperties=False,
+        title=get_preflabel_lazy('type'),
+    )
     data = fields.List(fields.Nested(TextDataSchema, additionalProperties=False))
 
 

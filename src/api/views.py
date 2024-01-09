@@ -8,7 +8,13 @@ from drf_yasg.codecs import OpenAPICodecJson
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
 from rest_framework import exceptions, permissions, status, viewsets
-from rest_framework.decorators import action, api_view, authentication_classes, parser_classes, permission_classes
+from rest_framework.decorators import (
+    action,
+    api_view,
+    authentication_classes,
+    parser_classes,
+    permission_classes,
+)
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -17,9 +23,9 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.cache import cache
 from django.db.models import Max, Q
+from django.db.models.fields.json import KeyTextTransform
 from django.http import Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -95,7 +101,15 @@ class EntryFilter(FilterSet):
         fields = ['type']
 
 
-entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', 'type_source', 'type_de', 'type_en')
+entry_ordering_fields = (
+    'title',
+    'date_created',
+    'date_changed',
+    'published',
+    'type_source',
+    'type_de',
+    'type_en',
+)
 
 
 @method_decorator(
@@ -107,10 +121,15 @@ entry_ordering_fields = ('title', 'date_created', 'date_changed', 'published', '
                 required=False,
                 description='Which field to use when ordering the results.',
                 type=openapi.TYPE_STRING,
-                enum=list(entry_ordering_fields) + [f'-{i}' for i in entry_ordering_fields],
+                enum=list(entry_ordering_fields)
+                + [f'-{i}' for i in entry_ordering_fields],
             ),
             openapi.Parameter(
-                'q', openapi.IN_QUERY, required=False, description='Search query', type=openapi.TYPE_STRING
+                'q',
+                openapi.IN_QUERY,
+                required=False,
+                description='Search query',
+                type=openapi.TYPE_STRING,
             ),
             openapi.Parameter(
                 'link_selection_for',
@@ -194,8 +213,12 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
         try:
             entry = Entry.objects.get(pk=pk)
             if entry.owner != request.user:
-                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
-            ret = get_media_for_entry(entry.pk, flat=request.query_params.get('detailed') != 'true')
+                raise exceptions.PermissionDenied(
+                    _('Current user is not the owner of this entry')
+                )
+            ret = get_media_for_entry(
+                entry.pk, flat=request.query_params.get('detailed') != 'true'
+            )
             return Response(ret)
         except Entry.DoesNotExist as e:
             raise exceptions.NotFound(_('Entry does not exist')) from e
@@ -217,16 +240,26 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
             404: openapi.Response('Entry not found'),
         },
     )
-    @action(detail=True, methods=['post'], url_path='media/order', filter_backends=[], pagination_class=None)
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='media/order',
+        filter_backends=[],
+        pagination_class=None,
+    )
     def media_order(self, request, pk=None, *args, **kwargs):
         """Set media order for an entry."""
 
         try:
             entry = Entry.objects.get(pk=pk)
             if entry.owner != request.user:
-                raise exceptions.PermissionDenied(_('Current user is not the owner of this entry'))
+                raise exceptions.PermissionDenied(
+                    _('Current user is not the owner of this entry')
+                )
             # validate request body
-            if not type(request.data) is list or not all(type(i) is dict and 'id' in i for i in request.data):
+            if not type(request.data) is list or not all(
+                type(i) is dict and 'id' in i for i in request.data
+            ):
                 raise exceptions.ValidationError
             update_media_order_for_entry(entry.pk, request.data)
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -245,7 +278,9 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
             .distinct()
             .order_by()
         )
-        return Response(sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower()))
+        return Response(
+            sorted(content, key=lambda x: x.get('label', {}).get(language, '').lower())
+        )
 
     def get_queryset(self):
         user = self.request.user
@@ -267,8 +302,12 @@ class EntryViewSet(CreateListMixin, viewsets.ModelViewSet, CountModelMixin):
                     .filter(owner=user)
                     .annotate(
                         type_source=KeyTextTransform('source', 'type'),
-                        type_de=KeyTextTransform('de', KeyTextTransform('label', 'type')),
-                        type_en=KeyTextTransform('en', KeyTextTransform('label', 'type')),
+                        type_de=KeyTextTransform(
+                            'de', KeyTextTransform('label', 'type')
+                        ),
+                        type_en=KeyTextTransform(
+                            'en', KeyTextTransform('label', 'type')
+                        ),
                     )
                 )
 
@@ -313,7 +352,12 @@ class JsonSchemaViewSet(viewsets.ViewSet):
     @language_header_decorator
     def list(self, request, *args, **kwargs):
         language = get_language() or 'en'
-        return Response(sorted(ACTIVE_TYPES_LIST, key=lambda x: x.get('label', {}).get(language, '').lower()))
+        return Response(
+            sorted(
+                ACTIVE_TYPES_LIST,
+                key=lambda x: x.get('label', {}).get(language, '').lower(),
+            )
+        )
 
     @language_header_decorator
     def retrieve(self, request, pk=None, *args, **kwargs):
@@ -388,7 +432,11 @@ def user_data(request, pk=None, *args, **kwargs):
 
     def to_data_dict(label, data, sort=True):
         if sort:
-            data = sorted(data, key=lambda x: x.get('year') or '0000', reverse=True) if data else []
+            data = (
+                sorted(data, key=lambda x: x.get('year') or '0000', reverse=True)
+                if data
+                else []
+            )
         return {
             'label': label,
             'data': data,
@@ -438,8 +486,14 @@ def user_data(request, pk=None, *args, **kwargs):
     cache_time, entries_count, usr_data = cache.get(cache_key, (None, None, None))
 
     if cache_time:
-        last_modified = published_entries_query.aggregate(Max('date_changed'))['date_changed__max']
-        if last_modified and last_modified < cache_time and entries_count == published_entries_query.count():
+        last_modified = published_entries_query.aggregate(Max('date_changed'))[
+            'date_changed__max'
+        ]
+        if (
+            last_modified
+            and last_modified < cache_time
+            and entries_count == published_entries_query.count()
+        ):
             return Response(usr_data)
 
     title_key = 'title'
@@ -469,34 +523,55 @@ def user_data(request, pk=None, *args, **kwargs):
     audio_schema = AudioSchema()
     video_schema = VideoSchema()
     exhibition_schema = ExhibitionSchema()
-    publications_label = get_altlabel_collection('collection_document_publication', lang=lang)
+    publications_label = get_altlabel_collection(
+        'collection_document_publication',
+        lang=lang,
+    )
     monographs_label = get_altlabel_collection('collection_monograph', lang=lang)
-    monographs_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_monograph')
+    monographs_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_monograph'
+    )
     monographs_data = []
-    composite_volumes_label = get_altlabel_collection('collection_composite_volume', lang=lang)
+    composite_volumes_label = get_altlabel_collection(
+        'collection_composite_volume',
+        lang=lang,
+    )
     composite_volumes_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_composite_volume'
     )
     composite_volumes_data = []
     articles_label = get_altlabel_collection('collection_article', lang=lang)
-    articles_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_article')
+    articles_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_article'
+    )
     articles_data = []
     chapters_label = get_altlabel_collection('collection_chapter', lang=lang)
-    chapters_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_chapter')
+    chapters_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_chapter'
+    )
     chapters_data = []
     reviews_label = get_altlabel_collection('collection_review', lang=lang)
-    reviews_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_review')
+    reviews_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_review'
+    )
     reviews_data = []
     general_documents_publications_label = get_altlabel_collection(
-        'collection_general_document_publication', lang=lang
+        'collection_general_document_publication',
+        lang=lang,
     )
     general_documents_publications_data = []
-    research_projects_label = get_altlabel_collection('collection_research_project', lang=lang)
+    research_projects_label = get_altlabel_collection(
+        'collection_research_project',
+        lang=lang,
+    )
     research_projects_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_research_project'
     )
     research_projects_data = []
-    awards_and_grants_label = get_altlabel_collection('collection_awards_and_grants', lang=lang)
+    awards_and_grants_label = get_altlabel_collection(
+        'collection_awards_and_grants',
+        lang=lang,
+    )
     awards_and_grants_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_awards_and_grants'
     )
@@ -510,97 +585,162 @@ def user_data(request, pk=None, *args, **kwargs):
     )
     fellowships_visiting_affiliations_data = []
     exhibitions_label = get_altlabel_collection('collection_exhibition', lang=lang)
-    exhibitions_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition')
+    exhibitions_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_exhibition'
+    )
     exhibitions_data = []
-    supervisions_of_theses_label = get_altlabel_collection('collection_supervision_of_theses', lang=lang)
+    supervisions_of_theses_label = get_altlabel_collection(
+        'collection_supervision_of_theses',
+        lang=lang,
+    )
     supervisions_of_theses_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_supervision_of_theses'
     )
     supervisions_of_theses_data = []
     teaching_label = get_altlabel_collection('collection_teaching', lang=lang)
-    teaching_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_teaching')
+    teaching_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_teaching'
+    )
     teaching_data = []
-    conferences_symposia_label = get_altlabel_collection('collection_conference_symposium', lang=lang)
+    conferences_symposia_label = get_altlabel_collection(
+        'collection_conference_symposium',
+        lang=lang,
+    )
     conferences_symposia_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference'
     )
     conferences_symposia_data = []
-    conference_contributions_label = get_altlabel_collection('collection_conference_contribution', lang=lang)
+    conference_contributions_label = get_altlabel_collection(
+        'collection_conference_contribution',
+        lang=lang,
+    )
     conference_contributions_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_conference_contribution'
     )
     conference_contributions_data = []
     architectures_label = get_altlabel_collection('collection_architecture', lang=lang)
-    architectures_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_architecture')
+    architectures_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_architecture'
+    )
     architectures_data = []
     audios_label = get_altlabel_collection('collection_audio', lang=lang)
-    audios_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio')
+    audios_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio'
+    )
     audios_data = []
     concerts_label = get_altlabel_collection('collection_concert', lang=lang)
-    concerts_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_concert')
+    concerts_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_concert'
+    )
     concerts_data = []
     design_label = get_altlabel_collection('collection_design', lang=lang)
-    design_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_design')
+    design_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_design'
+    )
     design_data = []
-    education_qualifications_label = get_altlabel_collection('collection_education_qualification', lang=lang)
+    education_qualifications_label = get_altlabel_collection(
+        'collection_education_qualification',
+        lang=lang,
+    )
     education_qualifications_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_education_qualification'
     )
     education_qualifications_data = []
-    functions_practice_label = get_altlabel_collection('collection_functions_practice', lang=lang)
-    events_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_event')
+    functions_practice_label = get_altlabel_collection(
+        'collection_functions_practice',
+        lang=lang,
+    )
+    events_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_event'
+    )
     memberships_label = get_altlabel_collection('collection_membership ', lang=lang)
     memberships_data = []
-    expert_functions_label = get_altlabel_collection('collection_expert_function ', lang=lang)
+    expert_functions_label = get_altlabel_collection(
+        'collection_expert_function ',
+        lang=lang,
+    )
     expert_functions_data = []
-    journalistic_activity_label = get_altlabel_collection('collection_journalistic_activity ', lang=lang)
+    journalistic_activity_label = get_altlabel_collection(
+        'collection_journalistic_activity ',
+        lang=lang,
+    )
     journalistic_activity_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_journalistic_activity'
     )
     journalistic_activity_data = []
-    general_functions_practice_label = get_altlabel_collection('general_function_and_practice', lang=lang)
+    general_functions_practice_label = get_altlabel_collection(
+        'general_function_and_practice',
+        lang=lang,
+    )
     general_functions_practice_data = []
     festivals_label = get_altlabel_collection('collection_festival', lang=lang)
-    festivals_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_festival')
+    festivals_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_festival'
+    )
     festivals_data = []
     images_label = get_altlabel_collection('collection_image', lang=lang)
-    images_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_image')
+    images_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_image'
+    )
     images_data = []
     performances_label = get_altlabel_collection('collection_performance', lang=lang)
-    performances_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_performance')
+    performances_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_performance'
+    )
     performances_data = []
-    science_to_public_label = get_altlabel_collection('collection_science_to_public', lang=lang)
+    science_to_public_label = get_altlabel_collection(
+        'collection_science_to_public',
+        lang=lang,
+    )
     science_to_public_data = []
-    public_appearance_label = get_altlabel_collection('collection_public_appearance', lang=lang)
+    public_appearance_label = get_altlabel_collection(
+        'collection_public_appearance',
+        lang=lang,
+    )
     public_appearance_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_public_appearance'
     )
     public_appearance_data = []
     mediation_label = get_altlabel_collection('collection_mediation', lang=lang)
-    mediation_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_mediation')
+    mediation_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_mediation'
+    )
     mediation_data = []
-    visual_and_verbal_presentations_label = get_altlabel_collection('collection_visual_verbal_presentation', lang=lang)
+    visual_and_verbal_presentations_label = get_altlabel_collection(
+        'collection_visual_verbal_presentation',
+        lang=lang,
+    )
     visual_and_verbal_presentations_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_visual_verbal_presentation'
     )
     visual_and_verbal_presentations_data = []
     general_activity_science_to_public_label = get_altlabel_collection(
-        'collection_general_activity_science_to_public', lang=lang
+        'collection_general_activity_science_to_public',
+        lang=lang,
     )
     general_activity_science_to_public_types = get_collection_members(
         'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_general_activity_science_to_public'
     )
     general_activity_science_to_public_data = []
     sculptures_label = get_altlabel_collection('collection_sculpture', lang=lang)
-    sculptures_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture')
+    sculptures_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_sculpture'
+    )
     sculptures_data = []
     software_label = get_altlabel_collection('collection_software', lang=lang)
-    software_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software')
+    software_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_software'
+    )
     software_data = []
     videos_label = get_altlabel_collection('collection_film_video', lang=lang)
-    videos_types = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video')
+    videos_types = get_collection_members(
+        'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_film_video'
+    )
     videos_data = []
-    general_activities_label = get_altlabel_collection('collection_general_activity ', lang=lang)
+    general_activities_label = get_altlabel_collection(
+        'collection_general_activity ',
+        lang=lang,
+    )
     general_activities_data = []
 
     published_entries = published_entries_query.order_by('title')
@@ -646,8 +786,10 @@ def user_data(request, pk=None, *args, **kwargs):
                     i.source == user.username
                     and i.roles is not None
                     and any(
-                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/discussion'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/panelist'
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/discussion'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/panelist'
                         for r in i.roles
                     )
                     for i in e_data.contributors
@@ -661,15 +803,24 @@ def user_data(request, pk=None, *args, **kwargs):
                     i.source == user.username
                     and i.roles is not None
                     and any(
-                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/reading'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performing_artist'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/artist'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performance'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/presentation'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speech'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/lecturer'
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/reading'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/actor'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performing_artist'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/artist'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/performance'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/presentation'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speech'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/lecturer'
                         for r in i.roles
                     )
                     for i in e_data.contributors
@@ -686,7 +837,11 @@ def user_data(request, pk=None, *args, **kwargs):
                 and any(
                     i.source == user.username
                     and i.roles is not None
-                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author' for r in i.roles)
+                    and any(
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                        for r in i.roles
+                    )
                     for i in e_data.contributors
                 )
             )
@@ -698,10 +853,14 @@ def user_data(request, pk=None, *args, **kwargs):
                     i.source == user.username
                     and i.roles is not None
                     and any(
-                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mention'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/talk'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewee'
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mention'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/talk'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewee'
                         for r in i.roles
                     )
                     for i in e_data.contributors
@@ -719,7 +878,11 @@ def user_data(request, pk=None, *args, **kwargs):
             and any(
                 i.source == user.username
                 and i.roles is not None
-                and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mediation' for r in i.roles)
+                and any(
+                    r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/mediation'
+                    for r in i.roles
+                )
                 for i in e_data.contributors
             )
         ):
@@ -757,13 +920,20 @@ def user_data(request, pk=None, *args, **kwargs):
                         i.source == user.username
                         and i.roles is not None
                         and any(
-                            r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editing'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewer'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/photography'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
-                            or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/moderation'
+                            r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/author'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editing'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/editor'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/interviewer'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/photography'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/speaker'
+                            or r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/moderation'
                             for r in i.roles
                         )
                         for i in e_data.contributors
@@ -786,14 +956,18 @@ def user_data(request, pk=None, *args, **kwargs):
             # Edited Books
             elif (
                 entry_type in composite_volumes_types
-                and (e_data.editors is not None and any(i.source == user.username for i in e_data.editors))
+                and (
+                    e_data.editors is not None
+                    and any(i.source == user.username for i in e_data.editors)
+                )
                 or (
                     e_data.contributors is not None
                     and any(
                         i.source == user.username
                         and i.roles is not None
                         and any(
-                            r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/series_and_journal_editorship'
+                            r.source
+                            == 'http://base.uni-ak.ac.at/portfolio/vocabulary/series_and_journal_editorship'
                             for r in i.roles
                         )
                         for i in e_data.contributors
@@ -830,8 +1004,10 @@ def user_data(request, pk=None, *args, **kwargs):
                     i.source == user.username
                     and i.roles is not None
                     and any(
-                        r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
-                        or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor'
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
+                        or r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/supervisor'
                         for r in i.roles
                     )
                     for i in e_data.contributors
@@ -856,7 +1032,11 @@ def user_data(request, pk=None, *args, **kwargs):
                 and any(
                     i.source == user.username
                     and i.roles is not None
-                    and any(r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/attendance' for r in i.roles)
+                    and any(
+                        r.source
+                        == 'http://base.uni-ak.ac.at/portfolio/vocabulary/attendance'
+                        for r in i.roles
+                    )
                     for i in e_data.contributors
                 )
             ):
@@ -871,13 +1051,18 @@ def user_data(request, pk=None, *args, **kwargs):
                 and i.roles is not None
                 and any(
                     r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/member'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_member'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisory_board'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/commissions_boards'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/appointment_committee'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_member'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/advisory_board'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/commissions_boards'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/appointment_committee'
                     or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/jury'
                     or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/chair'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_of_directors'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/board_of_directors'
                     for r in i.roles
                 )
                 for i in e_data.contributors
@@ -888,8 +1073,10 @@ def user_data(request, pk=None, *args, **kwargs):
                 i.source == user.username
                 and i.roles is not None
                 and any(
-                    r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
-                    or r.source == 'http://base.uni-ak.ac.at/portfolio/vocabulary/committee_work'
+                    r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/expertizing'
+                    or r.source
+                    == 'http://base.uni-ak.ac.at/portfolio/vocabulary/committee_work'
                     for r in i.roles
                 )
                 for i in e_data.contributors
@@ -996,7 +1183,10 @@ def user_data(request, pk=None, *args, **kwargs):
         (public_appearance_label, public_appearance_data),
         (mediation_label, mediation_data),
         (visual_and_verbal_presentations_label, visual_and_verbal_presentations_data),
-        (general_activity_science_to_public_label, general_activity_science_to_public_data),
+        (
+            general_activity_science_to_public_label,
+            general_activity_science_to_public_data,
+        ),
     ]:
         if d:
             science_to_public_data.append(to_data_dict(lbl, d))
@@ -1006,7 +1196,11 @@ def user_data(request, pk=None, *args, **kwargs):
         (publications_label, publications_data, False),
         (research_projects_label, research_projects_data, True),
         (awards_and_grants_label, awards_and_grants_data, True),
-        (fellowships_visiting_affiliations_label, fellowships_visiting_affiliations_data, True),
+        (
+            fellowships_visiting_affiliations_label,
+            fellowships_visiting_affiliations_data,
+            True,
+        ),
         (exhibitions_label, exhibitions_data, True),
         (teaching_label, teaching_collected_data, False),
         (conferences_symposia_label, conferences_symposia_data, True),
@@ -1057,8 +1251,14 @@ def get_entry_data(entry):
     ret = entry.data_display
     ret['media'] = get_media_for_entry_public(entry.pk)
     ret['relations'] = {
-        'parents': [{'id': r.pk, 'title': r.title} for r in entry.related_to.filter(published=True)],
-        'to': [{'id': r.pk, 'title': r.title} for r in entry.relations.filter(published=True)],
+        'parents': [
+            {'id': r.pk, 'title': r.title}
+            for r in entry.related_to.filter(published=True)
+        ],
+        'to': [
+            {'id': r.pk, 'title': r.title}
+            for r in entry.relations.filter(published=True)
+        ],
     }
     ret['showroom_id'] = entry.showroom_id
     return ret
@@ -1128,9 +1328,24 @@ def entry_data(request, pk=None, *args, **kwargs):
     manual_parameters=[
         authorization_header_paramter,
         language_header_parameter,
-        openapi.Parameter('collection', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
-        openapi.Parameter('roles', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
-        openapi.Parameter('users', openapi.IN_FORM, required=True, type=openapi.TYPE_STRING),
+        openapi.Parameter(
+            'collection',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'roles',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            'users',
+            openapi.IN_FORM,
+            required=True,
+            type=openapi.TYPE_STRING,
+        ),
     ],
 )
 @api_view(['POST'])
@@ -1140,7 +1355,10 @@ def entry_data(request, pk=None, *args, **kwargs):
 def wb_data(request, *args, **kwargs):
     users = request.POST.getlist('users') or []
     types = (
-        (get_collection_members(request.POST.get('types')) or request.POST.get('types').split(','))
+        (
+            get_collection_members(request.POST.get('types'))
+            or request.POST.get('types').split(',')
+        )
         if request.POST.get('types')
         else None
     )

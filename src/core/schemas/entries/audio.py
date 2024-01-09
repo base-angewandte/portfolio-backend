@@ -13,7 +13,10 @@ from ..general import (
 )
 from ..utils import years_from_date_location_group_field
 
-TYPES = get_collection_members('http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio', use_cache=False)
+TYPES = get_collection_members(
+    'http://base.uni-ak.ac.at/portfolio/taxonomy/collection_audio',
+    use_cache=False,
+)
 
 
 class AudioSchema(BaseSchema):

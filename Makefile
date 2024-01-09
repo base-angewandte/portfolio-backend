@@ -1,80 +1,49 @@
 include .env
 export
 
+PROJECT_NAME ?= portfolio
 
-start:
-	docker-compose pull --ignore-pull-failures
-	docker-compose build --no-cache --pull portfolio-django
-	docker-compose up -d --build
+include config/base.mk
 
-stop:
-	docker-compose down
-
-restart:
-	docker-compose restart
-
-git-update:
-	if [ "$(shell whoami)" != "base" ]; then sudo -u base git pull; else git pull; fi
-
-init:
-	docker-compose exec portfolio-django bash -c "pip-sync && python manage.py migrate"
 
 init-rq:
-	docker-compose exec portfolio-rq-worker-1 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-worker-2 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-worker-3 bash -c "pip-sync && python manage.py migrate"
-	docker-compose exec portfolio-rq-scheduler bash -c "pip-sync && python manage.py migrate"
-
-init-static:
-	docker-compose exec portfolio-django bash -c "python manage.py collectstatic --noinput"
+	docker-compose exec ${PROJECT_NAME}-rq-worker-1 bash -c "pip-sync"
+	docker-compose exec ${PROJECT_NAME}-rq-worker-2 bash -c "pip-sync"
+	docker-compose exec ${PROJECT_NAME}-rq-worker-3 bash -c "pip-sync"
+	docker-compose exec ${PROJECT_NAME}-rq-scheduler bash -c "pip-sync"
 
 cleanup:
-	docker-compose exec portfolio-django bash -c "python manage.py clearsessions && python manage.py django_cas_ng_clean_sessions"
+	docker-compose exec ${PROJECT_NAME}-django bash -c "python manage.py clearsessions && python manage.py django_cas_ng_clean_sessions"
 
 build-portfolio:
-	docker-compose build --pull portfolio-django
-
-restart-gunicorn:
-	docker-compose exec portfolio-django bash -c 'kill -HUP `cat /var/run/django.pid`'
+	docker-compose build --pull ${PROJECT_NAME}-django
 
 restart-rq:
-	docker-compose restart portfolio-rq-worker-1 portfolio-rq-worker-2 portfolio-rq-worker-3 portfolio-rq-scheduler
+	docker-compose restart ${PROJECT_NAME}-rq-worker-1 ${PROJECT_NAME}-rq-worker-2 ${PROJECT_NAME}-rq-worker-3 ${PROJECT_NAME}-rq-scheduler
 
 update-labels:
-	docker-compose exec portfolio-django python manage.py update_labels
+	docker-compose exec ${PROJECT_NAME}-django python manage.py update_labels
 
-update: git-update init init-rq init-static restart-gunicorn restart-rq build-docs update-labels
+update: git-update init init-rq restart-gunicorn restart-rq build-docs update-labels
 
 start-dev:
 	docker-compose pull --ignore-pull-failures
 	docker-compose up -d \
-		portfolio-redis \
-		portfolio-postgres \
-		portfolio-clamav \
-		portfolio-lool
+		${PROJECT_NAME}-redis \
+		${PROJECT_NAME}-postgres \
+		${PROJECT_NAME}-clamav \
+		${PROJECT_NAME}-lool
 
 start-dev-docker:
 	docker-compose pull --ignore-pull-failures
-	docker-compose build --no-cache --pull portfolio-django
+	docker-compose build --no-cache --pull ${PROJECT_NAME}-django
 	docker-compose up -d \
-		portfolio-redis \
-		portfolio-postgres \
-		portfolio-clamav \
-		portfolio-lool \
-		portfolio-django
-	docker logs -f portfolio-django
+		${PROJECT_NAME}-redis \
+		${PROJECT_NAME}-postgres \
+		${PROJECT_NAME}-clamav \
+		${PROJECT_NAME}-lool \
+		${PROJECT_NAME}-django
+	docker logs -f ${PROJECT_NAME}-django
 
 clear-entries:
-	docker-compose exec portfolio-django bash -c "python manage.py clear_entries"
-
-build-docs:
-	docker build -t portfolio-docs ./docker/docs
-	docker run -it --rm -v `pwd`/docs:/docs -v `pwd`/src:/src portfolio-docs bash -c "make clean html"
-
-pip-compile:
-	pip-compile src/requirements.in
-	pip-compile src/requirements-dev.in
-
-pip-compile-upgrade:
-	pip-compile src/requirements.in --upgrade
-	pip-compile src/requirements-dev.in --upgrade
+	docker-compose exec ${PROJECT_NAME}-django bash -c "python manage.py clear_entries"

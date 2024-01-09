@@ -1,12 +1,18 @@
 import logging
 
-import django_rq
 import requests
 
 from django.conf import settings
 
 from core.models import Entry
-from media_server.models import AUDIO_TYPE, DOCUMENT_TYPE, IMAGE_TYPE, VIDEO_TYPE
+from media_server.models import (
+    AUDIO_TYPE,
+    DOCUMENT_TYPE,
+    IMAGE_TYPE,
+    STATUS_CONVERTED,
+    VIDEO_TYPE,
+    Media,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +39,13 @@ auth_headers = {
 }
 
 
-def push_entry(entry):
+def push_entry(entry, process_media=True, process_relations=True):
+    entry.refresh_from_db()
+    if not entry.published:
+        # TODO: discuss in review: should this be an info event or a warning?
+        logger.info(f'Entry {entry.id} was unpublished before worker could push it')
+        return
+
     data = {
         'source_repo_entry_id': entry.id,
         'source_repo': settings.SHOWROOM_REPO_ID,
@@ -48,23 +60,71 @@ def push_entry(entry):
         },
     }
 
-    r = requests.post(settings.SHOWROOM_API_BASE + 'activities/', json=data, headers=auth_headers)
+    r = requests.post(
+        settings.SHOWROOM_API_BASE + 'activities/',
+        json=data,
+        headers=auth_headers,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
 
     if r.status_code == 201:
         response = r.json()
         handle_push_entry_response(response)
+
+        # if the entry was just created in Showroom, we also have to push media and relations
+        if response.get('created'):
+            if process_media:
+                published_media = Media.objects.filter(
+                    entry_id=entry.id,
+                    published=True,
+                    status=STATUS_CONVERTED,
+                )
+                for medium in published_media:
+                    try:
+                        push_medium(medium)
+                    except ShowroomError as err:
+                        logger.warning(
+                            f'Problem encountered when syncing medium for entry {entry.id}: {err}'
+                        )
+            if process_relations:
+                try:
+                    push_relations(entry)
+                except ShowroomError as err:
+                    logger.warning(
+                        f'Problem encountered when syncing relations for entry {entry.id}: {err}'
+                    )
+                # push_relations only pushes the relations of an entry to attached entries. but
+                # if the currently published entry is attached to other already published entries
+                # we have to update the relations of those as well
+                published_parent_relations = entry.to_entries.filter(
+                    from_entry__published=True
+                )
+                for relation in published_parent_relations:
+                    try:
+                        e = relation.from_entry
+                        push_relations(e)
+                    except ShowroomError as err:
+                        logger.warning(
+                            f'Problem encountered when syncing relations for entry {e.id} (parent): {err}'
+                        )
         return response
+
     elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
-
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be pushed: 400: {r.text}')
     else:
-        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(
+            f'Ouch! Something unexpected happened: {r.status_code} {r.text}'
+        )
 
 
 def delete_entry(entry):
-    r = requests.delete(settings.SHOWROOM_API_BASE + f'activities/{entry.id}/', headers=auth_headers)
+    r = requests.delete(
+        settings.SHOWROOM_API_BASE + f'activities/{entry.id}/',
+        headers=auth_headers,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
     if r.status_code == 204:
         Entry.objects.filter(pk=entry.pk).update(showroom_id=None)
         return True
@@ -73,11 +133,15 @@ def delete_entry(entry):
     elif r.status_code == 404:
         # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
         # because the desired state is already achieved, but something else seems to be off
-        logger.warning(f'Entry {entry.id} could not be deleted because not found in Showroom [404]')
+        logger.warning(
+            f'Entry {entry.id} could not be deleted because not found in Showroom [404]'
+        )
     elif r.status_code == 400:
         raise ShowroomError(f'Entry {entry.id} could not be deleted: 400: {r.text}')
     else:
-        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(
+            f'Ouch! Something unexpected happened: {r.status_code} {r.text}'
+        )
 
 
 def push_medium(medium):
@@ -118,7 +182,12 @@ def push_medium(medium):
             'thumbnail': medium_data.get('thumbnail'),
         }
 
-    r = requests.post(settings.SHOWROOM_API_BASE + 'media/', json=data, headers=auth_headers)
+    r = requests.post(
+        settings.SHOWROOM_API_BASE + 'media/',
+        json=data,
+        headers=auth_headers,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
 
     if r.status_code == 201:
         return r.json()
@@ -127,11 +196,17 @@ def push_medium(medium):
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be pushed: 400: {r.text}')
     else:
-        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(
+            f'Ouch! Something unexpected happened: {r.status_code} {r.text}'
+        )
 
 
 def delete_medium(medium):
-    r = requests.delete(settings.SHOWROOM_API_BASE + f'media/{medium.id}/', headers=auth_headers)
+    r = requests.delete(
+        settings.SHOWROOM_API_BASE + f'media/{medium.id}/',
+        headers=auth_headers,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
     if r.status_code == 204:
         return True
     elif r.status_code == 403:
@@ -139,41 +214,58 @@ def delete_medium(medium):
     elif r.status_code == 404:
         # in case we want to delete an object that cannot be found in Showroom, we'll just log this as a warning
         # because the desired state is already achieved, but something else seems to be off
-        logger.warning(f'Medium {medium.id} could not be deleted because not found in Showroom [404]')
+        logger.warning(
+            f'Medium {medium.id} could not be deleted because not found in Showroom [404]'
+        )
     elif r.status_code == 400:
         raise ShowroomError(f'Medium {medium.id} could not be deleted: 400: {r.text}')
     else:
-        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(
+            f'Ouch! Something unexpected happened: {r.status_code} {r.text}'
+        )
 
 
 def push_relations(entry):
-    data = {'related_to': [rel.to_entry.id for rel in entry.from_entries.all()]}
-    r = requests.post(f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/', json=data, headers=auth_headers)
+    data = {
+        'related_to': [
+            rel.to_entry.id
+            for rel in entry.from_entries.filter(to_entry__published=True)
+        ]
+    }
+    r = requests.post(
+        f'{settings.SHOWROOM_API_BASE}activities/{entry.id}/relations/',
+        json=data,
+        headers=auth_headers,
+        timeout=settings.REQUESTS_TIMEOUT,
+    )
 
     if r.status_code == 201:
-        # TODO: showroom is returning a dict with `created` and `not_found` arrays containing the
-        #       ids of those relations added and those entries that could not be found. in theory
-        #       `not_found` should be empty. but if not, how shall we handle this?
         return r.json()
     elif r.status_code == 404:
-        # entry not found in Showroom, so push entry and relation again
-        entry_sync = django_rq.enqueue(push_entry, entry=entry)
-        django_rq.enqueue(push_relations, entry=entry, depends_on=entry_sync)
-        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 404: {r.text}')
+        raise ShowroomError(
+            f'Could not push relations for Entry {entry.id}: 404: {r.text}'
+        )
     elif r.status_code == 403:
         raise ShowroomAuthenticationError(f'Authentication failed: {r.text}')
     elif r.status_code == 400:
-        raise ShowroomError(f'Could not push relations for Entry {entry.id}: 400: {r.text}')
+        raise ShowroomError(
+            f'Could not push relations for Entry {entry.id}: 400: {r.text}'
+        )
     else:
-        raise ShowroomUndefinedError(f'Ouch! Something unexpected happened: {r.status_code} {r.text}')
+        raise ShowroomUndefinedError(
+            f'Ouch! Something unexpected happened: {r.status_code} {r.text}'
+        )
 
 
 def handle_push_entry_response(response):
+    """Update portfolio entries based on result of push to Showroom.
+
+    When entries are pushed to Showroom, the response will contain a
+    list of created and updated Showroom activity IDs. For newly
+    published entries we need to store the (new) activity ID. The
+    updated Showroom activities can be ignored as we already stored the
+    ID, when the activity was created.
+    """
     created = response.get('created', [])
     for item in created:
-        Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])
-
-    # TODO check if we really need to update showroom_id in this case
-    updated = response.get('updated', [])
-    for item in updated:
         Entry.objects.filter(pk=item['id']).update(showroom_id=item['showroom_id'])

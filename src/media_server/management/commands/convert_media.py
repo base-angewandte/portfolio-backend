@@ -24,7 +24,9 @@ class Command(BaseCommand):
 
         for media_id in options['media_id']:
             if len(media_id) != 22 or not match(r'^[0-9a-zA-Z]{22}$', media_id):
-                raise CommandError(f'This does not look like a valid ShortUUID: {media_id}')
+                raise CommandError(
+                    f'This does not look like a valid ShortUUID: {media_id}'
+                )
 
         for m in progressbar(Media.objects.filter(id__in=options['media_id'])):
             Media.objects.filter(id=m.id).update(status=STATUS_NOT_CONVERTED)

@@ -35,7 +35,12 @@ def init():
         ACTIVE_TUPLES.append(
             (
                 s.TYPES,
-                getattr(s, '{}Schema'.format(''.join(x.capitalize() for x in schema.split('_')))),
+                getattr(
+                    s,
+                    '{}Schema'.format(
+                        ''.join(x.capitalize() for x in schema.split('_'))
+                    ),
+                ),
                 s.ICON if hasattr(s, 'ICON') else ICON_DEFAULT,
             )
         )
@@ -43,7 +48,14 @@ def init():
 
     for i in ACTIVE_TYPES:
         ACTIVE_TYPES_CHOICES.append(
-            [i, get_preflabel_lazy(i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH)]
+            [
+                i,
+                get_preflabel_lazy(
+                    i.split('/')[-1],
+                    project=settings.TAX_ID,
+                    graph=settings.TAX_GRAPH,
+                ),
+            ]
         )
 
         ACTIVE_TYPES_LIST.append(
@@ -51,10 +63,16 @@ def init():
                 'source': i,
                 'label': {
                     'de': get_preflabel(
-                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='de'
+                        i.split('/')[-1],
+                        project=settings.TAX_ID,
+                        graph=settings.TAX_GRAPH,
+                        lang='de',
                     ),
                     'en': get_preflabel(
-                        i.split('/')[-1], project=settings.TAX_ID, graph=settings.TAX_GRAPH, lang='en'
+                        i.split('/')[-1],
+                        project=settings.TAX_ID,
+                        graph=settings.TAX_GRAPH,
+                        lang='en',
                     ),
                 },
             }
@@ -106,7 +124,9 @@ def get_type_jsonschema():
 
 
 def get_keywords_jsonschema():
-    return schema2jsonschema(KeywordsModelSchema, force_text=True)['properties']['keywords']
+    return schema2jsonschema(KeywordsModelSchema, force_text=True)['properties'][
+        'keywords'
+    ]
 
 
 def get_texts_jsonschema():
