@@ -1,6 +1,7 @@
 from rest_framework import routers
 
-from django.urls import include, path, re_path
+from django.urls import include, path, re_path, reverse_lazy
+from django.views.generic import RedirectView
 
 from media_server.views import MediaViewSet
 
@@ -24,11 +25,40 @@ urlpatterns = [
     ),
     path('entry/<str:pk>/data/', views.entry_data, name='entry_data'),
     path('wbdata/', views.wb_data, name='wb_data'),
-    re_path(
-        r'^swagger(?P<format>\.json|\.yaml)$',
-        views.no_ui_view,
-        name='schema-json',
+    # redirects for compatibility with older versions
+    path(
+        'swagger.json',
+        RedirectView.as_view(
+            url=reverse_lazy('schema', kwargs={'version': 'v1', 'format': '.json'}),
+            permanent=True,
+        ),
     ),
-    path('swagger/', views.swagger_view, name='schema-swagger-ui'),
-    path('redoc/', views.redoc_view, name='schema-redoc'),
+    path(
+        'swagger.yaml',
+        RedirectView.as_view(
+            url=reverse_lazy('schema', kwargs={'version': 'v1', 'format': '.yaml'}),
+            permanent=True,
+        ),
+    ),
+    path(
+        'swagger/',
+        RedirectView.as_view(
+            url=reverse_lazy('schema-docs', kwargs={'version': 'v1'}),
+            permanent=True,
+        ),
+    ),
+    path(
+        'redoc/',
+        RedirectView.as_view(
+            url=reverse_lazy('schema-docs', kwargs={'version': 'v1'}),
+            permanent=True,
+        ),
+    ),
+    # schema and schema docs
+    re_path(
+        r'^openapi(?P<format>\.json|\.yaml)$',
+        views.no_ui_view,
+        name='schema',
+    ),
+    path('docs/', views.swagger_view, name='schema-docs'),
 ]
