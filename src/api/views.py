@@ -84,7 +84,7 @@ class PortfolioSchemaView(SchemaView):
 
 no_ui_view = PortfolioSchemaView.without_ui(cache_timeout=0)
 swagger_view = PortfolioSchemaView.with_ui('swagger', cache_timeout=0)
-redoc_view = PortfolioSchemaView.with_ui('redoc', cache_timeout=0)
+# redoc_view = PortfolioSchemaView.with_ui('redoc', cache_timeout=0)
 
 
 class StandardLimitOffsetPagination(LimitOffsetPagination):
