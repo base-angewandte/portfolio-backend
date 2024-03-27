@@ -148,7 +148,7 @@ services:
     image: collabora/code:23.05.9.4.1
     container_name: portfolio-lool
     volumes:
-      - ./docker/loolwsd.xml:/etc/loolwsd/loolwsd.xml
+      - ./docker/loolwsd.xml:/etc/coolwsd/coolwsd.xml
     networks:
       - portfolionet
     restart: always
