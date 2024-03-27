@@ -119,7 +119,7 @@ progressbar2==3.53.1
     # via -r src/requirements.in
 psutil==5.9.6
     # via rainbow-saddle
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
     # via -r src/requirements.in
 pyparsing==3.1.1
     # via
