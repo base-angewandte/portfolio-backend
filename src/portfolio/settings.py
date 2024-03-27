@@ -522,12 +522,12 @@ SOURCES = {
         apiconfig.PAYLOAD: {'format': 'json:suggest', 'filter': 'type:CorporateBody'},
     },
     'VIAF_PERSON': {
-        apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+        apiconfig.URL: 'https://www.viaf.org/viaf/AutoSuggest',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: None,
     },
     'VIAF_INSTITUTION': {
-        apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+        apiconfig.URL: 'https://www.viaf.org/viaf/AutoSuggest',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: None,
     },
@@ -540,7 +540,7 @@ SOURCES = {
         },
     },
     'VIAF_PLACE': {
-        apiconfig.URL: 'http://www.viaf.org/viaf/AutoSuggest',
+        apiconfig.URL: 'https://www.viaf.org/viaf/AutoSuggest',
         apiconfig.QUERY_FIELD: 'query',
         apiconfig.PAYLOAD: None,
     },
